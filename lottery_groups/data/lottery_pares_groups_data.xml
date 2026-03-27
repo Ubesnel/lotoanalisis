@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lottery_group_0_par" model="lottery.group">
+            <field name="code">0_par</field>
+            <field name="name">0 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 0, 2, 4, 6, 8, 20, 40, 60, 80</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_0'),
+                   ref('lottery_base.lottery_number_2'),
+                   ref('lottery_base.lottery_number_4'),
+                   ref('lottery_base.lottery_number_6'),
+                   ref('lottery_base.lottery_number_8'),
+                   ref('lottery_base.lottery_number_20'),
+                   ref('lottery_base.lottery_number_40'),
+                   ref('lottery_base.lottery_number_60'),
+                   ref('lottery_base.lottery_number_80')])]"/>
+        </record>
+        <record id="lottery_group_1_par" model="lottery.group">
+            <field name="code">1_par</field>
+            <field name="name">1 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 1, 10, 12, 14, 16, 18, 21, 41, 61, 81</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_1'),
+                   ref('lottery_base.lottery_number_10'),
+                   ref('lottery_base.lottery_number_12'),
+                   ref('lottery_base.lottery_number_14'),
+                   ref('lottery_base.lottery_number_16'),
+                   ref('lottery_base.lottery_number_18'),
+                   ref('lottery_base.lottery_number_21'),
+                   ref('lottery_base.lottery_number_41'),
+                   ref('lottery_base.lottery_number_61'),
+                   ref('lottery_base.lottery_number_81')])]"/>
+        </record>
+        <record id="lottery_group_2_par" model="lottery.group">
+            <field name="code">2_par</field>
+            <field name="name">2 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 2, 20, 22, 24, 26, 28, 42, 62, 82</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_2'),
+                   ref('lottery_base.lottery_number_20'),
+                   ref('lottery_base.lottery_number_22'),
+                   ref('lottery_base.lottery_number_24'),
+                   ref('lottery_base.lottery_number_26'),
+                   ref('lottery_base.lottery_number_28'),
+                   ref('lottery_base.lottery_number_42'),
+                   ref('lottery_base.lottery_number_62'),
+                   ref('lottery_base.lottery_number_82')])]"/>
+        </record>
+        <record id="lottery_group_3_par" model="lottery.group">
+            <field name="code">3_par</field>
+            <field name="name">3 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 3, 23, 30, 32, 34, 36, 38, 43, 63, 83</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_3'),
+                   ref('lottery_base.lottery_number_23'),
+                   ref('lottery_base.lottery_number_30'),
+                   ref('lottery_base.lottery_number_32'),
+                   ref('lottery_base.lottery_number_34'),
+                   ref('lottery_base.lottery_number_36'),
+                   ref('lottery_base.lottery_number_38'),
+                   ref('lottery_base.lottery_number_43'),
+                   ref('lottery_base.lottery_number_63'),
+                   ref('lottery_base.lottery_number_83')])]"/>
+        </record>
+        <record id="lottery_group_4_par" model="lottery.group">
+            <field name="code">4_par</field>
+            <field name="name">4 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 4, 24, 40, 42, 44, 46, 48, 64, 84</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_4'),
+                   ref('lottery_base.lottery_number_24'),
+                   ref('lottery_base.lottery_number_40'),
+                   ref('lottery_base.lottery_number_42'),
+                   ref('lottery_base.lottery_number_44'),
+                   ref('lottery_base.lottery_number_46'),
+                   ref('lottery_base.lottery_number_48'),
+                   ref('lottery_base.lottery_number_64'),
+                   ref('lottery_base.lottery_number_84')])]"/>
+        </record>
+        <record id="lottery_group_5_par" model="lottery.group">
+            <field name="code">5_par</field>
+            <field name="name">5 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 5, 25, 45, 50, 52, 54, 56, 58, 65, 85</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_5'),
+                   ref('lottery_base.lottery_number_25'),
+                   ref('lottery_base.lottery_number_45'),
+                   ref('lottery_base.lottery_number_50'),
+                   ref('lottery_base.lottery_number_52'),
+                   ref('lottery_base.lottery_number_54'),
+                   ref('lottery_base.lottery_number_56'),
+                   ref('lottery_base.lottery_number_58'),
+                   ref('lottery_base.lottery_number_65'),
+                   ref('lottery_base.lottery_number_85')])]"/>
+        </record>
+        <record id="lottery_group_6_par" model="lottery.group">
+            <field name="code">6_par</field>
+            <field name="name">6 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 6, 26, 46, 60, 62, 64, 66, 68, 86</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_6'),
+                   ref('lottery_base.lottery_number_26'),
+                   ref('lottery_base.lottery_number_46'),
+                   ref('lottery_base.lottery_number_60'),
+                   ref('lottery_base.lottery_number_62'),
+                   ref('lottery_base.lottery_number_64'),
+                   ref('lottery_base.lottery_number_66'),
+                   ref('lottery_base.lottery_number_68'),
+                   ref('lottery_base.lottery_number_86')])]"/>
+        </record>
+        <record id="lottery_group_7_par" model="lottery.group">
+            <field name="code">7_par</field>
+            <field name="name">7 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 7, 27, 47, 67, 70, 72, 74, 76, 78, 87</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_7'),
+                   ref('lottery_base.lottery_number_27'),
+                   ref('lottery_base.lottery_number_47'),
+                   ref('lottery_base.lottery_number_67'),
+                   ref('lottery_base.lottery_number_70'),
+                   ref('lottery_base.lottery_number_72'),
+                   ref('lottery_base.lottery_number_74'),
+                   ref('lottery_base.lottery_number_76'),
+                   ref('lottery_base.lottery_number_78'),
+                   ref('lottery_base.lottery_number_87')])]"/>
+        </record>
+        <record id="lottery_group_8_par" model="lottery.group">
+            <field name="code">8_par</field>
+            <field name="name">8 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 8, 28, 48, 68, 80, 82, 84, 86, 88</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_8'),
+                   ref('lottery_base.lottery_number_28'),
+                   ref('lottery_base.lottery_number_48'),
+                   ref('lottery_base.lottery_number_68'),
+                   ref('lottery_base.lottery_number_80'),
+                   ref('lottery_base.lottery_number_82'),
+                   ref('lottery_base.lottery_number_84'),
+                   ref('lottery_base.lottery_number_86'),
+                   ref('lottery_base.lottery_number_88')])]"/>
+        </record>
+        <record id="lottery_group_9_par" model="lottery.group">
+            <field name="code">9_par</field>
+            <field name="name">9 con Acompañante Par</field>
+            <field name="notes">Este grupo está formado por los números: 9, 29, 49, 69, 89, 90, 92, 94, 96, 98</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_9'),
+                   ref('lottery_base.lottery_number_29'),
+                   ref('lottery_base.lottery_number_49'),
+                   ref('lottery_base.lottery_number_69'),
+                   ref('lottery_base.lottery_number_89'),
+                   ref('lottery_base.lottery_number_90'),
+                   ref('lottery_base.lottery_number_92'),
+                   ref('lottery_base.lottery_number_94'),
+                   ref('lottery_base.lottery_number_96'),
+                   ref('lottery_base.lottery_number_98')])]"/>
+        </record>
+    </data>
+</odoo>

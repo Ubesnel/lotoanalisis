@@ -1,0 +1,2564 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--Enero-->
+        <record id="lottery_output_e_1989_01_31" model="lottery.output">
+            <field name="date">1989-01-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_78"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_30" model="lottery.output">
+            <field name="date">1989-01-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_45"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_29" model="lottery.output">
+            <field name="date">1989-01-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_80"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_28" model="lottery.output">
+            <field name="date">1989-01-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_66"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_27" model="lottery.output">
+            <field name="date">1989-01-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_26" model="lottery.output">
+            <field name="date">1989-01-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_52"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_25" model="lottery.output">
+            <field name="date">1989-01-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_73"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_24" model="lottery.output">
+            <field name="date">1989-01-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_65"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_23" model="lottery.output">
+            <field name="date">1989-01-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_3"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_22" model="lottery.output">
+            <field name="date">1989-01-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_30"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_21" model="lottery.output">
+            <field name="date">1989-01-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_20" model="lottery.output">
+            <field name="date">1989-01-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_7"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_19" model="lottery.output">
+            <field name="date">1989-01-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_23"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_18" model="lottery.output">
+            <field name="date">1989-01-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_96"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_17" model="lottery.output">
+            <field name="date">1989-01-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_14"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_16" model="lottery.output">
+            <field name="date">1989-01-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_45"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_15" model="lottery.output">
+            <field name="date">1989-01-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_85"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_14" model="lottery.output">
+            <field name="date">1989-01-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_61"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_13" model="lottery.output">
+            <field name="date">1989-01-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_89"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_12" model="lottery.output">
+            <field name="date">1989-01-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_11" model="lottery.output">
+            <field name="date">1989-01-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_57"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_10" model="lottery.output">
+            <field name="date">1989-01-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_61"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_09" model="lottery.output">
+            <field name="date">1989-01-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_62"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_08" model="lottery.output">
+            <field name="date">1989-01-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_35"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_07" model="lottery.output">
+            <field name="date">1989-01-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_06" model="lottery.output">
+            <field name="date">1989-01-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_15"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_05" model="lottery.output">
+            <field name="date">1989-01-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_16"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_04" model="lottery.output">
+            <field name="date">1989-01-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_67"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_03" model="lottery.output">
+            <field name="date">1989-01-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_29"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_02" model="lottery.output">
+            <field name="date">1989-01-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_01_01" model="lottery.output">
+            <field name="date">1989-01-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_82"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <!--Febrero-->
+        <record id="lottery_output_e_1989_02_28" model="lottery.output">
+            <field name="date">1989-02-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_6"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_27" model="lottery.output">
+            <field name="date">1989-02-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_29"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_26" model="lottery.output">
+            <field name="date">1989-02-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_25" model="lottery.output">
+            <field name="date">1989-02-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_34"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_24" model="lottery.output">
+            <field name="date">1989-02-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_73"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_23" model="lottery.output">
+            <field name="date">1989-02-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_15"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_22" model="lottery.output">
+            <field name="date">1989-02-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_21"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_21" model="lottery.output">
+            <field name="date">1989-02-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_0"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_20" model="lottery.output">
+            <field name="date">1989-02-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_88"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_19" model="lottery.output">
+            <field name="date">1989-02-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_88"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_18" model="lottery.output">
+            <field name="date">1989-02-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_35"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_17" model="lottery.output">
+            <field name="date">1989-02-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_27"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_16" model="lottery.output">
+            <field name="date">1989-02-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_86"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_15" model="lottery.output">
+            <field name="date">1989-02-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_14" model="lottery.output">
+            <field name="date">1989-02-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_83"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_13" model="lottery.output">
+            <field name="date">1989-02-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_18"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_12" model="lottery.output">
+            <field name="date">1989-02-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_74"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_11" model="lottery.output">
+            <field name="date">1989-02-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_28"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_10" model="lottery.output">
+            <field name="date">1989-02-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_09" model="lottery.output">
+            <field name="date">1989-02-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_73"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_08" model="lottery.output">
+            <field name="date">1989-02-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_07" model="lottery.output">
+            <field name="date">1989-02-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_37"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_06" model="lottery.output">
+            <field name="date">1989-02-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_7"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_05" model="lottery.output">
+            <field name="date">1989-02-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_42"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_04" model="lottery.output">
+            <field name="date">1989-02-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_87"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_03" model="lottery.output">
+            <field name="date">1989-02-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_02" model="lottery.output">
+            <field name="date">1989-02-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_63"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_02_01" model="lottery.output">
+            <field name="date">1989-02-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_25"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <!--Marzo-->
+        <record id="lottery_output_e_1989_03_31" model="lottery.output">
+            <field name="date">1989-03-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_87"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_30" model="lottery.output">
+            <field name="date">1989-03-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_29" model="lottery.output">
+            <field name="date">1989-03-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_44"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_28" model="lottery.output">
+            <field name="date">1989-03-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_99"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_27" model="lottery.output">
+            <field name="date">1989-03-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_85"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_26" model="lottery.output">
+            <field name="date">1989-03-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_25"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_25" model="lottery.output">
+            <field name="date">1989-03-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_20"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_24" model="lottery.output">
+            <field name="date">1989-03-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_23" model="lottery.output">
+            <field name="date">1989-03-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_19"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_22" model="lottery.output">
+            <field name="date">1989-03-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_10"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_21" model="lottery.output">
+            <field name="date">1989-03-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_20" model="lottery.output">
+            <field name="date">1989-03-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_20"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_19" model="lottery.output">
+            <field name="date">1989-03-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_55"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_18" model="lottery.output">
+            <field name="date">1989-03-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_17" model="lottery.output">
+            <field name="date">1989-03-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_16" model="lottery.output">
+            <field name="date">1989-03-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_47"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_15" model="lottery.output">
+            <field name="date">1989-03-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_14" model="lottery.output">
+            <field name="date">1989-03-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_32"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_13" model="lottery.output">
+            <field name="date">1989-03-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_63"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_12" model="lottery.output">
+            <field name="date">1989-03-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_42"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_11" model="lottery.output">
+            <field name="date">1989-03-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_28"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_10" model="lottery.output">
+            <field name="date">1989-03-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_09" model="lottery.output">
+            <field name="date">1989-03-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_50"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_08" model="lottery.output">
+            <field name="date">1989-03-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_61"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_07" model="lottery.output">
+            <field name="date">1989-03-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_40"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_06" model="lottery.output">
+            <field name="date">1989-03-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_13"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_05" model="lottery.output">
+            <field name="date">1989-03-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_04" model="lottery.output">
+            <field name="date">1989-03-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_69"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_03" model="lottery.output">
+            <field name="date">1989-03-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_66"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_02" model="lottery.output">
+            <field name="date">1989-03-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_76"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_03_01" model="lottery.output">
+            <field name="date">1989-03-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <!--Abril-->
+        <record id="lottery_output_e_1989_04_30" model="lottery.output">
+            <field name="date">1989-04-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_0"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_29" model="lottery.output">
+            <field name="date">1989-04-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_19"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_28" model="lottery.output">
+            <field name="date">1989-04-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_83"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_27" model="lottery.output">
+            <field name="date">1989-04-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_59"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_26" model="lottery.output">
+            <field name="date">1989-04-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_94"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_25" model="lottery.output">
+            <field name="date">1989-04-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_92"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_24" model="lottery.output">
+            <field name="date">1989-04-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_16"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_23" model="lottery.output">
+            <field name="date">1989-04-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_22" model="lottery.output">
+            <field name="date">1989-04-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_21" model="lottery.output">
+            <field name="date">1989-04-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_20" model="lottery.output">
+            <field name="date">1989-04-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_59"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_19" model="lottery.output">
+            <field name="date">1989-04-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_18" model="lottery.output">
+            <field name="date">1989-04-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_17" model="lottery.output">
+            <field name="date">1989-04-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_7"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_16" model="lottery.output">
+            <field name="date">1989-04-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_75"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_15" model="lottery.output">
+            <field name="date">1989-04-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_84"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_14" model="lottery.output">
+            <field name="date">1989-04-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_13" model="lottery.output">
+            <field name="date">1989-04-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_6"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_12" model="lottery.output">
+            <field name="date">1989-04-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_57"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_11" model="lottery.output">
+            <field name="date">1989-04-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_72"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_10" model="lottery.output">
+            <field name="date">1989-04-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_09" model="lottery.output">
+            <field name="date">1989-04-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_08" model="lottery.output">
+            <field name="date">1989-04-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_96"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_07" model="lottery.output">
+            <field name="date">1989-04-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_75"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_06" model="lottery.output">
+            <field name="date">1989-04-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_64"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_05" model="lottery.output">
+            <field name="date">1989-04-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_59"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_04" model="lottery.output">
+            <field name="date">1989-04-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_29"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_03" model="lottery.output">
+            <field name="date">1989-04-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_18"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_02" model="lottery.output">
+            <field name="date">1989-04-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_26"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_04_01" model="lottery.output">
+            <field name="date">1989-04-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <!--Mayo-->
+        <record id="lottery_output_e_1989_05_31" model="lottery.output">
+            <field name="date">1989-05-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_43"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_30" model="lottery.output">
+            <field name="date">1989-05-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_23"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_29" model="lottery.output">
+            <field name="date">1989-05-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_68"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_28" model="lottery.output">
+            <field name="date">1989-05-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_94"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_27" model="lottery.output">
+            <field name="date">1989-05-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_33"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_26" model="lottery.output">
+            <field name="date">1989-05-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_76"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_25" model="lottery.output">
+            <field name="date">1989-05-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_26"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_24" model="lottery.output">
+            <field name="date">1989-05-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_54"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_23" model="lottery.output">
+            <field name="date">1989-05-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_26"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_22" model="lottery.output">
+            <field name="date">1989-05-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_85"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_21" model="lottery.output">
+            <field name="date">1989-05-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_20" model="lottery.output">
+            <field name="date">1989-05-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_4"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_19" model="lottery.output">
+            <field name="date">1989-05-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_85"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_18" model="lottery.output">
+            <field name="date">1989-05-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_53"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_17" model="lottery.output">
+            <field name="date">1989-05-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_22"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_16" model="lottery.output">
+            <field name="date">1989-05-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_40"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_15" model="lottery.output">
+            <field name="date">1989-05-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_10"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_14" model="lottery.output">
+            <field name="date">1989-05-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_82"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_13" model="lottery.output">
+            <field name="date">1989-05-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_35"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_12" model="lottery.output">
+            <field name="date">1989-05-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_0"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_11" model="lottery.output">
+            <field name="date">1989-05-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_72"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_10" model="lottery.output">
+            <field name="date">1989-05-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_09" model="lottery.output">
+            <field name="date">1989-05-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_08" model="lottery.output">
+            <field name="date">1989-05-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_13"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_07" model="lottery.output">
+            <field name="date">1989-05-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_51"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_06" model="lottery.output">
+            <field name="date">1989-05-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_97"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_05" model="lottery.output">
+            <field name="date">1989-05-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_56"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_04" model="lottery.output">
+            <field name="date">1989-05-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_5"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_03" model="lottery.output">
+            <field name="date">1989-05-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_67"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_02" model="lottery.output">
+            <field name="date">1989-05-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_70"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_05_01" model="lottery.output">
+            <field name="date">1989-05-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_8"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <!--Junio-->
+        <record id="lottery_output_e_1989_06_30" model="lottery.output">
+            <field name="date">1989-06-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_0"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_29" model="lottery.output">
+            <field name="date">1989-06-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_82"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_28" model="lottery.output">
+            <field name="date">1989-06-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_26"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_27" model="lottery.output">
+            <field name="date">1989-06-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_13"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_26" model="lottery.output">
+            <field name="date">1989-06-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_94"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_25" model="lottery.output">
+            <field name="date">1989-06-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_24" model="lottery.output">
+            <field name="date">1989-06-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_23" model="lottery.output">
+            <field name="date">1989-06-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_3"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_22" model="lottery.output">
+            <field name="date">1989-06-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_21" model="lottery.output">
+            <field name="date">1989-06-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_41"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_20" model="lottery.output">
+            <field name="date">1989-06-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_99"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_19" model="lottery.output">
+            <field name="date">1989-06-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_44"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_18" model="lottery.output">
+            <field name="date">1989-06-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_61"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_17" model="lottery.output">
+            <field name="date">1989-06-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_8"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_16" model="lottery.output">
+            <field name="date">1989-06-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_15" model="lottery.output">
+            <field name="date">1989-06-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_53"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_14" model="lottery.output">
+            <field name="date">1989-06-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_91"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_13" model="lottery.output">
+            <field name="date">1989-06-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_22"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_12" model="lottery.output">
+            <field name="date">1989-06-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_6"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_11" model="lottery.output">
+            <field name="date">1989-06-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_96"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_10" model="lottery.output">
+            <field name="date">1989-06-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_98"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_09" model="lottery.output">
+            <field name="date">1989-06-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_63"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_08" model="lottery.output">
+            <field name="date">1989-06-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_4"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_07" model="lottery.output">
+            <field name="date">1989-06-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_06" model="lottery.output">
+            <field name="date">1989-06-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_2"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_05" model="lottery.output">
+            <field name="date">1989-06-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_30"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_04" model="lottery.output">
+            <field name="date">1989-06-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_16"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_03" model="lottery.output">
+            <field name="date">1989-06-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_35"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_02" model="lottery.output">
+            <field name="date">1989-06-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_18"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_06_01" model="lottery.output">
+            <field name="date">1989-06-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <!--Julio-->
+        <record id="lottery_output_e_1989_07_31" model="lottery.output">
+            <field name="date">1989-07-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_30" model="lottery.output">
+            <field name="date">1989-07-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_76"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_29" model="lottery.output">
+            <field name="date">1989-07-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_16"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_28" model="lottery.output">
+            <field name="date">1989-07-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_66"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_27" model="lottery.output">
+            <field name="date">1989-07-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_33"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_26" model="lottery.output">
+            <field name="date">1989-07-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_25" model="lottery.output">
+            <field name="date">1989-07-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_2"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_24" model="lottery.output">
+            <field name="date">1989-07-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_25"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_23" model="lottery.output">
+            <field name="date">1989-07-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_8"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_22" model="lottery.output">
+            <field name="date">1989-07-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_19"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_21" model="lottery.output">
+            <field name="date">1989-07-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_56"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_20" model="lottery.output">
+            <field name="date">1989-07-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_25"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_19" model="lottery.output">
+            <field name="date">1989-07-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_53"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_18" model="lottery.output">
+            <field name="date">1989-07-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_34"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_17" model="lottery.output">
+            <field name="date">1989-07-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_61"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_16" model="lottery.output">
+            <field name="date">1989-07-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_30"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_15" model="lottery.output">
+            <field name="date">1989-07-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_89"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_14" model="lottery.output">
+            <field name="date">1989-07-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_71"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_13" model="lottery.output">
+            <field name="date">1989-07-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_74"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_12" model="lottery.output">
+            <field name="date">1989-07-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_78"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_11" model="lottery.output">
+            <field name="date">1989-07-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_10" model="lottery.output">
+            <field name="date">1989-07-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_95"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_09" model="lottery.output">
+            <field name="date">1989-07-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_80"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_08" model="lottery.output">
+            <field name="date">1989-07-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_73"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_07" model="lottery.output">
+            <field name="date">1989-07-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_29"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_06" model="lottery.output">
+            <field name="date">1989-07-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_32"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_05" model="lottery.output">
+            <field name="date">1989-07-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_64"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_04" model="lottery.output">
+            <field name="date">1989-07-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_33"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_03" model="lottery.output">
+            <field name="date">1989-07-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_51"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_02" model="lottery.output">
+            <field name="date">1989-07-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_07_01" model="lottery.output">
+            <field name="date">1989-07-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <!--Agosto-->
+        <record id="lottery_output_e_1989_08_31" model="lottery.output">
+            <field name="date">1989-08-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_74"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_30" model="lottery.output">
+            <field name="date">1989-08-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_68"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_29" model="lottery.output">
+            <field name="date">1989-08-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_79"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_28" model="lottery.output">
+            <field name="date">1989-08-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_94"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_27" model="lottery.output">
+            <field name="date">1989-08-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_50"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_26" model="lottery.output">
+            <field name="date">1989-08-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_80"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_25" model="lottery.output">
+            <field name="date">1989-08-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_68"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_24" model="lottery.output">
+            <field name="date">1989-08-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_23" model="lottery.output">
+            <field name="date">1989-08-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_22" model="lottery.output">
+            <field name="date">1989-08-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_57"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_21" model="lottery.output">
+            <field name="date">1989-08-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_20"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_20" model="lottery.output">
+            <field name="date">1989-08-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_19" model="lottery.output">
+            <field name="date">1989-08-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_68"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_18" model="lottery.output">
+            <field name="date">1989-08-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_93"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_17" model="lottery.output">
+            <field name="date">1989-08-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_85"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_16" model="lottery.output">
+            <field name="date">1989-08-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_15" model="lottery.output">
+            <field name="date">1989-08-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_87"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_14" model="lottery.output">
+            <field name="date">1989-08-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_44"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_13" model="lottery.output">
+            <field name="date">1989-08-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_62"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_12" model="lottery.output">
+            <field name="date">1989-08-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_38"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_11" model="lottery.output">
+            <field name="date">1989-08-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_27"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_10" model="lottery.output">
+            <field name="date">1989-08-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_21"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_09" model="lottery.output">
+            <field name="date">1989-08-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_32"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_08" model="lottery.output">
+            <field name="date">1989-08-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_83"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_07" model="lottery.output">
+            <field name="date">1989-08-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_36"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_06" model="lottery.output">
+            <field name="date">1989-08-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_13"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_05" model="lottery.output">
+            <field name="date">1989-08-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_64"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_04" model="lottery.output">
+            <field name="date">1989-08-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_73"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_03" model="lottery.output">
+            <field name="date">1989-08-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_66"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_02" model="lottery.output">
+            <field name="date">1989-08-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_80"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_08_01" model="lottery.output">
+            <field name="date">1989-08-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_86"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <!--Septiembre-->
+        <record id="lottery_output_e_1989_09_30" model="lottery.output">
+            <field name="date">1989-09-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_29" model="lottery.output">
+            <field name="date">1989-09-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_56"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_28" model="lottery.output">
+            <field name="date">1989-09-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_38"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_27" model="lottery.output">
+            <field name="date">1989-09-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_53"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_26" model="lottery.output">
+            <field name="date">1989-09-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_51"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_25" model="lottery.output">
+            <field name="date">1989-09-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_45"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_24" model="lottery.output">
+            <field name="date">1989-09-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_95"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_23" model="lottery.output">
+            <field name="date">1989-09-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_14"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_22" model="lottery.output">
+            <field name="date">1989-09-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_21" model="lottery.output">
+            <field name="date">1989-09-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_95"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_20" model="lottery.output">
+            <field name="date">1989-09-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_40"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_19" model="lottery.output">
+            <field name="date">1989-09-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_49"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_18" model="lottery.output">
+            <field name="date">1989-09-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_38"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_17" model="lottery.output">
+            <field name="date">1989-09-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_95"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_16" model="lottery.output">
+            <field name="date">1989-09-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_67"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_15" model="lottery.output">
+            <field name="date">1989-09-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_30"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_14" model="lottery.output">
+            <field name="date">1989-09-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_41"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_13" model="lottery.output">
+            <field name="date">1989-09-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_27"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_12" model="lottery.output">
+            <field name="date">1989-09-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_37"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_11" model="lottery.output">
+            <field name="date">1989-09-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_51"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_10" model="lottery.output">
+            <field name="date">1989-09-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_0"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_09" model="lottery.output">
+            <field name="date">1989-09-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_58"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_08" model="lottery.output">
+            <field name="date">1989-09-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_30"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_07" model="lottery.output">
+            <field name="date">1989-09-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_37"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_06" model="lottery.output">
+            <field name="date">1989-09-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_66"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_05" model="lottery.output">
+            <field name="date">1989-09-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_81"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_04" model="lottery.output">
+            <field name="date">1989-09-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_12"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_03" model="lottery.output">
+            <field name="date">1989-09-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_93"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_02" model="lottery.output">
+            <field name="date">1989-09-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_22"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_09_01" model="lottery.output">
+            <field name="date">1989-09-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_51"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <!--Octubre-->
+        <record id="lottery_output_e_1989_10_31" model="lottery.output">
+            <field name="date">1989-10-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_40"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_30" model="lottery.output">
+            <field name="date">1989-10-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_52"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_29" model="lottery.output">
+            <field name="date">1989-10-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_41"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_28" model="lottery.output">
+            <field name="date">1989-10-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_11"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_27" model="lottery.output">
+            <field name="date">1989-10-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_26" model="lottery.output">
+            <field name="date">1989-10-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_25" model="lottery.output">
+            <field name="date">1989-10-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_35"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_24" model="lottery.output">
+            <field name="date">1989-10-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_63"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_23" model="lottery.output">
+            <field name="date">1989-10-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_76"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_22" model="lottery.output">
+            <field name="date">1989-10-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_94"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_21" model="lottery.output">
+            <field name="date">1989-10-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_18"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_20" model="lottery.output">
+            <field name="date">1989-10-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_13"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_19" model="lottery.output">
+            <field name="date">1989-10-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_18" model="lottery.output">
+            <field name="date">1989-10-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_17" model="lottery.output">
+            <field name="date">1989-10-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_80"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_16" model="lottery.output">
+            <field name="date">1989-10-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_88"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_15" model="lottery.output">
+            <field name="date">1989-10-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_92"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_14" model="lottery.output">
+            <field name="date">1989-10-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_9"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_13" model="lottery.output">
+            <field name="date">1989-10-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_76"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_12" model="lottery.output">
+            <field name="date">1989-10-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_11" model="lottery.output">
+            <field name="date">1989-10-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_57"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_10" model="lottery.output">
+            <field name="date">1989-10-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_43"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_09" model="lottery.output">
+            <field name="date">1989-10-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_97"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_08" model="lottery.output">
+            <field name="date">1989-10-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_07" model="lottery.output">
+            <field name="date">1989-10-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_25"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_06" model="lottery.output">
+            <field name="date">1989-10-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_27"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_05" model="lottery.output">
+            <field name="date">1989-10-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_79"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_04" model="lottery.output">
+            <field name="date">1989-10-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_34"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_03" model="lottery.output">
+            <field name="date">1989-10-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_97"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_02" model="lottery.output">
+            <field name="date">1989-10-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_71"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_10_01" model="lottery.output">
+            <field name="date">1989-10-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_49"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <!--Noviembre-->
+        <record id="lottery_output_e_1989_11_30" model="lottery.output">
+            <field name="date">1989-11-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_88"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_29" model="lottery.output">
+            <field name="date">1989-11-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_55"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_28" model="lottery.output">
+            <field name="date">1989-11-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_10"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_27" model="lottery.output">
+            <field name="date">1989-11-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_63"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_26" model="lottery.output">
+            <field name="date">1989-11-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_5"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_25" model="lottery.output">
+            <field name="date">1989-11-25</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_95"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_24" model="lottery.output">
+            <field name="date">1989-11-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_54"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_23" model="lottery.output">
+            <field name="date">1989-11-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_20"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_22" model="lottery.output">
+            <field name="date">1989-11-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_73"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_21" model="lottery.output">
+            <field name="date">1989-11-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_84"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_20" model="lottery.output">
+            <field name="date">1989-11-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_55"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_19" model="lottery.output">
+            <field name="date">1989-11-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_43"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_18" model="lottery.output">
+            <field name="date">1989-11-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_28"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_17" model="lottery.output">
+            <field name="date">1989-11-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_31"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_16" model="lottery.output">
+            <field name="date">1989-11-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_48"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_15" model="lottery.output">
+            <field name="date">1989-11-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_13"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_14" model="lottery.output">
+            <field name="date">1989-11-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_32"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_13" model="lottery.output">
+            <field name="date">1989-11-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_12" model="lottery.output">
+            <field name="date">1989-11-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_64"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_11" model="lottery.output">
+            <field name="date">1989-11-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_62"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_10" model="lottery.output">
+            <field name="date">1989-11-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_34"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_09" model="lottery.output">
+            <field name="date">1989-11-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_33"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_08" model="lottery.output">
+            <field name="date">1989-11-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_48"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_07" model="lottery.output">
+            <field name="date">1989-11-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_96"/>
+            <field name="hundreds_id" ref="lottery_number_0"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_06" model="lottery.output">
+            <field name="date">1989-11-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_05" model="lottery.output">
+            <field name="date">1989-11-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_75"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_04" model="lottery.output">
+            <field name="date">1989-11-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_52"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_03" model="lottery.output">
+            <field name="date">1989-11-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_52"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_02" model="lottery.output">
+            <field name="date">1989-11-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_88"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_11_01" model="lottery.output">
+            <field name="date">1989-11-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_97"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <!--Diciembre-->
+        <record id="lottery_output_e_1989_12_31" model="lottery.output">
+            <field name="date">1989-12-31</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_1"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_30" model="lottery.output">
+            <field name="date">1989-12-30</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_29" model="lottery.output">
+            <field name="date">1989-12-29</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_28" model="lottery.output">
+            <field name="date">1989-12-28</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_83"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_27" model="lottery.output">
+            <field name="date">1989-12-27</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_26"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_26" model="lottery.output">
+            <field name="date">1989-12-26</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_51"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_24" model="lottery.output">
+            <field name="date">1989-12-24</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_55"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_23" model="lottery.output">
+            <field name="date">1989-12-23</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_17"/>
+            <field name="hundreds_id" ref="lottery_number_8"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_22" model="lottery.output">
+            <field name="date">1989-12-22</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_21" model="lottery.output">
+            <field name="date">1989-12-21</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_28"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_20" model="lottery.output">
+            <field name="date">1989-12-20</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_93"/>
+            <field name="hundreds_id" ref="lottery_number_1"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_19" model="lottery.output">
+            <field name="date">1989-12-19</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_18" model="lottery.output">
+            <field name="date">1989-12-18</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_90"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_17" model="lottery.output">
+            <field name="date">1989-12-17</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_95"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_16" model="lottery.output">
+            <field name="date">1989-12-16</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_42"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_15" model="lottery.output">
+            <field name="date">1989-12-15</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_54"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_14" model="lottery.output">
+            <field name="date">1989-12-14</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_2"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_13" model="lottery.output">
+            <field name="date">1989-12-13</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_99"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_12" model="lottery.output">
+            <field name="date">1989-12-12</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_32"/>
+            <field name="hundreds_id" ref="lottery_number_9"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_11" model="lottery.output">
+            <field name="date">1989-12-11</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_77"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_10" model="lottery.output">
+            <field name="date">1989-12-10</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_39"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_09" model="lottery.output">
+            <field name="date">1989-12-09</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_23"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_08" model="lottery.output">
+            <field name="date">1989-12-08</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_93"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_07" model="lottery.output">
+            <field name="date">1989-12-07</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_98"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_06" model="lottery.output">
+            <field name="date">1989-12-06</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_64"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_05" model="lottery.output">
+            <field name="date">1989-12-05</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_46"/>
+            <field name="hundreds_id" ref="lottery_number_5"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_04" model="lottery.output">
+            <field name="date">1989-12-04</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_45"/>
+            <field name="hundreds_id" ref="lottery_number_3"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_03" model="lottery.output">
+            <field name="date">1989-12-03</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_20"/>
+            <field name="hundreds_id" ref="lottery_number_7"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_02" model="lottery.output">
+            <field name="date">1989-12-02</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_21"/>
+            <field name="hundreds_id" ref="lottery_number_4"/>
+        </record>
+
+        <record id="lottery_output_e_1989_12_01" model="lottery.output">
+            <field name="date">1989-12-01</field>
+            <field name="turn_day">evening</field>
+            <field name="number_id" ref="lottery_number_60"/>
+            <field name="hundreds_id" ref="lottery_number_6"/>
+        </record>
+    </data>
+</odoo>

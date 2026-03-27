@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="actualizar_salidas_atrasadas_numeros" model="ir.cron">
+            <field name="name">Actualizar salidas atrasadas de Números</field>
+            <field name="model_id" ref="model_lottery_number"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_recompute_atrasos_full()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">3</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <record id="actualizar_totales_salidas_numeros" model="ir.cron">
+            <field name="name">Actualizar totales de salidas de Números</field>
+            <field name="model_id" ref="model_lottery_number"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_recompute_totales()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">3</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <record id="actualizar_atrasos_turnos_numeros" model="ir.cron">
+            <field name="name">Actualizar atrasos por turno de Números</field>
+            <field name="model_id" ref="model_lottery_number"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_recompute_atrasos_turno()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">3</field>
+            <field name="active" eval="False"/>
+        </record>
+
+        <record id="actualizar_atrasos_dias_semana" model="ir.cron">
+            <field name="name">Actualizar atrasos por días de la semana de Números</field>
+            <field name="model_id" ref="model_lottery_number"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_recompute_atrasos_por_dia_semana()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">3</field>
+            <field name="active" eval="False"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,2195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lottery_base.lottery_output_e_2022_03_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_02_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_01_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_05_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_04_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_03_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_07_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_06_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_10_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_09_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_08_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_12_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2022_11_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+    </data>
+</odoo>

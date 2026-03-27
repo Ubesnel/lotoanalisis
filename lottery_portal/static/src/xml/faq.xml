@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.WebsiteFAQ" owl="1">
+        <div class="faq-wrapper">
+            <input type="text" placeholder="🔎 Buscar pregunta..."
+                   class="faq-search"
+                   t-model="state.search"/>
+            <t t-foreach="this.groupedFaqs" t-as="group" t-key="group.id">
+                <div class="faq-category">
+                    <!-- HEADER CATEGORÍA -->
+                    <div class="faq-category-title"
+                         t-on-click="toggleCategory"
+                         t-att-data-id="group.id">
+                        <span>
+                            📂 <t t-esc="group.name"/>
+                        </span>
+                        <span class="faq-toggle">
+                            <t t-esc="state.openCategoryId === group.id ? ' −' : ' +'"/>
+                        </span>
+                    </div>
+                    <!-- PREGUNTAS SOLO SI ESTÁ ABIERTA -->
+                    <div t-if="state.openCategoryId === group.id">
+                        <t t-foreach="group.faqs" t-as="faq" t-key="faq.id">
+                            <div class="faq-item"
+                                 t-att-class="state.openId === faq.id ? 'open' : ''">
+                                <div class="faq-question"
+                                     t-on-click="toggle"
+                                     t-att-data-id="faq.id">
+                                    <span>
+                                        <t t-esc="faq.question"/>
+                                    </span>
+                                    <span class="faq-toggle">
+                                        <t t-esc="state.openId === faq.id ? ' −' : ' +'"/>
+                                    </span>
+                                </div>
+                                <div class="faq-answer"
+                                     t-if="state.openId === faq.id">
+                                    <t t-esc="faq.answer"/>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>

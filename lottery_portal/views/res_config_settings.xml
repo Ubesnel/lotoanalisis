@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record model="ir.ui.view" id="res_config_settings_form_view">
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Loterías" string="Loterías" name="lottery" groups="lottery_base.group_lottery_manager">
+                    <block title="Período a consultar" id="consult_period_settings">
+                        <setting id="default_portal_calendar_year" string="Año">
+                            <field name="portal_calendar_year"/>
+                        </setting>
+                        <setting id="default_portal_calendar_month" string="Mes">
+                            <field name="portal_calendar_month"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

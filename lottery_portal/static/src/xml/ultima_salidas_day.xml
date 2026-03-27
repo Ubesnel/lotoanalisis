@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.UltimasSalidasDay" owl="1">
+        <div class="card shadow border-0 overflow-hidden mb-4">
+            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                <div class="mb-3 d-flex align-items-center gap-2">
+                    Últimas 8 salidas
+                    <i class="fa fa-arrow-right"/>
+                    <select t-model="state.day" class="form-select form-select-sm"
+                            style="width:120px;"
+                            t-on-change="onChangeUltimasSalidas"
+                            title="Últimas 6 salidas del día seleccionado">
+                            <option value="lu">Lunes</option>
+                        <option value="ma">Martes</option>
+                        <option value="mi">Miércoles</option>
+                        <option value="ju">Jueves</option>
+                        <option value="vi">Viernes</option>
+                        <option value="sa">Sábado</option>
+                        <option value="do">Domingo</option>
+                        </select>
+                </div>
+            </div>
+            <div class="card-body p-0">
+               <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0" style="flex-grow: 1;">
+                    <thead>
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Fecha</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Tarde</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Noche</td>
+                        </tr>
+                    </thead>
+                    <t t-foreach="state.numbers" t-as="n" t-key="n.name">
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <div class="day-number">
+                                    <t t-esc="n.fecha"/>
+                                </div>
+                            </td>
+                            <td class="text-center fw-bold">
+                                <div class="grupo-dia">
+                                    <span t-if="n.numero_dia" class="badge-dia">
+                                    <t t-esc="n.centena_dia"/>
+                                </span>
+                                    <span t-if="n.numero_dia" class="badge-dia">
+                                    <t t-esc="n.numero_dia"/>
+                                </span>
+                                    <t t-if="n.bola_extra_dia or n.bola_extra_dia==0">
+                                    <span class="badge-dia-be">
+                                        <t t-esc="n.bola_extra_dia"/>
+                                    </span>
+                                </t>
+                                </div>
+                            </td>
+                            <td class="text-center fw-bold">
+                                <div class="grupo-noche">
+                                    <span t-if="n.numero_noche" class="badge-noche">
+                                    <t t-esc="n.centena_noche"/>
+                                </span>
+                                    <span t-if="n.numero_noche" class="badge-noche">
+                                        <t t-esc="n.numero_noche"/>
+                                    </span>
+                                    <t t-if="n.bola_extra_noche or n.bola_extra_noche==0">
+                                        <span class="badge-noche-be">
+                                            <t t-esc="n.bola_extra_noche"/>
+                                        </span>
+                                </t>
+                                </div>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+               </div>
+            </div>
+        </div>
+    </t>
+</templates>

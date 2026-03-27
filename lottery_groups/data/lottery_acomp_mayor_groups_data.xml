@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lottery_group_0_mayor" model="lottery.group">
+            <field name="code">0_mayor</field>
+            <field name="name">0 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 5, 6, 7, 8, 9, 50, 60, 70, 80, 90</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_5'),
+                   ref('lottery_base.lottery_number_6'),
+                   ref('lottery_base.lottery_number_7'),
+                   ref('lottery_base.lottery_number_8'),
+                   ref('lottery_base.lottery_number_9'),
+                   ref('lottery_base.lottery_number_50'),
+                   ref('lottery_base.lottery_number_60'),
+                   ref('lottery_base.lottery_number_70'),
+                   ref('lottery_base.lottery_number_80'),
+                   ref('lottery_base.lottery_number_90')
+                   ])]"/>
+        </record>
+        <record id="lottery_group_1_mayor" model="lottery.group">
+            <field name="code">1_mayor</field>
+            <field name="name">1 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 15, 16, 17, 18, 19, 51, 61, 71, 81, 91</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_15'),
+                   ref('lottery_base.lottery_number_16'),
+                   ref('lottery_base.lottery_number_17'),
+                   ref('lottery_base.lottery_number_18'),
+                   ref('lottery_base.lottery_number_19'),
+                   ref('lottery_base.lottery_number_51'),
+                   ref('lottery_base.lottery_number_61'),
+                   ref('lottery_base.lottery_number_71'),
+                   ref('lottery_base.lottery_number_81'),
+                   ref('lottery_base.lottery_number_91')])]"/>
+        </record>
+        <record id="lottery_group_2_mayor" model="lottery.group">
+            <field name="code">2_mayor</field>
+            <field name="name">2 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 25, 26, 27, 28, 29, 52, 62, 72, 82, 92</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_25'),
+                   ref('lottery_base.lottery_number_26'),
+                   ref('lottery_base.lottery_number_27'),
+                   ref('lottery_base.lottery_number_28'),
+                   ref('lottery_base.lottery_number_29'),
+                   ref('lottery_base.lottery_number_52'),
+                   ref('lottery_base.lottery_number_62'),
+                   ref('lottery_base.lottery_number_72'),
+                   ref('lottery_base.lottery_number_82'),
+                   ref('lottery_base.lottery_number_92')])]"/>
+        </record>
+        <record id="lottery_group_3_mayor" model="lottery.group">
+            <field name="code">3_mayor</field>
+            <field name="name">3 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 35, 36, 37, 38, 39, 53, 63, 73, 83, 93</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_35'),
+                   ref('lottery_base.lottery_number_36'),
+                   ref('lottery_base.lottery_number_37'),
+                   ref('lottery_base.lottery_number_38'),
+                   ref('lottery_base.lottery_number_39'),
+                   ref('lottery_base.lottery_number_53'),
+                   ref('lottery_base.lottery_number_63'),
+                   ref('lottery_base.lottery_number_73'),
+                   ref('lottery_base.lottery_number_83'),
+                   ref('lottery_base.lottery_number_93')])]"/>
+        </record>
+        <record id="lottery_group_4_mayor" model="lottery.group">
+            <field name="code">4_mayor</field>
+            <field name="name">4 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 45, 46, 47, 48, 49, 54, 64, 74, 84, 94</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_45'),
+                   ref('lottery_base.lottery_number_46'),
+                   ref('lottery_base.lottery_number_47'),
+                   ref('lottery_base.lottery_number_48'),
+                   ref('lottery_base.lottery_number_49'),
+                   ref('lottery_base.lottery_number_54'),
+                   ref('lottery_base.lottery_number_64'),
+                   ref('lottery_base.lottery_number_74'),
+                   ref('lottery_base.lottery_number_84'),
+                   ref('lottery_base.lottery_number_94')])]"/>
+        </record>
+        <record id="lottery_group_5_mayor" model="lottery.group">
+            <field name="code">5_mayor</field>
+            <field name="name">5 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 55, 56, 57, 58, 59, 65, 75, 85, 95</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_55'),
+                   ref('lottery_base.lottery_number_56'),
+                   ref('lottery_base.lottery_number_57'),
+                   ref('lottery_base.lottery_number_58'),
+                   ref('lottery_base.lottery_number_59'),
+                   ref('lottery_base.lottery_number_65'),
+                   ref('lottery_base.lottery_number_75'),
+                   ref('lottery_base.lottery_number_85'),
+                   ref('lottery_base.lottery_number_95')])]"/>
+        </record>
+        <record id="lottery_group_6_mayor" model="lottery.group">
+            <field name="code">6_mayor</field>
+            <field name="name">6 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 56, 65, 66, 67, 68, 69, 76, 86, 96</field>
+            <field name="number_ids"
+                   eval="[(6,0,[
+                   ref('lottery_base.lottery_number_56'),
+                   ref('lottery_base.lottery_number_61'),
+                   ref('lottery_base.lottery_number_63'),
+                   ref('lottery_base.lottery_number_65'),
+                   ref('lottery_base.lottery_number_67'),
+                   ref('lottery_base.lottery_number_68'),
+                   ref('lottery_base.lottery_number_69'),
+                   ref('lottery_base.lottery_number_76'),
+                   ref('lottery_base.lottery_number_86'),
+                   ref('lottery_base.lottery_number_96')])]"/>
+        </record>
+        <record id="lottery_group_7_mayor" model="lottery.group">
+            <field name="code">7_mayor</field>
+            <field name="name">7 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 57, 67, 75, 76, 77, 78, 79, 87, 97</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_57'),
+                   ref('lottery_base.lottery_number_67'),
+                   ref('lottery_base.lottery_number_75'),
+                   ref('lottery_base.lottery_number_76'),
+                   ref('lottery_base.lottery_number_77'),
+                   ref('lottery_base.lottery_number_78'),
+                   ref('lottery_base.lottery_number_79'),
+                   ref('lottery_base.lottery_number_87'),
+                   ref('lottery_base.lottery_number_97')])]"/>
+        </record>
+        <record id="lottery_group_8_mayor" model="lottery.group">
+            <field name="code">8_mayor</field>
+            <field name="name">8 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 58, 68, 78, 85, 86, 87, 88, 89, 98</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_18'),
+                   ref('lottery_base.lottery_number_38'),
+                   ref('lottery_base.lottery_number_58'),
+                   ref('lottery_base.lottery_number_68'),
+                   ref('lottery_base.lottery_number_78'),
+                   ref('lottery_base.lottery_number_81'),
+                   ref('lottery_base.lottery_number_83'),
+                   ref('lottery_base.lottery_number_85'),
+                   ref('lottery_base.lottery_number_86'),
+                   ref('lottery_base.lottery_number_87'),
+                   ref('lottery_base.lottery_number_89'),
+                   ref('lottery_base.lottery_number_98')])]"/>
+        </record>
+        <record id="lottery_group_9_mayor" model="lottery.group">
+            <field name="code">9_mayor</field>
+            <field name="name">9 con Acompañante Mayor</field>
+            <field name="notes">Este grupo está formado por los números: 59, 69, 79, 89, 95, 96, 97, 98, 99</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_59'),
+                   ref('lottery_base.lottery_number_69'),
+                   ref('lottery_base.lottery_number_79'),
+                   ref('lottery_base.lottery_number_89'),
+                   ref('lottery_base.lottery_number_95'),
+                   ref('lottery_base.lottery_number_96'),
+                   ref('lottery_base.lottery_number_97'),
+                   ref('lottery_base.lottery_number_98'),
+                   ref('lottery_base.lottery_number_99')])]"/>
+        </record>
+    </data>
+</odoo>

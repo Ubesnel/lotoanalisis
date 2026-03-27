@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_number_tree" model="ir.ui.view">
+        <field name="name">view.lottery.number.tree</field>
+        <field name="model">lottery.number</field>
+        <field name="arch" type="xml">
+            <tree string="Números">
+                <field name="name"/>
+                <field name="can_use_hundreds"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_number_form" model="ir.ui.view">
+        <field name="name">lottery.number.form</field>
+        <field name="model">lottery.number</field>
+        <field name="arch" type="xml">
+            <form string="Número">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" class="oe_inline"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="can_use_hundreds"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lottery_number_kanban" model="ir.ui.view">
+        <field name="name">lottery.number.kanban</field>
+        <field name="model">lottery.number</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click oe_kanban_color_#{record.name.value % 10}"
+                             style="text-align:center; padding:20px;">
+                            <h1 style="font-size:60px; font-weight:bold; color:red;">
+                                <field name="name"/>
+                            </h1>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_lottery_number" model="ir.actions.act_window">
+        <field name="name">Números</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.number</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="lottery_base.view_lottery_number_kanban"/>
+    </record>
+</odoo>

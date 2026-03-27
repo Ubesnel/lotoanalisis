@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lottery_base.lottery_output_e_2026_02_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_7"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_02_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_31_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_31_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_30_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_30_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_29_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_29_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_28_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_28_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_27_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_27_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_26_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_26_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_25_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_25_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_24_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_24_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_23_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_23_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_22_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_3"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_22_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_21_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_21_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_20_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_20_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_19_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_19_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_18_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_18_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_17_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_17_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_16_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_16_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_15_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_15_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_14_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_14_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_13_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_13_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_12_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_12_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_11_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_11_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_10_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_10_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_09_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_09_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_08_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_08_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_07_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_07_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_2"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_06_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_06_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_05_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_05_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_4"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_04_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_04_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_5"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_03_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_9"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_03_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_6"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_02_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_02_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_8"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_01_evening" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_1"/>
+        </record>
+        <record id="lottery_base.lottery_output_e_2026_01_01_afternoon" model="lottery.output">
+            <field name="fireball_id" ref="lottery_base.lottery_number_0"/>
+        </record>
+    </data>
+</odoo>

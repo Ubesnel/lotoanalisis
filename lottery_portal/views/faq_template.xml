@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="faq_page" name="Preguntas frecuentes">
+        <t t-call="website.layout">
+            <div class="container my-5">
+                 <owl-component name="lottery_portal.WebsiteFAQ"/>
+            </div>
+        </t>
+    </template>
+</odoo>
+
