@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="homepage_lottery_widget" inherit_id="website.homepage" name="Estadísticas">
+    <template id="homepage_lottery_widget" inherit_id="website.homepage" name="Inicio">
         <xpath expr="//div[@id='wrap']" position="inside">
             <section class="hero-analitico">
                 <div class="hero-content">

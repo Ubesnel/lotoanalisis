@@ -8,29 +8,6 @@ class LotteryStatsService(models.AbstractModel):
     _name = 'lottery.stats.service'
     _description = 'Lottery Statistics Service'
 
-    def _top(self, field, limit=30):
-        return self.env['lottery.number'].search(
-            [],
-            order=f"{field} desc",
-            limit=limit
-        )
-
-    def _bottom(self, field, limit=30):
-        return self.env['lottery.number'].search(
-            [],
-            order=f"{field} asc",
-            limit=limit
-        )
-
-    def dashboard_data(self):
-        return {
-            "top_general": self._top("total_salidas", 30),
-            "bottom_general": self._bottom("total_salidas", 30),
-            "top_dia": self._top("total_salidas_dia", 15),
-            "top_noche": self._top("total_salidas_noche", 15),
-            "top_atrasados": self._top("total_atrasadas", 15),
-        }
-
     def get_last_results_full(self):
         LotteryOutput = self.env['lottery.output'].sudo()
 
