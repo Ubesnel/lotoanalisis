@@ -20,6 +20,7 @@
         "views/faq_views.xml",
         "views/politica_privacidad.xml",
         "views/terminos_condiciones.xml",
+        "views/website_layout.xml",
         "views/res_config_settings.xml",
         "views/menu.xml",
     ],
