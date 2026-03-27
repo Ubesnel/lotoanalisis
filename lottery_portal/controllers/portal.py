@@ -39,11 +39,11 @@ class LotteryPortal(http.Controller):
     def politica_privacidad_page(self, **kwargs):
         return request.render('lottery_portal.politica_privacidad_page')
 
-    @http.route('/estadisticas', type='http', auth='user', website=True)
+    @http.route('/estadisticas', type='http', auth='public', website=True)
     def portal_estadisticas_grupos_page(self, **kw):
         return request.render('lottery_portal.portal_estadisticas_grupos')
 
-    @http.route('/estadisticas-numeros', type='http', auth='user', website=True)
+    @http.route('/estadisticas-numeros', type='http', auth='public', website=True)
     def portal_estadisticas_numeros_page(self, **kw):
         return request.render('lottery_portal.portal_estadisticas_numeros')
 
