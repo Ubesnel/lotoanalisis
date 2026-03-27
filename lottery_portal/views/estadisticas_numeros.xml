@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="portal_dashboard" name="Consultas">
+    <template id="portal_estadisticas_numeros" name="Estadísticas de números">
         <t t-call="website.layout">
             <div class="container mt-5 mb-5">
-                <div class="text-center mb-5">
-                    <h1 class="fw-bold">📊 Consultas</h1>
-                </div>
+
             </div>
         </t>
     </template>

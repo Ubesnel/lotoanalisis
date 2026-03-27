@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_estadisticas_grupos" name="Estadísticas de grupos">
+        <t t-call="website.layout">
+            <div class="container mt-5 mb-5">
+
+            </div>
+        </t>
+    </template>
+</odoo>

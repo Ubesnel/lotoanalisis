@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="politica_privacidad_page" name="Política de privacidad">
+    <t t-call="website.layout">
+        <div class="container my-5">
+            <p><strong>Última actualización:</strong> 27 de marzo de 2026</p>
+
+            <h3>1. Introducción</h3>
+            <p>
+                Este sitio web proporciona acceso a información y estadísticas relacionadas con sistemas Odoo.
+                El uso del sitio implica la aceptación de esta Política de Privacidad.
+            </p>
+
+            <h3>2. Datos recopilados</h3>
+            <h4>Datos técnicos</h4>
+            <ul>
+                <li>Dirección IP</li>
+                <li>Tipo de navegador</li>
+                <li>Sistema operativo</li>
+                <li>Fecha y hora de acceso</li>
+                <li>Páginas visitadas</li>
+            </ul>
+
+            <h4>Datos de usuario (login Odoo)</h4>
+            <ul>
+                <li>Identificador de usuario</li>
+                <li>Nombre</li>
+                <li>Información básica de la cuenta</li>
+            </ul>
+
+            <h3>3. Uso de los datos</h3>
+            <ul>
+                <li>Permitir el acceso autenticado</li>
+                <li>Garantizar el correcto funcionamiento del sitio</li>
+                <li>Mejorar la experiencia del usuario</li>
+                <li>Mantener la seguridad del sistema</li>
+                <li>Analizar el uso del sitio</li>
+            </ul>
+
+            <h3>4. Cookies</h3>
+            <p>
+                Este sitio utiliza cookies para mantener la sesión del usuario, recordar preferencias y mejorar la experiencia de navegación.
+            </p>
+
+            <h3>5. Publicidad</h3>
+            <p>
+                Este sitio puede utilizar servicios de publicidad como Google AdSense, que emplean cookies para mostrar anuncios personalizados.
+            </p>
+            <p>
+                Más información:
+                <a href="https://policies.google.com/technologies/ads" target="_blank">
+                    https://policies.google.com/technologies/ads
+                </a>
+            </p>
+
+            <h3>6. Compartición de datos</h3>
+            <p>
+                No se venden datos personales. Solo se compartirán en caso de obligación legal o para proteger la seguridad del sistema.
+            </p>
+
+            <h3>7. Seguridad</h3>
+            <p>
+                Se aplican medidas razonables para proteger la información contra accesos no autorizados.
+            </p>
+
+            <h3>8. Derechos del usuario</h3>
+            <p>
+                El usuario puede solicitar acceso, corrección o eliminación de sus datos cuando corresponda.
+            </p>
+
+            <h3>9. Cambios</h3>
+            <p>
+                Esta política puede ser modificada en cualquier momento. Los cambios serán publicados en esta misma página.
+            </p>
+
+            <h3>10. Contacto</h3>
+            <p>
+                Para consultas, utilice los medios de contacto disponibles en el sitio.
+            </p>
+
+        </div>
+    </t>
+</template>
+</odoo>
+

@@ -4,16 +4,6 @@ from datetime import datetime
 
 class LotteryPortal(http.Controller):
 
-    @http.route('/estadisticas', type='http', auth='user', website=True)
-    def stats_dashboard(self, **kw):
-        stats = request.env['lottery.stats.service'].sudo()
-        values = stats.dashboard_data()
-
-        return request.render(
-            'lottery_portal.portal_dashboard',
-            values
-        )
-
     @http.route('/', type='http', auth='public', website=True)
     def home(self, **kwargs):
         stats = request.env['lottery.stats.service'].sudo()
@@ -41,6 +31,21 @@ class LotteryPortal(http.Controller):
             'faqs': faqs.read(['question', 'answer', 'category_id'])
         }
 
+    @http.route(['/terminos-condiciones'], type='http', auth="public", website=True)
+    def terminos_condiciones_page(self, **kwargs):
+        return request.render('lottery_portal.terminos_condiciones_page')
+
+    @http.route(['/politica-privacidad'], type='http', auth="public", website=True)
+    def politica_privacidad_page(self, **kwargs):
+        return request.render('lottery_portal.politica_privacidad_page')
+
+    @http.route('/estadisticas', type='http', auth='user', website=True)
+    def portal_estadisticas_grupos_page(self, **kw):
+        return request.render('lottery_portal.portal_estadisticas_grupos')
+
+    @http.route('/estadisticas-numeros', type='http', auth='user', website=True)
+    def portal_estadisticas_numeros_page(self, **kw):
+        return request.render('lottery_portal.portal_estadisticas_numeros')
 
 class LotteryController(http.Controller):
 
