@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lottery_group_terminal_0" model="lottery.group">
+            <field name="code">terminal_0</field>
+            <field name="name">Terminal 0</field>
+            <field name="notes">Este grupo está formado por los números: 0, 10, 20, 30, 40, 50, 60, 70, 80, 90</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_0'),
+                   ref('lottery_base.lottery_number_10'),
+                   ref('lottery_base.lottery_number_20'),
+                   ref('lottery_base.lottery_number_30'),
+                   ref('lottery_base.lottery_number_40'),
+                   ref('lottery_base.lottery_number_50'),
+                   ref('lottery_base.lottery_number_60'),
+                   ref('lottery_base.lottery_number_70'),
+                   ref('lottery_base.lottery_number_80'),
+                   ref('lottery_base.lottery_number_90')])]"/>
+        </record>
+        <record id="lottery_group_terminal_1" model="lottery.group">
+            <field name="code">terminal_1</field>
+            <field name="name">Terminal 1</field>
+            <field name="notes">Este grupo está formado por los números: 1, 11, 21, 31, 41, 51, 61, 71, 81, 91</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_1'),
+                   ref('lottery_base.lottery_number_11'),
+                   ref('lottery_base.lottery_number_21'),
+                   ref('lottery_base.lottery_number_31'),
+                   ref('lottery_base.lottery_number_41'),
+                   ref('lottery_base.lottery_number_51'),
+                   ref('lottery_base.lottery_number_61'),
+                   ref('lottery_base.lottery_number_71'),
+                   ref('lottery_base.lottery_number_81'),
+                   ref('lottery_base.lottery_number_91')])]"/>
+        </record>
+        <record id="lottery_group_terminal_2" model="lottery.group">
+            <field name="code">terminal_2</field>
+            <field name="name">Terminal 2</field>
+            <field name="notes">Este grupo está formado por los números: 2, 12, 22, 32, 42, 52, 62, 72, 82, 92</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_2'),
+                   ref('lottery_base.lottery_number_12'),
+                   ref('lottery_base.lottery_number_22'),
+                   ref('lottery_base.lottery_number_32'),
+                   ref('lottery_base.lottery_number_42'),
+                   ref('lottery_base.lottery_number_52'),
+                   ref('lottery_base.lottery_number_62'),
+                   ref('lottery_base.lottery_number_72'),
+                   ref('lottery_base.lottery_number_82'),
+                   ref('lottery_base.lottery_number_92')])]"/>
+        </record>
+        <record id="lottery_group_terminal_3" model="lottery.group">
+            <field name="code">terminal_3</field>
+            <field name="name">Terminal 3</field>
+            <field name="notes">Este grupo está formado por los números: 3, 13, 23, 33, 43, 53, 63, 73, 83, 93</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_3'),
+                   ref('lottery_base.lottery_number_13'),
+                   ref('lottery_base.lottery_number_23'),
+                   ref('lottery_base.lottery_number_33'),
+                   ref('lottery_base.lottery_number_43'),
+                   ref('lottery_base.lottery_number_53'),
+                   ref('lottery_base.lottery_number_63'),
+                   ref('lottery_base.lottery_number_73'),
+                   ref('lottery_base.lottery_number_83'),
+                   ref('lottery_base.lottery_number_93')])]"/>
+        </record>
+        <record id="lottery_group_terminal_4" model="lottery.group">
+            <field name="code">terminal_4</field>
+            <field name="name">Terminal 4</field>
+            <field name="notes">Este grupo está formado por los números: 4, 14, 24, 34, 44, 54, 64, 74, 84, 94</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_4'),
+                   ref('lottery_base.lottery_number_14'),
+                   ref('lottery_base.lottery_number_24'),
+                   ref('lottery_base.lottery_number_34'),
+                   ref('lottery_base.lottery_number_44'),
+                   ref('lottery_base.lottery_number_54'),
+                   ref('lottery_base.lottery_number_64'),
+                   ref('lottery_base.lottery_number_74'),
+                   ref('lottery_base.lottery_number_84'),
+                   ref('lottery_base.lottery_number_94')])]"/>
+        </record>
+        <record id="lottery_group_terminal_5" model="lottery.group">
+            <field name="code">terminal_5</field>
+            <field name="name">Terminal 5</field>
+            <field name="notes">Este grupo está formado por los números: 5, 15, 25, 35, 45, 55, 65, 75, 85, 95</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_5'),
+                   ref('lottery_base.lottery_number_15'),
+                   ref('lottery_base.lottery_number_25'),
+                   ref('lottery_base.lottery_number_35'),
+                   ref('lottery_base.lottery_number_45'),
+                   ref('lottery_base.lottery_number_55'),
+                   ref('lottery_base.lottery_number_65'),
+                   ref('lottery_base.lottery_number_75'),
+                   ref('lottery_base.lottery_number_85'),
+                   ref('lottery_base.lottery_number_95')])]"/>
+        </record>
+        <record id="lottery_group_terminal_6" model="lottery.group">
+            <field name="code">terminal_6</field>
+            <field name="name">Terminal 6</field>
+            <field name="notes">Este grupo está formado por los números: 6, 16, 26, 36, 46, 56, 66, 76, 86, 96</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_6'),
+                   ref('lottery_base.lottery_number_16'),
+                   ref('lottery_base.lottery_number_26'),
+                   ref('lottery_base.lottery_number_36'),
+                   ref('lottery_base.lottery_number_46'),
+                   ref('lottery_base.lottery_number_56'),
+                   ref('lottery_base.lottery_number_66'),
+                   ref('lottery_base.lottery_number_76'),
+                   ref('lottery_base.lottery_number_86'),
+                   ref('lottery_base.lottery_number_96')])]"/>
+        </record>
+        <record id="lottery_group_terminal_7" model="lottery.group">
+            <field name="code">terminal_7</field>
+            <field name="name">Terminal 7</field>
+            <field name="notes">Este grupo está formado por los números: 7, 17, 27, 37, 47, 57, 67, 77, 87, 97</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_7'),
+                   ref('lottery_base.lottery_number_17'),
+                   ref('lottery_base.lottery_number_27'),
+                   ref('lottery_base.lottery_number_37'),
+                   ref('lottery_base.lottery_number_47'),
+                   ref('lottery_base.lottery_number_57'),
+                   ref('lottery_base.lottery_number_67'),
+                   ref('lottery_base.lottery_number_77'),
+                   ref('lottery_base.lottery_number_87'),
+                   ref('lottery_base.lottery_number_97')])]"/>
+        </record>
+        <record id="lottery_group_terminal_8" model="lottery.group">
+            <field name="code">terminal_8</field>
+            <field name="name">Terminal 8</field>
+            <field name="notes">Este grupo está formado por los números: 8, 18, 28, 38, 48, 58, 68, 78, 88, 98</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_8'),
+                   ref('lottery_base.lottery_number_18'),
+                   ref('lottery_base.lottery_number_28'),
+                   ref('lottery_base.lottery_number_38'),
+                   ref('lottery_base.lottery_number_48'),
+                   ref('lottery_base.lottery_number_58'),
+                   ref('lottery_base.lottery_number_68'),
+                   ref('lottery_base.lottery_number_78'),
+                   ref('lottery_base.lottery_number_88'),
+                   ref('lottery_base.lottery_number_98')])]"/>
+        </record>
+        <record id="lottery_group_terminal_9" model="lottery.group">
+            <field name="code">terminal_9</field>
+            <field name="name">Terminal 9</field>
+            <field name="notes">Este grupo está formado por los números: 9, 19, 29, 39, 49, 59, 69, 79, 89, 99</field>
+            <field name="number_ids"
+                   eval="[(6,0,[ref('lottery_base.lottery_number_9'),
+                   ref('lottery_base.lottery_number_19'),
+                   ref('lottery_base.lottery_number_29'),
+                   ref('lottery_base.lottery_number_39'),
+                   ref('lottery_base.lottery_number_49'),
+                   ref('lottery_base.lottery_number_59'),
+                   ref('lottery_base.lottery_number_69'),
+                   ref('lottery_base.lottery_number_79'),
+                   ref('lottery_base.lottery_number_89'),
+                   ref('lottery_base.lottery_number_99')])]"/>
+        </record>
+    </data>
+</odoo>

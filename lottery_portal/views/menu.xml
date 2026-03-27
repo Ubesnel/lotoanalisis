@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="menu_lottery_estadisticas" model="website.menu">
+        <field name="name">Estadísticas</field>
+        <field name="url">/estadisticas</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="menu_lottery_faq" model="website.menu">
+        <field name="name">Preguntas frecuentes</field>
+        <field name="url">/faq</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">25</field>
+    </record>
+
+    <menuitem id="menu_faq_root" name="Sitio Web" parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_manager" sequence="100"/>
+
+    <menuitem id="menu_faq_category" name="Categorías" parent="menu_faq_root" action="action_faq_category"
+              groups="lottery_base.group_lottery_manager" sequence="5"/>
+
+    <menuitem id="menu_faq" name="Preguntas" parent="menu_faq_root" action="action_faq"
+              groups="lottery_base.group_lottery_manager" sequence="25"/>
+</odoo>

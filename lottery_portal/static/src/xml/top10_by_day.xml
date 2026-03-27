@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.Top10ByDay" owl="1">
+        <div class="card shadow border-0 overflow-hidden mb-4">
+            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                <div class="mb-3 d-flex align-items-center gap-2">
+                10 Números más Atrasados
+                <i class="fa fa-arrow-right"/>
+                    <select t-model="state.day" class="form-select form-select-sm w-auto" t-on-change="onChangeDay"
+                            title="10 Números más Atrasados por día de la semana">
+                        <option value="lu">Lunes</option>
+                        <option value="ma">Martes</option>
+                        <option value="mi">Miércoles</option>
+                        <option value="ju">Jueves</option>
+                        <option value="vi">Viernes</option>
+                        <option value="sa">Sábado</option>
+                        <option value="do">Domingo</option>
+                    </select>
+            </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Fecha</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Horario</td>
+                        </tr>
+                    </thead>
+                    <t t-foreach="state.numbers" t-as="n" t-key="n.name">
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <t t-esc="n.name"/>
+                            </td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <t t-esc="n.total_atrasadas"/>
+                            </td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <t t-esc="n.ultima_fecha"/>
+                            </td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <t t-if="n.ultimo_turno=='afternoon'">
+                                    <i class="fa fa-sun-o sun-icon-general"/>
+                                </t>
+                                <t t-else="">
+                                    <i class="fa fa-moon-o moon-icon-general"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

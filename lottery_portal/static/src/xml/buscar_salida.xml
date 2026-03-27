@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.SalidasBuscador" owl="1">
+            <!-- BUSCADOR -->
+            <div class="mb-4 d-flex gap-2 align-items-center">
+                <input type="date"
+                       class="form-control"
+                       style="max-width:200px"
+                       t-model="state.fecha"
+                       t-on-change="buscar_salida"
+                />
+            </div>
+            <!-- RESULTADOS -->
+            <t t-if="state.resultados and (state.resultados.afternoon or state.resultados.evening)">
+                <div class="text-center mt-2 mb-3">
+                    <span class="fw-bold" style="color:#8c6ca8;font-size:20px;">
+                        <t t-esc="state.resultados.dia_semana"/>
+                    </span>
+                </div>
+                <!-- DIA -->
+                <t t-if="state.resultados.afternoon">
+                    <div class="lottery-block">
+                        <div class="lottery-row">
+                            <div class="lottery-date-dia">
+                                <i class="fa fa-sun-o sun-icon"/>
+                            </div>
+                            <div class="lottery-numbers">
+                            <div class="box-centena-dia">
+                                <t t-esc="state.resultados.afternoon.centena"/>
+                            </div>
+                            <div class="box-numero-dia">
+                                <t t-esc="state.resultados.afternoon.numero"/>
+                            </div>
+                        </div>
+                            <div class="box-extra">
+                            <t t-esc="state.resultados.afternoon.bola_extra"/>
+                        </div>
+                        </div>
+                    </div>
+                </t>
+                <!-- NOCHE -->
+                <t t-if="state.resultados.evening">
+                    <div class="lottery-block">
+                        <div class="lottery-row">
+                            <div class="lottery-date-noche">
+                                <i class="fa fa-moon-o moon-icon"/>
+                            </div>
+                            <div class="lottery-numbers">
+
+                            <div class="box-centena-noche">
+                                <t t-esc="state.resultados.evening.centena"/>
+                            </div>
+                            <div class="box-numero-noche">
+                                <t t-esc="state.resultados.evening.numero"/>
+                            </div>
+                        </div>
+                            <div class="box-extra">
+                                <t t-esc="state.resultados.evening.bola_extra"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <t t-if="state.fecha">
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fa fa-info-circle me-2"/>
+                        No se encontró salida para la fecha seleccionada.
+                    </div>
+                </t>
+            </t>
+    </t>
+</templates>

@@ -1,0 +1,430 @@
+/* FECHA */
+.lottery-date-dia {
+    font-size: 15px;
+    font-weight: bold;
+    color: orange;
+    margin-bottom: 10px;
+}
+
+.lottery-date-noche {
+    font-size: 15px;
+    font-weight: bold;
+    color: #1e3a5f;
+    margin-bottom: 10px;
+}
+
+/* FILA */
+.lottery-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* GRUPO IZQUIERDA */
+.lottery-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+/* CÍRCULOS BASE */
+.box-centena-dia,
+.box-centena-noche,
+.box-numero-dia,
+.box-numero-noche,
+.box-extra {
+    aspect-ratio: 1 / 1;
+    width: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* NÚMERO NARANJA */
+.box-numero-dia,
+.box-centena-dia
+ {
+    background: orange;
+    color: white;
+    font-size: 15px;
+    box-shadow: 0 0 14px rgba(247, 127, 0, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.box-numero-dia:hover,
+.box-centena-dia:hover
+ {
+    transform: scale(1.12);
+    box-shadow: 0 0 20px rgba(247, 127, 0, 0.7);
+}
+
+
+/* NÚMERO NEGRO */
+.box-numero-noche,
+.box-centena-noche
+{
+    background: #1e3a5f;
+    color: white;
+    font-size: 15px;
+    box-shadow: 0 0 14px rgba(30, 58, 95, 0.4);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.box-numero-noche:hover,
+.box-centena-noche:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 20px rgba(30, 58, 95, 0.7);
+}
+
+/* BOLA EXTRA */
+.box-extra {
+    background: #d62828;
+    color: white;
+    font-size: 15px;
+    box-shadow: 0 0 14px rgba(214, 40, 40, 0.6);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* EFECTO HOVER */
+.box-extra:hover
+ {
+    transform: scale(1.12);
+    box-shadow: 0 0 25px rgba(214, 40, 40, 0.9);
+}
+
+/* Separación bloques */
+.lottery-block {
+    margin-bottom: 16px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .lottery-widget {
+        position: relative;
+        width: 100%;
+        right: auto;
+        top: auto;
+        margin-top: 20px;
+    }
+}
+
+.sun-icon {
+    color: orange;
+    font-size: 20px;
+
+}
+
+.moon-icon {
+    color: #1e3a5f;
+    font-size: 20px;
+
+}
+
+.sun-icon-small {
+    color: green;
+    font-size: 15px;
+
+}
+
+.moon-icon-small {
+    color: green;
+    font-size: 15px;
+
+}
+
+.sun-icon-general {
+    color: #8c6ca8;
+    font-size: 15px;
+
+}
+
+.moon-icon-general {
+    color: #8c6ca8;
+    font-size: 15px;
+
+}
+
+
+body {
+    background: linear-gradient(180deg, #f5f3f8 0%, #ece9f2 100%);
+}
+
+
+.hero-analitico {
+    text-align: center;
+    padding: 90px 20px 60px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f2f7 100%);
+}
+
+/* Animación suave */
+.hero-content {
+    max-width: 950px;
+    margin: 0 auto;
+    animation: fadeUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(15px);
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Título con degradado elegante */
+.hero-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 28px;
+    letter-spacing: -0.5px;
+
+    background: linear-gradient(90deg, #6f4a8e, #8c6ca8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Destacar palabra central con peso */
+.hero-title span {
+    font-weight: 900;
+}
+
+/* Línea decorativa más fina */
+.hero-title::after {
+    content: "";
+    display: block;
+    width: 90px;
+    height: 3px;
+    background: #8c6ca8;
+    margin: 22px auto 0;
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+/* Descripción */
+.hero-descripcion {
+    font-size: 1.2rem;
+    color: #3f3f46;
+    line-height: 1.75;
+    margin-bottom: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Palabras clave */
+.hero-descripcion strong {
+    color: #6f4a8e;
+    font-weight: 600;
+}
+
+/* Subfrase elegante */
+.hero-subfrase {
+    font-size: 1.05rem;
+    color: #8c6ca8;
+    font-weight: 650;
+    letter-spacing: 0.8px;
+    opacity: 0.85;
+}
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.1rem;
+    }
+
+    .hero-descripcion {
+        font-size: 1rem;
+    }
+}
+
+
+.quick-access {
+    padding: 60px 20px 80px;
+}
+
+.quick-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+/* Tarjetas */
+.quick-card {
+    background: #ffffff;
+    padding: 35px 30px;
+    border-radius: 16px;
+    text-align: center;
+
+    box-shadow:
+        0 8px 20px rgba(111, 74, 142, 0.06),
+        0 3px 8px rgba(0, 0, 0, 0.04);
+
+    transition: 0.3s ease;
+}
+
+.quick-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Títulos */
+.quick-card h3 {
+    font-size: 1.3rem;
+    color: #6f4a8e;
+    margin-bottom: 15px;
+}
+
+/* Texto */
+.quick-card p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 18px;
+    line-height: 1.6;
+}
+
+/* Enlaces normales */
+.quick-link {
+    text-decoration: none;
+    font-weight: 600;
+    color: #8c6ca8;
+}
+
+.quick-link:hover {
+    text-decoration: underline;
+}
+
+/* Tarjeta contacto especial */
+.contacto-card {
+    background: linear-gradient(135deg, #6f4a8e, #8c6ca8);
+    color: #ffffff;
+}
+
+.contacto-card h3,
+.contacto-card p {
+    color: #ffffff;
+}
+
+/* Botón contacto */
+.btn-contacto {
+    display: inline-block;
+    padding: 10px 22px;
+    background: #ffffff;
+    color: #6f4a8e;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+
+.btn-contacto:hover {
+    background: #f3f2f7;
+}
+
+@media (max-width: 992px) {
+    .quick-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+
+
+/* Número del día */
+.day-number {
+    font-weight: 600;
+    font-size: 14px;
+    color: #6f4a8e;
+    margin-bottom: 6px;
+    text-align: left;
+    padding-left: 4px;
+}
+
+/* Contenedor resultados */
+.results {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+/* Badge Día */
+.badge-dia {
+    background: orange;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.badge-dia-be {
+    background: #d62828;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+/* Badge Noche */
+.badge-noche {
+    background: #1e3a5f;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 12px;
+}
+.badge-noche-be {
+    background: #d62828;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.grupo-dia,
+.grupo-noche {
+    display: flex;
+    gap: 4px;
+}
+
+
+.badge-total-atrasadas {
+    background: green;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 10px;
+    margin-left: auto;
+}
+
+.badge-total-atrasadas-dia {
+    background: orange;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 10px;
+    margin-left: auto;
+}
+
+.badge-total-atrasadas-noche {
+    background: #1e3a5f;
+    color: #ffffff;
+    padding: 3px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 10px;
+    margin-left: auto;
+}
+
+
+
+

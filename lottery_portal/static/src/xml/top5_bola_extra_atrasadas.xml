@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.Top5BolaExtraAtrasadas" owl="1">
+        <div class="card shadow border-0 overflow-hidden mb-4">
+            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                <div class="mb-3 d-flex align-items-center gap-2">
+                5 Bolas Extras más Atrasadas
+                <i class="fa fa-arrow-right"/>
+                    <select t-model="state.type" class="form-select form-select-sm"
+                            style="width:120px;" t-on-change="onOnchangeTop5BolaExtra"
+                            title="5 Bolas Extras más Atrasadas">
+                        <option value="general">General</option>
+                        <option value="afternoon">Tarde</option>
+                        <option value="evening">Noche</option>
+                    </select>
+            </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Bola extra</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
+                        </tr>
+                    </thead>
+                    <t t-foreach="state.centenas" t-as="n" t-key="n.centena">
+
+                            <tr>
+                                <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <t t-esc="n.centena"/>
+                                </td>
+                                <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <t t-esc="n.atraso"/>
+                                </td>
+                            </tr>
+                    </t>
+                </table>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

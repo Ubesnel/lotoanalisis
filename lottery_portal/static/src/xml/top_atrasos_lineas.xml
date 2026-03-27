@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.TopAtrasosLineas" owl="1">
+        <div class="card shadow border-0 overflow-hidden mb-4">
+            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                <div>Líneas</div>
+                <i class="fa fa-arrow-down"/>
+                <div class="mt-1">
+                    <select t-model="state.type" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeLineas" title="Atrasos de las Líneas">
+                        <option value="general">General</option>
+                        <option value="afternoon">Tarde</option>
+                        <option value="evening">Noche</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0" style="flex-grow: 1;">
+                    <thead>
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Grupo</td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
+                        </tr>
+                    </thead>
+                    <t t-foreach="state.groups" t-as="n" t-key="n.name">
+                        <tr>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <t t-esc="n.name"/>
+                            </td>
+                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                <t t-esc="n.atraso"/>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+                </div>
+                </div>
+        </div>
+    </t>
+</templates>

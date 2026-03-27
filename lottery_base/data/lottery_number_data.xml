@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="lottery_number_0" model="lottery.number">
+            <field name="name">0</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_1" model="lottery.number">
+            <field name="name">1</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_2" model="lottery.number">
+            <field name="name">2</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_3" model="lottery.number">
+            <field name="name">3</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_4" model="lottery.number">
+            <field name="name">4</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_5" model="lottery.number">
+            <field name="name">5</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_6" model="lottery.number">
+            <field name="name">6</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_7" model="lottery.number">
+            <field name="name">7</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_8" model="lottery.number">
+            <field name="name">8</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_9" model="lottery.number">
+            <field name="name">9</field>
+            <field name="can_use_hundreds" eval="True"/>
+        </record>
+        <record id="lottery_number_10" model="lottery.number">
+            <field name="name">10</field>
+        </record>
+        <record id="lottery_number_11" model="lottery.number">
+            <field name="name">11</field>
+        </record>
+        <record id="lottery_number_12" model="lottery.number">
+            <field name="name">12</field>
+        </record>
+        <record id="lottery_number_13" model="lottery.number">
+            <field name="name">13</field>
+        </record>
+        <record id="lottery_number_14" model="lottery.number">
+            <field name="name">14</field>
+        </record>
+        <record id="lottery_number_15" model="lottery.number">
+            <field name="name">15</field>
+        </record>
+        <record id="lottery_number_16" model="lottery.number">
+            <field name="name">16</field>
+        </record>
+        <record id="lottery_number_17" model="lottery.number">
+            <field name="name">17</field>
+        </record>
+        <record id="lottery_number_18" model="lottery.number">
+            <field name="name">18</field>
+        </record>
+        <record id="lottery_number_19" model="lottery.number">
+            <field name="name">19</field>
+        </record>
+        <record id="lottery_number_20" model="lottery.number">
+            <field name="name">20</field>
+        </record>
+        <record id="lottery_number_21" model="lottery.number">
+            <field name="name">21</field>
+        </record>
+        <record id="lottery_number_22" model="lottery.number">
+            <field name="name">22</field>
+        </record>
+        <record id="lottery_number_23" model="lottery.number">
+            <field name="name">23</field>
+        </record>
+        <record id="lottery_number_24" model="lottery.number">
+            <field name="name">24</field>
+        </record>
+        <record id="lottery_number_25" model="lottery.number">
+            <field name="name">25</field>
+        </record>
+        <record id="lottery_number_26" model="lottery.number">
+            <field name="name">26</field>
+        </record>
+        <record id="lottery_number_27" model="lottery.number">
+            <field name="name">27</field>
+        </record>
+        <record id="lottery_number_28" model="lottery.number">
+            <field name="name">28</field>
+        </record>
+        <record id="lottery_number_29" model="lottery.number">
+            <field name="name">29</field>
+        </record>
+        <record id="lottery_number_30" model="lottery.number">
+            <field name="name">30</field>
+        </record>
+        <record id="lottery_number_31" model="lottery.number">
+            <field name="name">31</field>
+        </record>
+        <record id="lottery_number_32" model="lottery.number">
+            <field name="name">32</field>
+        </record>
+        <record id="lottery_number_33" model="lottery.number">
+            <field name="name">33</field>
+        </record>
+        <record id="lottery_number_34" model="lottery.number">
+            <field name="name">34</field>
+        </record>
+        <record id="lottery_number_35" model="lottery.number">
+            <field name="name">35</field>
+        </record>
+        <record id="lottery_number_36" model="lottery.number">
+            <field name="name">36</field>
+        </record>
+        <record id="lottery_number_37" model="lottery.number">
+            <field name="name">37</field>
+        </record>
+        <record id="lottery_number_38" model="lottery.number">
+            <field name="name">38</field>
+        </record>
+        <record id="lottery_number_39" model="lottery.number">
+            <field name="name">39</field>
+        </record>
+        <record id="lottery_number_40" model="lottery.number">
+            <field name="name">40</field>
+        </record>
+        <record id="lottery_number_41" model="lottery.number">
+            <field name="name">41</field>
+        </record>
+        <record id="lottery_number_42" model="lottery.number">
+            <field name="name">42</field>
+        </record>
+        <record id="lottery_number_43" model="lottery.number">
+            <field name="name">43</field>
+        </record>
+        <record id="lottery_number_44" model="lottery.number">
+            <field name="name">44</field>
+        </record>
+        <record id="lottery_number_45" model="lottery.number">
+            <field name="name">45</field>
+        </record>
+        <record id="lottery_number_46" model="lottery.number">
+            <field name="name">46</field>
+        </record>
+        <record id="lottery_number_47" model="lottery.number">
+            <field name="name">47</field>
+        </record>
+        <record id="lottery_number_48" model="lottery.number">
+            <field name="name">48</field>
+        </record>
+        <record id="lottery_number_49" model="lottery.number">
+            <field name="name">49</field>
+        </record>
+        <record id="lottery_number_50" model="lottery.number">
+            <field name="name">50</field>
+        </record>
+        <record id="lottery_number_51" model="lottery.number">
+            <field name="name">51</field>
+        </record>
+        <record id="lottery_number_52" model="lottery.number">
+            <field name="name">52</field>
+        </record>
+        <record id="lottery_number_53" model="lottery.number">
+            <field name="name">53</field>
+        </record>
+        <record id="lottery_number_54" model="lottery.number">
+            <field name="name">54</field>
+        </record>
+        <record id="lottery_number_55" model="lottery.number">
+            <field name="name">55</field>
+        </record>
+        <record id="lottery_number_56" model="lottery.number">
+            <field name="name">56</field>
+        </record>
+        <record id="lottery_number_57" model="lottery.number">
+            <field name="name">57</field>
+        </record>
+        <record id="lottery_number_58" model="lottery.number">
+            <field name="name">58</field>
+        </record>
+        <record id="lottery_number_59" model="lottery.number">
+            <field name="name">59</field>
+        </record>
+        <record id="lottery_number_60" model="lottery.number">
+            <field name="name">60</field>
+        </record>
+        <record id="lottery_number_61" model="lottery.number">
+            <field name="name">61</field>
+        </record>
+        <record id="lottery_number_62" model="lottery.number">
+            <field name="name">62</field>
+        </record>
+        <record id="lottery_number_63" model="lottery.number">
+            <field name="name">63</field>
+        </record>
+        <record id="lottery_number_64" model="lottery.number">
+            <field name="name">64</field>
+        </record>
+        <record id="lottery_number_65" model="lottery.number">
+            <field name="name">65</field>
+        </record>
+        <record id="lottery_number_66" model="lottery.number">
+            <field name="name">66</field>
+        </record>
+        <record id="lottery_number_67" model="lottery.number">
+            <field name="name">67</field>
+        </record>
+        <record id="lottery_number_68" model="lottery.number">
+            <field name="name">68</field>
+        </record>
+        <record id="lottery_number_69" model="lottery.number">
+            <field name="name">69</field>
+        </record>
+        <record id="lottery_number_70" model="lottery.number">
+            <field name="name">70</field>
+        </record>
+        <record id="lottery_number_71" model="lottery.number">
+            <field name="name">71</field>
+        </record>
+        <record id="lottery_number_72" model="lottery.number">
+            <field name="name">72</field>
+        </record>
+        <record id="lottery_number_73" model="lottery.number">
+            <field name="name">73</field>
+        </record>
+        <record id="lottery_number_74" model="lottery.number">
+            <field name="name">74</field>
+        </record>
+        <record id="lottery_number_75" model="lottery.number">
+            <field name="name">75</field>
+        </record>
+        <record id="lottery_number_76" model="lottery.number">
+            <field name="name">76</field>
+        </record>
+        <record id="lottery_number_77" model="lottery.number">
+            <field name="name">77</field>
+        </record>
+        <record id="lottery_number_78" model="lottery.number">
+            <field name="name">78</field>
+        </record>
+        <record id="lottery_number_79" model="lottery.number">
+            <field name="name">79</field>
+        </record>
+        <record id="lottery_number_80" model="lottery.number">
+            <field name="name">80</field>
+        </record>
+        <record id="lottery_number_81" model="lottery.number">
+            <field name="name">81</field>
+        </record>
+        <record id="lottery_number_82" model="lottery.number">
+            <field name="name">82</field>
+        </record>
+        <record id="lottery_number_83" model="lottery.number">
+            <field name="name">83</field>
+        </record>
+        <record id="lottery_number_84" model="lottery.number">
+            <field name="name">84</field>
+        </record>
+        <record id="lottery_number_85" model="lottery.number">
+            <field name="name">85</field>
+        </record>
+        <record id="lottery_number_86" model="lottery.number">
+            <field name="name">86</field>
+        </record>
+        <record id="lottery_number_87" model="lottery.number">
+            <field name="name">87</field>
+        </record>
+        <record id="lottery_number_88" model="lottery.number">
+            <field name="name">88</field>
+        </record>
+        <record id="lottery_number_89" model="lottery.number">
+            <field name="name">89</field>
+        </record>
+        <record id="lottery_number_90" model="lottery.number">
+            <field name="name">90</field>
+        </record>
+        <record id="lottery_number_91" model="lottery.number">
+            <field name="name">91</field>
+        </record>
+        <record id="lottery_number_92" model="lottery.number">
+            <field name="name">92</field>
+        </record>
+        <record id="lottery_number_93" model="lottery.number">
+            <field name="name">93</field>
+        </record>
+        <record id="lottery_number_94" model="lottery.number">
+            <field name="name">94</field>
+        </record>
+        <record id="lottery_number_95" model="lottery.number">
+            <field name="name">95</field>
+        </record>
+        <record id="lottery_number_96" model="lottery.number">
+            <field name="name">96</field>
+        </record>
+        <record id="lottery_number_97" model="lottery.number">
+            <field name="name">97</field>
+        </record>
+        <record id="lottery_number_98" model="lottery.number">
+            <field name="name">98</field>
+        </record>
+        <record id="lottery_number_99" model="lottery.number">
+            <field name="name">99</field>
+        </record>
+    </data>
+</odoo>

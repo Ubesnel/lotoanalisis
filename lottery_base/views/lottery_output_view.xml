@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_output_tree" model="ir.ui.view">
+        <field name="name">view.lottery.output.tree</field>
+        <field name="model">lottery.output</field>
+        <field name="arch" type="xml">
+            <tree string="Salidas" decoration-warning="turn_day == 'afternoon'"
+                  decoration-success="turn_day == 'evening'">
+                <field name="date"/>
+                <field name="complete_number"/>
+                <field name="week_day"/>
+                <field name="month" optional="hide"/>
+                <field name="year" optional="hide"/>
+                <field name="turn_day" column_invisible="1"/>
+                <field name="hundreds_id" column_invisible="1"/>
+                <field name="number_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_output_all_tree" model="ir.ui.view">
+        <field name="name">view.lottery.output.all.tree</field>
+        <field name="model">lottery.output</field>
+        <field name="arch" type="xml">
+            <tree string="Salidas" decoration-warning="turn_day == 'afternoon'"
+                  decoration-success="turn_day == 'evening'" create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="complete_number"/>
+                <field name="week_day"/>
+                <field name="month" optional="hide"/>
+                <field name="year" optional="hide"/>
+                <field name="turn_day" optional="hide"/>
+                <field name="hundreds_id" column_invisible="1"/>
+                <field name="number_id" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_output_form" model="ir.ui.view">
+        <field name="name">lottery.output.form</field>
+        <field name="model">lottery.output</field>
+        <field name="arch" type="xml">
+            <form string="Salida">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="week_day"/>
+                            <field name="turn_day"/>
+                            <field name="month" invisible="1"/>
+                            <field name="year" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="hundreds_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="number_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="complete_number"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lottery_output_search" model="ir.ui.view">
+        <field name="name">lottery.output.search</field>
+        <field name="model">lottery.output</field>
+        <field name="arch" type="xml">
+            <search string="Salidas">
+                <field name="hundreds_id"/>
+                <field name="number_id"/>
+                <field name="date"/>
+                <filter string="Salidas de día" name="lottery_output_afternoon"
+                        domain="[('turn_day', '=', 'afternoon')]"/>
+                <filter string="Salidas de noche" name="lottery_output_evening"
+                        domain="[('turn_day', '=', 'evening')]"/>
+                <filter string="Salidas Lunes" name="lottery_output_monday" domain="[('week_day', '=', 'lu')]"/>
+                <filter string="Salidas Martes" name="lottery_output_tuesday" domain="[('week_day', '=', 'ma')]"/>
+                <filter string="Salidas Miércoles" name="lottery_output_wednesday" domain="[('week_day', '=', 'mi')]"/>
+                <filter string="Salidas Jueves" name="lottery_output_thursday" domain="[('week_day', '=', 'ju')]"/>
+                <filter string="Salidas Viernes" name="lottery_output_friday" domain="[('week_day', '=', 'vi')]"/>
+                <filter string="Salidas Sábados" name="lottery_output_saturday" domain="[('week_day', '=', 'sa')]"/>
+                <filter string="Salidas Domingo" name="lottery_output_sunday" domain="[('week_day', '=', 'do')]"/>
+                <separator/>
+                <filter string="Mes Actual"
+                        name="current_month"
+                        domain="[
+                            ('date', '&gt;=', context_today().strftime('%%Y-%%m-01')),
+                            ('date', '&lt;', (context_today() + relativedelta(months=1)).strftime('%%Y-%%m-01'))
+                        ]"/>
+                <filter string="Mes Anterior"
+                        name="previous_month"
+                        domain="[
+                            ('date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%%Y-%%m-01')),
+                            ('date', '&lt;', context_today().strftime('%%Y-%%m-01'))
+                        ]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Centena" name="group_hundreds_id" context="{'group_by': 'hundreds_id'}"/>
+                    <filter string="Número" name="group_number_id" context="{'group_by': 'number_id'}"/>
+                    <filter string="Año" name="group_year" domain="[]" context="{'group_by': 'year'}"/>
+                    <filter string="Mes" name="group_month" domain="[]" context="{'group_by': 'month'}"/>
+                    <filter string="Turno" name="group_turn_day" domain="[]" context="{'group_by': 'turn_day'}"/>
+                    <filter string="Día de la semana" name="group_week_day" domain="[]"
+                            context="{'group_by': 'week_day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_lottery_output_kanban_afternoon" model="ir.ui.view">
+        <field name="name">lottery.output.kanban.afternoon</field>
+        <field name="model">lottery.output</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_lottery">
+                <field name="date"/>
+                <field name="complete_number"/>
+                <field name="week_day"/>
+                <templates>
+                <t t-name="kanban-box">
+                    <div class="oe_kanban_global_click card border-info shadow-sm position-relative p-3">
+                        <span class="badge bg-primary text-white position-absolute top-0 start-0 m-2 fs-6">
+                            <i class="fa fa-calendar me-1" title="Fecha"/>
+                            <field name="date"/>
+                        </span>
+                        <span class="badge bg-info text-white position-absolute top-0 end-0 m-2">
+                            <field name="week_day"/>
+                        </span>
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-warning">
+                                <field name="complete_number"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_lottery_output_kanban_evening" model="ir.ui.view">
+        <field name="name">lottery.output.kanban.evening</field>
+        <field name="model">lottery.output</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_lottery">
+                <field name="date"/>
+                <field name="complete_number"/>
+                <field name="week_day"/>
+                <templates>
+                <t t-name="kanban-box">
+                    <div class="oe_kanban_global_click card border-info shadow-sm position-relative p-3">
+                        <span class="badge bg-primary text-white position-absolute top-0 start-0 m-2 fs-6">
+                            <i class="fa fa-calendar me-1" title="Fecha"/>
+                            <field name="date"/>
+                        </span>
+                        <span class="badge bg-info text-white position-absolute top-0 end-0 m-2">
+                            <field name="week_day"/>
+                        </span>
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-success">
+                                <field name="complete_number"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_lottery_output_all" model="ir.actions.act_window">
+        <field name="name">Todas</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_group_year': 1,'search_default_group_month': 1}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_all_tree"/>
+    </record>
+
+    <record id="action_lottery_output_afternoon" model="ir.actions.act_window">
+        <field name="name">Tarde</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('turn_day','=','afternoon')]</field>
+        <field name="context">{'default_turn_day': 'afternoon','search_default_current_month': 1}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_kanban_afternoon"/>
+    </record>
+
+    <record id="action_lottery_output_evening" model="ir.actions.act_window">
+        <field name="name">Noche</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="domain">[('turn_day','=','evening')]</field>
+        <field name="context">{'default_turn_day': 'evening','search_default_current_month': 1}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_kanban_evening"/>
+    </record>
+</odoo>

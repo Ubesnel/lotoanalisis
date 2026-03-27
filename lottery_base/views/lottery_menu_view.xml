@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem name="Loterías" id="home_lottery" sequence="22"
+              web_icon="lottery_base,static/description/icon.png"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_number_item" parent="lottery_base.home_lottery"
+              action="action_lottery_number" sequence="1"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem name="Salidas" id="menu_lottery_output" sequence="20"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_output_all_item" parent="lottery_base.menu_lottery_output"
+              action="action_lottery_output_all" sequence="5"
+              groups="lottery_base.group_lottery_manager"/>
+
+    <menuitem id="menu_lottery_output_afternoon_item" parent="lottery_base.menu_lottery_output"
+              action="action_lottery_output_afternoon" sequence="15"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_output_evening_item" parent="lottery_base.menu_lottery_output"
+              action="action_lottery_output_evening" sequence="35"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_ir_cron_act_lottery"
+            parent="lottery_base.home_lottery" name="Acciones planificadas"
+            action="base.ir_cron_act"
+            sequence="150"/>
+
+</odoo>
