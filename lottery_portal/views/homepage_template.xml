@@ -124,15 +124,6 @@
             </div>
             <section class="quick-access">
                 <div class="quick-container">
-                    <div class="quick-card">
-                        <h3>Consultas avanzadas</h3>
-                        <p>
-                            Explora frecuencias, atrasos y tendencias históricas detalladas.
-                        </p>
-                        <a href="/estadisticas" class="quick-link">
-                            Ir a consultas →
-                        </a>
-                    </div>
                     <div class="quick-card contacto-card">
                         <h3>¿Tienes dudas?</h3>
                         <p>
@@ -143,15 +134,32 @@
                         </a>
                     </div>
                     <div class="quick-card">
+                        <h3>Consultas avanzadas Grupos</h3>
+                        <p>
+                            Explora frecuencias, atrasos y tendencias históricas detalladas de Grupos.
+                        </p>
+                        <a href="/estadisticas" class="quick-link">
+                            Ir a Grupos →
+                        </a>
+                    </div>
+                    <div class="quick-card">
+                        <h3>Consultas avanzadas Números</h3>
+                        <p>
+                            Explora frecuencias, atrasos y tendencias históricas detalladas de los Números.
+                        </p>
+                        <a href="/estadisticas-numeros" class="quick-link">
+                            Ir a Números →
+                        </a>
+                    </div>
+                    <div class="quick-card contacto-card">
                         <h3>Preguntas y respuestas</h3>
                         <p>
                             Podes encontrar respuestas a muchas preguntas relacionadas con las estadísticas.
                         </p>
-                        <a href="/faq" class="quick-link">
+                        <a href="/faq" class="btn-contacto">
                             Revisar →
                         </a>
                     </div>
-
                 </div>
             </section>
         </xpath>

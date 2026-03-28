@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from odoo import models, api
 import calendar
 from datetime import date, datetime
@@ -53,154 +55,30 @@ class LotteryStatsService(models.AbstractModel):
 
     @api.model
     def get_top_10_general(self):
-        query = """
-                WITH top10 AS (
-                    SELECT id, name, total_atrasadas
-                    FROM lottery_number
-                    ORDER BY total_atrasadas DESC
-                    LIMIT 10
-                )
-                SELECT                     
-                    LPAD(t.name::text, 2, '0') as name,                    
-                    TO_CHAR(o.date, 'DD/MM/YYYY') AS ultima_fecha,
-                    o.turn_day AS ultimo_turno,
-                    t.total_atrasadas
-                FROM top10 t
-                LEFT JOIN LATERAL (
-                    SELECT date, turn_day
-                    FROM lottery_output
-                    WHERE number_id = t.id
-                    ORDER BY date DESC
-                    LIMIT 1
-                ) o ON TRUE
-                ORDER BY t.total_atrasadas DESC;
-            """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""SELECT * FROM lottery_top10_mv""")
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top_10_dia(self):
-        query = """
-            WITH top10 AS (
-                SELECT id, name, total_atrasadas_dia
-                FROM lottery_number
-                ORDER BY total_atrasadas_dia DESC
-                LIMIT 10
-            )
-            SELECT                     
-                LPAD(t.name::text, 2, '0') as name,
-                t.total_atrasadas_dia as total_atrasadas,
-                TO_CHAR(o.date, 'DD/MM/YYYY') AS ultima_fecha
-            FROM top10 t
-            LEFT JOIN LATERAL (
-                SELECT date
-                FROM lottery_output
-                WHERE number_id = t.id
-                  AND turn_day = 'afternoon'
-                ORDER BY date DESC
-                LIMIT 1
-            ) o ON TRUE
-            ORDER BY t.total_atrasadas_dia DESC;
-        """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""SELECT * FROM lottery_top10_afternoon_mv""")
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top_10_noche(self):
-        query = """
-            WITH top10 AS (
-                SELECT id, name, total_atrasadas_noche
-                FROM lottery_number
-                ORDER BY total_atrasadas_noche DESC
-                LIMIT 10
-            )
-            SELECT                     
-                LPAD(t.name::text, 2, '0') as name,
-                t.total_atrasadas_noche as total_atrasadas,
-                TO_CHAR(o.date, 'DD/MM/YYYY') AS ultima_fecha,
-                o.turn_day AS ultimo_turno
-            FROM top10 t
-            LEFT JOIN LATERAL (
-                SELECT date, turn_day
-                FROM lottery_output
-                WHERE number_id = t.id
-                  AND turn_day = 'evening'
-                ORDER BY date DESC
-                LIMIT 1
-            ) o ON TRUE
-            ORDER BY t.total_atrasadas_noche DESC;
-        """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""SELECT * FROM lottery_top10_evening_mv""")
         return self.env.cr.dictfetchall()
 
     def get_ultimas_salidas_por_dia(self, day):
-        query = """
-        SELECT
-                TO_CHAR(lo.date, 'DD/MM/YYYY') as fecha,
-                MAX(CASE WHEN lo.turn_day = 'afternoon' THEN c.name END) AS centena_dia,
-                LPAD(MAX(CASE WHEN lo.turn_day = 'afternoon' THEN ln.name::text END), 2, '0') AS numero_dia,
-                MAX(CASE WHEN lo.turn_day = 'afternoon' THEN be.name END) AS bola_extra_dia,
-                MAX(CASE WHEN lo.turn_day = 'evening' THEN c.name END) AS centena_noche, 
-                LPAD(MAX(CASE WHEN lo.turn_day = 'evening' THEN ln.name::text END), 2, '0') AS numero_noche,
-                MAX(CASE WHEN lo.turn_day = 'evening' THEN be.name END) AS bola_extra_noche
-            FROM lottery_output lo
-            JOIN lottery_number ln ON ln.id = lo.number_id
-            join lottery_number c on (c.id=lo.hundreds_id)
-            left join lottery_number be on (be.id=lo.fireball_id)
-            WHERE lo.week_day = %s
-            GROUP BY lo.date
-            ORDER BY lo.date DESC
-            LIMIT 8;
-        """
-        self.env.cr.execute(query, (day,))
+        self.env.cr.execute("""
+                SELECT *
+                FROM lottery_ultima_salida_dia_semana_mv
+                WHERE week_day = %s
+                ORDER BY date DESC
+                LIMIT 8
+            """, (day,))
         records = self.env.cr.dictfetchall()
         records.sort(key=lambda x: datetime.strptime(x['fecha'], '%d/%m/%Y'))
         return records
-
-    def build_calendar(self, month, year, records):
-        cal = calendar.Calendar(firstweekday=0)
-        data_by_day = {}
-        for r in records:
-            day = r.get('date').day
-            if day not in data_by_day:
-                data_by_day[day] = {'dia': None, 'noche': None}
-
-            if r.get('turn_day') == 'afternoon':
-                data_by_day[day]['dia'] = (r.get('centena'), str(r.get('numero')).zfill(2), r.get('bola_extra'))
-            else:
-                data_by_day[day]['noche'] = (r.get('centena'), str(r.get('numero')).zfill(2), r.get('bola_extra'))
-
-        month_days = cal.monthdayscalendar(year, month)
-
-        result = []
-
-        for week in month_days:
-            for day in week:
-                if day == 0:
-                    result.append({
-                        'empty': True
-                    })
-                else:
-                    result.append({
-                        'empty': False,
-                        'day': day,
-                        'dia_numero': data_by_day.get(day, {}).get('dia'),
-                        'noche_numero': data_by_day.get(day, {}).get('noche'),
-                    })
-
-        return result
-
-    def build_calendar_weeks(self, calendar_build):
-        weeks = []
-
-        for i in range(0, len(calendar_build), 7):
-            week = calendar_build[i:i + 7]
-            if len(week) < 7:
-                week += [{'empty': True}] * (7 - len(week))
-
-            weeks.append(week)
-
-        return weeks
 
     def get_month_year(self, month, year):
         if not month:
@@ -220,181 +98,59 @@ class LotteryStatsService(models.AbstractModel):
             'sa': 'salidas_atrasadas_sabado',
             'do': 'salidas_atrasadas_domingo',
         }
-
         field_name = field_map.get(week_code)
         if not field_name:
             return []
-
         query = f"""
-            WITH top10 AS (
-                SELECT id, name, {field_name} AS total_atrasadas
-                FROM lottery_number
+                SELECT
+                    name,
+                    TO_CHAR(date, 'DD/MM/YYYY') AS ultima_fecha,
+                    turn_day AS ultimo_turno,
+                    {field_name} AS total_atrasadas
+                FROM lottery_top10_dia_semana_mv
+                WHERE week_day = %s
                 ORDER BY {field_name} DESC
                 LIMIT 10
-            )
-            SELECT
-                LPAD(t.name::text, 2, '0') as name,
-                TO_CHAR(o.date, 'DD/MM/YYYY') AS ultima_fecha,
-                o.turn_day AS ultimo_turno,
-                t.total_atrasadas
-            FROM top10 t
-            LEFT JOIN LATERAL (
-                SELECT date, turn_day
-                FROM lottery_output
-                WHERE number_id = t.id
-                  AND week_day = %s
-                ORDER BY date DESC
-                LIMIT 1
-            ) o ON TRUE
-            ORDER BY t.total_atrasadas DESC;
-        """
+            """
 
         self.env.cr.execute(query, (week_code,))
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top5_centenas_afternoon(self):
-        query = """WITH calendar AS (
-                    SELECT generate_series(
-                        (SELECT MIN(date) FROM lottery_output WHERE turn_day = 'afternoon'),
-                        (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'afternoon'),
-                        interval '1 day'
-                    )::date AS draw_date
-                ),
-            centena_last AS (
-                SELECT hundreds_id, MAX(date) AS last_date
-                FROM lottery_output
-                WHERE turn_day = 'afternoon'
-                GROUP BY hundreds_id
-            )
-            SELECT
-                n.name AS centena,
-                COUNT(c.draw_date) AS atraso
-            FROM centena_last l
-            JOIN lottery_number n ON n.id = l.hundreds_id
-            JOIN calendar c
-                ON c.draw_date > l.last_date
-            LEFT JOIN lottery_output lo
-                ON lo.hundreds_id = l.hundreds_id
-               AND lo.turn_day = 'afternoon'
-               AND lo.date = c.draw_date
-            WHERE lo.id IS NULL
-            GROUP BY n.name
-            ORDER BY atraso desc
-            limit 5;
-                    """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+                        SELECT centena, atraso
+                        FROM lottery_top5_centena_dia_mv ORDER BY atraso DESC;                
+                    """)
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top5_centenas_evening(self):
-        query = """WITH calendar AS (
-                        SELECT generate_series(
-                            (SELECT MIN(date) FROM lottery_output WHERE turn_day = 'evening'),
-                            (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'evening'),
-                            interval '1 day'
-                        )::date AS draw_date
-                    ),
-                centena_last AS (
-                    SELECT hundreds_id, MAX(date) AS last_date
-                    FROM lottery_output
-                    WHERE turn_day = 'evening'
-                    GROUP BY hundreds_id
-                )
-                SELECT
-                    n.name AS centena,
-                    COUNT(c.draw_date) AS atraso
-                FROM centena_last l
-                JOIN lottery_number n ON n.id = l.hundreds_id
-                JOIN calendar c
-                    ON c.draw_date > l.last_date
-                LEFT JOIN lottery_output lo
-                    ON lo.hundreds_id = l.hundreds_id
-                   AND lo.turn_day = 'evening'
-                   AND lo.date = c.draw_date
-                WHERE lo.id IS NULL
-                GROUP BY n.name
-                ORDER BY atraso desc
-                limit 5;
-                        """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+                        SELECT centena, atraso
+                        FROM lottery_top5_centena_noche_mv ORDER BY atraso DESC;                
+                    """)
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top5_centenas_general(self):
-        query = """WITH turn_order AS (
-                    SELECT 'afternoon' AS turn_day, 2 AS order_num
-                    UNION ALL
-                    SELECT 'evening', 3
-                ),
-                centena_last AS (   
-                    SELECT lo.hundreds_id, lo.date AS last_date, lo.turn_day AS last_turn,
-                           t.order_num AS last_turn_order
-                    FROM lottery_output lo
-                    JOIN turn_order t ON t.turn_day = lo.turn_day
-                    WHERE (lo.hundreds_id, lo.date, lo.turn_day) IN (
-                        SELECT hundreds_id, date, turn_day
-                        FROM (
-                            SELECT hundreds_id, date, turn_day,
-                                   ROW_NUMBER() OVER (
-                                       PARTITION BY hundreds_id
-                                       ORDER BY date DESC, 
-                                                CASE turn_day WHEN 'afternoon' THEN 2 WHEN 'evening' THEN 3 END DESC
-                                   ) AS rn
-                            FROM lottery_output
-                            WHERE turn_day IN ('afternoon','evening')
-                        ) sub
-                        WHERE rn = 1
-                    )
-                )
-                SELECT
-                    n.name AS centena,
-                    COUNT(*) AS atraso
-                FROM centena_last l
-                JOIN lottery_number n ON n.id = l.hundreds_id
-                JOIN lottery_output lo
-                    ON lo.turn_day IN ('afternoon','evening')
-                   AND ((lo.date > l.last_date) 
-                        OR (lo.date = l.last_date AND
-                            CASE lo.turn_day WHEN 'afternoon' THEN 2 WHEN 'evening' THEN 3 END > l.last_turn_order))
-                   AND lo.hundreds_id <> l.hundreds_id
-                GROUP BY n.name
-                ORDER BY atraso DESC
-                LIMIT 5;
-                            """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+                SELECT centena, atraso
+                FROM lottery_top5_centena_general_mv ORDER BY atraso DESC;                
+            """)
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top_atrasos_lineas(self, type):
         query = """
-            WITH params AS (
-                    SELECT %s::text AS tipo
-                )
             SELECT
-                CASE lg.code
-                    WHEN 'line_0' THEN '00-09'
-                    WHEN 'line_1' THEN '10-19'
-                    WHEN 'line_2' THEN '20-29'
-                    WHEN 'line_3' THEN '30-39'
-                    WHEN 'line_4' THEN '40-49'
-                    WHEN 'line_5' THEN '50-59'
-                    WHEN 'line_6' THEN '60-69'
-                    WHEN 'line_7' THEN '70-79'
-                    WHEN 'line_8' THEN '80-89'
-                    WHEN 'line_9' THEN '90-99'
-                END AS name,
-                CASE p.tipo
-                    WHEN 'general' THEN lg.salidas_atrasadas
-                    WHEN 'afternoon' THEN lg.salidas_atrasadas_dia
-                    WHEN 'evening' THEN lg.salidas_atrasadas_noche
+                name,
+                CASE %s
+                    WHEN 'general' THEN general
+                    WHEN 'afternoon' THEN afternoon
+                    WHEN 'evening' THEN evening
                 END AS atraso
-            FROM lottery_group lg
-            CROSS JOIN params p
-            WHERE lg.code IN (
-                'line_0','line_1','line_2','line_3','line_4',
-                'line_5','line_6','line_7','line_8','line_9'
-            )
+            FROM lottery_top_atrasos_lineas_mv
             ORDER BY atraso DESC;
         """
         self.env.cr.execute(query, (type,))
@@ -403,170 +159,61 @@ class LotteryStatsService(models.AbstractModel):
     @api.model
     def get_top_atrasos_terminales(self, type):
         query = """
-                WITH params AS (
-                        SELECT %s::text AS tipo
-                    )
                 SELECT
-                    CASE lg.code
-                        WHEN 'terminal_0' THEN '00-90'
-                        WHEN 'terminal_1' THEN '01-91'
-                        WHEN 'terminal_2' THEN '02-92'
-                        WHEN 'terminal_3' THEN '03-93'
-                        WHEN 'terminal_4' THEN '04-94'
-                        WHEN 'terminal_5' THEN '05-95'
-                        WHEN 'terminal_6' THEN '06-96'
-                        WHEN 'terminal_7' THEN '07-97'
-                        WHEN 'terminal_8' THEN '08-98'
-                        WHEN 'terminal_9' THEN '09-99'
-                    END AS name,
-                    CASE p.tipo
-                        WHEN 'general' THEN lg.salidas_atrasadas
-                        WHEN 'afternoon' THEN lg.salidas_atrasadas_dia
-                        WHEN 'evening' THEN lg.salidas_atrasadas_noche
-                    END AS atraso
-                FROM lottery_group lg
-                CROSS JOIN params p
-                WHERE lg.code IN (
-                    'terminal_0','terminal_1','terminal_2','terminal_3','terminal_4',
-                    'terminal_5','terminal_6','terminal_7','terminal_8','terminal_9'
-                )
-                ORDER BY atraso DESC;
+                name,
+                CASE %s
+                    WHEN 'general' THEN general
+                    WHEN 'afternoon' THEN afternoon
+                    WHEN 'evening' THEN evening
+                END AS atraso
+            FROM lottery_top_atrasos_terminales_mv
+            ORDER BY atraso DESC;
             """
         self.env.cr.execute(query, (type,))
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top_atrasos_number_groups(self, type, groups_code):
-        query = """
-            WITH params AS (
-                SELECT %s::text AS tipo
-            )
-            SELECT
-                LPAD(ln.name::text, 2, '0') as name,                
-                CASE p.tipo
-                    WHEN 'general' THEN ln.total_atrasadas
-                    WHEN 'afternoon' THEN ln.total_atrasadas_dia
-                    WHEN 'evening' THEN ln.total_atrasadas_noche
-                END AS atraso
-            FROM lottery_group lg
-            JOIN lottery_group_number_rel rel ON rel.group_id = lg.id
-            JOIN lottery_number ln ON ln.id = rel.number_id
-            CROSS JOIN params p
-            WHERE lg.code = ANY(%s)
-            ORDER BY atraso DESC;
-                """
-        self.env.cr.execute(query, (type, groups_code))
+        field_map = {
+            'general': 'general',
+            'afternoon': 'afternoon',
+            'evening': 'evening',
+        }
+        field_name = field_map.get(type)
+        if not field_name:
+            return []
+        query = f"""
+                SELECT
+                    name,
+                    {field_name} AS atraso
+                FROM lottery_number_groups_atrasos_mv
+                WHERE group_code = ANY(%s)
+                ORDER BY {field_name} DESC
+            """
+
+        self.env.cr.execute(query, (groups_code,))
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top5_bola_extra_afternoon(self):
-        query = """WITH calendar AS (
-                        SELECT generate_series(
-                            (SELECT MIN(date) FROM lottery_output WHERE turn_day = 'afternoon'),
-                            (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'afternoon'),
-                            interval '1 day'
-                        )::date AS draw_date
-                    ),
-                centena_last AS (
-                    SELECT fireball_id, MAX(date) AS last_date
-                    FROM lottery_output
-                    WHERE turn_day = 'afternoon'
-                    GROUP BY fireball_id
-                )
-                SELECT
-                    n.name AS centena,
-                    COUNT(c.draw_date) AS atraso
-                FROM centena_last l
-                JOIN lottery_number n ON n.id = l.fireball_id
-                JOIN calendar c
-                    ON c.draw_date > l.last_date
-                LEFT JOIN lottery_output lo
-                    ON lo.fireball_id = l.fireball_id
-                   AND lo.turn_day = 'afternoon'
-                   AND lo.date = c.draw_date
-                WHERE lo.id IS NULL
-                GROUP BY n.name
-                ORDER BY atraso desc
-                limit 5;
-                        """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+                                SELECT centena, atraso
+                                FROM lottery_top5_bola_extra_dia_mv ORDER BY atraso DESC;                
+                            """)
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top5_bola_extra_evening(self):
-        query = """WITH calendar AS (
-                            SELECT generate_series(
-                                (SELECT MIN(date) FROM lottery_output WHERE turn_day = 'evening'),
-                                (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'evening'),
-                                interval '1 day'
-                            )::date AS draw_date
-                        ),
-                    centena_last AS (
-                        SELECT fireball_id, MAX(date) AS last_date
-                        FROM lottery_output
-                        WHERE turn_day = 'evening'
-                        GROUP BY fireball_id
-                    )
-                    SELECT
-                        n.name AS centena,
-                        COUNT(c.draw_date) AS atraso
-                    FROM centena_last l
-                    JOIN lottery_number n ON n.id = l.fireball_id
-                    JOIN calendar c
-                        ON c.draw_date > l.last_date
-                    LEFT JOIN lottery_output lo
-                        ON lo.fireball_id = l.fireball_id
-                       AND lo.turn_day = 'evening'
-                       AND lo.date = c.draw_date
-                    WHERE lo.id IS NULL
-                    GROUP BY n.name
-                    ORDER BY atraso desc
-                    limit 5;
-                            """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+                                SELECT centena, atraso
+                                FROM lottery_top5_bola_extra_noche_mv ORDER BY atraso DESC;                
+                                """)
         return self.env.cr.dictfetchall()
 
     @api.model
     def get_top5_bola_extra_general(self):
-        query = """WITH turn_order AS (
-                        SELECT 'afternoon' AS turn_day, 2 AS order_num
-                        UNION ALL
-                        SELECT 'evening', 3
-                    ),
-                    centena_last AS (   
-                        SELECT lo.fireball_id, lo.date AS last_date, lo.turn_day AS last_turn,
-                               t.order_num AS last_turn_order
-                        FROM lottery_output lo
-                        JOIN turn_order t ON t.turn_day = lo.turn_day
-                        WHERE (lo.fireball_id, lo.date, lo.turn_day) IN (
-                            SELECT fireball_id, date, turn_day
-                            FROM (
-                                SELECT fireball_id, date, turn_day,
-                                       ROW_NUMBER() OVER (
-                                           PARTITION BY fireball_id
-                                           ORDER BY date DESC, 
-                                                    CASE turn_day WHEN 'afternoon' THEN 2 WHEN 'evening' THEN 3 END DESC
-                                       ) AS rn
-                                FROM lottery_output
-                                WHERE turn_day IN ('afternoon','evening')
-                            ) sub
-                            WHERE rn = 1
-                        )
-                    )
-                    SELECT
-                        n.name AS centena,
-                        COUNT(*) AS atraso
-                    FROM centena_last l
-                    JOIN lottery_number n ON n.id = l.fireball_id
-                    JOIN lottery_output lo
-                        ON lo.turn_day IN ('afternoon','evening')
-                       AND ((lo.date > l.last_date) 
-                            OR (lo.date = l.last_date AND
-                                CASE lo.turn_day WHEN 'afternoon' THEN 2 WHEN 'evening' THEN 3 END > l.last_turn_order))
-                       AND lo.fireball_id <> l.fireball_id
-                    GROUP BY n.name
-                    ORDER BY atraso DESC
-                    LIMIT 5;
-                                """
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+                        SELECT centena, atraso
+                        FROM lottery_top5_bola_extra_general_mv ORDER BY atraso DESC;                
+                    """)
         return self.env.cr.dictfetchall()
