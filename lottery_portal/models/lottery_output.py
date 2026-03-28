@@ -26,19 +26,25 @@ class LotteryOutput(models.Model):
         self.refresh_materialized_views()
 
     def refresh_materialized_views(self):
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top10_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top10_afternoon_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top10_evening_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_ultima_salida_dia_semana_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top5_centena_general_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top5_centena_dia_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top5_centena_noche_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top_atrasos_lineas_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top_atrasos_terminales_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top5_bola_extra_general_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top5_bola_extra_dia_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top5_bola_extra_noche_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top10_dia_semana_mv""")
-        self.env.cr.execute("""REFRESH MATERIALIZED VIEW lottery_top_atrasos_number_groups_mv""")
+        views = [
+            "lottery_top10_mv",
+            "lottery_top10_afternoon_mv",
+            "lottery_top10_evening_mv",
+            "lottery_ultima_salida_dia_semana_mv",
+            "lottery_top5_centena_general_mv",
+            "lottery_top5_centena_dia_mv",
+            "lottery_top5_centena_noche_mv",
+            "lottery_top_atrasos_lineas_mv",
+            "lottery_top_atrasos_terminales_mv",
+            "lottery_top5_bola_extra_general_mv",
+            "lottery_top5_bola_extra_dia_mv",
+            "lottery_top5_bola_extra_noche_mv",
+            "lottery_top10_dia_semana_mv",
+            "lottery_number_groups_atrasos_mv",
+        ]
+        for view in views:
+            self.env.cr.execute(f"""
+                REFRESH MATERIALIZED VIEW {view}
+            """)
 
 

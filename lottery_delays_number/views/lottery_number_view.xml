@@ -402,4 +402,51 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_lottery_number_tree" model="ir.ui.view">
+        <field name="name">view.lottery.number.tree</field>
+        <field name="model">lottery.number</field>
+        <field name="inherit_id" ref="lottery_base.view_lottery_number_tree"/>
+        <field name="arch" type="xml">
+            <field name="can_use_hundreds" position="before">
+                <field name="total_atrasadas" optional="show"/>
+                <field name="total_atrasadas_dia" optional="show"/>
+                <field name="total_atrasadas_noche" optional="show"/>
+                <field name="salidas_atrasadas_lunes" optional="show"/>
+                <field name="salidas_atrasadas_martes" optional="show"/>
+                <field name="salidas_atrasadas_miercoles" optional="show"/>
+                <field name="salidas_atrasadas_jueves" optional="show"/>
+                <field name="salidas_atrasadas_viernes" optional="show"/>
+                <field name="salidas_atrasadas_sabado" optional="show"/>
+                <field name="salidas_atrasadas_domingo" optional="show"/>
+                <field name="total_salidas" optional="hide" string="TS"/>
+                <field name="total_salidas_dia" optional="hide" string="TSD"/>
+                <field name="total_salidas_noche" optional="hide" string="TSN"/>
+                <field name="cant_salidas_enero" optional="hide" string="S. Ene"/>
+                <field name="cant_salidas_febrero" optional="hide" string="S. Feb"/>
+                <field name="cant_salidas_marzo" optional="hide" string="S. Mar"/>
+                <field name="cant_salidas_abril" optional="hide" string="S. Abr"/>
+                <field name="cant_salidas_mayo" optional="hide" string="S. May"/>
+                <field name="cant_salidas_junio" optional="hide" string="S. Jun"/>
+                <field name="cant_salidas_julio" optional="hide" string="S. Jul"/>
+                <field name="cant_salidas_agosto" optional="hide" string="S. Ago"/>
+                <field name="cant_salidas_septiembre" optional="hide" string="S. Sep"/>
+                <field name="cant_salidas_octubre" optional="hide" string="S. Oct"/>
+                <field name="cant_salidas_noviembre" optional="hide" string="S. Nov"/>
+                <field name="cant_salidas_diciembre" optional="hide" string="S. Dic"/>
+                <field name="total_lunes" optional="hide" string="S. Lun"/>
+                <field name="total_martes" optional="hide" string="S. Mar"/>
+                <field name="total_miercoles" optional="hide" string="S. Mie"/>
+                <field name="total_jueves" optional="hide" string="S. Jue"/>
+                <field name="total_viernes" optional="hide" string="S. Vie"/>
+                <field name="total_sabado" optional="hide" string="S. Sab"/>
+                <field name="total_domingo" optional="hide" string="S. Dom"/>
+                <field name="total_semana_1" optional="hide" string="S. 1 al 7"/>
+                <field name="total_semana_2" optional="hide" string="S. 8 al 14"/>
+                <field name="total_semana_3" optional="hide" string="S. 15 al 21"/>
+                <field name="total_semana_4" optional="hide" string="S. 22 al 28"/>
+                <field name="total_semana_5" optional="hide" string="S. 29-30-31"/>
+            </field>
+        </field>
+    </record>
 </odoo>
