@@ -6,7 +6,7 @@
                 <div>Parejas</div>
                 <i class="fa fa-arrow-down"/>
                 <div class="mt-1">
-                    <select t-model="state.type" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeParejas" title="Atrasos de las Parejas">
+                    <select t-model="state.type_pareja" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeParejas" title="Atrasos de las Parejas">
                         <option value="general">General</option>
                         <option value="afternoon">Tarde</option>
                         <option value="evening">Noche</option>
@@ -22,13 +22,13 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.groups" t-as="n" t-key="n.name">
+                    <t t-foreach="state.groups_parejas" t-as="gp" t-key="gp.name">
                         <tr>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.name"/>
+                                <t t-esc="gp.name"/>
                             </td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.atraso"/>
+                                <t t-esc="gp.atraso"/>
                             </td>
                         </tr>
                     </t>

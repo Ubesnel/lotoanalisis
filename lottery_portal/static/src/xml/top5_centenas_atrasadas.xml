@@ -6,7 +6,7 @@
                 <div class="mb-3 d-flex align-items-center gap-2">
                 5 Centenas más Atrasadas
                 <i class="fa fa-arrow-right"/>
-                    <select t-model="state.type" class="form-select form-select-sm"
+                    <select t-model="state.type_c" class="form-select form-select-sm"
                             style="width:120px;" t-on-change="onOnchangeTop5Centena"
                             title="5 Centenas más Atrasadas">
                         <option value="general">General</option>
@@ -24,14 +24,14 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.centenas" t-as="n" t-key="n.centena">
+                    <t t-foreach="state.centenas" t-as="c" t-key="c.centena">
 
                             <tr>
                                 <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                    <t t-esc="n.centena"/>
+                                    <t t-esc="c.centena"/>
                                 </td>
                                 <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                    <t t-esc="n.atraso"/>
+                                    <t t-esc="c.atraso"/>
                                 </td>
                             </tr>
                     </t>

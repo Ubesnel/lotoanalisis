@@ -6,7 +6,7 @@
                 <div>Líneas</div>
                 <i class="fa fa-arrow-down"/>
                 <div class="mt-1">
-                    <select t-model="state.type" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeLineas" title="Atrasos de las Líneas">
+                    <select t-model="state.type_line" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeLineas" title="Atrasos de las Líneas">
                         <option value="general">General</option>
                         <option value="afternoon">Tarde</option>
                         <option value="evening">Noche</option>
@@ -22,13 +22,13 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.groups" t-as="n" t-key="n.name">
+                    <t t-foreach="state.groups_lines" t-as="group_l" t-key="group_l.name">
                         <tr>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.name"/>
+                                <t t-esc="group_l.name"/>
                             </td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.atraso"/>
+                                <t t-esc="group_l.atraso"/>
                             </td>
                         </tr>
                     </t>

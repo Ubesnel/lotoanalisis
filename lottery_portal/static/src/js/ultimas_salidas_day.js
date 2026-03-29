@@ -11,8 +11,8 @@ export class UltimasSalidasDay extends Component {
         const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
 
         this.state = useState({
-            day: daysMap[todayIndex],
-            numbers: [],
+            day_us: daysMap[todayIndex],
+            ultimas_salidas: [],
         });
 
         this.loadData();
@@ -20,13 +20,13 @@ export class UltimasSalidasDay extends Component {
 
     async loadData() {
         const result = await jsonrpc("/lottery/ultimas_salidas_by_day", {
-            day: this.state.day,
+            day: this.state.day_us,
         });
-        this.state.numbers = result;
+        this.state.ultimas_salidas = result;
     }
 
     async onChangeUltimasSalidas(ev) {
-        this.state.day = ev.target.value;
+        this.state.day_us = ev.target.value;
         await this.loadData();
     }
 }

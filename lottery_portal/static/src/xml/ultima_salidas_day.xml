@@ -6,7 +6,7 @@
                 <div class="mb-3 d-flex align-items-center gap-2">
                     Últimas 8 salidas
                     <i class="fa fa-arrow-right"/>
-                    <select t-model="state.day" class="form-select form-select-sm"
+                    <select t-model="state.day_us" class="form-select form-select-sm"
                             style="width:120px;"
                             t-on-change="onChangeUltimasSalidas"
                             title="Últimas 6 salidas del día seleccionado">
@@ -30,39 +30,39 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Noche</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.numbers" t-as="n" t-key="n.name">
+                    <t t-foreach="state.ultimas_salidas" t-as="us" t-key="us.fecha">
                         <tr>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
                                 <div class="day-number">
-                                    <t t-esc="n.fecha"/>
+                                    <t t-esc="us.fecha"/>
                                 </div>
                             </td>
                             <td class="text-center fw-bold">
                                 <div class="grupo-dia">
-                                    <span t-if="n.numero_dia" class="badge-dia">
-                                    <t t-esc="n.centena_dia"/>
+                                    <span t-if="us.numero_dia" class="badge-dia">
+                                    <t t-esc="us.centena_dia"/>
                                 </span>
-                                    <span t-if="n.numero_dia" class="badge-dia">
-                                    <t t-esc="n.numero_dia"/>
+                                    <span t-if="us.numero_dia" class="badge-dia">
+                                    <t t-esc="us.numero_dia"/>
                                 </span>
-                                    <t t-if="n.bola_extra_dia or n.bola_extra_dia==0">
+                                    <t t-if="us.bola_extra_dia or us.bola_extra_dia==0">
                                     <span class="badge-dia-be">
-                                        <t t-esc="n.bola_extra_dia"/>
+                                        <t t-esc="us.bola_extra_dia"/>
                                     </span>
                                 </t>
                                 </div>
                             </td>
                             <td class="text-center fw-bold">
                                 <div class="grupo-noche">
-                                    <span t-if="n.numero_noche" class="badge-noche">
-                                    <t t-esc="n.centena_noche"/>
+                                    <span t-if="us.numero_noche" class="badge-noche">
+                                    <t t-esc="us.centena_noche"/>
                                 </span>
-                                    <span t-if="n.numero_noche" class="badge-noche">
-                                        <t t-esc="n.numero_noche"/>
+                                    <span t-if="us.numero_noche" class="badge-noche">
+                                        <t t-esc="us.numero_noche"/>
                                     </span>
-                                    <t t-if="n.bola_extra_noche or n.bola_extra_noche==0">
+                                    <t t-if="us.bola_extra_noche or us.bola_extra_noche==0">
                                         <span class="badge-noche-be">
-                                            <t t-esc="n.bola_extra_noche"/>
+                                            <t t-esc="us.bola_extra_noche"/>
                                         </span>
                                 </t>
                                 </div>
