@@ -7,8 +7,8 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 export class TopAtrasos extends Component {
     setup() {
         this.state = useState({
-            type: "general",
-            numbers: [],
+            type_atraso: "general",
+            numbers_atrasos: [],
         });
 
         this.loadData();
@@ -16,13 +16,13 @@ export class TopAtrasos extends Component {
 
     async loadData() {
         const result = await jsonrpc("/lottery/top10_atrasos", {
-            type: this.state.type,
+            type: this.state.type_atraso,
         });
-        this.state.numbers = result;
+        this.state.numbers_atrasos = result;
     }
 
     async onChangeType(ev) {
-        this.state.type = ev.target.value;
+        this.state.type_atraso = ev.target.value;
         await this.loadData();
     }
 

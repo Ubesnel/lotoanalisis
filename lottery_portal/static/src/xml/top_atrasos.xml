@@ -6,7 +6,7 @@
                 <div class="mb-3 d-flex align-items-center gap-2">
                 10 Números más Atrasados
                 <i class="fa fa-arrow-right"/>
-                    <select t-model="state.type" class="form-select form-select-sm w-auto" t-on-change="onChangeType"
+                    <select t-model="state.type_atraso" class="form-select form-select-sm w-auto" t-on-change="onChangeType"
                             title="10 Números más Atrasados">
                         <option value="general">General</option>
                         <option value="dia">Tarde</option>
@@ -25,19 +25,19 @@
                             <td t-if="state.type=='general'" class="text-center fw-bold" style="color:#8c6ca8;">Horario</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.numbers" t-as="n" t-key="n.name">
+                    <t t-foreach="state.numbers_atrasos" t-as="na" t-key="na.name">
                         <tr>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.name"/>
+                                <t t-esc="na.name"/>
                             </td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.total_atrasadas"/>
+                                <t t-esc="na.total_atrasadas"/>
                             </td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.ultima_fecha"/>
+                                <t t-esc="na.ultima_fecha"/>
                             </td>
                             <td t-if="state.type=='general'" class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-if="n.ultimo_turno=='afternoon'">
+                                <t t-if="na.ultimo_turno=='afternoon'">
                                     <i class="fa fa-sun-o sun-icon-general"/>
                                 </t>
                                 <t t-else="">

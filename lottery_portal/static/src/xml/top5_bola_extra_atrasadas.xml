@@ -6,7 +6,7 @@
                 <div class="mb-3 d-flex align-items-center gap-2">
                 5 Bolas Extras más Atrasadas
                 <i class="fa fa-arrow-right"/>
-                    <select t-model="state.type" class="form-select form-select-sm"
+                    <select t-model="state.type_be" class="form-select form-select-sm"
                             style="width:120px;" t-on-change="onOnchangeTop5BolaExtra"
                             title="5 Bolas Extras más Atrasadas">
                         <option value="general">General</option>
@@ -24,14 +24,14 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.centenas" t-as="n" t-key="n.centena">
+                    <t t-foreach="state.bolas_extras" t-as="be" t-key="be.centena">
 
                             <tr>
                                 <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                    <t t-esc="n.centena"/>
+                                    <t t-esc="be.centena"/>
                                 </td>
                                 <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                    <t t-esc="n.atraso"/>
+                                    <t t-esc="be.atraso"/>
                                 </td>
                             </tr>
                     </t>

@@ -6,7 +6,7 @@
                 <div>Terminales</div>
                 <i class="fa fa-arrow-down"/>
                 <div class="mt-1">
-                    <select t-model="state.type" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeTerminales" title="Atrasos de los Terminales">
+                    <select t-model="state.type_terminal" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeTerminales" title="Atrasos de los Terminales">
                         <option value="general">General</option>
                         <option value="afternoon">Tarde</option>
                         <option value="evening">Noche</option>
@@ -22,13 +22,13 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
                         </tr>
                     </thead>
-                    <t t-foreach="state.groups" t-as="n" t-key="n.name">
+                    <t t-foreach="state.groups_terminales" t-as="group_t" t-key="group_t.name">
                         <tr>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.name"/>
+                                <t t-esc="group_t.name"/>
                             </td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="n.atraso"/>
+                                <t t-esc="group_t.atraso"/>
                             </td>
                         </tr>
                     </t>
