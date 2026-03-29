@@ -102,9 +102,7 @@
                         <owl-component name="lottery_portal.UltimasSalidasDay"/>
                     </div>
                 </div>
-            </div>
-            <div class="container mt-2 mb-5">
-                <div class="row mb-2">
+                <div class="row mb-5">
                     <div class="col-md-2 mb-2">
                         <owl-component name="lottery_portal.TopAtrasosLineas"/>
                     </div>
@@ -121,47 +119,51 @@
                         <owl-component name="lottery_portal.Top5BolaExtraAtrasadas"/>
                     </div>
                 </div>
-            </div>
-            <section class="quick-access">
-                <div class="quick-container">
-                    <div class="quick-card contacto-card">
-                        <h3>¿Tienes dudas?</h3>
-                        <p>
-                            Estamos disponibles para ayudarte con cualquier consulta.
-                        </p>
-                        <a href="/contactus" class="btn-contacto">
-                            Contáctanos
-                        </a>
-                    </div>
-                    <div class="quick-card">
-                        <h3>Consultas avanzadas Grupos</h3>
-                        <p>
-                            Explora frecuencias, atrasos y tendencias históricas detalladas de Grupos.
-                        </p>
-                        <a href="/estadisticas" class="quick-link">
-                            Ir a Grupos →
-                        </a>
-                    </div>
-                    <div class="quick-card">
-                        <h3>Consultas avanzadas Números</h3>
-                        <p>
-                            Explora frecuencias, atrasos y tendencias históricas detalladas de los Números.
-                        </p>
-                        <a href="/estadisticas-numeros" class="quick-link">
-                            Ir a Números →
-                        </a>
-                    </div>
-                    <div class="quick-card contacto-card">
-                        <h3>Preguntas y respuestas</h3>
-                        <p>
-                            Podes encontrar respuestas a muchas preguntas relacionadas con las estadísticas.
-                        </p>
-                        <a href="/faq" class="btn-contacto">
-                            Revisar →
-                        </a>
+                <div class="row">
+                    <div class="col-md-12">
+                        <section class="quick-access">
+                            <div class="quick-container">
+                                <div class="quick-card contacto-card">
+                                    <h3>¿Tienes dudas?</h3>
+                                    <p>
+                                        Estamos disponibles para ayudarte con cualquier consulta.
+                                    </p>
+                                    <a href="/contactus" class="btn-contacto">
+                                        Contáctanos
+                                    </a>
+                                </div>
+                                <div class="quick-card">
+                                    <h3>Consultas avanzadas Grupos</h3>
+                                    <p>
+                                        Explora frecuencias, atrasos y tendencias históricas detalladas de Grupos.
+                                    </p>
+                                    <a href="/estadisticas" class="quick-link">
+                                        Ir a Grupos →
+                                    </a>
+                                </div>
+                                <div class="quick-card">
+                                    <h3>Consultas avanzadas Números</h3>
+                                    <p>
+                                        Explora frecuencias, atrasos y tendencias históricas detalladas de los Números.
+                                    </p>
+                                    <a href="/estadisticas-numeros" class="quick-link">
+                                        Ir a Números →
+                                    </a>
+                                </div>
+                                <div class="quick-card contacto-card">
+                                    <h3>Preguntas y respuestas</h3>
+                                    <p>
+                                        Podes encontrar respuestas a muchas preguntas relacionadas con las estadísticas.
+                                    </p>
+                                    <a href="/faq" class="btn-contacto">
+                                        Revisar →
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
                     </div>
                 </div>
-            </section>
+            </div>
         </xpath>
     </template>
 </odoo>
