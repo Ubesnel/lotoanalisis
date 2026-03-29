@@ -27,6 +27,7 @@
     'assets': {
         'web.assets_frontend': [
             'lottery_portal/static/src/css/homepage.css',
+            'lottery_portal/static/src/css/dashboard_numbers.css',
             'lottery_portal/static/src/scss/faq.scss',
             'lottery_portal/static/src/js/faq.js',
             'lottery_portal/static/src/js/top10_by_day.js',
@@ -38,6 +39,7 @@
             'lottery_portal/static/src/js/top_atrasos_lineas.js',
             'lottery_portal/static/src/js/top_atrasos_terminales.js',
             'lottery_portal/static/src/js/top_atrasos_parejas.js',
+            'lottery_portal/static/src/js/lottery_dashboard_numbers.js',
             'lottery_portal/static/src/xml/top10_by_day.xml',
             'lottery_portal/static/src/xml/top_atrasos.xml',
             'lottery_portal/static/src/xml/ultima_salidas_day.xml',
@@ -47,6 +49,7 @@
             'lottery_portal/static/src/xml/top_atrasos_lineas.xml',
             'lottery_portal/static/src/xml/top_atrasos_terminales.xml',
             'lottery_portal/static/src/xml/top_atrasos_parejas.xml',
+            'lottery_portal/static/src/xml/lottery_dashboard_numbers.xml',
             'lottery_portal/static/src/xml/faq.xml',
         ],
     },

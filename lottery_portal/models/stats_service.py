@@ -5,6 +5,21 @@ import calendar
 from datetime import date, datetime
 from odoo.addons.lottery_base.models.utils import MONTHS_DICT
 
+MONTH_FIELD_MAP = {
+        1: "cant_salidas_enero",
+        2: "cant_salidas_febrero",
+        3: "cant_salidas_marzo",
+        4: "cant_salidas_abril",
+        5: "cant_salidas_mayo",
+        6: "cant_salidas_junio",
+        7: "cant_salidas_julio",
+        8: "cant_salidas_agosto",
+        9: "cant_salidas_septiembre",
+        10: "cant_salidas_octubre",
+        11: "cant_salidas_noviembre",
+        12: "cant_salidas_diciembre",
+    }
+
 
 class LotteryStatsService(models.AbstractModel):
     _name = 'lottery.stats.service'
@@ -216,4 +231,44 @@ class LotteryStatsService(models.AbstractModel):
                         SELECT centena, atraso
                         FROM lottery_top5_bola_extra_general_mv ORDER BY atraso DESC;                
                     """)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_numbers_month(self, month=None):
+        field = MONTH_FIELD_MAP.get(month)
+
+        if not field:
+            return []
+        query = f"""
+                SELECT
+                    LPAD(name::text, 2, '0') AS name,
+                    {field} AS total,
+                    ROW_NUMBER() OVER (
+                        ORDER BY {field} DESC, id desc
+                    ) AS rank
+                FROM lottery_number
+                ORDER BY {field} DESC, id desc
+                LIMIT 30;
+            """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_bottom_numbers_month(self, month=None):
+        field = MONTH_FIELD_MAP.get(month)
+
+        if not field:
+            return []
+        query = f"""
+                    SELECT
+                        LPAD(name::text, 2, '0') AS name,
+                        {field} AS total,
+                        ROW_NUMBER() OVER (
+                            ORDER BY {field}, id desc
+                        ) AS rank
+                    FROM lottery_number
+                    ORDER BY {field}, id desc
+                    LIMIT 30;
+                """
+        self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
