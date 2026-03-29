@@ -4,15 +4,16 @@
         <section class="hero-analitico-dashboard">
             <div class="hero-content">
                 <h3 class="hero-title-dashboard">
-                    Análisis basados en información histórica de sorteos del mes de <t t-esc="state.kpis.month"/>
+                    Analiza los números como nunca antes
                 </h3>
+                <p class="hero-subfrase"><i>Explora estadísticas, tendencias y comportamiento histórico en tiempo real</i></p>
             </div>
         </section>
         <div class="container mt-2 mb-2">
             <div class="row mb-2">
                 <div class="col-md-4 mb-2">
                     <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números más salidores</div>
+                        <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números más salidores de <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
                             <div class="balls-container">
                                     <t t-foreach="state.top_numbers" t-as="num" t-key="num.name">
@@ -25,14 +26,131 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-2" />
+                <div class="col-md-4 mb-2"/>
                 <div class="col-md-4 mb-2">
                     <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números menos salidores</div>
+                        <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números menos salidores <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
                             <div class="balls-container">
                                     <t t-foreach="state.bottom_numbers" t-as="num" t-key="num.name">
                                         <span t-att-class="'ball ' + getBallFriosClass(num.rank)"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Números más salidores por día de la semana</div>
+                            <div class="mt-1">
+                                <select t-model="state.day" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeekDay">
+                                <option value="lu">Lunes</option>
+                                <option value="ma">Martes</option>
+                                <option value="mi">Miércoles</option>
+                                <option value="ju">Jueves</option>
+                                <option value="vi">Viernes</option>
+                                <option value="sa">Sábado</option>
+                                <option value="do">Domingo</option>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.top_numbers_by_week_day" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-2"/>
+                <div class="col-md-3 mb-2">
+                     <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Números menos salidores por día de la semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
+                                    <option value="lu">Lunes</option>
+                                    <option value="ma">Martes</option>
+                                    <option value="mi">Miércoles</option>
+                                    <option value="ju">Jueves</option>
+                                    <option value="vi">Viernes</option>
+                                    <option value="sa">Sábado</option>
+                                    <option value="do">Domingo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_numbers_by_week_day" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Números más salidores por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">29, 30 y 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.top_numbers_by_week" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-2"/>
+                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Números menos salidores por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">29, 30 y 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_numbers_by_week" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
                                               t-att-title="'Cantidad de salidas históricas: ' + num.total">
                                             <t t-esc="num.name"/>
                                         </span>

@@ -20,6 +20,24 @@ MONTH_FIELD_MAP = {
         12: "cant_salidas_diciembre",
     }
 
+WEEKDAY_FIELD_MAP = {
+        "lu": "total_lunes",
+        "ma": "total_martes",
+        "mi": "total_miercoles",
+        "ju": "total_jueves",
+        "vi": "total_viernes",
+        "sa": "total_sabado",
+        "do": "total_domingo",
+}
+
+WEEK_FIELD_MAP = {
+        "sem_1": "total_semana_1",
+        "sem_2": "total_semana_2",
+        "sem_3": "total_semana_3",
+        "sem_4": "total_semana_4",
+        "sem_5": "total_semana_5"
+}
+
 
 class LotteryStatsService(models.AbstractModel):
     _name = 'lottery.stats.service'
@@ -270,5 +288,85 @@ class LotteryStatsService(models.AbstractModel):
                     ORDER BY {field}, id desc
                     LIMIT 30;
                 """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_numbers_by_week_day(self, day):
+        field = WEEKDAY_FIELD_MAP.get(day)
+
+        if not field:
+            return []
+        query = f"""
+                SELECT
+                    LPAD(name::text, 2, '0') AS name,
+                    {field} AS total,
+                    ROW_NUMBER() OVER (
+                        ORDER BY {field} desc, id desc
+                    ) AS rank
+                FROM lottery_number
+                ORDER BY {field} desc, id desc
+                LIMIT 15;
+                """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_numbers_by_week(self, week):
+        field = WEEK_FIELD_MAP.get(week)
+
+        if not field:
+            return []
+        query = f"""
+                    SELECT
+                        LPAD(name::text, 2, '0') AS name,
+                        {field} AS total,
+                        ROW_NUMBER() OVER (
+                            ORDER BY {field} desc, id desc
+                        ) AS rank
+                    FROM lottery_number
+                    ORDER BY {field} desc, id desc
+                    LIMIT 15;
+                    """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_bottom_numbers_by_week_day(self, day):
+        field = WEEKDAY_FIELD_MAP.get(day)
+
+        if not field:
+            return []
+        query = f"""
+                    SELECT
+                        LPAD(name::text, 2, '0') AS name,
+                        {field} AS total,
+                        ROW_NUMBER() OVER (
+                            ORDER BY {field}, id desc
+                        ) AS rank
+                    FROM lottery_number
+                    ORDER BY {field}, id desc
+                    LIMIT 15;
+                    """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_bottom_numbers_by_week(self, week):
+        field = WEEK_FIELD_MAP.get(week)
+
+        if not field:
+            return []
+        query = f"""
+                        SELECT
+                            LPAD(name::text, 2, '0') AS name,
+                            {field} AS total,
+                            ROW_NUMBER() OVER (
+                                ORDER BY {field}, id desc
+                            ) AS rank
+                        FROM lottery_number
+                        ORDER BY {field}, id desc
+                        LIMIT 15;
+                        """
         self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
