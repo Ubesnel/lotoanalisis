@@ -18,13 +18,17 @@ export class LotteryDashboardNumbers extends Component {
             bottom_numbers_by_week_day: [],
             bottom_numbers_by_week: [],
             day: daysMap[todayIndex],
+            day_menos: daysMap[todayIndex],
             week: this.getCurrentWeek(),
+            week_menos: this.getCurrentWeek(),
         });
 
         onWillStart(async () => {
             await this.loadData();
             await this.loadDataTopNumbersWeekDay();
             await this.loadDataTopNumbersWeek();
+            await this.loadDataBottomNumbersWeekDay();
+            await this.loadDataBottomNumbersWeek();
         });
     }
 
@@ -41,6 +45,12 @@ export class LotteryDashboardNumbers extends Component {
             day: this.state.day
         });
         this.state.top_numbers_by_week_day = data.top_numbers_by_week_day;
+    }
+
+    async loadDataBottomNumbersWeekDay() {
+        const data = await jsonrpc("/estadisticas-numeros/bottom-number-week-day", {
+            day: this.state.day_menos
+        });
         this.state.bottom_numbers_by_week_day = data.bottom_numbers_by_week_day;
     }
 
@@ -49,6 +59,11 @@ export class LotteryDashboardNumbers extends Component {
         week: this.state.week,
         });
         this.state.top_numbers_by_week = data.top_numbers_by_week;
+    }
+    async loadDataBottomNumbersWeek() {
+        const data = await jsonrpc("/estadisticas-numeros/bottom-number-week", {
+        week: this.state.week_menos,
+        });
         this.state.bottom_numbers_by_week = data.bottom_numbers_by_week;
     }
 
@@ -81,6 +96,16 @@ export class LotteryDashboardNumbers extends Component {
     async onTopNumbersWeek(ev) {
         this.state.week = ev.target.value;
         await this.loadDataTopNumbersWeek();
+    }
+
+    async onBottomNumbersWeekDay(ev) {
+        this.state.day_menos = ev.target.value;
+        await this.loadDataBottomNumbersWeekDay();
+    }
+
+    async onBottomNumbersWeek(ev) {
+        this.state.week_menos = ev.target.value;
+        await this.loadDataBottomNumbersWeek();
     }
 }
 

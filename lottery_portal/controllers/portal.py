@@ -66,18 +66,30 @@ class LotteryPortal(http.Controller):
     @http.route('/estadisticas-numeros/top-number-week-day', type='json', auth='public')
     def dashboard_top_number_week_day(self, day=False):
         top_numbers_by_week_day = request.env['lottery.stats.service'].sudo().get_top_numbers_by_week_day(day)
-        bottom_numbers_by_week_day = request.env['lottery.stats.service'].sudo().get_bottom_numbers_by_week_day(day)
+
         return {
             "top_numbers_by_week_day": top_numbers_by_week_day,
+
+        }
+
+    @http.route('/estadisticas-numeros/bottom-number-week-day', type='json', auth='public')
+    def dashboard_bottom_number_week_day(self, day=False):
+        bottom_numbers_by_week_day = request.env['lottery.stats.service'].sudo().get_bottom_numbers_by_week_day(day)
+        return {
             "bottom_numbers_by_week_day": bottom_numbers_by_week_day,
         }
 
     @http.route('/estadisticas-numeros/top-number-week', type='json', auth='public')
     def dashboard_top_number_week(self, week=False):
         top_numbers_by_week = request.env['lottery.stats.service'].sudo().get_top_numbers_by_week(week)
-        bottom_numbers_by_week = request.env['lottery.stats.service'].sudo().get_bottom_numbers_by_week(week)
         return {
             "top_numbers_by_week": top_numbers_by_week,
+        }
+
+    @http.route('/estadisticas-numeros/bottom-number-week', type='json', auth='public')
+    def dashboard_bottom_number_week(self, week=False):
+        bottom_numbers_by_week = request.env['lottery.stats.service'].sudo().get_bottom_numbers_by_week(week)
+        return {
             "bottom_numbers_by_week": bottom_numbers_by_week,
         }
 

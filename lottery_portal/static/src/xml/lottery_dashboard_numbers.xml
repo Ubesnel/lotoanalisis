@@ -79,7 +79,7 @@
                             <div>❄️ Números menos salidores por día de la semana</div>
 
                             <div class="mt-1">
-                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
+                                <select t-model="state.day_menos" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomNumbersWeekDay">
                                     <option value="lu">Lunes</option>
                                     <option value="ma">Martes</option>
                                     <option value="mi">Miércoles</option>
@@ -138,7 +138,7 @@
                             <div>❄️ Números menos salidores por semana</div>
 
                             <div class="mt-1">
-                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
+                                <select t-model="state.week_menos" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomNumbersWeek">
                                     <option value="sem_1">Del 01 al 07</option>
                                     <option value="sem_2">Del 08 al 14</option>
                                     <option value="sem_3">Del 15 al 21</option>
