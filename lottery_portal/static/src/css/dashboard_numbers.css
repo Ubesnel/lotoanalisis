@@ -174,3 +174,14 @@
     background: linear-gradient(135deg, #64748b, #2ecc71);
 }
 
+.ball-primary {
+    background: linear-gradient(135deg, #8c6ca8);
+}
+
+.balls-container-5 {
+    display: grid;
+    grid-template-columns: repeat(5, auto); /* 5 por fila */
+    gap: 8px;
+    justify-items: center;
+}
+
