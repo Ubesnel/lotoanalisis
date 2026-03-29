@@ -1,0 +1,176 @@
+.lottery-dashboard {
+    margin: auto;
+    padding: 20px;
+}
+
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.kpi-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.dashboard-header-2 {
+    text-align: center;
+    margin: 40px 0 30px 0;
+}
+
+.month {
+    color: white;
+    font-weight: 600;
+    font-size: 2rem;
+}
+
+.year {
+    color: white;
+    font-weight: 600;
+    font-size: 2rem;
+}
+
+.month-year-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #6f4a68;
+    color: white;
+    font-weight: 500;
+    padding: 3px 10px;
+    font-size: 0.85rem;
+    border-radius: 16px;
+}
+
+.balls-container {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 8px;
+    justify-items: center;
+    transform: translateX(-25px);
+}
+
+/* Base */
+.ball {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease;
+}
+
+.ball.top {
+    width: 40px;
+    height: 40px;
+}
+
+/* Hover pro */
+.ball:hover {
+    transform: scale(1.3);
+}
+
+/* 🔴 Top 10 */
+.ball-red {
+    background: linear-gradient(135deg, #ff4d4d, #cc0000);
+}
+
+/* 🔵 11–20 */
+.ball-blue {
+    background: linear-gradient(135deg, #4da6ff, #0066cc);
+}
+
+/* 🟢 21–30 */
+.ball-green {
+    background: linear-gradient(135deg, #4cd964, #2ecc71);
+}
+
+.kpi-body {
+    position: relative;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.kpi-body::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(124, 92, 255, 0.4),
+        transparent
+    );
+}
+
+.kpi-row {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 8px;
+}
+
+.hero-analitico-dashboard {
+    text-align: center;
+    padding: 90px 10px 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f2f7 100%);
+}
+
+.hero-title-dashboard {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+
+    background: linear-gradient(90deg, #6f4a8e, #8c6ca8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Destacar palabra central con peso */
+.hero-title-dashboard span {
+    font-weight: 600;
+}
+
+/* Línea decorativa más fina */
+.hero-title-dashboard::after {
+    content: "";
+    display: block;
+    width: 90px;
+    height: 3px;
+    background: #8c6ca8;
+    margin: 22px auto 0;
+    border-radius: 3px;
+    opacity: 0.7;
+}
+
+
+.ball-azul-analitico {
+    background: linear-gradient(135deg, #3b82f6);
+}
+
+.ball-cian {
+    background: linear-gradient(135deg, #06b6d4, #0066cc);
+}
+
+.ball-grisaceo {
+    background: linear-gradient(135deg, #64748b, #2ecc71);
+}
+

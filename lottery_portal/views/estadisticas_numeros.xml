@@ -2,9 +2,7 @@
 <odoo>
     <template id="portal_estadisticas_numeros" name="Estadísticas de números">
         <t t-call="website.layout">
-            <div class="container mt-5 mb-5">
-
-            </div>
+            <owl-component name="lottery_portal.LotteryDashboardNumbers"/>
         </t>
     </template>
 </odoo>

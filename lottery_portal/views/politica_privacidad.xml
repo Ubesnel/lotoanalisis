@@ -1,67 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="terminos_condiciones_page" name="Términos y condiciones">
-    <t t-call="website.layout">
-        <div class="container my-5">
-            <p><strong>Última actualización:</strong> 27 de marzo de 2026</p>
+    <template id="politica_privacidad_page" name="Política de privacidad">
+        <t t-call="website.layout">
+            <section class="privacy-container">
+                <div class="privacy-header">
+                    <p class="update-date">Última actualización: 27 de marzo de 2026</p>
+                </div>
+                <div class="privacy-card">
+                    <h2>1. Introducción</h2>
+                    <p>
+                        Este sitio web proporciona acceso a información y estadísticas relacionadas con sistemas Odoo.
+                        El uso del sitio implica la aceptación de esta Política de Privacidad.
+                    </p>
+                </div>
+                <div class="privacy-card">
+                <h2>2. Datos recopilados</h2>
 
-            <h3>1. Aceptación</h3>
-            <p>
-                Al acceder y utilizar este sitio web, el usuario acepta estos Términos y Condiciones.
-            </p>
+                <h3>📊 Datos técnicos</h3>
+                <ul>
+                    <li>Dirección IP</li>
+                    <li>Tipo de navegador</li>
+                    <li>Sistema operativo</li>
+                    <li>Fecha y hora de acceso</li>
+                    <li>Páginas visitadas</li>
+                </ul>
 
-            <h3>2. Uso del sitio</h3>
-            <p>El sitio proporciona información y estadísticas relacionadas con sistemas Odoo.</p>
-            <ul>
-                <li>No utilizar el sitio con fines ilegales</li>
-                <li>No intentar acceder sin autorización a sistemas o datos</li>
-                <li>No realizar scraping o uso abusivo del servicio</li>
-            </ul>
-
-            <h3>3. Acceso autenticado</h3>
-            <p>
-                Algunas funcionalidades requieren autenticación mediante Odoo.
-                El usuario es responsable de mantener la confidencialidad de sus credenciales.
-            </p>
-
-            <h3>4. Disponibilidad</h3>
-            <p>
-                El sitio puede no estar disponible en todo momento debido a mantenimiento o fallos técnicos.
-            </p>
-
-            <h3>5. Limitación de responsabilidad</h3>
-            <p>
-                La información proporcionada es de carácter informativo y puede contener errores o no estar actualizada.
-                No se garantiza su exactitud ni disponibilidad.
-            </p>
-
-            <h3>6. Propiedad intelectual</h3>
-            <p>
-                El contenido del sitio no puede ser copiado, distribuido o reutilizado sin autorización.
-            </p>
-
-            <h3>7. Publicidad</h3>
-            <p>
-                El sitio puede mostrar publicidad de terceros, como Google AdSense, sin control sobre el contenido de los anuncios.
-            </p>
-
-            <h3>8. Modificaciones</h3>
-            <p>
-                Nos reservamos el derecho de modificar estos términos en cualquier momento.
-            </p>
-
-            <h3>9. Legislación aplicable</h3>
-            <p>
-                Estos términos se rigen por la legislación aplicable.
-            </p>
-
-            <h3>10. Contacto</h3>
-            <p>
-                Para consultas, utilice los medios de contacto disponibles en el sitio.
-            </p>
-
-        </div>
-    </t>
-</template>
+                <h3>👤 Datos de usuario (login Odoo)</h3>
+                <ul>
+                    <li>Identificador de usuario</li>
+                    <li>Nombre</li>
+                    <li>Información básica de la cuenta</li>
+                </ul>
+            </div>
+                <div class="privacy-card">
+                <h2>3. Uso de los datos</h2>
+                <ul>
+                    <li>Permitir el acceso autenticado</li>
+                    <li>Garantizar el correcto funcionamiento del sitio</li>
+                    <li>Mejorar la experiencia del usuario</li>
+                    <li>Mantener la seguridad del sistema</li>
+                    <li>Analizar el uso del sitio</li>
+                </ul>
+            </div>
+                <div class="privacy-card">
+                <h2>4. Cookies</h2>
+                <p>
+                    Este sitio utiliza cookies para mantener la sesión del usuario, recordar preferencias
+                    y mejorar la experiencia de navegación.
+                </p>
+            </div>
+                <div class="privacy-card">
+                <h2>5. Publicidad</h2>
+                <p>
+                    Este sitio puede utilizar servicios de publicidad como Google AdSense, que emplean cookies
+                    para mostrar anuncios personalizados.
+                </p>
+                <p>
+                    Más información:
+                    <a href="https://policies.google.com/technologies/ads" target="_blank">
+                        https://policies.google.com/technologies/ads
+                    </a>
+                </p>
+            </div>
+                <div class="privacy-card">
+                <h2>6. Compartición de datos</h2>
+                <p>
+                    No se venden datos personales. Solo se compartirán en caso de obligación legal
+                    o para proteger la seguridad del sistema.
+                </p>
+            </div>
+                <div class="privacy-card">
+                <h2>7. Seguridad</h2>
+                <p>
+                    Se aplican medidas razonables para proteger la información contra accesos no autorizados.
+                </p>
+            </div>
+                <div class="privacy-card">
+                <h2>8. Derechos del usuario</h2>
+                <p>
+                    El usuario puede solicitar acceso, corrección o eliminación de sus datos cuando corresponda.
+                </p>
+            </div>
+                <div class="privacy-card">
+                <h2>9. Cambios</h2>
+                <p>
+                    Esta política puede ser modificada en cualquier momento. Los cambios serán publicados
+                    en esta misma página.
+                </p>
+            </div>
+                <div class="privacy-card">
+                <h2>10. Contacto</h2>
+                <p>
+                    Para consultas, utilice los medios de contacto disponibles en el sitio.
+                </p>
+            </div>
+            </section>
+        </t>
+    </template>
 </odoo>
 

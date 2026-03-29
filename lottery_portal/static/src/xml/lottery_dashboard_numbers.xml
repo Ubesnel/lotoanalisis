@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.LotteryDashboardNumbers" owl="1">
+        <section class="hero-analitico-dashboard">
+            <div class="hero-content">
+                <h3 class="hero-title-dashboard">
+                    Análisis basados en información histórica de sorteos del mes de <t t-esc="state.kpis.month"/>
+                </h3>
+            </div>
+        </section>
+        <div class="container mt-2 mb-2">
+            <div class="row mb-2">
+                <div class="col-md-4 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números más salidores</div>
+                        <div class="card-body p-3">
+                            <div class="balls-container">
+                                    <t t-foreach="state.top_numbers" t-as="num" t-key="num.name">
+                                        <span t-att-class="'ball ' + getBallClass(num.rank)"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2" />
+                <div class="col-md-4 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números menos salidores</div>
+                        <div class="card-body p-3">
+                            <div class="balls-container">
+                                    <t t-foreach="state.bottom_numbers" t-as="num" t-key="num.name">
+                                        <span t-att-class="'ball ' + getBallFriosClass(num.rank)"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

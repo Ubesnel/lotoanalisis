@@ -3,6 +3,7 @@
 from odoo import http
 from odoo.http import request
 from datetime import datetime
+from odoo.addons.lottery_base.models.utils import MONTHS_DICT
 
 class LotteryPortal(http.Controller):
 
@@ -48,6 +49,19 @@ class LotteryPortal(http.Controller):
     @http.route('/estadisticas-numeros', type='http', auth='public', website=True)
     def portal_estadisticas_numeros_page(self, **kw):
         return request.render('lottery_portal.portal_estadisticas_numeros')
+
+    @http.route('/estadisticas-numeros/dashboard_data', type='json', auth='public')
+    def dashboard_info_numbers(self, month=False):
+        month_filter = month or datetime.today().month
+        top_numbers = request.env['lottery.stats.service'].sudo().get_top_numbers_month(month_filter)
+        bottom_numbers = request.env['lottery.stats.service'].sudo().get_bottom_numbers_month(month_filter)
+        return {
+            "kpis": {
+                "month": MONTHS_DICT[str(month_filter)],
+            },
+            "top_numbers": top_numbers,
+            "bottom_numbers": bottom_numbers
+        }
 
 class LotteryController(http.Controller):
 
