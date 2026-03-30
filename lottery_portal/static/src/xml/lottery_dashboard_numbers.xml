@@ -68,25 +68,29 @@
                                 </t>
                                 </div>
                                 </div>
-                                <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes posteriores</div>
-                                <div class="balls-container mb-3">
-                                    <t t-foreach="state.socios_posteriores" t-as="sp" t-key="sp.name">
-                                        <span class="ball ball-primary"
-                                              t-att-title="'Cantidad de veces: ' + sp.cantidad_veces">
-                                            <t t-esc="sp.name"/>
-                                        </span>
-                                    </t>
-                                </div>
-                                <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes anteriores</div>
-                                <div class="balls-container">
-                                    <t t-foreach="state.socios_anteriores" t-as="sa" t-key="sa.name">
-                                        <span class="ball ball-primary"
-                                              data-bs-toggle="tooltip"
-                                              t-att-title="'Cantidad de veces: ' + sa.cantidad_veces">
-                                            <t t-esc="sa.name"/>
-                                        </span>
-                                    </t>
-                                </div>
+                                <t t-if="state.socios_posteriores.length">
+                                    <div t-if="state.socios_posteriores" class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes posteriores</div>
+                                    <div t-if="state.socios_posteriores" class="balls-container mb-3">
+                                        <t t-foreach="state.socios_posteriores" t-as="sp" t-key="sp.name">
+                                            <span class="ball ball-primary"
+                                                  t-att-title="'Cantidad de veces: ' + sp.cantidad_veces">
+                                                <t t-esc="sp.name"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                </t>
+                                <t t-if="state.socios_anteriores.length">
+                                    <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes anteriores</div>
+                                    <div class="balls-container">
+                                        <t t-foreach="state.socios_anteriores" t-as="sa" t-key="sa.name">
+                                            <span class="ball ball-primary"
+                                                  data-bs-toggle="tooltip"
+                                                  t-att-title="'Cantidad de veces: ' + sa.cantidad_veces">
+                                                <t t-esc="sa.name"/>
+                                            </span>
+                                        </t>
+                                    </div>
+                                </t>
                             </div>
                     </div>
                 </div>
