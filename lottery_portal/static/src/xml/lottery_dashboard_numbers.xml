@@ -13,7 +13,7 @@
             <div class="row mb-2">
                 <div class="col-md-3 mb-2">
                     <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números más salidores de <t t-esc="state.kpis.month"/></div>
+                        <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números que más salen en <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
                             <div class="balls-container">
                                     <t t-foreach="state.top_numbers" t-as="num" t-key="num.name">
@@ -25,10 +25,48 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3 overflow-hidden mb-2">
+                        <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                            Información de los números que más salen en <t t-esc="state.kpis.month"/> y no han salido este año
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Última salida</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Turno</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Día</td>
+                                </tr>
+                            </thead>
+                                <t t-foreach="state.top_numbers_info" t-as="tni" t-key="tni.name">
+                                <tr>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="tni.name"/>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="tni.last_date"/>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-if="tni.turn_day=='afternoon'">
+                                            <i class="fa fa-sun-o sun-icon-general"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-moon-o moon-icon-general"/>
+                                        </t>
+                                    </td>
+                                    <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="tni.week_day_label"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
                     <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números menos salidores <t t-esc="state.kpis.month"/></div>
+                        <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números que menos salen en <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
                             <div class="balls-container">
                                     <t t-foreach="state.bottom_numbers" t-as="num" t-key="num.name">
@@ -42,16 +80,328 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3" style="overflow: visible;">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Números históricos que más salen por día de la semana</div>
+                            <div class="mt-1">
+                                <select t-model="state.day" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeekDay">
+                                <option value="lu">Lunes</option>
+                                <option value="ma">Martes</option>
+                                <option value="mi">Miércoles</option>
+                                <option value="ju">Jueves</option>
+                                <option value="vi">Viernes</option>
+                                <option value="sa">Sábado</option>
+                                <option value="do">Domingo</option>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.top_numbers_by_week_day" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Números históricos que menos salen por día de la semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.day_menos" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomNumbersWeekDay">
+                                    <option value="lu">Lunes</option>
+                                    <option value="ma">Martes</option>
+                                    <option value="mi">Miércoles</option>
+                                    <option value="ju">Jueves</option>
+                                    <option value="vi">Viernes</option>
+                                    <option value="sa">Sábado</option>
+                                    <option value="do">Domingo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_numbers_by_week_day" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Centenas históricas que más salen por día de la semana</div>
+                            <div class="mt-1">
+                                <select t-model="state.day_centena" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopCentenaWeekDay">
+                                <option value="lu">Lunes</option>
+                                <option value="ma">Martes</option>
+                                <option value="mi">Miércoles</option>
+                                <option value="ju">Jueves</option>
+                                <option value="vi">Viernes</option>
+                                <option value="sa">Sábado</option>
+                                <option value="do">Domingo</option>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                <t t-foreach="state.top_centena_by_week_day" t-as="tcbwd" t-key="tcbwd.centena">
+                                    <span class="ball ball-primary"
+                                          t-att-title="'Cantidad de salidas históricas: ' + tcbwd.total_salidas">
+                                        <t t-esc="tcbwd.centena"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Centenas históricas que menos salen por día de la semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.day_menos_centena" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomCentenaWeekDay">
+                                    <option value="lu">Lunes</option>
+                                    <option value="ma">Martes</option>
+                                    <option value="mi">Miércoles</option>
+                                    <option value="ju">Jueves</option>
+                                    <option value="vi">Viernes</option>
+                                    <option value="sa">Sábado</option>
+                                    <option value="do">Domingo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_centena_by_week_day" t-as="bcbwd" t-key="bcbwd.centena">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + bcbwd.total_salidas">
+                                            <t t-esc="bcbwd.centena"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Bolas extras históricas que más salen por día de la semana</div>
+                            <div class="mt-1">
+                                <select t-model="state.day_bola_extra" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopBolaExtraWeekDay">
+                                <option value="lu">Lunes</option>
+                                <option value="ma">Martes</option>
+                                <option value="mi">Miércoles</option>
+                                <option value="ju">Jueves</option>
+                                <option value="vi">Viernes</option>
+                                <option value="sa">Sábado</option>
+                                <option value="do">Domingo</option>
+                            </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                <t t-foreach="state.top_bola_extra_by_week_day" t-as="tbebwd" t-key="tbebwd.centena">
+                                    <span class="ball ball-primary"
+                                          t-att-title="'Cantidad de salidas históricas: ' + tbebwd.total_salidas">
+                                        <t t-esc="tbebwd.centena"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Bolas extras históricas que menos salen por día de la semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.day_menos_bola_extra" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomBolaExtraWeekDay">
+                                    <option value="lu">Lunes</option>
+                                    <option value="ma">Martes</option>
+                                    <option value="mi">Miércoles</option>
+                                    <option value="ju">Jueves</option>
+                                    <option value="vi">Viernes</option>
+                                    <option value="sa">Sábado</option>
+                                    <option value="do">Domingo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_bola_extra_by_week_day" t-as="bbebwd" t-key="bbebwd.centena">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + bbebwd.total_salidas">
+                                            <t t-esc="bbebwd.centena"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Números históricos que más salen por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">Del 29 al 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.top_numbers_by_week" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Números históricos que menos salen por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week_menos" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomNumbersWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">Del 29 al 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_numbers_by_week" t-as="num" t-key="num.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
+                                            <t t-esc="num.name"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Centenas históricas que más salen por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week_centena" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopCentenaWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">Del 29 al 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.top_centena_by_week" t-as="tcbw" t-key="tcbw.centena">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + tcbw.total_salidas">
+                                            <t t-esc="tcbw.centena"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Centenas históricas que menos salen por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week_menos_centena" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomCentenaWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">Del 29 al 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_centena_by_week" t-as="bcbw" t-key="bcbw.centena">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + bcbw.total_salidas">
+                                            <t t-esc="bcbw.centena"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>🔥 Bolas extras históricas que más salen por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week_bola_extra" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopBolaExtraWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">Del 29 al 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.top_bola_extra_by_week" t-as="tbebw" t-key="tbebw.centena">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + tbebw.total_salidas">
+                                            <t t-esc="tbebw.centena"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card shadow border-0 p-3 mb-2">
+                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                            <div>❄️ Bolas extras históricas que menos salen por semana</div>
+
+                            <div class="mt-1">
+                                <select t-model="state.week_menos_bola_extra" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomBolaExtraWeek">
+                                    <option value="sem_1">Del 01 al 07</option>
+                                    <option value="sem_2">Del 08 al 14</option>
+                                    <option value="sem_3">Del 15 al 21</option>
+                                    <option value="sem_4">Del 22 al 28</option>
+                                    <option value="sem_5">Del 29 al 31</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="balls-container-5">
+                                    <t t-foreach="state.bottom_bola_extra_by_week" t-as="bbebw" t-key="bbebw.centena">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de salidas históricas: ' + bbebw.total_salidas">
+                                            <t t-esc="bbebw.centena"/>
+                                        </span>
+                                    </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
                             <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
-                                <i class="fa fa-search me-2"/>
-                                Buscar acompañantes
+                                Consultar acompañantes
                             </div>
                             <div class="card-body p-3">
                                 <div class="position-relative mb-3" style="max-width:200px">
                                     <input type="text"
                                        class="form-control"
-                                       placeholder="Buscar número..."
+                                       placeholder="Escriba el número..."
                                        t-model="state.numero_text"
                                        t-on-input="onBuscarNumero"/>
                                     <div class="dropdown-menu show w-100 "
@@ -84,7 +434,6 @@
                                     <div class="balls-container">
                                         <t t-foreach="state.socios_anteriores" t-as="sa" t-key="sa.name">
                                             <span class="ball ball-primary"
-                                                  data-bs-toggle="tooltip"
                                                   t-att-title="'Cantidad de veces: ' + sa.cantidad_veces">
                                                 <t t-esc="sa.name"/>
                                             </span>
@@ -93,125 +442,69 @@
                                 </t>
                             </div>
                     </div>
-                </div>
-                <div class="col-md-3 mb-2"/>
-            </div>
-            <div class="row mb-2">
-                <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
-                            <div>🔥 Números más salidores por día de la semana</div>
-                            <div class="mt-1">
-                                <select t-model="state.day" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeekDay">
-                                <option value="lu">Lunes</option>
-                                <option value="ma">Martes</option>
-                                <option value="mi">Miércoles</option>
-                                <option value="ju">Jueves</option>
-                                <option value="vi">Viernes</option>
-                                <option value="sa">Sábado</option>
-                                <option value="do">Domingo</option>
-                            </select>
+                    <div class="card shadow border-0 p-3 overflow-hidden mb-2">
+                        <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                            Números históricos que tienen más repeticiones
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Repeticiones</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Última repetición</td>
+                                </tr>
+                            </thead>
+                                <t t-foreach="state.top_repeticiones" t-as="rep" t-key="rep.name">
+                                <tr>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="rep.name"/>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="rep.repeticiones"/>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="rep.ultima_repeticion"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            </table>
                             </div>
                         </div>
-                        <div class="card-body p-3">
-                            <div class="balls-container-5">
-                                    <t t-foreach="state.top_numbers_by_week_day" t-as="num" t-key="num.name">
-                                        <span class="ball ball-primary"
-                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </t>
+                    </div>
+                    <div class="card shadow border-0 p-3 overflow-hidden mb-2">
+                        <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
+                            Números históricos que tienen más pegadas
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Pegadas</td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Última pegada</td>
+                                </tr>
+                            </thead>
+                                <t t-foreach="state.top_pegados" t-as="t_peg" t-key="t_peg.name">
+                                <tr>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="t_peg.name"/>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="t_peg.pegadas"/>
+                                    </td>
+                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                        <t t-esc="t_peg.ultima_pegada"/>
+                                    </td>
+                                </tr>
+                            </t>
+                            </table>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
-                            <div>❄️ Números menos salidores por día de la semana</div>
-
-                            <div class="mt-1">
-                                <select t-model="state.day_menos" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomNumbersWeekDay">
-                                    <option value="lu">Lunes</option>
-                                    <option value="ma">Martes</option>
-                                    <option value="mi">Miércoles</option>
-                                    <option value="ju">Jueves</option>
-                                    <option value="vi">Viernes</option>
-                                    <option value="sa">Sábado</option>
-                                    <option value="do">Domingo</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="balls-container-5">
-                                    <t t-foreach="state.bottom_numbers_by_week_day" t-as="num" t-key="num.name">
-                                        <span class="ball ball-primary"
-                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </t>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-2"/>
-            </div>
-            <div class="row mb-2">
-                <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
-                            <div>🔥 Números más salidores por semana</div>
-
-                            <div class="mt-1">
-                                <select t-model="state.week" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeek">
-                                    <option value="sem_1">Del 01 al 07</option>
-                                    <option value="sem_2">Del 08 al 14</option>
-                                    <option value="sem_3">Del 15 al 21</option>
-                                    <option value="sem_4">Del 22 al 28</option>
-                                    <option value="sem_5">29, 30 y 31</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="balls-container-5">
-                                    <t t-foreach="state.top_numbers_by_week" t-as="num" t-key="num.name">
-                                        <span class="ball ball-primary"
-                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </t>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
-                            <div>❄️ Números menos salidores por semana</div>
-
-                            <div class="mt-1">
-                                <select t-model="state.week_menos" class="form-select form-select-sm w-auto mx-auto" t-on-change="onBottomNumbersWeek">
-                                    <option value="sem_1">Del 01 al 07</option>
-                                    <option value="sem_2">Del 08 al 14</option>
-                                    <option value="sem_3">Del 15 al 21</option>
-                                    <option value="sem_4">Del 22 al 28</option>
-                                    <option value="sem_5">29, 30 y 31</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="balls-container-5">
-                                    <t t-foreach="state.bottom_numbers_by_week" t-as="num" t-key="num.name">
-                                        <span class="ball ball-primary"
-                                              t-att-title="'Cantidad de salidas históricas: ' + num.total">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </t>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 mb-2"/>
             </div>
         </div>
     </t>

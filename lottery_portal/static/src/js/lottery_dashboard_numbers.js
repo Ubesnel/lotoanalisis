@@ -1,28 +1,46 @@
 /** @odoo-module **/
 
-import { Component, onWillStart, useState, useRef, onMounted, onPatched } from "@odoo/owl";
+import { Component, onWillStart, useState} from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
 import { Tooltip } from "@web/core/tooltip/tooltip";
 
 export class LotteryDashboardNumbers extends Component {
     setup() {
-        const root = useRef("root");
         const todayIndex = new Date().getDay();
         const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
         this.state = useState({
             loading: true,
             kpis: {},
             top_numbers: [],
+            top_numbers_info: [],
+            top_repeticiones: [],
+            top_pegados: [],
             bottom_numbers: [],
             top_numbers_by_week_day: [],
             top_numbers_by_week: [],
             bottom_numbers_by_week_day: [],
             bottom_numbers_by_week: [],
+            top_centena_by_week_day: [],
+            top_centena_by_week: [],
+            bottom_centena_by_week_day: [],
+            bottom_centena_by_week: [],
+            top_bola_extra_by_week_day: [],
+            top_bola_extra_by_week: [],
+            bottom_bola_extra_by_week_day: [],
+            bottom_bola_extra_by_week: [],
             day: daysMap[todayIndex],
             day_menos: daysMap[todayIndex],
+            day_menos_centena: daysMap[todayIndex],
+            day_menos_bola_extra: daysMap[todayIndex],
+            day_centena: daysMap[todayIndex],
+            day_bola_extra: daysMap[todayIndex],
             week: this.getCurrentWeek(),
+            week_centena: this.getCurrentWeek(),
+            week_bola_extra: this.getCurrentWeek(),
             week_menos: this.getCurrentWeek(),
+            week_menos_centena: this.getCurrentWeek(),
+            week_menos_bola_extra: this.getCurrentWeek(),
             numero_text: '',
             number_id: null,
             sugerencias: [],
@@ -36,28 +54,24 @@ export class LotteryDashboardNumbers extends Component {
             await this.loadDataTopNumbersWeek();
             await this.loadDataBottomNumbersWeekDay();
             await this.loadDataBottomNumbersWeek();
+            await this.loadDataTopCentenaWeekDay();
+            await this.loadDataTopCentenaWeek();
+            await this.loadDataBottomCentenaWeekDay();
+            await this.loadDataBottomCentenaWeek();
+            await this.loadDataTopBolaExtraWeekDay();
+            await this.loadDataTopBolaExtraWeek();
+            await this.loadDataBottomBolaExtraWeekDay();
+            await this.loadDataBottomBolaExtraWeek();
+            await this.loadDataTopRepeticiones();
+            await this.loadDataTopPegados();
         });
-
-        const initTooltips = () => {
-            const el = root.el;
-            if (!el) return;
-            el.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((node) => {
-            if (node._tooltip) {
-                node._tooltip.dispose();
-            }
-            node._tooltip = new Tooltip(node);
-            });
-        };
-
-        onMounted(initTooltips);
-        onPatched(initTooltips);
     }
-
 
     async loadData() {
         const data = await jsonrpc("/estadisticas-numeros/dashboard_data", {});
         this.state.kpis = data.kpis;
         this.state.top_numbers = data.top_numbers;
+        this.state.top_numbers_info = data.top_numbers_info;
         this.state.bottom_numbers = data.bottom_numbers;
         this.state.loading = false;
     }
@@ -88,6 +102,72 @@ export class LotteryDashboardNumbers extends Component {
         week: this.state.week_menos,
         });
         this.state.bottom_numbers_by_week = data.bottom_numbers_by_week;
+    }
+
+    async loadDataTopCentenaWeekDay() {
+        const data = await jsonrpc("/estadisticas-numeros/top-centena-week-day", {
+            day: this.state.day_centena, field: 'hundreds_id'
+        });
+        this.state.top_centena_by_week_day = data.top_info_by_week_day;
+    }
+
+    async loadDataBottomCentenaWeekDay() {
+        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week-day", {
+            day: this.state.day_menos_centena, field: 'hundreds_id'
+        });
+        this.state.bottom_centena_by_week_day = data.bottom_info_by_week_day;
+    }
+
+    async loadDataTopCentenaWeek() {
+        const data = await jsonrpc("/estadisticas-numeros/top-centena-week", {
+        week: this.state.week_centena, field: 'hundreds_id'
+        });
+        this.state.top_centena_by_week = data.top_info_by_week;
+    }
+
+    async loadDataBottomCentenaWeek() {
+        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week", {
+        week: this.state.week_menos_centena, field: 'hundreds_id'
+        });
+        this.state.bottom_centena_by_week = data.bottom_info_by_week;
+    }
+
+    async loadDataTopBolaExtraWeekDay() {
+        const data = await jsonrpc("/estadisticas-numeros/top-centena-week-day", {
+            day: this.state.day_bola_extra, field: 'fireball_id'
+        });
+        this.state.top_bola_extra_by_week_day = data.top_info_by_week_day;
+    }
+
+    async loadDataBottomBolaExtraWeekDay() {
+        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week-day", {
+            day: this.state.day_menos_bola_extra, field: 'fireball_id'
+        });
+        this.state.bottom_bola_extra_by_week_day = data.bottom_info_by_week_day;
+    }
+
+    async loadDataTopBolaExtraWeek() {
+        const data = await jsonrpc("/estadisticas-numeros/top-centena-week", {
+        week: this.state.week_bola_extra, field: 'fireball_id'
+        });
+        this.state.top_bola_extra_by_week = data.top_info_by_week;
+    }
+
+    async loadDataBottomBolaExtraWeek() {
+        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week", {
+        week: this.state.week_menos_bola_extra, field: 'fireball_id'
+        });
+        this.state.bottom_bola_extra_by_week = data.bottom_info_by_week;
+    }
+
+    async loadDataTopRepeticiones() {
+        const data = await jsonrpc("/estadisticas-numeros/top-repeticiones", {});
+        this.state.top_repeticiones = data.top_repeticiones;
+    }
+
+    async loadDataTopPegados() {
+        const data = await jsonrpc("/estadisticas-numeros/top-pegados", {});
+        this.state.top_pegados = data.top_pegados;
     }
 
     getCurrentWeek() {
@@ -129,6 +209,46 @@ export class LotteryDashboardNumbers extends Component {
     async onBottomNumbersWeek(ev) {
         this.state.week_menos = ev.target.value;
         await this.loadDataBottomNumbersWeek();
+    }
+
+    async onTopCentenaWeekDay(ev) {
+        this.state.day_centena = ev.target.value;
+        await this.loadDataTopCentenaWeekDay();
+    }
+
+    async onTopCentenaWeek(ev) {
+        this.state.week_centena = ev.target.value;
+        await this.loadDataTopCentenaWeek();
+    }
+
+    async onBottomCentenaWeekDay(ev) {
+        this.state.day_menos_centena = ev.target.value;
+        await this.loadDataBottomCentenaWeekDay();
+    }
+
+    async onBottomCentenaWeek(ev) {
+        this.state.week_menos_centena = ev.target.value;
+        await this.loadDataBottomCentenaWeek();
+    }
+
+    async onTopBolaExtraWeekDay(ev) {
+        this.state.day_bola_extra = ev.target.value;
+        await this.loadDataTopBolaExtraWeekDay();
+    }
+
+    async onTopBolaExtraWeek(ev) {
+        this.state.week_bola_extra = ev.target.value;
+        await this.loadDataTopBolaExtraWeek();
+    }
+
+    async onBottomBolaExtraWeekDay(ev) {
+        this.state.day_menos_bola_extra = ev.target.value;
+        await this.loadDataBottomBolaExtraWeekDay();
+    }
+
+    async onBottomBolaExtraWeek(ev) {
+        this.state.week_menos_bola_extra = ev.target.value;
+        await this.loadDataBottomBolaExtraWeek();
     }
 
     async onBuscarNumero(ev) {

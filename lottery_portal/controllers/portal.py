@@ -55,12 +55,16 @@ class LotteryPortal(http.Controller):
         month_filter = month or datetime.today().month
         top_numbers = request.env['lottery.stats.service'].sudo().get_top_numbers_month(month_filter)
         bottom_numbers = request.env['lottery.stats.service'].sudo().get_bottom_numbers_month(month_filter)
+
+        top_numbers_info = request.env['lottery.stats.service'].sudo().get_top_numbers_month_info(str(month_filter), top_numbers)
+
         return {
             "kpis": {
                 "month": MONTHS_DICT[str(month_filter)],
             },
             "top_numbers": top_numbers,
             "bottom_numbers": bottom_numbers,
+            "top_numbers_info": top_numbers_info,
         }
 
     @http.route('/estadisticas-numeros/top-number-week-day', type='json', auth='public')
@@ -109,6 +113,50 @@ class LotteryPortal(http.Controller):
         ])
 
         return numbers.read(['id', 'name'])
+
+    @http.route('/estadisticas-numeros/top-centena-week-day', type='json', auth='public')
+    def dashboard_top_centena_week_day(self, day=False, field=False):
+        top_info_by_week_day = request.env['lottery.stats.service'].sudo().get_top_centenas_by_week_day(day, field)
+
+        return {
+            "top_info_by_week_day": top_info_by_week_day,
+
+        }
+
+    @http.route('/estadisticas-numeros/bottom-centena-week-day', type='json', auth='public')
+    def dashboard_bottom_centena_week_day(self, day=False, field=False):
+        bottom_info_by_week_day = request.env['lottery.stats.service'].sudo().get_bottom_centenas_by_week_day(day, field)
+        return {
+            "bottom_info_by_week_day": bottom_info_by_week_day,
+        }
+
+    @http.route('/estadisticas-numeros/top-centena-week', type='json', auth='public')
+    def dashboard_top_centena_week(self, week=False, field=False):
+        top_info_by_week = request.env['lottery.stats.service'].sudo().get_top_centenas_by_week(week, field)
+        return {
+            "top_info_by_week": top_info_by_week,
+        }
+
+    @http.route('/estadisticas-numeros/bottom-centena-week', type='json', auth='public')
+    def dashboard_bottom_centena_week(self, week=False, field=False):
+        bottom_info_by_week = request.env['lottery.stats.service'].sudo().get_bottom_centenas_by_week(week, field)
+        return {
+            "bottom_info_by_week": bottom_info_by_week,
+        }
+
+    @http.route('/estadisticas-numeros/top-repeticiones', type='json', auth='public')
+    def dashboard_top_repeticiones(self):
+        top_repeticiones = request.env['lottery.stats.service'].sudo().get_top_repeticiones()
+        return {
+            "top_repeticiones": top_repeticiones,
+        }
+
+    @http.route('/estadisticas-numeros/top-pegados', type='json', auth='public')
+    def dashboard_top_pegados(self):
+        top_pegados = request.env['lottery.stats.service'].sudo().get_top_pegados()
+        return {
+            "top_pegados": top_pegados,
+        }
 
 class LotteryController(http.Controller):
 
