@@ -49,10 +49,10 @@
 
 .balls-container {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 8px;
     justify-items: center;
-    transform: translateX(-25px);
+
 }
 
 /* Base */

@@ -370,3 +370,56 @@ class LotteryStatsService(models.AbstractModel):
                         """
         self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_salidas_numeros_despues_numero(self, number_id):
+        query = f"""
+            SELECT    
+                LPAD(ln_next.name::text, 2, '0') AS name,
+                count(ln_next.name) as cantidad_veces            
+            FROM (
+                SELECT 
+                    lo.*,
+                    LEAD(lo.id) OVER (ORDER BY lo.date ASC, CASE 
+                                                            WHEN lo.turn_day = 'afternoon' THEN 1
+                                                            WHEN lo.turn_day = 'evening' THEN 2
+                                    END) AS next_id
+                    FROM lottery_output lo) lo_actual
+            
+            JOIN lottery_output lo_next ON lo_next.id = lo_actual.next_id
+            JOIN lottery_number ln_actual ON ln_actual.id = lo_actual.number_id
+            JOIN lottery_number ln_next ON ln_next.id = lo_next.number_id
+            WHERE lo_actual.number_id = {number_id}
+            group by ln_next.name order by count(ln_next.name) desc, ln_next.name limit 10;
+        """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_salidas_numeros_antes_numero(self, number_id):
+        query = f"""
+                SELECT  
+                LPAD(ln_prev.name::text, 2, '0') AS name,
+                count(ln_prev.name) as cantidad_veces  
+                FROM (
+                    SELECT 
+                        lo.*,
+                        LAG(lo.id) OVER (
+                            ORDER BY 
+                                lo.date ASC,
+                                CASE 
+                                    WHEN lo.turn_day = 'afternoon' THEN 1
+                                    WHEN lo.turn_day = 'evening' THEN 2
+                                END
+                        ) AS prev_id
+                    FROM lottery_output lo
+                ) lo_actual                
+                JOIN lottery_output lo_prev ON lo_prev.id = lo_actual.prev_id
+                JOIN lottery_number ln_actual ON ln_actual.id = lo_actual.number_id
+                JOIN lottery_number ln_prev ON ln_prev.id = lo_prev.number_id
+                WHERE lo_actual.number_id = {number_id}
+                group by ln_prev.name order by count(ln_prev.name) desc, ln_prev.name limit 10;
+            """
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+

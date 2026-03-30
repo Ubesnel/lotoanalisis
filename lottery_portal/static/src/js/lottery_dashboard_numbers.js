@@ -1,11 +1,13 @@
 /** @odoo-module **/
 
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, useState, useRef, onMounted, onPatched } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { Tooltip } from "@web/core/tooltip/tooltip";
 
 export class LotteryDashboardNumbers extends Component {
     setup() {
+        const root = useRef("root");
         const todayIndex = new Date().getDay();
         const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
         this.state = useState({
@@ -21,6 +23,11 @@ export class LotteryDashboardNumbers extends Component {
             day_menos: daysMap[todayIndex],
             week: this.getCurrentWeek(),
             week_menos: this.getCurrentWeek(),
+            numero_text: '',
+            number_id: null,
+            sugerencias: [],
+            socios_posteriores: [],
+            socios_anteriores: [],
         });
 
         onWillStart(async () => {
@@ -30,7 +37,22 @@ export class LotteryDashboardNumbers extends Component {
             await this.loadDataBottomNumbersWeekDay();
             await this.loadDataBottomNumbersWeek();
         });
+
+        const initTooltips = () => {
+            const el = root.el;
+            if (!el) return;
+            el.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((node) => {
+            if (node._tooltip) {
+                node._tooltip.dispose();
+            }
+            node._tooltip = new Tooltip(node);
+            });
+        };
+
+        onMounted(initTooltips);
+        onPatched(initTooltips);
     }
+
 
     async loadData() {
         const data = await jsonrpc("/estadisticas-numeros/dashboard_data", {});
@@ -60,6 +82,7 @@ export class LotteryDashboardNumbers extends Component {
         });
         this.state.top_numbers_by_week = data.top_numbers_by_week;
     }
+
     async loadDataBottomNumbersWeek() {
         const data = await jsonrpc("/estadisticas-numeros/bottom-number-week", {
         week: this.state.week_menos,
@@ -106,6 +129,38 @@ export class LotteryDashboardNumbers extends Component {
     async onBottomNumbersWeek(ev) {
         this.state.week_menos = ev.target.value;
         await this.loadDataBottomNumbersWeek();
+    }
+
+    async onBuscarNumero(ev) {
+        const term = ev.target.value;
+        this.state.numero_text = term;
+        if (!term) {
+            this.state.sugerencias = [];
+            this.state.socios_posteriores = [];
+            this.state.socios_anteriores = [];
+            return;
+        }
+        const data = await jsonrpc("/estadisticas-numeros/search_number", {
+            term: term
+        });
+        this.state.sugerencias = data;
+    }
+
+    seleccionarNumero(ev) {
+        const id = ev.currentTarget.dataset.id;
+        const name = ev.currentTarget.dataset.name;
+        this.state.numero_text = name;
+        this.state.number_id = parseInt(id);
+        this.state.sugerencias = [];
+        this.buscar_por_numero();
+        }
+
+    async buscar_por_numero() {
+        const data = await jsonrpc("/estadisticas-numeros/numeros-socios", {
+            number_id: this.state.number_id
+        });
+        this.state.socios_posteriores = data.salidas_numeros_despues_numero;
+        this.state.socios_anteriores = data.salidas_numeros_antes_numero;
     }
 }
 
