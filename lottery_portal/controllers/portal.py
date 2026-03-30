@@ -93,6 +93,23 @@ class LotteryPortal(http.Controller):
             "bottom_numbers_by_week": bottom_numbers_by_week,
         }
 
+    @http.route('/estadisticas-numeros/numeros-socios', type='json', auth='public')
+    def get_salidas_numeros_socios_por_numero(self, number_id=False):
+        salidas_numeros_despues_numero = request.env['lottery.stats.service'].sudo().get_salidas_numeros_despues_numero(number_id)
+        salidas_numeros_antes_numero = request.env['lottery.stats.service'].sudo().get_salidas_numeros_antes_numero(number_id)
+        return {
+            "salidas_numeros_despues_numero": salidas_numeros_despues_numero,
+            "salidas_numeros_antes_numero": salidas_numeros_antes_numero,
+        }
+
+    @http.route('/estadisticas-numeros/search_number', type='json', auth='public')
+    def get_search_numeros(self, term=False):
+        numbers = request.env['lottery.number'].sudo().search([
+            ('name', 'ilike', term)
+        ])
+
+        return numbers.read(['id', 'name'])
+
 class LotteryController(http.Controller):
 
     @http.route('/lottery/top10_by_day', type='json', auth='public', website=True)

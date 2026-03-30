@@ -11,7 +11,7 @@
         </section>
         <div class="container mt-2 mb-2">
             <div class="row mb-2">
-                <div class="col-md-4 mb-2">
+                <div class="col-md-3 mb-2">
                     <div class="card shadow border-0 p-3 mb-2">
                         <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números más salidores de <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
@@ -26,8 +26,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 mb-2"/>
-                <div class="col-md-4 mb-2">
+                <div class="col-md-3 mb-2">
                     <div class="card shadow border-0 p-3 mb-2">
                         <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números menos salidores <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
@@ -42,6 +41,56 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-3 mb-2">
+                    <div class="card shadow border-0 p-3" style="overflow: visible;">
+                            <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
+                                <i class="fa fa-search me-2"/>
+                                Buscar acompañantes
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="position-relative mb-3" style="max-width:200px">
+                                    <input type="text"
+                                       class="form-control"
+                                       placeholder="Buscar número..."
+                                       t-model="state.numero_text"
+                                       t-on-input="onBuscarNumero"/>
+                                    <div class="dropdown-menu show w-100 "
+                                     t-if="state.sugerencias.length"
+                                     style="max-height:200px; overflow:auto;z-index: 1050;">
+                                <t t-foreach="state.sugerencias" t-as="n" t-key="n.id">
+                                    <a class="dropdown-item"
+                                       href="#"
+                                       t-on-click="seleccionarNumero"
+                                       t-att-data-id="n.id"
+                                       t-att-data-name="n.name">
+                                        <t t-esc="n.name"/>
+                                    </a>
+                                </t>
+                                </div>
+                                </div>
+                                <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes posteriores</div>
+                                <div class="balls-container mb-3">
+                                    <t t-foreach="state.socios_posteriores" t-as="sp" t-key="sp.name">
+                                        <span class="ball ball-primary"
+                                              t-att-title="'Cantidad de veces: ' + sp.cantidad_veces">
+                                            <t t-esc="sp.name"/>
+                                        </span>
+                                    </t>
+                                </div>
+                                <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes anteriores</div>
+                                <div class="balls-container">
+                                    <t t-foreach="state.socios_anteriores" t-as="sa" t-key="sa.name">
+                                        <span class="ball ball-primary"
+                                              data-bs-toggle="tooltip"
+                                              t-att-title="'Cantidad de veces: ' + sa.cantidad_veces">
+                                            <t t-esc="sa.name"/>
+                                        </span>
+                                    </t>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-2"/>
             </div>
             <div class="row mb-2">
                 <div class="col-md-3 mb-2">
@@ -72,9 +121,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 mb-2"/>
                 <div class="col-md-3 mb-2">
-                     <div class="card shadow border-0 p-3 mb-2">
+                    <div class="card shadow border-0 p-3 mb-2">
                         <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
                             <div>❄️ Números menos salidores por día de la semana</div>
 
@@ -102,6 +150,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6 mb-2"/>
             </div>
             <div class="row mb-2">
                 <div class="col-md-3 mb-2">
@@ -131,7 +180,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6 mb-2"/>
                 <div class="col-md-3 mb-2">
                     <div class="card shadow border-0 p-3 mb-2">
                         <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
@@ -159,6 +207,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6 mb-2"/>
             </div>
         </div>
     </t>
