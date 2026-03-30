@@ -22,7 +22,7 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
                             <td class="text-center fw-bold" style="color:#8c6ca8;">Fecha</td>
-                            <td t-if="state.type=='general'" class="text-center fw-bold" style="color:#8c6ca8;">Horario</td>
+                            <td t-if="state.type_atraso=='general'" class="text-center fw-bold" style="color:#8c6ca8;">Horario</td>
                         </tr>
                     </thead>
                     <t t-foreach="state.numbers_atrasos" t-as="na" t-key="na.name">
@@ -36,7 +36,7 @@
                             <td class="text-center fw-bold" style="color:#8c6ca8;">
                                 <t t-esc="na.ultima_fecha"/>
                             </td>
-                            <td t-if="state.type=='general'" class="text-center fw-bold" style="color:#8c6ca8;">
+                            <td t-if="state.type_atraso=='general'" class="text-center fw-bold" style="color:#8c6ca8;">
                                 <t t-if="na.ultimo_turno=='afternoon'">
                                     <i class="fa fa-sun-o sun-icon-general"/>
                                 </t>

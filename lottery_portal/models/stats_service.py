@@ -259,6 +259,7 @@ class LotteryStatsService(models.AbstractModel):
             return []
         query = f"""
                 SELECT
+                    id,
                     LPAD(name::text, 2, '0') AS name,
                     {field} AS total,
                     ROW_NUMBER() OVER (
@@ -269,6 +270,37 @@ class LotteryStatsService(models.AbstractModel):
                 LIMIT 30;
             """
         self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_numbers_month_info(self, month_filter, numbers):
+        number_ids = [n.get('id') for n in numbers]
+        query = """
+            SELECT *
+            FROM (
+                SELECT DISTINCT ON (number_id)
+                    number_id,
+                    LPAD(lottery_number.name::text, 2, '0') AS name,
+                    TO_CHAR(date, 'DD/MM/YYYY') AS last_date,
+                    turn_day,
+                    CASE week_day
+                        WHEN 'lu' THEN 'Lun'
+                        WHEN 'ma' THEN 'Mar'
+                        WHEN 'mi' THEN 'Mié'
+                        WHEN 'ju' THEN 'Jue'
+                        WHEN 'vi' THEN 'Vie'
+                        WHEN 'sa' THEN 'Sáb'
+                        WHEN 'do' THEN 'Dom'
+                        ELSE week_day
+                    END AS week_day_label,
+                    (EXTRACT(YEAR FROM CURRENT_DATE) - year)::int AS years_without_month
+                    FROM lottery_output
+                    join lottery_number on (lottery_number.id=lottery_output.number_id)
+                WHERE month = %s
+                  AND number_id=ANY(%s) ORDER BY number_id, date DESC) t
+            WHERE years_without_month > 0 ORDER BY years_without_month DESC;
+        """
+        self.env.cr.execute(query,(month_filter, number_ids,))
         return self.env.cr.dictfetchall()
 
     @api.model
@@ -423,3 +455,132 @@ class LotteryStatsService(models.AbstractModel):
         self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
 
+    @api.model
+    def get_top_centenas_by_week_day(self, day, field):
+        query = f"""SELECT                
+                ln.name AS centena,
+                COUNT(*) AS total_salidas
+            FROM lottery_output lo
+            JOIN lottery_number ln ON ln.id = lo.{field}
+            WHERE lo.week_day = '{day}'
+            GROUP BY lo.{field}, ln.name
+            ORDER BY total_salidas DESC, lo.{field}
+        LIMIT 4;"""
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_bottom_centenas_by_week_day(self, day, field):
+        query = f"""SELECT                
+                    ln.name AS centena,
+                    COUNT(*) AS total_salidas
+                FROM lottery_output lo
+                JOIN lottery_number ln ON ln.id = lo.{field}
+                WHERE lo.week_day = '{day}'
+                GROUP BY lo.{field}, ln.name
+                ORDER BY total_salidas , lo.{field}
+            LIMIT 4;"""
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_centenas_by_week(self, week, field):
+        query = f"""WITH data AS (
+                SELECT
+                    lo.{field},
+                    CASE
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 15 AND 21 THEN 'sem_3'
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 22 AND 28 THEN 'sem_4'
+                        ELSE 'sem_5'
+                    END AS week_segment
+                FROM lottery_output lo
+            )
+            SELECT
+                d.{field},
+                ln.name AS centena,
+                COUNT(*) AS total_salidas
+            FROM data d
+            JOIN lottery_number ln ON ln.id = d.{field}
+            WHERE d.week_segment = '{week}'
+            GROUP BY d.{field}, ln.name
+            ORDER BY total_salidas desc,d.{field}
+            LIMIT 4;"""
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_bottom_centenas_by_week(self, week, field):
+        query = f"""WITH data AS (
+                SELECT
+                    lo.{field},
+                    CASE
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 15 AND 21 THEN 'sem_3'
+                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 22 AND 28 THEN 'sem_4'
+                        ELSE 'sem_5'
+                    END AS week_segment
+                FROM lottery_output lo
+            )
+            SELECT
+                d.{field},
+                ln.name AS centena,
+                COUNT(*) AS total_salidas
+            FROM data d
+            JOIN lottery_number ln ON ln.id = d.{field}
+            WHERE d.week_segment = '{week}'
+            GROUP BY d.{field}, ln.name
+            ORDER BY total_salidas ,d.{field}
+            LIMIT 4;"""
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_repeticiones(self):
+        query = f"""WITH data AS (select number_id, date,        
+              LAG(number_id) OVER (ORDER BY date, CASE WHEN turn_day = 'afternoon' THEN 1 ELSE 2 END) AS prev_number
+                FROM lottery_output),
+            pegados AS (select number_id, date FROM data WHERE number_id = prev_number)
+            select LPAD(ln.name::text, 2, '0') AS name,
+                COUNT(*) AS repeticiones,
+                TO_CHAR(MAX(p.date), 'DD/MM/YYYY') AS ultima_repeticion    
+            FROM pegados p
+            JOIN lottery_number ln ON ln.id = p.number_id
+            GROUP BY ln.name
+            ORDER BY repeticiones desc, ln.name
+            LIMIT 15;"""
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_pegados(self):
+        query = f"""WITH data AS (
+            SELECT
+                ln.name::int AS numero,
+                lo.date,
+                LEAD(ln.name::int) OVER (
+                    ORDER BY lo.date,
+                    CASE WHEN lo.turn_day = 'afternoon' THEN 1 ELSE 2 END
+                ) AS next_numero
+            FROM lottery_output lo
+            JOIN lottery_number ln ON ln.id = lo.number_id
+        ),
+        pegados AS (
+            SELECT
+                numero,
+                date
+            FROM data
+            WHERE ABS(numero - next_numero) = 1
+        )
+        SELECT
+            LPAD(numero::text, 2, '0') AS name,
+            COUNT(*) AS pegadas,
+            TO_CHAR(MAX(date), 'DD/MM/YYYY') AS ultima_pegada
+        FROM pegados
+        GROUP BY numero
+        ORDER BY pegadas DESC
+        LIMIT 15;"""
+        self.env.cr.execute(query)
+        return self.env.cr.dictfetchall()
