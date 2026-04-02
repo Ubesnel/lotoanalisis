@@ -13,6 +13,7 @@
     "data": [
         'security/ir.model.access.csv',
         "data/faq_data.xml",
+        "data/lottery_matviews.sql",
         "views/estadisticas_grupos.xml",
         "views/estadisticas_numeros.xml",
         "views/homepage_template.xml",
