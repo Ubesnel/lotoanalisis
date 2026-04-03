@@ -158,6 +158,24 @@ class LotteryPortal(http.Controller):
             "top_pegados": top_pegados,
         }
 
+    @http.route('/estadisticas-grupos/dashboard_data', type='json', auth='public')
+    def dashboard_info_groups(self):
+        top_6_groups_info = request.env['lottery.stats.service'].sudo().get_top_6_groups('general')
+        top_6_groups_info_afternoon = request.env['lottery.stats.service'].sudo().get_top_6_groups('afternoon')
+        top_6_groups_info_evening = request.env['lottery.stats.service'].sudo().get_top_6_groups('evening')
+
+        return {
+            "top_6_groups_info": top_6_groups_info,
+            "top_6_groups_info_afternoon": top_6_groups_info_afternoon,
+            "top_6_groups_info_evening": top_6_groups_info_evening,
+        }
+
+    @http.route('/lottery/get_group_numbers', type='json', auth='user')
+    def get_group_numbers(self, group_id=False, orden=False, day=False):
+        group = request.env['lottery.group'].sudo().browse(group_id)
+        group_numbers = request.env['lottery.stats.service'].sudo().get_info_groups_numbers(group, orden, day)
+        return group_numbers
+
 class LotteryController(http.Controller):
 
     @http.route('/lottery/top10_by_day', type='json', auth='public', website=True)
