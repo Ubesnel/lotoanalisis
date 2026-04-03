@@ -9,6 +9,8 @@ export class LotteryDashboardNumbers extends Component {
     setup() {
         const todayIndex = new Date().getDay();
         const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
+        const monthsMap = {0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 10, 10: 11, 11: 12};
+        const monthIndex = new Date().getMonth();
         this.state = useState({
             loading: true,
             kpis: {},
@@ -46,6 +48,7 @@ export class LotteryDashboardNumbers extends Component {
             sugerencias: [],
             socios_posteriores: [],
             socios_anteriores: [],
+            month_index: monthsMap[monthIndex],
         });
 
         onWillStart(async () => {
@@ -68,7 +71,9 @@ export class LotteryDashboardNumbers extends Component {
     }
 
     async loadData() {
-        const data = await jsonrpc("/estadisticas-numeros/dashboard_data", {});
+        const data = await jsonrpc("/estadisticas-numeros/dashboard_data", {
+            month: this.state.month_index
+        });
         this.state.kpis = data.kpis;
         this.state.top_numbers = data.top_numbers;
         this.state.top_numbers_info = data.top_numbers_info;

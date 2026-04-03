@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.LotteryDashboardGroups" owl="1">
+        <section class="hero-analitico-dashboard">
+            <div class="hero-content">
+                <h3 class="hero-title-dashboard">
+                    Más allá de los números individuales, los grupos también cuentan su historia
+                </h3>
+                <p class="hero-subfrase"><i>Visualiza atrasos, patrones y comportamientos para tomar mejores decisiones</i></p>
+            </div>
+        </section>
+        <div class="container mt-2 mb-2">
+            <div class="row mb-2">
+                    <div class="col-md-4 mb-2">
+                        <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">GENERAL</div>
+                        <t t-foreach="state.top_6_groups_info" t-as="top_group" t-key="top_group.name">
+                            <div class="card shadow border-0 p-3 mb-1">
+                                <div class="card-header fw-bold d-flex justify-content-between align-items-center"
+                                     style="color:#8c6ca8;">
+                                    <span>
+                                        <t t-esc="top_group.name"/>
+                                    </span>
+                                    <span class="badge-groups-general">
+                                        Total atrasos: <t t-esc="top_group.salidas_atrasadas"/>
+                                    </span>
+                                </div>
+                                <div class="card-body p-3">
+                                    <t t-set="key" t-value="`general_${top_group.id}`"/>
+                                    <div class="groups-numbers-wrapper">
+                                         <button class="btn btn-sm fw-bold"
+                                                 style="color:white;background-color:#8c6ca8;"
+                                                 t-on-click="() => this.toggleGroupNumber('general', top_group.id, 'total_atrasadas')">
+                                                <t t-if="!state.openGroups[key]">Ver números</t>
+                                             <t t-else="">Ocultar</t>
+                                         </button>
+                                        <div t-if="state.openGroups[key]" class="groups-numbers-grid">
+                                            <t t-foreach="state.groupNumbers[key] || []" t-as="s_num"
+                                               t-key="s_num.numero">
+                                                <div class="d-flex justify-content-between border-bottom py-1">
+                                                    <span class="ball ball-groups-general"><t t-esc="s_num.numero"/></span>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                <div class="col-md-4 mb-2">
+                        <div class="card-header fw-bold" style="color:white;background-color:orange;">TARDE</div>
+                    <t t-foreach="state.top_6_groups_info_afternoon" t-as="top_group_afternoon"
+                       t-key="top_group_afternoon.name">
+                            <div class="card shadow border-0 p-3 mb-1">
+                                <div class="card-header fw-bold d-flex justify-content-between align-items-center"
+                                     style="color:#8c6ca8;">
+                                    <span>
+                                        <t t-esc="top_group_afternoon.name"/>
+                                    </span>
+                                    <span class="badge-groups-tarde">
+                                        Total atrasos: <t t-esc="top_group_afternoon.salidas_atrasadas_dia"/>
+                                    </span>
+                                </div>
+                                <div class="card-body p-3">
+                                    <t t-set="key_afternoon" t-value="`afternoon_${top_group_afternoon.id}`"/>
+                                    <div class="groups-numbers-wrapper">
+                                        <button class="btn btn-sm btn-warning fw-bold" style="color:white;"
+                                                t-on-click="() => this.toggleGroupNumber('afternoon', top_group_afternoon.id, 'total_atrasadas_dia')">
+                                            <t t-if="!state.openGroups[key_afternoon]">Ver números</t>
+                                            <t t-else="">Ocultar</t>
+                                        </button>
+
+                                        <div t-if="state.openGroups[key_afternoon]" class="groups-numbers-grid">
+                                        <t t-foreach="state.groupNumbers[key_afternoon] || []" t-as="s_num_a"
+                                           t-key="s_num_a.numero">
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="ball ball-groups-tarde"><t t-esc="s_num_a.numero"/></span>
+                                            </div>
+                                        </t>
+                                    </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                <div class="col-md-4 mb-2">
+                        <div class="card-header fw-bold" style="color:white;background-color:#1e3a5f;">NOCHE</div>
+                    <t t-foreach="state.top_6_groups_info_evening" t-as="top_group_evening"
+                       t-key="top_group_evening.name">
+                            <div class="card shadow border-0 p-3 mb-1">
+                                <div class="card-header fw-bold d-flex justify-content-between align-items-center"
+                                     style="color:#8c6ca8;">
+                                    <span>
+                                        <t t-esc="top_group_evening.name"/>
+                                    </span>
+                                    <span class="badge-groups-noche">
+                                     Total atrasos: <t t-esc="top_group_evening.salidas_atrasadas_noche"/>
+                                    </span>
+                                </div>
+                                <div class="card-body p-3">
+                                    <t t-set="key_evening" t-value="`evening_${top_group_evening.id}`"/>
+                                    <div class="groups-numbers-wrapper">
+                                        <button class="btn btn-sm fw-bold" style="color:white;background-color:#1e3a5f;"
+                                                t-on-click="() => this.toggleGroupNumber('evening', top_group_evening.id, 'total_atrasadas_noche')">
+                                            <t t-if="!state.openGroups[key_evening]">Ver números</t>
+                                            <t t-else="">Ocultar</t>
+                                        </button>
+
+                                        <div t-if="state.openGroups[key_evening]" class="groups-numbers-grid">
+                                        <t t-foreach="state.groupNumbers[key_evening] || []" t-as="s_num_e"
+                                           t-key="s_num_e.numero">
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="ball ball-groups-noche"><t t-esc="s_num_e.numero"/></span>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                                    </div>
+                            </div>
+                        </t>
+                    </div>
+            </div>
+        </div>
+    </t>
+</templates>

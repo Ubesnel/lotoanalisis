@@ -2,9 +2,7 @@
 <odoo>
     <template id="portal_estadisticas_grupos" name="Estadísticas de grupos">
         <t t-call="website.layout">
-            <div class="container mt-5 mb-5">
-
-            </div>
+            <owl-component name="lottery_portal.LotteryDashboardGroups"/>
         </t>
     </template>
 </odoo>

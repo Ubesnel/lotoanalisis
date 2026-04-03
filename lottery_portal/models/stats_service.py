@@ -584,3 +584,33 @@ class LotteryStatsService(models.AbstractModel):
         LIMIT 15;"""
         self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
+
+    def get_top_6_groups(self, option=False):
+        field_map = {'general': 'salidas_atrasadas', 'afternoon': 'salidas_atrasadas_dia',
+                     'evening': 'salidas_atrasadas_noche'}
+        field = field_map.get(option, 'salidas_atrasadas')
+        query = f"""SELECT id, name, {field} FROM lottery_group ORDER BY {field} DESC LIMIT %s"""
+        self.env.cr.execute(query, (5,))
+        groups = self.env.cr.dictfetchall()
+        return groups
+
+    def get_info_groups_numbers(self, group, orden, day):
+        field_map = {'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
+                     'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves', 'vi': 'salidas_atrasadas_viernes',
+                     'sa': 'salidas_atrasadas_sabado', 'do': 'salidas_atrasadas_domingo'
+                     }
+        field = field_map.get(day)
+
+        numbers = self.env['lottery.number'].search_read(
+            [('id', 'in', group.number_ids.ids)],
+            ['name', 'total_atrasadas', 'total_atrasadas_dia', 'total_atrasadas_noche', field
+             ], order=f'{orden} desc')
+
+        return [{
+                'numero': str(n['name']).zfill(2),
+                'total_atrasadas': n.get('total_atrasadas', 0),
+                'total_atrasadas_dia': n.get('total_atrasadas_dia', 0),
+                'total_atrasadas_noche': n.get('total_atrasadas_noche', 0),
+                'total_atrasadas_por_dia_semana': n.get(field, 0)}
+            for n in numbers
+        ]
