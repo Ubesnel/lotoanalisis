@@ -1,0 +1,63 @@
+.badge-groups-general {
+    background: linear-gradient(135deg, #8c6ca8, #a78bfa);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.badge-groups-tarde {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.badge-groups-noche {
+    background: linear-gradient(135deg, #1e3a5f, #2c5282);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.ball-groups-general {
+   background: linear-gradient(135deg, #8c6ca8, #a78bfa);
+}
+
+.ball-groups-tarde {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.ball-groups-noche {
+    background: linear-gradient(135deg, #1e3a5f, #2c5282);
+}
+
+.groups-numbers-wrapper {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 16px;
+    align-items: start;
+}
+
+.groups-numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 40px);
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .groups-numbers-grid {
+        grid-template-columns: repeat(4, 40px);
+    }
+}
+
+
+
