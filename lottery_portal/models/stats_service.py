@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from odoo import models, api
+from odoo import models, api, tools
 import calendar
 from datetime import date, datetime
 from odoo.addons.lottery_base.models.utils import MONTHS_DICT
@@ -43,6 +43,7 @@ class LotteryStatsService(models.AbstractModel):
     _name = 'lottery.stats.service'
     _description = 'Lottery Statistics Service'
 
+    @tools.ormcache()
     def get_last_results_full(self):
         LotteryOutput = self.env['lottery.output'].sudo()
 
@@ -87,20 +88,24 @@ class LotteryStatsService(models.AbstractModel):
         }
 
     @api.model
+    @tools.ormcache()
     def get_top_10_general(self):
         self.env.cr.execute("""SELECT * FROM lottery_top10_mv""")
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top_10_dia(self):
         self.env.cr.execute("""SELECT * FROM lottery_top10_afternoon_mv""")
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top_10_noche(self):
         self.env.cr.execute("""SELECT * FROM lottery_top10_evening_mv""")
         return self.env.cr.dictfetchall()
 
+    @tools.ormcache('day')
     def get_ultimas_salidas_por_dia(self, day):
         self.env.cr.execute("""
                 SELECT *
@@ -113,6 +118,7 @@ class LotteryStatsService(models.AbstractModel):
         records.sort(key=lambda x: datetime.strptime(x['fecha'], '%d/%m/%Y'))
         return records
 
+    @tools.ormcache('month', 'year')
     def get_month_year(self, month, year):
         if not month:
             month = str(date.today().month)
@@ -121,6 +127,7 @@ class LotteryStatsService(models.AbstractModel):
         return '%s %s' % (MONTHS_DICT[month], year)
 
     @api.model
+    @tools.ormcache('week_code')
     def get_top_10_por_dia_semana(self, week_code):
         field_map = {
             'lu': 'salidas_atrasadas_lunes',
@@ -150,6 +157,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top5_centenas_afternoon(self):
         self.env.cr.execute("""
                         SELECT centena, atraso
@@ -158,6 +166,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top5_centenas_evening(self):
         self.env.cr.execute("""
                         SELECT centena, atraso
@@ -166,6 +175,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top5_centenas_general(self):
         self.env.cr.execute("""
                 SELECT centena, atraso
@@ -174,6 +184,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('type')
     def get_top_atrasos_lineas(self, type):
         query = """
             SELECT
@@ -190,6 +201,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('type')
     def get_top_atrasos_terminales(self, type):
         query = """
                 SELECT
@@ -206,6 +218,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('type', 'groups_code')
     def get_top_atrasos_number_groups(self, type, groups_code):
         field_map = {
             'general': 'general',
@@ -228,6 +241,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top5_bola_extra_afternoon(self):
         self.env.cr.execute("""
                                 SELECT centena, atraso
@@ -236,6 +250,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top5_bola_extra_evening(self):
         self.env.cr.execute("""
                                 SELECT centena, atraso
@@ -244,6 +259,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top5_bola_extra_general(self):
         self.env.cr.execute("""
                         SELECT centena, atraso
@@ -252,6 +268,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('month')
     def get_top_numbers_month(self, month=None):
         field = MONTH_FIELD_MAP.get(month)
 
@@ -273,6 +290,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('month_filter', 'numbers')
     def get_top_numbers_month_info(self, month_filter, numbers):
         number_ids = [n.get('id') for n in numbers]
         query = """
@@ -304,6 +322,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('month')
     def get_bottom_numbers_month(self, month=None):
         field = MONTH_FIELD_MAP.get(month)
 
@@ -324,6 +343,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('day')
     def get_top_numbers_by_week_day(self, day):
         field = WEEKDAY_FIELD_MAP.get(day)
 
@@ -344,6 +364,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('week')
     def get_top_numbers_by_week(self, week):
         field = WEEK_FIELD_MAP.get(week)
 
@@ -364,6 +385,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('day')
     def get_bottom_numbers_by_week_day(self, day):
         field = WEEKDAY_FIELD_MAP.get(day)
 
@@ -384,6 +406,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('week')
     def get_bottom_numbers_by_week(self, week):
         field = WEEK_FIELD_MAP.get(week)
 
@@ -404,6 +427,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('number_id')
     def get_salidas_numeros_despues_numero(self, number_id):
         query = f"""
             SELECT    
@@ -428,6 +452,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('number_id')
     def get_salidas_numeros_antes_numero(self, number_id):
         query = f"""
                 SELECT  
@@ -456,6 +481,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('day', 'field')
     def get_top_centenas_by_week_day(self, day, field):
         query = f"""SELECT                
                 ln.name AS centena,
@@ -470,6 +496,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('day', 'field')
     def get_bottom_centenas_by_week_day(self, day, field):
         query = f"""SELECT                
                     ln.name AS centena,
@@ -484,6 +511,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('week', 'field')
     def get_top_centenas_by_week(self, week, field):
         query = f"""WITH data AS (
                 SELECT
@@ -511,6 +539,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('week', 'field')
     def get_bottom_centenas_by_week(self, week, field):
         query = f"""WITH data AS (
                 SELECT
@@ -538,6 +567,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top_repeticiones(self):
         query = f"""WITH data AS (select number_id, date,        
               LAG(number_id) OVER (ORDER BY date, CASE WHEN turn_day = 'afternoon' THEN 1 ELSE 2 END) AS prev_number
@@ -555,6 +585,7 @@ class LotteryStatsService(models.AbstractModel):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
     def get_top_pegados(self):
         query = f"""WITH data AS (
             SELECT
@@ -585,15 +616,28 @@ class LotteryStatsService(models.AbstractModel):
         self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
 
-    def get_top_6_groups(self, option=False):
+    @tools.ormcache('option', 'day')
+    def get_top_6_groups(self, option=False, day=False):
         field_map = {'general': 'salidas_atrasadas', 'afternoon': 'salidas_atrasadas_dia',
                      'evening': 'salidas_atrasadas_noche'}
+        day_map = {'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
+                     'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves',
+                     'vi': 'salidas_atrasadas_viernes', 'sa': 'salidas_atrasadas_sabado',
+                     'do': 'salidas_atrasadas_domingo'}
+
         field = field_map.get(option, 'salidas_atrasadas')
-        query = f"""SELECT id, name, {field} FROM lottery_group ORDER BY {field} DESC LIMIT %s"""
+        field_day = day_map.get(day, 'salidas_atrasadas_lunes')
+        query = f"""SELECT id, UPPER(name) as name, salidas_atrasadas, 
+        salidas_atrasadas_dia, 
+        salidas_atrasadas_noche, 
+        {field_day} as salidas_atrasadas_por_dia         
+        FROM lottery_group where code not in ('pinta_0', 'pinta_1', 'pinta_2', 'pinta_3', 'pinta_4', 'pinta_5', 'pinta_6', 'pinta_7', 'pinta_8', 'pinta_9')
+         ORDER BY {field} DESC LIMIT %s"""
         self.env.cr.execute(query, (5,))
         groups = self.env.cr.dictfetchall()
         return groups
 
+    @tools.ormcache('group', 'orden', 'day')
     def get_info_groups_numbers(self, group, orden, day):
         field_map = {'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
                      'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves', 'vi': 'salidas_atrasadas_viernes',
@@ -614,3 +658,60 @@ class LotteryStatsService(models.AbstractModel):
                 'total_atrasadas_por_dia_semana': n.get(field, 0)}
             for n in numbers
         ]
+
+    @tools.ormcache('option', 'day')
+    def get_top_3_pintas(self, option=False, day=False):
+        field_map = {'general': 'salidas_atrasadas', 'afternoon': 'salidas_atrasadas_dia',
+                     'evening': 'salidas_atrasadas_noche'}
+        day_map = {'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
+                   'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves',
+                   'vi': 'salidas_atrasadas_viernes', 'sa': 'salidas_atrasadas_sabado',
+                   'do': 'salidas_atrasadas_domingo'}
+
+        field = field_map.get(option, 'salidas_atrasadas')
+        field_day = day_map.get(day, 'salidas_atrasadas_lunes')
+        query = f"""SELECT id, UPPER(name) as name, salidas_atrasadas, 
+            salidas_atrasadas_dia, 
+            salidas_atrasadas_noche, 
+            {field_day} as salidas_atrasadas_por_dia         
+            FROM lottery_group where code in ('pinta_0', 'pinta_1', 'pinta_2', 'pinta_3', 'pinta_4', 'pinta_5', 'pinta_6', 'pinta_7', 'pinta_8', 'pinta_9')
+             ORDER BY {field} DESC LIMIT %s"""
+        self.env.cr.execute(query, (3,))
+        groups = self.env.cr.dictfetchall()
+        return groups
+
+    def clear_lottery_stats_cache(self):
+        self.get_top_3_pintas.clear_cache(self)
+        self.get_top_pegados.clear_cache(self)
+        self.get_top_6_groups.clear_cache(self)
+        self.get_info_groups_numbers.clear_cache(self)
+        self.get_top_repeticiones.clear_cache(self)
+        self.get_bottom_centenas_by_week.clear_cache(self)
+        self.get_top_centenas_by_week.clear_cache(self)
+        self.get_bottom_centenas_by_week_day.clear_cache(self)
+        self.get_top_centenas_by_week_day.clear_cache(self)
+        self.get_salidas_numeros_antes_numero.clear_cache(self)
+        self.get_salidas_numeros_despues_numero.clear_cache(self)
+        self.get_bottom_numbers_by_week.clear_cache(self)
+        self.get_bottom_numbers_by_week_day.clear_cache(self)
+        self.get_top_numbers_by_week.clear_cache(self)
+        self.get_top_numbers_by_week_day.clear_cache(self)
+        self.get_bottom_numbers_month.clear_cache(self)
+        self.get_top_numbers_month_info.clear_cache(self)
+        self.get_top_numbers_month.clear_cache(self)
+        self.get_top5_bola_extra_general.clear_cache(self)
+        self.get_top5_bola_extra_evening.clear_cache(self)
+        self.get_top5_bola_extra_afternoon.clear_cache(self)
+        self.get_top_atrasos_number_groups.clear_cache(self)
+        self.get_top_atrasos_terminales.clear_cache(self)
+        self.get_top_atrasos_lineas.clear_cache(self)
+        self.get_top5_centenas_general.clear_cache(self)
+        self.get_top5_centenas_evening.clear_cache(self)
+        self.get_top5_centenas_afternoon.clear_cache(self)
+        self.get_top_10_por_dia_semana.clear_cache(self)
+        self.get_month_year.clear_cache(self)
+        self.get_ultimas_salidas_por_dia.clear_cache(self)
+        self.get_top_10_noche.clear_cache(self)
+        self.get_top_10_dia.clear_cache(self)
+        self.get_top_10_general.clear_cache(self)
+        self.get_last_results_full.clear_cache(self)
