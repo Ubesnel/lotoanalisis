@@ -11,112 +11,590 @@
         </section>
         <div class="container mt-2 mb-2">
             <div class="row mb-2">
+                <t t-set="configs" t-value="{
+                                        &quot;general&quot;: {
+                                            &quot;field&quot;: &quot;total_atrasadas&quot;,
+                                            &quot;badge_class&quot;: &quot;badge-groups-general&quot;,
+                                            &quot;ball_class&quot;: &quot;ball ball-groups-general&quot;,
+                                            &quot;btn_class&quot;: &quot;btn-primary&quot;,
+                                            &quot;btn_style&quot;: &quot;color:white;background-color:#8c6ca8;&quot;,
+                                            &quot;header_style&quot;: &quot;background-color:#8c6ca8;&quot;
+                                        },
+                                        &quot;afternoon&quot;: {
+                                            &quot;field&quot;: &quot;total_atrasadas_dia&quot;,
+                                            &quot;badge_class&quot;: &quot;badge-groups-tarde&quot;,
+                                            &quot;ball_class&quot;: &quot;ball ball-groups-tarde&quot;,
+                                            &quot;btn_class&quot;: &quot;btn-warning&quot;,
+                                            &quot;btn_style&quot;: &quot;color:white;&quot;,
+                                            &quot;header_style&quot;: &quot;background-color:orange;&quot;
+                                        },
+                                        &quot;evening&quot;: {
+                                            &quot;field&quot;: &quot;total_atrasadas_noche&quot;,
+                                            &quot;badge_class&quot;: &quot;badge-groups-noche&quot;,
+                                            &quot;ball_class&quot;: &quot;ball ball-groups-noche&quot;,
+                                            &quot;btn_class&quot;: &quot;btn-primary&quot;,
+                                            &quot;btn_style&quot;: &quot;color:white;background-color:#1e3a5f;&quot;,
+                                            &quot;header_style&quot;: &quot;background-color:#1e3a5f;&quot;
+                                        }
+                                    }"/>
+                                <t t-set="day_week_text" t-value="{
+                                    &quot;lu&quot;: &quot;Lunes&quot;,
+                                    &quot;ma&quot;: &quot;Martes&quot;,
+                                    &quot;mi&quot;: &quot;Miércoles&quot;,
+                                    &quot;ju&quot;: &quot;Jueves&quot;,
+                                    &quot;vi&quot;: &quot;Viernes&quot;,
+                                    &quot;sa&quot;: &quot;Sábado&quot;,
+                                    &quot;do&quot;: &quot;Domingo&quot;
+                                }"/>
+                                <t t-set="day_week" t-value="day_week_text[state.day_index]"/>
                     <div class="col-md-4 mb-2">
-                        <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">GENERAL</div>
-                        <t t-foreach="state.top_6_groups_info" t-as="top_group" t-key="top_group.name">
-                            <div class="card shadow border-0 p-3 mb-1">
-                                <div class="card-header fw-bold d-flex justify-content-between align-items-center"
-                                     style="color:#8c6ca8;">
-                                    <span>
-                                        <t t-esc="top_group.name"/>
-                                    </span>
-                                    <span class="badge-groups-general">
-                                        Total atrasos: <t t-esc="top_group.salidas_atrasadas"/>
-                                    </span>
-                                </div>
-                                <div class="card-body p-3">
-                                    <t t-set="key" t-value="`general_${top_group.id}`"/>
-                                    <div class="groups-numbers-wrapper">
-                                         <button class="btn btn-sm fw-bold"
-                                                 style="color:white;background-color:#8c6ca8;"
-                                                 t-on-click="() => this.toggleGroupNumber('general', top_group.id, 'total_atrasadas')">
-                                                <t t-if="!state.openGroups[key]">Ver números</t>
-                                             <t t-else="">Ocultar</t>
-                                         </button>
-                                        <div t-if="state.openGroups[key]" class="groups-numbers-grid">
-                                            <t t-foreach="state.groupNumbers[key] || []" t-as="s_num"
-                                               t-key="s_num.numero">
-                                                <div class="d-flex justify-content-between border-bottom py-1">
-                                                    <span class="ball ball-groups-general"><t t-esc="s_num.numero"/></span>
-                                                </div>
-                                            </t>
+                        <div class="card shadow border-0 p-3 mb-2">
+                            <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">
+                                    <div class="mb-3 d-flex align-items-center gap-2">
+                                        5 Grupos más Atrasados
+                                        <i class="fa fa-arrow-right"/>
+                                        <select t-model="state.group_type_atraso"
+                                                class="form-select form-select-sm w-auto"
+                                                t-on-change="onChangeGroupTypeAtraso">
+                                                <option value="general">General</option>
+                                                <option value="afternoon">Tarde</option>
+                                                <option value="evening">Noche</option>
+                                        </select>
+                                    </div>
+                            </div>
+                            <div class="card-body p-3">
+                                <t t-foreach="state.top_6_groups_info" t-as="top_group" t-key="top_group.id">
+                                    <t t-set="cfg" t-value="configs[state.group_type_atraso]"/>
+                                    <t t-set="key" t-value="`${state.group_type_atraso}_${top_group.id}`"/>
+                                    <div class="card shadow border-0 p-3 mb-1">
+                                        <div class="card-body p-3">
+                                            <table class="table table-sm table-hover align-middle mb-2">
+                                                    <tr t-att-style="cfg.header_style">
+                                                        <th colspan="2" class="text-center text-white fw-bold">
+                                                            <t t-esc="top_group.name"/>
+                                                        </th>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2">
+                                                            <div class="d-flex justify-content-center">
+                                                <button class="btn btn-sm fw-bold mb-2"
+                                                        t-att-class="cfg.btn_class"
+                                                        t-att-style="cfg.btn_style"
+                                                        t-on-click="() => this.toggleGroupNumber(state.group_type_atraso, top_group.id, cfg.field)">
+                                                    <t t-if="!state.openGroups[key]">Ver números</t>
+                                                    <t t-else="">Ocultar</t>
+                                                </button>
+                                            </div>
+                                                            <div t-if="state.openGroups[key]" class="groups-numbers-grid mb-1">
+                                                <t t-foreach="state.groupNumbers[key] || []"
+                                                   t-as="s_num"
+                                                   t-key="s_num.numero">
+                                                    <div class="d-flex justify-content-between border-bottom py-1">
+                                                        <span t-att-class="cfg.ball_class">
+                                                            <t t-esc="s_num.numero"/>
+                                                        </span>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Atrasos Generales
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                <t t-esc="top_group.salidas_atrasadas"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:orange;">
+                                                            Atrasos Tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-tarde">
+                                                                <t t-esc="top_group.salidas_atrasadas_dia"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#1e3a5f;">
+                                                            Atrasos Noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-noche">
+                                                                <t t-esc="top_group.salidas_atrasadas_noche"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#4cd964;">
+                                                            Atrasos <t t-esc="day_week"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-por-dia">
+                                                                <t t-esc="top_group.salidas_atrasadas_por_dia"/>
+                                                            </span>
+                                                        </td>
+                                                        </tr>
+                                                </table>
+                                            <table class="table table-sm table-hover align-middle" style="border-collapse: separate;border-spacing: 0 6px;">
+                                                <tr>
+                                                    <th colspan="2">
+                                                        <button class="btn btn-primary" style="color:white;background-color:#8c6ca8;"
+                                                            t-on-click="() => this.toggleGroupsAnalysis(top_group.id)">
+                                                            <span>Análisis de números del grupo</span>
+                                                            <i class="fa ms-2"
+                                                            t-att-class="state.openGroupsAnalysis[top_group.id] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                                        </button>
+                                                    </th>
+                                                </tr>
+                                                <t t-if="state.openGroupsAnalysis[top_group.id]">
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Último que salió
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Último que salió tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Último que salió noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más tiempo sin salir
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más tiempo sin salir tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más tiempo sin salir noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen los <t t-esc="day_week"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen los <t t-esc="day_week"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen en
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen en
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen semana del
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen semana del
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen de Tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen de Tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen de Noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen de Noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </table>
                                         </div>
                                     </div>
-                                </div>
+                                </t>
                             </div>
-                        </t>
+                        </div>
                     </div>
-                <div class="col-md-4 mb-2">
-                        <div class="card-header fw-bold" style="color:white;background-color:orange;">TARDE</div>
-                    <t t-foreach="state.top_6_groups_info_afternoon" t-as="top_group_afternoon"
-                       t-key="top_group_afternoon.name">
-                            <div class="card shadow border-0 p-3 mb-1">
-                                <div class="card-header fw-bold d-flex justify-content-between align-items-center"
-                                     style="color:#8c6ca8;">
-                                    <span>
-                                        <t t-esc="top_group_afternoon.name"/>
-                                    </span>
-                                    <span class="badge-groups-tarde">
-                                        Total atrasos: <t t-esc="top_group_afternoon.salidas_atrasadas_dia"/>
-                                    </span>
-                                </div>
-                                <div class="card-body p-3">
-                                    <t t-set="key_afternoon" t-value="`afternoon_${top_group_afternoon.id}`"/>
-                                    <div class="groups-numbers-wrapper">
-                                        <button class="btn btn-sm btn-warning fw-bold" style="color:white;"
-                                                t-on-click="() => this.toggleGroupNumber('afternoon', top_group_afternoon.id, 'total_atrasadas_dia')">
-                                            <t t-if="!state.openGroups[key_afternoon]">Ver números</t>
-                                            <t t-else="">Ocultar</t>
-                                        </button>
-
-                                        <div t-if="state.openGroups[key_afternoon]" class="groups-numbers-grid">
-                                        <t t-foreach="state.groupNumbers[key_afternoon] || []" t-as="s_num_a"
-                                           t-key="s_num_a.numero">
-                                            <div class="d-flex justify-content-between border-bottom py-1">
-                                                <span class="ball ball-groups-tarde"><t t-esc="s_num_a.numero"/></span>
-                                            </div>
-                                        </t>
+                    <div class="col-md-4 mb-2">
+                        <div class="card shadow border-0 p-3 mb-2">
+                            <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">
+                                    <div class="mb-3 d-flex align-items-center gap-2">
+                                        3 Pintas más Atrasadas
+                                        <i class="fa fa-arrow-right"/>
+                                        <select t-model="state.group_type_atraso_pinta"
+                                                class="form-select form-select-sm w-auto"
+                                                t-on-change="onChangeGroupTypeAtrasoPinta">
+                                                <option value="general">General</option>
+                                                <option value="afternoon">Tarde</option>
+                                                <option value="evening">Noche</option>
+                                        </select>
                                     </div>
+                            </div>
+                            <div class="card-body p-3">
+                                <t t-foreach="state.get_top_3_pintas" t-as="top_pinta" t-key="top_pinta.id">
+                                    <t t-set="cfg" t-value="configs[state.group_type_atraso_pinta]"/>
+                                    <t t-set="key" t-value="`${state.group_type_atraso_pinta}_${top_pinta.id}`"/>
+                                    <div class="card shadow border-0 p-3 mb-1">
+                                        <div class="card-body p-3">
+                                            <table class="table table-sm table-hover align-middle mb-2">
+                                                    <tr t-att-style="cfg.header_style">
+                                                        <th colspan="2" class="text-center text-white fw-bold">
+                                                            <t t-esc="top_pinta.name"/>
+                                                        </th>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="2">
+                                                            <div class="d-flex justify-content-center">
+                                                <button class="btn btn-sm fw-bold mb-2"
+                                                        t-att-class="cfg.btn_class"
+                                                        t-att-style="cfg.btn_style"
+                                                        t-on-click="() => this.toggleGroupNumber(state.group_type_atraso_pinta, top_pinta.id, cfg.field)">
+                                                    <t t-if="!state.openGroups[key]">Ver números</t>
+                                                    <t t-else="">Ocultar</t>
+                                                </button>
+                                            </div>
+                                                            <div t-if="state.openGroups[key]" class="groups-numbers-grid mb-1">
+                                                <t t-foreach="state.groupNumbers[key] || []"
+                                                   t-as="s_num_pinta"
+                                                   t-key="s_num_pinta.numero">
+                                                    <div class="d-flex justify-content-between border-bottom py-1">
+                                                        <span t-att-class="cfg.ball_class">
+                                                            <t t-esc="s_num_pinta.numero"/>
+                                                        </span>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Atrasos Generales
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                <t t-esc="top_pinta.salidas_atrasadas"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:orange;">
+                                                            Atrasos Tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-tarde">
+                                                                <t t-esc="top_pinta.salidas_atrasadas_dia"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#1e3a5f;">
+                                                            Atrasos Noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-noche">
+                                                                <t t-esc="top_pinta.salidas_atrasadas_noche"/>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#4cd964;">
+                                                            Atrasos <t t-esc="day_week"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-por-dia">
+                                                                <t t-esc="top_pinta.salidas_atrasadas_por_dia"/>
+                                                            </span>
+                                                        </td>
+                                                        </tr>
+                                                </table>
+                                            <table class="table table-sm table-hover align-middle" style="border-collapse: separate;border-spacing: 0 6px;">
+                                                <tr>
+                                                    <th colspan="2">
+
+                                                        <button class="btn btn-primary" style="color:white;background-color:#8c6ca8;"
+                                                            t-on-click="() => this.toggleGroupsAnalysisPinta(top_pinta.id)">
+                                                            <span>Análisis de números del grupo</span>
+                                                            <i class="fa ms-2"
+                                                            t-att-class="state.openGroupsAnalysisPinta[top_pinta.id] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                                        </button>
+
+                                                    </th>
+                                                </tr>
+                                                <t t-if="state.openGroupsAnalysisPinta[top_pinta.id]">
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Último que salió
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Último que salió tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Último que salió noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más tiempo sin salir
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más tiempo sin salir tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más tiempo sin salir noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen los <t t-esc="day_week"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen los <t t-esc="day_week"/>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen en
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen en
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen semana del
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen semana del
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen de Tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen de Tarde
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Más salen de Noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen de Noche
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge-groups-general">
+                                                                0
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </table>
                                         </div>
-                                </div>
+                                    </div>
+                                </t>
                             </div>
-                        </t>
+                        </div>
                     </div>
-                <div class="col-md-4 mb-2">
-                        <div class="card-header fw-bold" style="color:white;background-color:#1e3a5f;">NOCHE</div>
-                    <t t-foreach="state.top_6_groups_info_evening" t-as="top_group_evening"
-                       t-key="top_group_evening.name">
-                            <div class="card shadow border-0 p-3 mb-1">
-                                <div class="card-header fw-bold d-flex justify-content-between align-items-center"
-                                     style="color:#8c6ca8;">
-                                    <span>
-                                        <t t-esc="top_group_evening.name"/>
-                                    </span>
-                                    <span class="badge-groups-noche">
-                                     Total atrasos: <t t-esc="top_group_evening.salidas_atrasadas_noche"/>
-                                    </span>
-                                </div>
-                                <div class="card-body p-3">
-                                    <t t-set="key_evening" t-value="`evening_${top_group_evening.id}`"/>
-                                    <div class="groups-numbers-wrapper">
-                                        <button class="btn btn-sm fw-bold" style="color:white;background-color:#1e3a5f;"
-                                                t-on-click="() => this.toggleGroupNumber('evening', top_group_evening.id, 'total_atrasadas_noche')">
-                                            <t t-if="!state.openGroups[key_evening]">Ver números</t>
-                                            <t t-else="">Ocultar</t>
-                                        </button>
+                    <div class="col-md-4 mb-2">
 
-                                        <div t-if="state.openGroups[key_evening]" class="groups-numbers-grid">
-                                        <t t-foreach="state.groupNumbers[key_evening] || []" t-as="s_num_e"
-                                           t-key="s_num_e.numero">
-                                            <div class="d-flex justify-content-between border-bottom py-1">
-                                                <span class="ball ball-groups-noche"><t t-esc="s_num_e.numero"/></span>
-                                            </div>
-                                        </t>
-                                    </div>
-                                </div>
-                                    </div>
-                            </div>
-                        </t>
                     </div>
             </div>
         </div>

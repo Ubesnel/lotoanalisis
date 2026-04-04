@@ -159,16 +159,20 @@ class LotteryPortal(http.Controller):
         }
 
     @http.route('/estadisticas-grupos/dashboard_data', type='json', auth='public')
-    def dashboard_info_groups(self):
-        top_6_groups_info = request.env['lottery.stats.service'].sudo().get_top_6_groups('general')
-        top_6_groups_info_afternoon = request.env['lottery.stats.service'].sudo().get_top_6_groups('afternoon')
-        top_6_groups_info_evening = request.env['lottery.stats.service'].sudo().get_top_6_groups('evening')
-
+    def dashboard_info_groups(self, group_type=False, day=False):
+        top_6_groups_info = request.env['lottery.stats.service'].sudo().get_top_6_groups(group_type, day)
         return {
             "top_6_groups_info": top_6_groups_info,
-            "top_6_groups_info_afternoon": top_6_groups_info_afternoon,
-            "top_6_groups_info_evening": top_6_groups_info_evening,
         }
+
+    @http.route('/estadisticas-grupos/dashboard_data_pintas', type='json', auth='public')
+    def dashboard_info_pintas(self, group_type=False, day=False):
+        get_top_3_pintas = request.env['lottery.stats.service'].sudo().get_top_3_pintas(group_type, day)
+        return {
+            "get_top_3_pintas": get_top_3_pintas,
+        }
+
+
 
     @http.route('/lottery/get_group_numbers', type='json', auth='user')
     def get_group_numbers(self, group_id=False, orden=False, day=False):

@@ -1,31 +1,61 @@
 .badge-groups-general {
     background: linear-gradient(135deg, #8c6ca8, #a78bfa);
     color: white;
-    padding: 5px 14px;
-    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     font-size: 12px;
     font-weight: 600;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-left: auto;
 }
 
 .badge-groups-tarde {
     background: linear-gradient(135deg, #f59e0b, #fbbf24);
     color: white;
-    padding: 5px 14px;
-    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     font-size: 12px;
     font-weight: 600;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-left: auto;
 }
 
 .badge-groups-noche {
     background: linear-gradient(135deg, #1e3a5f, #2c5282);
     color: white;
-    padding: 5px 14px;
-    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     font-size: 12px;
     font-weight: 600;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-left: auto;
+}
+
+.badge-groups-por-dia {
+    background: linear-gradient(135deg, #4cd964, #2ecc71);
+    color: white;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    margin-left: auto;
 }
 
 .ball-groups-general {
@@ -40,17 +70,11 @@
     background: linear-gradient(135deg, #1e3a5f, #2c5282);
 }
 
-.groups-numbers-wrapper {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    column-gap: 16px;
-    align-items: start;
-}
-
 .groups-numbers-grid {
     display: grid;
     grid-template-columns: repeat(5, 40px);
     gap: 8px;
+    justify-content: center;
 }
 
 @media (max-width: 768px) {

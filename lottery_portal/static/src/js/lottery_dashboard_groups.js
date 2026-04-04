@@ -13,25 +13,38 @@ export class LotteryDashboardGroups extends Component {
         const monthIndex = new Date().getMonth();
         this.state = useState({
             top_6_groups_info: [],
-            top_6_groups_info_afternoon: [],
-            top_6_groups_info_evening: [],
+            get_top_3_pintas: [],
             month_index: monthsMap[monthIndex],
             day_index: daysMap[todayIndex],
             openGroups: {},
             groupNumbers: {},
+            group_type_atraso: "general",
+            group_type_atraso_pinta: "general",
+            openGroupsAnalysis: {},
+            openGroupsAnalysisPinta: {},
         });
 
         onWillStart(async () => {
             await this.loadTop6GroupsData();
+            await this.loadTop3GroupsDataPinta();
 
         });
     }
 
     async loadTop6GroupsData() {
-        const data = await jsonrpc("/estadisticas-grupos/dashboard_data", {});
+        const data = await jsonrpc("/estadisticas-grupos/dashboard_data", {
+            group_type: this.state.group_type_atraso,
+            day: this.state.day_index
+        });
         this.state.top_6_groups_info = data.top_6_groups_info;
-        this.state.top_6_groups_info_afternoon = data.top_6_groups_info_afternoon;
-        this.state.top_6_groups_info_evening = data.top_6_groups_info_evening;
+    }
+
+    async loadTop3GroupsDataPinta() {
+        const data = await jsonrpc("/estadisticas-grupos/dashboard_data_pintas", {
+            group_type: this.state.group_type_atraso_pinta,
+            day: this.state.day_index
+        });
+        this.state.get_top_3_pintas = data.get_top_3_pintas;
 
     }
 
@@ -47,6 +60,26 @@ export class LotteryDashboardGroups extends Component {
             day: this.state.day_index
         });
         this.state.groupNumbers[key] = result;
+    }
+
+    async onChangeGroupTypeAtraso(ev) {
+        this.state.group_type_atraso = ev.target.value;
+        await this.loadTop6GroupsData();
+    }
+
+    async onChangeGroupTypeAtrasoPinta(ev) {
+        this.state.group_type_atraso_pinta = ev.target.value;
+        await this.loadTop3GroupsDataPinta();
+    }
+
+    async toggleGroupsAnalysis(groupId) {
+        this.state.openGroupsAnalysis[groupId] = !this.state.openGroupsAnalysis[groupId];
+        this.render();
+    }
+
+    async toggleGroupsAnalysisPinta(groupId) {
+        this.state.openGroupsAnalysisPinta[groupId] = !this.state.openGroupsAnalysisPinta[groupId];
+        this.render();
     }
 }
 

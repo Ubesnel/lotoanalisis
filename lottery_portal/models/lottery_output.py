@@ -23,5 +23,6 @@ class LotteryOutput(models.Model):
 
     def _after_change(self):
         self.env['lottery.group'].cron_recompute_from_sql()
+        self.env['lottery.stats.service'].clear_lottery_stats_cache()
 
 

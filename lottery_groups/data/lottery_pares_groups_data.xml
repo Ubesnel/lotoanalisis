@@ -3,7 +3,7 @@
     <data noupdate="1">
         <record id="lottery_group_0_par" model="lottery.group">
             <field name="code">0_par</field>
-            <field name="name">0 con Acompañante Par</field>
+            <field name="name">0 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 0, 2, 4, 6, 8, 20, 40, 60, 80</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_0'),
@@ -18,7 +18,7 @@
         </record>
         <record id="lottery_group_1_par" model="lottery.group">
             <field name="code">1_par</field>
-            <field name="name">1 con Acompañante Par</field>
+            <field name="name">1 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 1, 10, 12, 14, 16, 18, 21, 41, 61, 81</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_1'),
@@ -34,7 +34,7 @@
         </record>
         <record id="lottery_group_2_par" model="lottery.group">
             <field name="code">2_par</field>
-            <field name="name">2 con Acompañante Par</field>
+            <field name="name">2 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 2, 20, 22, 24, 26, 28, 42, 62, 82</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_2'),
@@ -49,7 +49,7 @@
         </record>
         <record id="lottery_group_3_par" model="lottery.group">
             <field name="code">3_par</field>
-            <field name="name">3 con Acompañante Par</field>
+            <field name="name">3 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 3, 23, 30, 32, 34, 36, 38, 43, 63, 83</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_3'),
@@ -65,7 +65,7 @@
         </record>
         <record id="lottery_group_4_par" model="lottery.group">
             <field name="code">4_par</field>
-            <field name="name">4 con Acompañante Par</field>
+            <field name="name">4 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 4, 24, 40, 42, 44, 46, 48, 64, 84</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_4'),
@@ -80,7 +80,7 @@
         </record>
         <record id="lottery_group_5_par" model="lottery.group">
             <field name="code">5_par</field>
-            <field name="name">5 con Acompañante Par</field>
+            <field name="name">5 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 5, 25, 45, 50, 52, 54, 56, 58, 65, 85</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_5'),
@@ -96,7 +96,7 @@
         </record>
         <record id="lottery_group_6_par" model="lottery.group">
             <field name="code">6_par</field>
-            <field name="name">6 con Acompañante Par</field>
+            <field name="name">6 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 6, 26, 46, 60, 62, 64, 66, 68, 86</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_6'),
@@ -111,7 +111,7 @@
         </record>
         <record id="lottery_group_7_par" model="lottery.group">
             <field name="code">7_par</field>
-            <field name="name">7 con Acompañante Par</field>
+            <field name="name">7 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 7, 27, 47, 67, 70, 72, 74, 76, 78, 87</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_7'),
@@ -127,7 +127,7 @@
         </record>
         <record id="lottery_group_8_par" model="lottery.group">
             <field name="code">8_par</field>
-            <field name="name">8 con Acompañante Par</field>
+            <field name="name">8 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 8, 28, 48, 68, 80, 82, 84, 86, 88</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_8'),
@@ -142,7 +142,7 @@
         </record>
         <record id="lottery_group_9_par" model="lottery.group">
             <field name="code">9_par</field>
-            <field name="name">9 con Acompañante Par</field>
+            <field name="name">9 Acompañante Par</field>
             <field name="notes">Este grupo está formado por los números: 9, 29, 49, 69, 89, 90, 92, 94, 96, 98</field>
             <field name="number_ids"
                    eval="[(6,0,[ref('lottery_base.lottery_number_9'),
