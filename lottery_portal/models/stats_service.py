@@ -39,7 +39,7 @@ WEEK_FIELD_MAP = {
 }
 
 
-class LotteryStatsService(models.AbstractModel):
+class LotteryStatsService(models.Model):
     _name = 'lottery.stats.service'
     _description = 'Lottery Statistics Service'
 
@@ -680,38 +680,3 @@ class LotteryStatsService(models.AbstractModel):
         groups = self.env.cr.dictfetchall()
         return groups
 
-    def clear_lottery_stats_cache(self):
-        self.get_top_3_pintas.clear_cache(self)
-        self.get_top_pegados.clear_cache(self)
-        self.get_top_6_groups.clear_cache(self)
-        self.get_info_groups_numbers.clear_cache(self)
-        self.get_top_repeticiones.clear_cache(self)
-        self.get_bottom_centenas_by_week.clear_cache(self)
-        self.get_top_centenas_by_week.clear_cache(self)
-        self.get_bottom_centenas_by_week_day.clear_cache(self)
-        self.get_top_centenas_by_week_day.clear_cache(self)
-        self.get_salidas_numeros_antes_numero.clear_cache(self)
-        self.get_salidas_numeros_despues_numero.clear_cache(self)
-        self.get_bottom_numbers_by_week.clear_cache(self)
-        self.get_bottom_numbers_by_week_day.clear_cache(self)
-        self.get_top_numbers_by_week.clear_cache(self)
-        self.get_top_numbers_by_week_day.clear_cache(self)
-        self.get_bottom_numbers_month.clear_cache(self)
-        self.get_top_numbers_month_info.clear_cache(self)
-        self.get_top_numbers_month.clear_cache(self)
-        self.get_top5_bola_extra_general.clear_cache(self)
-        self.get_top5_bola_extra_evening.clear_cache(self)
-        self.get_top5_bola_extra_afternoon.clear_cache(self)
-        self.get_top_atrasos_number_groups.clear_cache(self)
-        self.get_top_atrasos_terminales.clear_cache(self)
-        self.get_top_atrasos_lineas.clear_cache(self)
-        self.get_top5_centenas_general.clear_cache(self)
-        self.get_top5_centenas_evening.clear_cache(self)
-        self.get_top5_centenas_afternoon.clear_cache(self)
-        self.get_top_10_por_dia_semana.clear_cache(self)
-        self.get_month_year.clear_cache(self)
-        self.get_ultimas_salidas_por_dia.clear_cache(self)
-        self.get_top_10_noche.clear_cache(self)
-        self.get_top_10_dia.clear_cache(self)
-        self.get_top_10_general.clear_cache(self)
-        self.get_last_results_full.clear_cache(self)
