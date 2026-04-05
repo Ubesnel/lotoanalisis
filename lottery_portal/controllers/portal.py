@@ -114,6 +114,28 @@ class LotteryPortal(http.Controller):
 
         return numbers.read(['id', 'name'])
 
+    @http.route('/estadisticas-grupos/search_grupos', type='json', auth='public')
+    def get_search_grupos(self, term=False):
+        numbers = request.env['lottery.group'].sudo().search([
+            ('name', 'ilike', term), ('code', 'not in', ['pinta_0', 'pinta_1', 'pinta_2', 'pinta_3',
+                                                         'pinta_4', 'pinta_5', 'pinta_6', 'pinta_7',
+                                                         'pinta_8', 'pinta_9'
+                                                         ])
+        ])
+
+        return numbers.read(['id', 'name'])
+
+    @http.route('/estadisticas-grupos/search_pintas', type='json', auth='public')
+    def get_search_pintas(self, term=False):
+        numbers = request.env['lottery.group'].sudo().search([
+            ('name', 'ilike', term), ('code', 'in', ['pinta_0', 'pinta_1', 'pinta_2', 'pinta_3',
+                                                         'pinta_4', 'pinta_5', 'pinta_6', 'pinta_7',
+                                                         'pinta_8', 'pinta_9'
+                                                         ])
+        ])
+
+        return numbers.read(['id', 'name'])
+
     @http.route('/estadisticas-numeros/top-centena-week-day', type='json', auth='public')
     def dashboard_top_centena_week_day(self, day=False, field=False):
         top_info_by_week_day = request.env['lottery.stats.service'].sudo().get_top_centenas_by_week_day(day, field)
@@ -159,26 +181,51 @@ class LotteryPortal(http.Controller):
         }
 
     @http.route('/estadisticas-grupos/dashboard_data', type='json', auth='public')
-    def dashboard_info_groups(self, group_type=False, day=False):
+    def dashboard_info_groups(self, group_type=False, day=False, week=False, month=False):
         top_6_groups_info = request.env['lottery.stats.service'].sudo().get_top_6_groups(group_type, day)
+        groups_analysis = {}
+        for group in top_6_groups_info:
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month)
+            groups_analysis[group.get('id')] = data
         return {
             "top_6_groups_info": top_6_groups_info,
+            "groups_analysis": groups_analysis,
         }
 
     @http.route('/estadisticas-grupos/dashboard_data_pintas', type='json', auth='public')
-    def dashboard_info_pintas(self, group_type=False, day=False):
+    def dashboard_info_pintas(self, group_type=False, day=False, week=False, month=False):
         get_top_3_pintas = request.env['lottery.stats.service'].sudo().get_top_3_pintas(group_type, day)
+        groups_analysis = {}
+        for group in get_top_3_pintas:
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month)
+            groups_analysis[group.get('id')] = data
+
         return {
-            "get_top_3_pintas": get_top_3_pintas,
-        }
-
-
+                "get_top_3_pintas": get_top_3_pintas,
+                "groups_analysis": groups_analysis,
+            }
 
     @http.route('/lottery/get_group_numbers', type='json', auth='user')
     def get_group_numbers(self, group_id=False, orden=False, day=False):
         group = request.env['lottery.group'].sudo().browse(group_id)
         group_numbers = request.env['lottery.stats.service'].sudo().get_info_groups_numbers(group, orden, day)
         return group_numbers
+
+    @http.route('/lottery/get_month_text', type='json', auth='user')
+    def get_month_text(self, month=False):
+        return MONTHS_DICT[str(month)]
+
+    @http.route('/lottery/get_data_chart_general', type='json', auth='user')
+    def get_data_chart_general(self, group_id=False):
+        data = request.env['lottery.stats.service'].sudo().get_group_delay_intervals(group_id)
+        return data
+
+    @http.route('/lottery/get_data_chart_general_pinta', type='json', auth='user')
+    def get_data_chart_general_pinta(self, group_id=False):
+        data = request.env['lottery.stats.service'].sudo().get_group_delay_intervals_pintas(group_id)
+        return data
+
+
 
 class LotteryController(http.Controller):
 

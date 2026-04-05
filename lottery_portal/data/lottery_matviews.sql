@@ -20,6 +20,7 @@ BEGIN
     REFRESH MATERIALIZED VIEW lottery_top_atrasos_lineas_mv;
     REFRESH MATERIALIZED VIEW lottery_top_atrasos_terminales_mv;
     REFRESH MATERIALIZED VIEW lottery_ultima_salida_dia_semana_mv;
+    REFRESH MATERIALIZED VIEW lottery_group_analysis_mv;
 END;
 $$ LANGUAGE plpgsql;
 

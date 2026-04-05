@@ -680,3 +680,192 @@ class LotteryStatsService(models.Model):
         groups = self.env.cr.dictfetchall()
         return groups
 
+    @tools.ormcache('group_id', 'day', 'week', 'month')
+    def get_info_group_numbers_analysis(self, group_id, day, week, month):
+        if not group_id or not day or not month or not week:
+            return {}
+
+        self.env.cr.execute("""
+                SELECT *
+                FROM lottery_group_analysis_mv
+                WHERE group_id = %s
+            """, (group_id,))
+
+        rows = self.env.cr.dictfetchall()
+
+        if not rows:
+            return {}
+
+        # 🔹 helpers
+        def top(rows, field, n=1, reverse=True):
+            return sorted(rows, key=lambda x: x[field] or 0, reverse=reverse)[:n]
+
+        def s(r):
+            return {
+                "id": r["number_id"],
+                "name": r["name"],
+            }
+
+        def s_list(lst):
+            return [s(x) for x in lst]
+
+        # 🔹 MAPAS DINÁMICOS
+
+        month_map = {
+            1: "cant_salidas_enero",
+            2: "cant_salidas_febrero",
+            3: "cant_salidas_marzo",
+            4: "cant_salidas_abril",
+            5: "cant_salidas_mayo",
+            6: "cant_salidas_junio",
+            7: "cant_salidas_julio",
+            8: "cant_salidas_agosto",
+            9: "cant_salidas_septiembre",
+            10: "cant_salidas_octubre",
+            11: "cant_salidas_noviembre",
+            12: "cant_salidas_diciembre",
+        }
+
+        week_field = f"total_semana_{week}"
+
+        day_map = {
+            "lu": "total_lunes",
+            "ma": "total_martes",
+            "mi": "total_miercoles",
+            "ju": "total_jueves",
+            "vi": "total_viernes",
+            "sa": "total_sabado",
+            "do": "total_domingo",
+        }
+
+        day_field = day_map.get(day.lower())
+
+        month_field = month_map.get(month)
+
+        if not all([day_field, month_field, week_field]):
+            return {}
+
+        result = {
+            "last": s(top(rows, "total_atrasadas", 1, reverse=False)[0]),
+            "last_day": s(top(rows, "total_atrasadas_dia", 1, reverse=False)[0]),
+            "last_night": s(top(rows, "total_atrasadas_noche", 1, reverse=False)[0]),
+
+            "most_delayed": s_list(top(rows, "total_atrasadas", 4)),
+            "most_delayed_day": s_list(top(rows, "total_atrasadas_dia", 4)),
+            "most_delayed_night": s_list(top(rows, "total_atrasadas_noche", 4)),
+
+            "day": {
+                "most": s_list(top(rows, day_field, 4)),
+                "least": s_list(top(rows, day_field, 4, reverse=False)),
+            },
+
+            "month": {
+                "most": s_list(top(rows, month_field, 5)),
+                "least": s_list(top(rows, month_field, 5, reverse=False)),
+            },
+
+            "week": {
+                "most": s_list(top(rows, week_field, 4)),
+                "least": s_list(top(rows, week_field, 4, reverse=False)),
+            },
+
+            "day_time": {
+                "most": s_list(top(rows, "total_atrasadas_dia", 3, reverse=False)),
+                "least": s_list(top(rows, "total_atrasadas_dia", 3)),
+            },
+
+            "night_time": {
+                "most": s_list(top(rows, "total_atrasadas_noche", 3, reverse=False)),
+                "least": s_list(top(rows, "total_atrasadas_noche", 3)),
+            },
+        }
+
+        return result
+
+    @tools.ormcache('group_id')
+    def get_group_delay_intervals(self, group_id):
+        self.env.cr.execute("""
+            WITH base AS (
+            SELECT
+                o.date,
+                o.turn_day,
+                CASE 
+                    WHEN rel.number_id IS NOT NULL THEN 1
+                    ELSE 0
+                END AS hit
+            FROM lottery_output o
+            LEFT JOIN lottery_group_number_rel rel
+                ON rel.number_id = o.number_id
+                AND rel.group_id = %s
+        ),
+        
+        streaks AS (
+            SELECT *,
+                SUM(hit) OVER (ORDER BY date, turn_day) AS grp
+            FROM base
+        ),
+        
+        atrasos AS (
+            SELECT
+                grp,
+                COUNT(*) AS atraso
+            FROM streaks
+            WHERE hit = 0
+            GROUP BY grp
+        )
+        
+        SELECT            
+            COUNT(*) FILTER (WHERE atraso BETWEEN 21 AND 40) AS r_21_40,
+            COUNT(*) FILTER (WHERE atraso BETWEEN 41 AND 50) AS r_41_50,
+            COUNT(*) FILTER (WHERE atraso BETWEEN 51 AND 60) AS r_51_60,
+            COUNT(*) FILTER (WHERE atraso BETWEEN 61 AND 70) AS r_61_70,
+            COUNT(*) FILTER (WHERE atraso > 70) AS r_70_plus
+        FROM atrasos;
+        """, (group_id,))
+
+        return self.env.cr.dictfetchone()
+
+    @tools.ormcache('group_id')
+    def get_group_delay_intervals_pintas(self, group_id):
+        self.env.cr.execute("""
+                WITH base AS (
+                SELECT
+                    o.date,
+                    o.turn_day,
+                    CASE 
+                        WHEN rel.number_id IS NOT NULL THEN 1
+                        ELSE 0
+                    END AS hit
+                FROM lottery_output o
+                LEFT JOIN lottery_group_number_rel rel
+                    ON rel.number_id = o.number_id
+                    AND rel.group_id = %s
+            ),
+
+            streaks AS (
+                SELECT *,
+                    SUM(hit) OVER (ORDER BY date, turn_day) AS grp
+                FROM base
+            ),
+
+            atrasos AS (
+                SELECT
+                    grp,
+                    COUNT(*) AS atraso
+                FROM streaks
+                WHERE hit = 0
+                GROUP BY grp
+            )
+
+            SELECT            
+                COUNT(*) FILTER (WHERE atraso BETWEEN 10 AND 20) AS r_10_20,
+                COUNT(*) FILTER (WHERE atraso BETWEEN 21 AND 30) AS r_21_30,
+                COUNT(*) FILTER (WHERE atraso BETWEEN 31 AND 35) AS r_31_35,
+                COUNT(*) FILTER (WHERE atraso BETWEEN 36 AND 40) AS r_36_40,
+                COUNT(*) FILTER (WHERE atraso > 40) AS r_40_plus
+            FROM atrasos;
+            """, (group_id,))
+
+        return self.env.cr.dictfetchone()
+
+
