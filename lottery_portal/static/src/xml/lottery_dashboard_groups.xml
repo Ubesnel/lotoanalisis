@@ -46,7 +46,15 @@
                                     &quot;sa&quot;: &quot;Sábado&quot;,
                                     &quot;do&quot;: &quot;Domingo&quot;
                                 }"/>
+                                <t t-set="week_json" t-value="{
+                                    &quot;1&quot;: &quot;1 al 7&quot;,
+                                    &quot;2&quot;: &quot;8 al 14&quot;,
+                                    &quot;3&quot;: &quot;15 al 21&quot;,
+                                    &quot;4&quot;: &quot;22 al 28&quot;,
+                                    &quot;5&quot;: &quot;29 al 31&quot;
+                                }"/>
                                 <t t-set="day_week" t-value="day_week_text[state.day_index]"/>
+                                <t t-set="week" t-value="week_json[state.week_index]"/>
                     <div class="col-md-4 mb-2">
                         <div class="card shadow border-0 p-3 mb-2">
                             <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">
@@ -141,7 +149,7 @@
                                                 </table>
                                             <table class="table table-sm table-hover align-middle" style="border-collapse: separate;border-spacing: 0 6px;">
                                                 <tr>
-                                                    <th colspan="2">
+                                                    <th colspan="5">
                                                         <button class="btn btn-primary" style="color:white;background-color:#8c6ca8;"
                                                             t-on-click="() => this.toggleGroupsAnalysis(top_group.id)">
                                                             <span>Análisis de números del grupo</span>
@@ -151,165 +159,246 @@
                                                     </th>
                                                 </tr>
                                                 <t t-if="state.openGroupsAnalysis[top_group.id]">
+                                                    <t t-set="ag" t-value="state.analysisGroups[top_group.id]"/>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="4" class="text-start fw-bold" style="color:#8c6ca8;">
                                                             Último que salió
                                                         </td>
                                                         <td>
                                                             <span class="badge-groups-general">
-                                                                0
+                                                                <t t-esc="ag.last.name"/>
                                                             </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Último que salió tarde
+                                                        <td colspan="4" class="text-start fw-bold" style="color:#f59e0b;">
+                                                            Último que salió en la Tarde
                                                         </td>
                                                         <td>
-                                                            <span class="badge-groups-general">
-                                                                0
+                                                            <span class="badge-groups-tarde">
+                                                               <t t-esc="ag.last_day.name"/>
                                                             </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Último que salió noche
+                                                        <td colspan="4" class="text-start fw-bold" style="color:#1e3a5f;">
+                                                            Último que salió en la Noche
                                                         </td>
                                                         <td>
-                                                            <span class="badge-groups-general">
-                                                                0
+                                                            <span class="badge-groups-noche">
+                                                                <t t-esc="ag.last_night.name"/>
                                                             </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
                                                             Más tiempo sin salir
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                    </tr>
+                                                    <tr>
+                                                       <td/>
+                                                        <t t-foreach="ag.most_delayed" t-as="asmd" t-key="asmd.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="asmd.name"/>
+                                                                </span>
+                                                            </td>
+                                                        </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#f59e0b;">
+                                                            Más tiempo sin salir en la Tarde
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más tiempo sin salir tarde
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <td/>
+                                                        <t t-foreach="ag.most_delayed_day" t-as="asmdd" t-key="asmdd.name">
+                                                            <td>
+                                                                <span class="badge-groups-tarde">
+                                                                    <t t-esc="asmdd.name"/>
+                                                                </span>
+                                                            </td>
+                                                        </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#1e3a5f;">
+                                                            Más tiempo sin salir en la Noche
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más tiempo sin salir noche
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
+                                                         <td/>
+                                                       <t t-foreach="ag.most_delayed_night" t-as="asmdn" t-key="asmdn.name">
+                                                            <td>
+                                                                <span class="badge-groups-noche">
+                                                                    <t t-esc="asmdn.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#4cd964;">
                                                             Más salen los <t t-esc="day_week"/>
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                         <td/>
+                                                        <t t-foreach="ag.day.most" t-as="agdm" t-key="agdm.name">
+                                                            <td>
+                                                                <span class="badge-groups-por-dia">
+                                                                    <t t-esc="agdm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#4cd964;">
                                                             Menos salen los <t t-esc="day_week"/>
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                    </tr>
+                                                    <tr>
+                                                        <td/>
+                                                        <t t-foreach="ag.day.least" t-as="agdl" t-key="agdl.name">
+                                                            <td>
+                                                                <span class="badge-groups-por-dia">
+                                                                    <t t-esc="agdl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Más salen en <t t-esc="state.mesActual"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más salen en
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <t t-foreach="ag.month.most" t-as="agmm" t-key="agmm.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agmm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen en <t t-esc="state.mesActual"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Menos salen en
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <t t-foreach="ag.month.least" t-as="agml" t-key="agml.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agml.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Más salen semana del <t t-esc="week"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más salen semana del
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <td/>
+                                                        <t t-foreach="ag.week.most" t-as="wgdm" t-key="wgdm.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="wgdm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen semana del <t t-esc="week"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Menos salen semana del
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
+                                                         <td/>
+                                                        <t t-foreach="ag.week.least" t-as="wgdl" t-key="wgdl.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="wgdl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#f59e0b;">
                                                             Más salen de Tarde
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td/>
+                                                        <td/>
+                                                        <t t-foreach="ag.day_time.most" t-as="agdtm" t-key="agdtm.name">
+                                                            <td>
+                                                                <span class="badge-groups-tarde">
+                                                                    <t t-esc="agdtm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#f59e0b;">
                                                             Menos salen de Tarde
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td/> <td/>
+
+                                                        <t t-foreach="ag.day_time.least" t-as="agdtl" t-key="agdtl.name">
+                                                            <td>
+                                                                <span class="badge-groups-tarde">
+                                                                    <t t-esc="agdtl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#1e3a5f;">
                                                             Más salen de Noche
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                    </tr>
+                                                    <tr>
+                                                        <td/> <td/>
+                                                        <t t-foreach="ag.night_time.most" t-as="agntm" t-key="agntm.name">
+                                                            <td>
+                                                                <span class="badge-groups-noche">
+                                                                    <t t-esc="agntm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#1e3a5f;">
+                                                            Menos salen de Noche
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Menos salen de Noche
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
+                                                        <td/> <td/>
+                                                        <t t-foreach="ag.night_time.least" t-as="agntl" t-key="agntl.name">
+                                                            <td>
+                                                                <span class="badge-groups-noche">
+                                                                    <t t-esc="agntl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
                                                     </tr>
                                                 </t>
                                             </table>
@@ -319,6 +408,38 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-4 mb-2">
+                            <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
+                                <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
+                                    Consultar intervalos de atrasos de los Grupos
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="position-relative mb-3" style="max-width:400px">
+                                        <input type="text"
+                                           class="form-control"
+                                           placeholder="Escriba nombre del grupo..."
+                                           t-model="state.grupo_text"
+                                           t-on-input="onBuscarGrupo"/>
+                                        <div class="dropdown-menu show w-100 "
+                                                t-if="state.sugerencias_grupos.length"
+                                             style="max-height:200px; overflow:auto;z-index: 1050;">
+                                            <t t-foreach="state.sugerencias_grupos" t-as="sg" t-key="sg.id">
+                                                <a class="dropdown-item"
+                                                   href="#"
+                                                   t-on-click="seleccionarGrupo"
+                                                   t-att-data-id="sg.id"
+                                                   t-att-data-name="sg.name">
+                                                    <t t-esc="sg.name"/>
+                                                </a>
+                                            </t>
+                                        </div>
+                                    </div>
+                                    <div style="height:250px;" class="chart-container">
+                                        <canvas t-if="state.data_general" t-ref="chartCanvas"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     <div class="col-md-4 mb-2">
                         <div class="card shadow border-0 p-3 mb-2">
                             <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">
@@ -413,7 +534,7 @@
                                                 </table>
                                             <table class="table table-sm table-hover align-middle" style="border-collapse: separate;border-spacing: 0 6px;">
                                                 <tr>
-                                                    <th colspan="2">
+                                                    <th colspan="5">
 
                                                         <button class="btn btn-primary" style="color:white;background-color:#8c6ca8;"
                                                             t-on-click="() => this.toggleGroupsAnalysisPinta(top_pinta.id)">
@@ -425,165 +546,246 @@
                                                     </th>
                                                 </tr>
                                                 <t t-if="state.openGroupsAnalysisPinta[top_pinta.id]">
+                                                    <t t-set="agp" t-value="state.analysisGroupsPintas[top_pinta.id]"/>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="4" class="text-start fw-bold" style="color:#8c6ca8;">
                                                             Último que salió
                                                         </td>
                                                         <td>
                                                             <span class="badge-groups-general">
-                                                                0
+                                                                <t t-esc="agp.last.name"/>
                                                             </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Último que salió tarde
+                                                        <td colspan="4" class="text-start fw-bold" style="color:#f59e0b;">
+                                                            Último que salió en la Tarde
                                                         </td>
                                                         <td>
-                                                            <span class="badge-groups-general">
-                                                                0
+                                                            <span class="badge-groups-tarde">
+                                                               <t t-esc="agp.last_day.name"/>
                                                             </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Último que salió noche
+                                                        <td colspan="4" class="text-start fw-bold" style="color:#1e3a5f;">
+                                                            Último que salió en la Noche
                                                         </td>
                                                         <td>
-                                                            <span class="badge-groups-general">
-                                                                0
+                                                            <span class="badge-groups-noche">
+                                                                <t t-esc="agp.last_night.name"/>
                                                             </span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
                                                             Más tiempo sin salir
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                    </tr>
+                                                    <tr>
+                                                       <td/>
+                                                        <t t-foreach="agp.most_delayed" t-as="agpmd" t-key="agpmd.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agpmd.name"/>
+                                                                </span>
+                                                            </td>
+                                                        </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#f59e0b;">
+                                                            Más tiempo sin salir en la Tarde
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más tiempo sin salir tarde
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <td/>
+                                                        <t t-foreach="agp.most_delayed_day" t-as="agpmdd" t-key="agpmdd.name">
+                                                            <td>
+                                                                <span class="badge-groups-tarde">
+                                                                    <t t-esc="agpmdd.name"/>
+                                                                </span>
+                                                            </td>
+                                                        </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#1e3a5f;">
+                                                            Más tiempo sin salir en la Noche
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más tiempo sin salir noche
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
+                                                         <td/>
+                                                       <t t-foreach="agp.most_delayed_night" t-as="agpmdn" t-key="agpmdn.name">
+                                                            <td>
+                                                                <span class="badge-groups-noche">
+                                                                    <t t-esc="agpmdn.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#4cd964;">
                                                             Más salen los <t t-esc="day_week"/>
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                         <td/>
+                                                        <t t-foreach="agp.day.most" t-as="agpdm" t-key="agpdm.name">
+                                                            <td>
+                                                                <span class="badge-groups-por-dia">
+                                                                    <t t-esc="agpdm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#4cd964;">
                                                             Menos salen los <t t-esc="day_week"/>
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                    </tr>
+                                                    <tr>
+                                                        <td/>
+                                                        <t t-foreach="agp.day.least" t-as="agpdl" t-key="agpdl.name">
+                                                            <td>
+                                                                <span class="badge-groups-por-dia">
+                                                                    <t t-esc="agpdl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Más salen en <t t-esc="state.mesActual"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más salen en
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <t t-foreach="agp.month.most" t-as="agpmm" t-key="agpmm.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agpmm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen en <t t-esc="state.mesActual"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Menos salen en
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <t t-foreach="agp.month.least" t-as="agpml" t-key="agpml.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agpml.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Más salen semana del <t t-esc="week"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Más salen semana del
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                        <td/>
+                                                        <t t-foreach="agp.week.most" t-as="agpwm" t-key="agpwm.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agpwm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#8c6ca8;">
+                                                            Menos salen semana del <t t-esc="week"/>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Menos salen semana del
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
+                                                         <td/>
+                                                        <t t-foreach="agp.week.least" t-as="agpwl" t-key="agpwl.name">
+                                                            <td>
+                                                                <span class="badge-groups-general">
+                                                                    <t t-esc="agpwl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#f59e0b;">
                                                             Más salen de Tarde
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td/>
+                                                        <td/>
+                                                        <t t-foreach="agp.day_time.most" t-as="agpdtm" t-key="agpdtm.name">
+                                                            <td>
+                                                                <span class="badge-groups-tarde">
+                                                                    <t t-esc="agpdtm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#f59e0b;">
                                                             Menos salen de Tarde
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
+                                                        <td/> <td/>
+
+                                                        <t t-foreach="agp.day_time.least" t-as="agpdtl" t-key="agpdtl.name">
+                                                            <td>
+                                                                <span class="badge-groups-tarde">
+                                                                    <t t-esc="agpdtl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#1e3a5f;">
                                                             Más salen de Noche
                                                         </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
+                                                    </tr>
+                                                    <tr>
+                                                        <td/> <td/>
+                                                        <t t-foreach="agp.night_time.most" t-as="agpntm" t-key="agpntm.name">
+                                                            <td>
+                                                                <span class="badge-groups-noche">
+                                                                    <t t-esc="agpntm.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+                                                    </tr>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center fw-bold" style="color:#1e3a5f;">
+                                                            Menos salen de Noche
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Menos salen de Noche
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge-groups-general">
-                                                                0
-                                                            </span>
-                                                        </td>
+                                                        <td/> <td/>
+                                                        <t t-foreach="agp.night_time.least" t-as="agpntl" t-key="agpntl.name">
+                                                            <td>
+                                                                <span class="badge-groups-noche">
+                                                                    <t t-esc="agpntl.name"/>
+                                                                </span>
+                                                            </td>
+                                                       </t>
+
+
                                                     </tr>
                                                 </t>
                                             </table>
@@ -592,9 +794,36 @@
                                 </t>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 mb-2">
-
+                        <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
+                            <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
+                                Consultar intervalos de atrasos de las Pintas
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="position-relative mb-3" style="max-width:400px">
+                                    <input type="text"
+                                       class="form-control"
+                                       placeholder="Escriba nombre de la pinta..."
+                                       t-model="state.pinta_text"
+                                       t-on-input="onBuscarPinta"/>
+                                    <div class="dropdown-menu show w-100 "
+                                            t-if="state.sugerencias_pintas.length"
+                                         style="max-height:200px; overflow:auto;z-index: 1050;">
+                                        <t t-foreach="state.sugerencias_pintas" t-as="sg" t-key="sg.id">
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               t-on-click="seleccionarPinta"
+                                               t-att-data-id="sg.id"
+                                               t-att-data-name="sg.name">
+                                                <t t-esc="sg.name"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div style="height:250px;" class="chart-container">
+                                    <canvas t-if="state.data_general_pinta" t-ref="chartCanvasPintas"/>
+                                </div>
+                            </div>
+                        </div>
                     </div>
             </div>
         </div>

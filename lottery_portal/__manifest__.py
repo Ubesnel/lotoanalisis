@@ -31,6 +31,7 @@
             'lottery_portal/static/src/css/dashboard_numbers.css',
             'lottery_portal/static/src/css/dashboard_groups.css',
             'lottery_portal/static/src/scss/faq.scss',
+            'lottery_portal/static/src/js/Chart.js',
             'lottery_portal/static/src/js/faq.js',
             'lottery_portal/static/src/js/top10_by_day.js',
             'lottery_portal/static/src/js/top_atrasos.js',
