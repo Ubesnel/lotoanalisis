@@ -126,7 +126,7 @@
                                     <p>
                                         Explora frecuencias, atrasos y tendencias históricas detalladas de Grupos.
                                     </p>
-                                    <a href="/estadisticas" class="quick-link">
+                                    <a href="/estadisticas" class="btn-contacto">
                                         Ir a Grupos →
                                     </a>
                                 </div>
@@ -135,7 +135,7 @@
                                     <p>
                                         Explora frecuencias, atrasos y tendencias históricas detalladas de los Números.
                                     </p>
-                                    <a href="/estadisticas-numeros" class="quick-link">
+                                    <a href="/estadisticas-numeros" class="btn-contacto">
                                         Ir a Números →
                                     </a>
                                 </div>
@@ -144,7 +144,7 @@
                                     <p>
                                         Explora frecuencias, atrasos y tendencias históricas detalladas de las Pintas.
                                     </p>
-                                    <a href="/estadisticas-pintas" class="quick-link">
+                                    <a href="/estadisticas-pintas" class="btn-contacto">
                                         Ir a Pintas →
                                     </a>
                                 </div>
