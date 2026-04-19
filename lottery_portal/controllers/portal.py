@@ -46,6 +46,10 @@ class LotteryPortal(http.Controller):
     def portal_estadisticas_grupos_page(self, **kw):
         return request.render('lottery_portal.portal_estadisticas_grupos')
 
+    @http.route('/estadisticas-pintas', type='http', auth='public', website=True)
+    def portal_estadisticas_pintas_page(self, **kw):
+        return request.render('lottery_portal.portal_estadisticas_pintas')
+
     @http.route('/estadisticas-numeros', type='http', auth='public', website=True)
     def portal_estadisticas_numeros_page(self, **kw):
         return request.render('lottery_portal.portal_estadisticas_numeros')
@@ -181,46 +185,75 @@ class LotteryPortal(http.Controller):
         }
 
     @http.route('/estadisticas-grupos/dashboard_data', type='json', auth='public')
-    def dashboard_info_groups(self, group_type=False, day=False, week=False, month=False):
-        top_6_groups_info = request.env['lottery.stats.service'].sudo().get_top_6_groups(group_type, day)
+    def dashboard_info_groups(self, day=False, week=False, month=False):
+        top_6_groups_info = request.env['lottery.stats.service'].sudo().get_top_6_groups('general', day)
+        top_6_groups_info_tarde = request.env['lottery.stats.service'].sudo().get_top_6_groups('afternoon', day)
+        top_6_groups_info_noche = request.env['lottery.stats.service'].sudo().get_top_6_groups('evening', day)
         groups_analysis = {}
+        groups_analysis_tarde = {}
+        groups_analysis_noche = {}
         for group in top_6_groups_info:
-            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month)
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month, 3)
             groups_analysis[group.get('id')] = data
+        for group in top_6_groups_info_tarde:
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month, 3)
+            groups_analysis_tarde[group.get('id')] = data
+        for group in top_6_groups_info_noche:
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month, 3)
+            groups_analysis_noche[group.get('id')] = data
+
         return {
             "top_6_groups_info": top_6_groups_info,
+            "top_6_groups_info_tarde": top_6_groups_info_tarde,
+            "top_6_groups_info_noche": top_6_groups_info_noche,
             "groups_analysis": groups_analysis,
+            "groups_analysis_tarde": groups_analysis_tarde,
+            "groups_analysis_noche": groups_analysis_noche,
         }
 
-    @http.route('/estadisticas-grupos/dashboard_data_pintas', type='json', auth='public')
-    def dashboard_info_pintas(self, group_type=False, day=False, week=False, month=False):
-        get_top_3_pintas = request.env['lottery.stats.service'].sudo().get_top_3_pintas(group_type, day)
+    @http.route('/estadisticas-pintas/dashboard_data', type='json', auth='public')
+    def dashboard_info_pintas(self, day=False, week=False, month=False):
+        get_top_3_pintas = request.env['lottery.stats.service'].sudo().get_top_3_pintas('general', day)
+        get_top_3_pintas_tarde = request.env['lottery.stats.service'].sudo().get_top_3_pintas('afternoon', day)
+        get_top_3_pintas_noche = request.env['lottery.stats.service'].sudo().get_top_3_pintas('evening', day)
         groups_analysis = {}
+        groups_analysis_tarde = {}
+        groups_analysis_noche = {}
         for group in get_top_3_pintas:
-            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month)
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month, 8)
             groups_analysis[group.get('id')] = data
+        for group in get_top_3_pintas_tarde:
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month, 8)
+            groups_analysis_tarde[group.get('id')] = data
+        for group in get_top_3_pintas_noche:
+            data = request.env['lottery.stats.service'].sudo().get_info_group_numbers_analysis(group.get('id'), day, week, month, 8)
+            groups_analysis_noche[group.get('id')] = data
 
         return {
                 "get_top_3_pintas": get_top_3_pintas,
+                "get_top_3_pintas_tarde": get_top_3_pintas_tarde,
+                "get_top_3_pintas_noche": get_top_3_pintas_noche,
                 "groups_analysis": groups_analysis,
+                "groups_analysis_tarde": groups_analysis_tarde,
+                "groups_analysis_noche": groups_analysis_noche,
             }
 
-    @http.route('/lottery/get_group_numbers', type='json', auth='user')
+    @http.route('/lottery/get_group_numbers', type='json', auth='public')
     def get_group_numbers(self, group_id=False, orden=False, day=False):
         group = request.env['lottery.group'].sudo().browse(group_id)
         group_numbers = request.env['lottery.stats.service'].sudo().get_info_groups_numbers(group, orden, day)
         return group_numbers
 
-    @http.route('/lottery/get_month_text', type='json', auth='user')
+    @http.route('/lottery/get_month_text', type='json', auth='public')
     def get_month_text(self, month=False):
         return MONTHS_DICT[str(month)]
 
-    @http.route('/lottery/get_data_chart_general', type='json', auth='user')
+    @http.route('/lottery/get_data_chart_general', type='json', auth='public')
     def get_data_chart_general(self, group_id=False):
         data = request.env['lottery.stats.service'].sudo().get_group_delay_intervals(group_id)
         return data
 
-    @http.route('/lottery/get_data_chart_general_pinta', type='json', auth='user')
+    @http.route('/lottery/get_data_chart_general_pinta', type='json', auth='public')
     def get_data_chart_general_pinta(self, group_id=False):
         data = request.env['lottery.stats.service'].sudo().get_group_delay_intervals_pintas(group_id)
         return data

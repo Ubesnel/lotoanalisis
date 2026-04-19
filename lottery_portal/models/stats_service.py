@@ -112,7 +112,7 @@ class LotteryStatsService(models.Model):
                 FROM lottery_ultima_salida_dia_semana_mv
                 WHERE week_day = %s
                 ORDER BY date DESC
-                LIMIT 8
+                LIMIT 7
             """, (day,))
         records = self.env.cr.dictfetchall()
         records.sort(key=lambda x: datetime.strptime(x['fecha'], '%d/%m/%Y'))
@@ -680,8 +680,8 @@ class LotteryStatsService(models.Model):
         groups = self.env.cr.dictfetchall()
         return groups
 
-    @tools.ormcache('group_id', 'day', 'week', 'month')
-    def get_info_group_numbers_analysis(self, group_id, day, week, month):
+    @tools.ormcache('group_id', 'day', 'week', 'month', 'limit')
+    def get_info_group_numbers_analysis(self, group_id, day, week, month, limit):
         if not group_id or not day or not month or not week:
             return {}
 
@@ -750,33 +750,33 @@ class LotteryStatsService(models.Model):
             "last_day": s(top(rows, "total_atrasadas_dia", 1, reverse=False)[0]),
             "last_night": s(top(rows, "total_atrasadas_noche", 1, reverse=False)[0]),
 
-            "most_delayed": s_list(top(rows, "total_atrasadas", 4)),
-            "most_delayed_day": s_list(top(rows, "total_atrasadas_dia", 4)),
-            "most_delayed_night": s_list(top(rows, "total_atrasadas_noche", 4)),
+            "most_delayed": s_list(top(rows, "total_atrasadas", limit)),
+            "most_delayed_day": s_list(top(rows, "total_atrasadas_dia", limit)),
+            "most_delayed_night": s_list(top(rows, "total_atrasadas_noche", limit)),
 
             "day": {
-                "most": s_list(top(rows, day_field, 4)),
-                "least": s_list(top(rows, day_field, 4, reverse=False)),
+                "most": s_list(top(rows, day_field, limit)),
+                "least": s_list(top(rows, day_field, limit, reverse=False)),
             },
 
             "month": {
-                "most": s_list(top(rows, month_field, 5)),
-                "least": s_list(top(rows, month_field, 5, reverse=False)),
+                "most": s_list(top(rows, month_field, limit)),
+                "least": s_list(top(rows, month_field, limit, reverse=False)),
             },
 
             "week": {
-                "most": s_list(top(rows, week_field, 4)),
-                "least": s_list(top(rows, week_field, 4, reverse=False)),
+                "most": s_list(top(rows, week_field, limit)),
+                "least": s_list(top(rows, week_field, limit, reverse=False)),
             },
 
             "day_time": {
-                "most": s_list(top(rows, "total_atrasadas_dia", 3, reverse=False)),
-                "least": s_list(top(rows, "total_atrasadas_dia", 3)),
+                "most": s_list(top(rows, "total_atrasadas_dia", limit, reverse=False)),
+                "least": s_list(top(rows, "total_atrasadas_dia", limit)),
             },
 
             "night_time": {
-                "most": s_list(top(rows, "total_atrasadas_noche", 3, reverse=False)),
-                "least": s_list(top(rows, "total_atrasadas_noche", 3)),
+                "most": s_list(top(rows, "total_atrasadas_noche", limit, reverse=False)),
+                "least": s_list(top(rows, "total_atrasadas_noche", limit)),
             },
         }
 
@@ -860,9 +860,9 @@ class LotteryStatsService(models.Model):
             SELECT            
                 COUNT(*) FILTER (WHERE atraso BETWEEN 10 AND 20) AS r_10_20,
                 COUNT(*) FILTER (WHERE atraso BETWEEN 21 AND 30) AS r_21_30,
-                COUNT(*) FILTER (WHERE atraso BETWEEN 31 AND 35) AS r_31_35,
-                COUNT(*) FILTER (WHERE atraso BETWEEN 36 AND 40) AS r_36_40,
-                COUNT(*) FILTER (WHERE atraso > 40) AS r_40_plus
+                COUNT(*) FILTER (WHERE atraso BETWEEN 31 AND 40) AS r_31_40,
+                COUNT(*) FILTER (WHERE atraso BETWEEN 41 AND 45) AS r_41_45,
+                COUNT(*) FILTER (WHERE atraso > 45) AS r_45_plus
             FROM atrasos;
             """, (group_id,))
 

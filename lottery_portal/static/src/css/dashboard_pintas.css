@@ -1,0 +1,186 @@
+.bolas-container-pintas {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px;
+    justify-items: end;
+}
+
+.analysis-header {
+    background: #f4f1f8;
+    border: 1px solid #e2dcef;
+    border-radius: 10px;
+
+    padding: 6px 12px; /* 🔥 compacto */
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+/* Hover suave */
+.analysis-header:hover {
+    background: #ede7f6;
+}
+
+/* Estado activo */
+.analysis-header.open {
+    background: #8c6ca8;
+    border-color: #8c6ca8;
+}
+
+/* Texto */
+.analysis-header .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8c6ca8;
+}
+
+/* Icono izquierdo */
+.analysis-header .icon {
+    font-size: 12px;
+    color: #8c6ca8;
+}
+
+/* Chevron */
+.analysis-header .chevron {
+    font-size: 11px;
+    color: #8c6ca8;
+    transition: transform 0.2s ease;
+}
+
+/* Estado abierto */
+.analysis-header.open .title,
+.analysis-header.open .icon,
+.analysis-header.open .chevron {
+    color: #fff;
+}
+
+/* Animación del icono */
+.analysis-header.open .chevron {
+    transform: rotate(180deg);
+}
+
+
+.analysis-header-tarde {
+    background: #f4f1f8;
+    border: 1px solid #e2dcef;
+    border-radius: 10px;
+
+    padding: 6px 12px; /* 🔥 compacto */
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+/* Hover suave */
+.analysis-header-tarde:hover {
+    background: #ede7f6;
+}
+
+/* Estado activo */
+.analysis-header-tarde.open {
+    background: orange;
+    border-color: orange;
+}
+
+/* Texto */
+.analysis-header-tarde .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: orange;
+}
+
+/* Icono izquierdo */
+.analysis-header-tarde .icon {
+    font-size: 12px;
+    color: orange;
+}
+
+/* Chevron */
+.analysis-header-tarde .chevron {
+    font-size: 11px;
+    color: orange;
+    transition: transform 0.2s ease;
+}
+
+/* Estado abierto */
+.analysis-header-tarde.open .title,
+.analysis-header-tarde.open .icon,
+.analysis-header-tarde.open .chevron {
+    color: #fff;
+}
+
+/* Animación del icono */
+.analysis-header-tarde.open .chevron {
+    transform: rotate(180deg);
+}
+
+.analysis-header-noche {
+    background: #f4f1f8;
+    border: 1px solid #e2dcef;
+    border-radius: 10px;
+
+    padding: 6px 12px; /* 🔥 compacto */
+    cursor: pointer;
+
+    transition: all 0.2s ease;
+}
+
+/* Hover suave */
+.analysis-header-noche:hover {
+    background: #ede7f6;
+}
+
+/* Estado activo */
+.analysis-header-noche.open {
+    background: #1e3a5f;
+    border-color: #1e3a5f;
+}
+
+/* Texto */
+.analysis-header-noche .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e3a5f;
+}
+
+/* Icono izquierdo */
+.analysis-header-noche .icon {
+    font-size: 12px;
+    color: #1e3a5f;
+}
+
+/* Chevron */
+.analysis-header-noche .chevron {
+    font-size: 11px;
+    color: #1e3a5f;
+    transition: transform 0.2s ease;
+}
+
+/* Estado abierto */
+.analysis-header-noche.open .title,
+.analysis-header-noche.open .icon,
+.analysis-header-noche.open .chevron {
+    color: #fff;
+}
+
+/* Animación del icono */
+.analysis-header-noche.open .chevron {
+    transform: rotate(180deg);
+}
+
+.chart-wrapper {
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+/* cuando hay grupo seleccionado */
+.chart-wrapper.open {
+    max-height: 300px; /* 🔥 ajustá según tu gráfico */
+    margin-top: 10px;
+}
+
+/* opcional: suavizar el contenido */
+.chart-container {
+    height: 250px;
+}

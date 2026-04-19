@@ -4,12 +4,12 @@
         <div class="card shadow border-0 overflow-hidden mb-4">
             <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
                 <div class="mb-3 d-flex align-items-center gap-2">
-                    Últimas 8 salidas
+                    Últimas 7 salidas
                     <i class="fa fa-arrow-right"/>
                     <select t-model="state.day_us" class="form-select form-select-sm"
                             style="width:120px;"
                             t-on-change="onChangeUltimasSalidas"
-                            title="Últimas 6 salidas del día seleccionado">
+                            title="Últimas 7 salidas del día seleccionado">
                             <option value="lu">Lunes</option>
                         <option value="ma">Martes</option>
                         <option value="mi">Miércoles</option>
