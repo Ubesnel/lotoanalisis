@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_estadisticas_pintas" name="Estadísticas de pintas">
+        <t t-call="website.layout">
+            <owl-component name="lottery_portal.LotteryDashboardPintas"/>
+        </t>
+    </template>
+</odoo>

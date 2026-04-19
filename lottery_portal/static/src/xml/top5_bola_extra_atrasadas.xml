@@ -4,11 +4,11 @@
         <div class="card shadow border-0 overflow-hidden mb-4">
             <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
                 <div class="mb-3 d-flex align-items-center gap-2">
-                5 Bolas Extras más Atrasadas
+                4 Bolas Extras más Atrasadas
                 <i class="fa fa-arrow-right"/>
                     <select t-model="state.type_be" class="form-select form-select-sm"
                             style="width:120px;" t-on-change="onOnchangeTop5BolaExtra"
-                            title="5 Bolas Extras más Atrasadas">
+                            title="4 Bolas Extras más Atrasadas">
                         <option value="general">General</option>
                         <option value="afternoon">Tarde</option>
                         <option value="evening">Noche</option>

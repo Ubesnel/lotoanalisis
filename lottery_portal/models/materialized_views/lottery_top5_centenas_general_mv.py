@@ -52,7 +52,7 @@ class LotteryTop5CentenaGeneralMV(models.Model):
                    AND lo.hundreds_id <> l.hundreds_id
                 GROUP BY n.name
                 ORDER BY atraso DESC
-                LIMIT 5;
+                LIMIT 4;
         """)
 
         self.env.cr.execute("""CREATE INDEX idx_centena_atrasos_mv

@@ -52,7 +52,7 @@ class LotteryTop5BolaExtraGeneralMV(models.Model):
                        AND lo.fireball_id <> l.fireball_id
                     GROUP BY n.name
                     ORDER BY atraso DESC
-                    LIMIT 5;
+                    LIMIT 4;
         """)
 
         self.env.cr.execute("""CREATE INDEX idx_bola_extra_atrasos_mv

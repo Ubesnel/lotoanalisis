@@ -41,7 +41,7 @@ class LotteryTop5BolaExtraDiaMV(models.Model):
                 WHERE lo.id IS NULL
                 GROUP BY n.name
                 ORDER BY atraso desc
-                limit 5;
+                limit 4;
         """)
 
         self.env.cr.execute("""CREATE INDEX idx_bola_extra_atrasos_dia_mv

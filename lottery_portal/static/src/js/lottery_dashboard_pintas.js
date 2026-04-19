@@ -4,7 +4,8 @@ import { Component, onWillStart, onMounted, useState, useRef} from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
 
-export class LotteryDashboardGroups extends Component {
+
+export class LotteryDashboardPintas extends Component {
     setup() {
         const todayIndex = new Date().getDay();
         const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
@@ -45,21 +46,21 @@ export class LotteryDashboardGroups extends Component {
     }
 
     async loadTop6GroupsData() {
-        const data = await jsonrpc("/estadisticas-grupos/dashboard_data", {
+        const data = await jsonrpc("/estadisticas-pintas/dashboard_data", {
             day: this.state.day_index,
             week: this.state.week_index,
             month: this.state.month_index
         });
-        this.state.top_6_groups_info = data.top_6_groups_info;
-        this.state.top_6_groups_info_tarde = data.top_6_groups_info_tarde;
-        this.state.top_6_groups_info_noche = data.top_6_groups_info_noche;
+        this.state.top_6_groups_info = data.get_top_3_pintas;
+        this.state.top_6_groups_info_tarde = data.get_top_3_pintas_tarde;
+        this.state.top_6_groups_info_noche = data.get_top_3_pintas_noche;
         this.state.analysisGroups = data.groups_analysis;
         this.state.analysisGroupsTarde = data.groups_analysis_tarde;
         this.state.analysisGroupsNoche = data.groups_analysis_noche;
     }
 
     async loadDataGeneralChart(select_group_id) {
-        const result = await jsonrpc("/lottery/get_data_chart_general", {
+        const result = await jsonrpc("/lottery/get_data_chart_general_pinta", {
             group_id: select_group_id,
         });
         this.state.data_general = result;
@@ -85,13 +86,13 @@ export class LotteryDashboardGroups extends Component {
                     return;
                 }
 
-                const labels = ["21-40", "41-50", "51-60", "61-70", "+70"];
+                const labels = ["10-20", "21-30", "31-40", "41-45", "+45"];
                 const values = [
-                    data.r_21_40 || 0,
-                    data.r_41_50 || 0,
-                    data.r_51_60 || 0,
-                    data.r_61_70 || 0,
-                    data.r_70_plus || 0,
+                    data.r_10_20 || 0,
+                    data.r_21_30 || 0,
+                    data.r_31_40 || 0,
+                    data.r_41_45 || 0,
+                    data.r_45_plus || 0,
                 ];
 
                 if (this.chart) {
@@ -239,6 +240,7 @@ export class LotteryDashboardGroups extends Component {
     async onBuscarGrupo(ev) {
         const term = ev.target.value;
         this.state.grupo_text = term;
+
         if (!term) {
             // 🔥 limpiar todo
                 this.state.select_group_id = null;
@@ -250,8 +252,9 @@ export class LotteryDashboardGroups extends Component {
                     this.chart = null;
                 }
                 return;
-        }
-        const data = await jsonrpc("/estadisticas-grupos/search_grupos", {
+            }
+
+        const data = await jsonrpc("/estadisticas-grupos/search_pintas", {
             term: term
         });
         this.state.sugerencias_grupos = data;
@@ -261,12 +264,12 @@ export class LotteryDashboardGroups extends Component {
         const id = ev.currentTarget.dataset.id;
         const name = ev.currentTarget.dataset.name;
         this.state.grupo_text = name;
-        this.state.select_grupo_id = parseInt(id);
+        this.state.select_group_id = parseInt(id);
         this.state.sugerencias_grupos = [];
         this.loadDataGeneralChart(parseInt(id));
         }
 }
 
-LotteryDashboardGroups.template = "lottery_portal.LotteryDashboardGroups";
+LotteryDashboardPintas.template = "lottery_portal.LotteryDashboardPintas";
 
-registry.category("public_components").add("lottery_portal.LotteryDashboardGroups", LotteryDashboardGroups);
+registry.category("public_components").add("lottery_portal.LotteryDashboardPintas", LotteryDashboardPintas);

@@ -18,7 +18,7 @@
                 </div>
             </section>
             <div class="container mt-2 mb-2">
-                <div class="row mb-2">
+                <div class="row mb-1">
                     <div class="col-md-3 mb-2">
                         <div class="card shadow border-0 p-3 mb-4">
                             <t t-if="lottery_data.get('afternoon')">
@@ -102,20 +102,18 @@
                         <owl-component name="lottery_portal.UltimasSalidasDay"/>
                     </div>
                 </div>
-                <div class="row mb-5">
-                    <div class="col-md-2 mb-2">
+                <div class="row mb-3">
+                    <div class="col-md-3 mb-1">
                         <owl-component name="lottery_portal.TopAtrasosLineas"/>
                     </div>
-                    <div class="col-md-2 mb-2">
+                    <div class="col-md-3 mb-1">
                         <owl-component name="lottery_portal.TopAtrasosTerminales"/>
                     </div>
-                    <div class="col-md-2 mb-2">
+                    <div class="col-md-3 mb-1">
                         <owl-component name="lottery_portal.TopAtrasosParejas"/>
                     </div>
-                    <div class="col-md-3 mb-2">
+                    <div class="col-md-3 mb-1">
                         <owl-component name="lottery_portal.Top5CentenasAtrasadas"/>
-                    </div>
-                    <div class="col-md-3 mb-2">
                         <owl-component name="lottery_portal.Top5BolaExtraAtrasadas"/>
                     </div>
                 </div>
@@ -124,15 +122,6 @@
                         <section class="quick-access">
                             <div class="quick-container">
                                 <div class="quick-card contacto-card">
-                                    <h3>¿Tienes dudas?</h3>
-                                    <p>
-                                        Estamos disponibles para ayudarte con cualquier consulta.
-                                    </p>
-                                    <a href="/contactus" class="btn-contacto">
-                                        Contáctanos
-                                    </a>
-                                </div>
-                                <div class="quick-card">
                                     <h3>Consultas avanzadas Grupos</h3>
                                     <p>
                                         Explora frecuencias, atrasos y tendencias históricas detalladas de Grupos.
@@ -141,13 +130,22 @@
                                         Ir a Grupos →
                                     </a>
                                 </div>
-                                <div class="quick-card">
+                                <div class="quick-card contacto-card">
                                     <h3>Consultas avanzadas Números</h3>
                                     <p>
                                         Explora frecuencias, atrasos y tendencias históricas detalladas de los Números.
                                     </p>
                                     <a href="/estadisticas-numeros" class="quick-link">
                                         Ir a Números →
+                                    </a>
+                                </div>
+                                <div class="quick-card contacto-card">
+                                    <h3>Consultas avanzadas Pintas</h3>
+                                    <p>
+                                        Explora frecuencias, atrasos y tendencias históricas detalladas de las Pintas.
+                                    </p>
+                                    <a href="/estadisticas-pintas" class="quick-link">
+                                        Ir a Pintas →
                                     </a>
                                 </div>
                                 <div class="quick-card contacto-card">
