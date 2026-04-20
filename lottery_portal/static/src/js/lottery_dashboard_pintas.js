@@ -31,8 +31,18 @@ export class LotteryDashboardPintas extends Component {
             select_group_id: null,
             grupo_text: '',
             sugerencias_grupos: [],
+            data_tarde: null,
+            select_group_tarde_id: null,
+            grupo_text_tarde: '',
+            sugerencias_grupos_tarde: [],
+            data_noche: null,
+            select_group_noche_id: null,
+            grupo_text_noche: '',
+            sugerencias_grupos_noche: [],
         });
         this.canvasRef = useRef("chartCanvas");
+        this.canvasRefTarde = useRef("chartCanvasTarde");
+        this.canvasRefNoche = useRef("chartCanvasNoche");
 
         onWillStart(async () => {
             await this.loadTop6GroupsData();
@@ -42,6 +52,8 @@ export class LotteryDashboardPintas extends Component {
 
         onMounted(() => {
             this.chartCanvas = this.canvasRef.el;
+            this.chartCanvasTarde = this.canvasRefTarde.el;
+            this.chartCanvasNoche = this.canvasRefNoche.el;
         });
     }
 
@@ -67,6 +79,29 @@ export class LotteryDashboardPintas extends Component {
         setTimeout(() => {
         if (this.canvasRef.el) {
             this.renderChart();
+            }
+        }, 0);
+    }
+    async loadDataGeneralChartTarde(select_group_tarde_id) {
+        const result = await jsonrpc("/lottery/get_data_chart_tarde_pinta", {
+            group_id: select_group_tarde_id,
+        });
+        this.state.data_tarde = result;
+        setTimeout(() => {
+        if (this.canvasRefTarde.el) {
+            this.renderChartTarde();
+            }
+        }, 0);
+    }
+
+    async loadDataGeneralChartNoche(select_group_noche_id) {
+        const result = await jsonrpc("/lottery/get_data_chart_noche_pinta", {
+            group_id: select_group_noche_id,
+        });
+        this.state.data_noche = result;
+        setTimeout(() => {
+        if (this.canvasRefNoche.el) {
+            this.renderChartNoche();
             }
         }, 0);
     }
@@ -210,6 +245,284 @@ export class LotteryDashboardPintas extends Component {
             });
     }
 
+    renderChartTarde() {
+                if (!this.canvasRefTarde.el) {
+                    console.log("canvas no listo");
+                    return;
+                }
+
+                const ctx = this.canvasRefTarde.el.getContext("2d");
+
+                const data = this.state.data_tarde;
+
+                if (!data || !Object.keys(data).length) {
+                    console.log("sin data");
+                    return;
+                }
+
+                const labels = ["10-20", "21-30", "31-40", "41-45", "+45"];
+                const values = [
+                    data.r_10_20 || 0,
+                    data.r_21_30 || 0,
+                    data.r_31_40 || 0,
+                    data.r_41_45 || 0,
+                    data.r_45_plus || 0,
+                ];
+
+                if (this.chart_tarde) {
+                    this.chart_tarde.destroy();
+                }
+            this.chart_tarde = new Chart(ctx, {
+                        type: "line",
+                        data: {
+        labels,
+        datasets: [{
+            label: "Atrasos",
+            data: values,
+
+            // línea
+            borderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            borderColor: "#f59e0b",
+            backgroundColor: "rgba(255, 219, 187, 1)",
+
+            // puntos (clave para mobile)
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            pointHitRadius: 20, // 🔥 hace fácil tocar en celular
+            pointBackgroundColor: "#f59e0b",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2
+        }],
+    },
+                        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        // 🔥 UX móvil
+        interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'x'
+        },
+
+        plugins: {
+            legend: {
+                display: false
+            },
+
+            tooltip: {
+                enabled: true,
+                backgroundColor: "#222",
+                padding: 10,
+                cornerRadius: 6,
+                callbacks: {
+                    title: (items) => `Intervalo: ${items[0].label}`,
+                    label: (ctx) => ` ${ctx.parsed.y} veces`
+                }
+            },
+
+            // 🔥 labels siempre visibles (clave)
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                offset: 6,
+                clamp: true,
+                clip: false,
+
+                formatter: (value) => value > 0 ? value : '',
+
+                color: "#f59e0b",
+
+                font: (ctx) => {
+                    const v = ctx.dataset.data[ctx.dataIndex];
+                    return {
+                        weight: 'bold',
+                        size: 13
+                    };
+                }
+            }
+        },
+
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    maxRotation: 0,
+                    autoSkip: false,
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+
+            y: {
+                beginAtZero: true,
+                grace: '50%',
+                grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                    drawBorder: false
+                },
+
+                ticks: {
+                    padding: 6,
+                    font: {
+                        size: 11
+                    }
+                }
+
+            }
+        },
+        animation: {
+            duration: 800,
+            easing: 'easeOutQuart'
+        }
+    }
+            });
+    }
+
+    renderChartNoche() {
+                if (!this.canvasRefNoche.el) {
+                    console.log("canvas no listo");
+                    return;
+                }
+
+                const ctx = this.canvasRefNoche.el.getContext("2d");
+
+                const data = this.state.data_noche;
+
+                if (!data || !Object.keys(data).length) {
+                    console.log("sin data");
+                    return;
+                }
+
+                const labels = ["10-20", "21-30", "31-40", "41-45", "+45"];
+                const values = [
+                    data.r_10_20 || 0,
+                    data.r_21_30 || 0,
+                    data.r_31_40 || 0,
+                    data.r_41_45 || 0,
+                    data.r_45_plus || 0,
+                ];
+
+                if (this.chart_noche) {
+                    this.chart_noche.destroy();
+                }
+            this.chart_noche = new Chart(ctx, {
+                        type: "line",
+                        data: {
+        labels,
+        datasets: [{
+            label: "Atrasos",
+            data: values,
+
+            // línea
+            borderWidth: 2,
+            tension: 0.35,
+            fill: true,
+            borderColor: "#1e3a5f",
+            backgroundColor: "rgba(186, 196, 209, 1)",
+
+            // puntos (clave para mobile)
+            pointRadius: 6,
+            pointHoverRadius: 9,
+            pointHitRadius: 20, // 🔥 hace fácil tocar en celular
+            pointBackgroundColor: "#1e3a5f",
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2
+        }],
+    },
+                        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        // 🔥 UX móvil
+        interaction: {
+            mode: 'nearest',
+            intersect: false,
+            axis: 'x'
+        },
+
+        plugins: {
+            legend: {
+                display: false
+            },
+
+            tooltip: {
+                enabled: true,
+                backgroundColor: "#222",
+                padding: 10,
+                cornerRadius: 6,
+                callbacks: {
+                    title: (items) => `Intervalo: ${items[0].label}`,
+                    label: (ctx) => ` ${ctx.parsed.y} veces`
+                }
+            },
+
+            // 🔥 labels siempre visibles (clave)
+            datalabels: {
+                anchor: 'end',
+                align: 'top',
+                offset: 6,
+                clamp: true,
+                clip: false,
+
+                formatter: (value) => value > 0 ? value : '',
+
+                color: "#1e3a5f",
+
+                font: (ctx) => {
+                    const v = ctx.dataset.data[ctx.dataIndex];
+                    return {
+                        weight: 'bold',
+                        size: 13
+                    };
+                }
+            }
+        },
+
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    maxRotation: 0,
+                    autoSkip: false,
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+
+            y: {
+                beginAtZero: true,
+                grace: '50%',
+                grid: {
+                    color: 'rgba(0,0,0,0.05)',
+                    drawBorder: false
+                },
+
+                ticks: {
+                    padding: 6,
+                    font: {
+                        size: 11
+                    }
+                }
+
+            }
+        },
+        animation: {
+            duration: 800,
+            easing: 'easeOutQuart'
+        }
+    }
+            });
+    }
+
     async toggleGroupNumber(type, groupId, groupOrden) {
         const key = `${type}_${groupId}`;
         this.state.openGroups[key] = !this.state.openGroups[key];
@@ -259,6 +572,52 @@ export class LotteryDashboardPintas extends Component {
         });
         this.state.sugerencias_grupos = data;
     }
+    async onBuscarGrupoTarde(ev) {
+        const term = ev.target.value;
+        this.state.grupo_text_tarde = term;
+
+        if (!term) {
+            // 🔥 limpiar todo
+                this.state.select_group_tarde_id = null;
+                this.state.data_tarde = null;
+                this.state.sugerencias_grupos_tarde = [];
+                // opcional: destruir chart si existe
+                if (this.chart_tarde) {
+                    this.chart_tarde.destroy();
+                    this.chart_tarde = null;
+                }
+                return;
+            }
+
+        const data = await jsonrpc("/estadisticas-grupos/search_pintas", {
+            term: term
+        });
+        this.state.sugerencias_grupos_tarde = data;
+    }
+
+    async onBuscarGrupoNoche(ev) {
+        const term = ev.target.value;
+        this.state.grupo_text_noche = term;
+
+        if (!term) {
+            // 🔥 limpiar todo
+                this.state.select_group_noche_id = null;
+                this.state.data_noche = null;
+                this.state.sugerencias_grupos_noche = [];
+                // opcional: destruir chart si existe
+                if (this.chart_noche) {
+                    this.chart_noche.destroy();
+                    this.chart_noche = null;
+                }
+                return;
+            }
+
+        const data = await jsonrpc("/estadisticas-grupos/search_pintas", {
+            term: term
+        });
+        this.state.sugerencias_grupos_noche = data;
+    }
+
 
     seleccionarGrupo(ev) {
         const id = ev.currentTarget.dataset.id;
@@ -267,6 +626,23 @@ export class LotteryDashboardPintas extends Component {
         this.state.select_group_id = parseInt(id);
         this.state.sugerencias_grupos = [];
         this.loadDataGeneralChart(parseInt(id));
+        }
+
+    seleccionarGrupoTarde(ev) {
+        const id = ev.currentTarget.dataset.id;
+        const name = ev.currentTarget.dataset.name;
+        this.state.grupo_text_tarde = name;
+        this.state.select_group_tarde_id = parseInt(id);
+        this.state.sugerencias_grupos_tarde = [];
+        this.loadDataGeneralChartTarde(parseInt(id));
+        }
+    seleccionarGrupoNoche(ev) {
+        const id = ev.currentTarget.dataset.id;
+        const name = ev.currentTarget.dataset.name;
+        this.state.grupo_text_noche = name;
+        this.state.select_group_noche_id = parseInt(id);
+        this.state.sugerencias_grupos_noche = [];
+        this.loadDataGeneralChartNoche(parseInt(id));
         }
 }
 
