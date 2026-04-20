@@ -445,9 +445,9 @@
                         </div>
                     </div>
                     <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
-                    <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
-                        Consultar intervalos de atrasos de los Grupos
-                    </div>
+                        <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
+                            Consultar Históricos Generales por Intervalos de Atrasos
+                        </div>
                         <div class="card-body p-3">
                             <div class="position-relative mb-2" style="max-width:400px">
                                 <input type="text"
@@ -478,7 +478,7 @@
                                 </div>
                             </div>
                         </div>
-                </div>
+                    </div>
                 </div>
                 <div class="col-md-4 mb-2">
                         <div class="card shadow border-0 p-3 mb-2">
@@ -868,6 +868,41 @@
                                         </div>
                                     </div>
                                 </t>
+                            </div>
+                        </div>
+                        <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
+                            <div class="card-header text-white fw-bold" style="background-color:#f59e0b;">
+                                Consultar Históricos de Tarde por Intervalos de Atrasos
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="position-relative mb-2" style="max-width:400px">
+                                    <input type="text"
+                                           class="form-control"
+                                           placeholder="Escriba nombre del grupo..."
+                                           t-model="state.grupo_text_tarde"
+                                           t-on-input="onBuscarGrupoTarde"/>
+
+                                    <div class="dropdown-menu show w-100"
+                                         t-if="state.sugerencias_grupos_tarde.length"
+                                         style="max-height:200px; overflow:auto; z-index:1050;">
+
+                                        <t t-foreach="state.sugerencias_grupos_tarde || []" t-as="sgt" t-key="sgt.id">
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               t-on-click="seleccionarGrupoTarde"
+                                               t-att-data-id="sgt.id"
+                                               t-att-data-name="sgt.name">
+                                                <t t-esc="sgt.name"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="chart-wrapper"
+                                    t-att-class="state.data_tarde ? 'open' : ''">
+                                    <div class="chart-container">
+                                        <canvas t-if="state.data_tarde" t-ref="chartCanvasTarde"/>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1260,7 +1295,42 @@
                                 </t>
                             </div>
                         </div>
-                    </div>
+                        <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
+                            <div class="card-header text-white fw-bold" style="background-color:#1e3a5f;">
+                                Consultar Históricos de Noche por Intervalos de Atrasos
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="position-relative mb-2" style="max-width:400px">
+                                    <input type="text"
+                                           class="form-control"
+                                           placeholder="Escriba nombre del grupo..."
+                                           t-model="state.grupo_text_noche"
+                                           t-on-input="onBuscarGrupoNoche"/>
+
+                                    <div class="dropdown-menu show w-100"
+                                         t-if="state.sugerencias_grupos_noche.length"
+                                         style="max-height:200px; overflow:auto; z-index:1050;">
+
+                                        <t t-foreach="state.sugerencias_grupos_noche || []" t-as="sgn" t-key="sgn.id">
+                                            <a class="dropdown-item"
+                                               href="#"
+                                               t-on-click="seleccionarGrupoNoche"
+                                               t-att-data-id="sgn.id"
+                                               t-att-data-name="sgn.name">
+                                                <t t-esc="sgn.name"/>
+                                            </a>
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="chart-wrapper"
+                                    t-att-class="state.data_noche ? 'open' : ''">
+                                    <div class="chart-container">
+                                        <canvas t-if="state.data_noche" t-ref="chartCanvasNoche"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
             </div>
         </div>
     </t>

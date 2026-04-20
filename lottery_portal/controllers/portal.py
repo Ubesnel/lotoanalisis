@@ -250,13 +250,33 @@ class LotteryPortal(http.Controller):
 
     @http.route('/lottery/get_data_chart_general', type='json', auth='public')
     def get_data_chart_general(self, group_id=False):
-        data = request.env['lottery.stats.service'].sudo().get_group_delay_intervals(group_id)
-        return data
+        general = request.env['lottery.stats.service'].sudo().get_group_delay_intervals(group_id)
+        return general
+
+    @http.route('/lottery/get_data_chart_tarde', type='json', auth='public')
+    def get_data_chart_tarde(self, group_id=False):
+        afternoon = request.env['lottery.stats.service'].sudo().get_group_delay_intervals(group_id, 'afternoon')
+        return afternoon
+
+    @http.route('/lottery/get_data_chart_noche', type='json', auth='public')
+    def get_data_chart_noche(self, group_id=False):
+        evening = request.env['lottery.stats.service'].sudo().get_group_delay_intervals(group_id, 'evening')
+        return evening
 
     @http.route('/lottery/get_data_chart_general_pinta', type='json', auth='public')
     def get_data_chart_general_pinta(self, group_id=False):
-        data = request.env['lottery.stats.service'].sudo().get_group_delay_intervals_pintas(group_id)
-        return data
+        general = request.env['lottery.stats.service'].sudo().get_group_delay_intervals_pintas(group_id)
+        return general
+
+    @http.route('/lottery/get_data_chart_tarde_pinta', type='json', auth='public')
+    def get_data_chart_tarde_pinta(self, group_id=False):
+        afternoon = request.env['lottery.stats.service'].sudo().get_group_delay_intervals_pintas(group_id, 'afternoon')
+        return afternoon
+
+    @http.route('/lottery/get_data_chart_noche_pinta', type='json', auth='public')
+    def get_data_chart_noche_pinta(self, group_id=False):
+        evening = request.env['lottery.stats.service'].sudo().get_group_delay_intervals_pintas(group_id, 'evening')
+        return evening
 
 
 

@@ -782,9 +782,15 @@ class LotteryStatsService(models.Model):
 
         return result
 
-    @tools.ormcache('group_id')
-    def get_group_delay_intervals(self, group_id):
-        self.env.cr.execute("""
+    @tools.ormcache('group_id', 'turn')
+    def get_group_delay_intervals(self, group_id, turn=None):
+        where_clause = ""
+        params = [group_id]
+        if turn:
+            where_clause = "where o.turn_day = %s"
+            params.append(turn)
+
+        self.env.cr.execute(f"""
             WITH base AS (
             SELECT
                 o.date,
@@ -797,6 +803,7 @@ class LotteryStatsService(models.Model):
             LEFT JOIN lottery_group_number_rel rel
                 ON rel.number_id = o.number_id
                 AND rel.group_id = %s
+                {where_clause}
         ),
         
         streaks AS (
@@ -821,13 +828,18 @@ class LotteryStatsService(models.Model):
             COUNT(*) FILTER (WHERE atraso BETWEEN 61 AND 70) AS r_61_70,
             COUNT(*) FILTER (WHERE atraso > 70) AS r_70_plus
         FROM atrasos;
-        """, (group_id,))
+        """, tuple(params))
 
         return self.env.cr.dictfetchone()
 
-    @tools.ormcache('group_id')
-    def get_group_delay_intervals_pintas(self, group_id):
-        self.env.cr.execute("""
+    @tools.ormcache('group_id', 'turn')
+    def get_group_delay_intervals_pintas(self, group_id, turn=None):
+        where_clause = ""
+        params = [group_id]
+        if turn:
+            where_clause = "where o.turn_day = %s"
+            params.append(turn)
+        self.env.cr.execute(f"""
                 WITH base AS (
                 SELECT
                     o.date,
@@ -840,6 +852,7 @@ class LotteryStatsService(models.Model):
                 LEFT JOIN lottery_group_number_rel rel
                     ON rel.number_id = o.number_id
                     AND rel.group_id = %s
+                    {where_clause}
             ),
 
             streaks AS (
@@ -864,7 +877,7 @@ class LotteryStatsService(models.Model):
                 COUNT(*) FILTER (WHERE atraso BETWEEN 41 AND 45) AS r_41_45,
                 COUNT(*) FILTER (WHERE atraso > 45) AS r_45_plus
             FROM atrasos;
-            """, (group_id,))
+            """, tuple(params))
 
         return self.env.cr.dictfetchone()
 
