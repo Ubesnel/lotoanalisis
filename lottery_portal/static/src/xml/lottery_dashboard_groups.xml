@@ -423,7 +423,7 @@
                                 </t>
                         </div>
                         <div class="card shadow border-0 mb-2" style="overflow: visible;">
-                            <div class="card-header text-white fw-bold">
+                            <div class="card-header text-white fw-bold header-tarde">
                                 <i class="fa fa-search me-2"/>
                                 Consultar Históricos de Tarde
                             </div>
@@ -625,7 +625,7 @@
                                 </t>
                         </div>
                         <div class="card shadow border-0 mb-2" style="overflow: visible;">
-                            <div class="card-header text-white fw-bold">
+                            <div class="card-header text-white fw-bold header-noche">
                                 <i class="fa fa-search me-2"/>
                                 Consultar Históricos de Noche
                             </div>

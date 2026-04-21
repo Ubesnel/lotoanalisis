@@ -50,6 +50,8 @@ export class LotteryDashboardNumbers extends Component {
             socios_anteriores: [],
             month_index: monthsMap[monthIndex],
             showTopNumbersInfo: false,
+            showAllRepeticiones: false,
+            showAllPegados: false,
         });
 
         onWillStart(async () => {
@@ -180,6 +182,14 @@ export class LotteryDashboardNumbers extends Component {
         this.state.showTopNumbersInfo = !this.state.showTopNumbersInfo;
     }
 
+    toggleRepeticiones() {
+        this.state.showAllRepeticiones = !this.state.showAllRepeticiones;
+    }
+
+    togglePegados() {
+        this.state.showAllPegados = !this.state.showAllPegados;
+    }
+
     getCurrentWeek() {
         const today = new Date().getDate();
         if (today >= 1 && today <= 7) return 'sem_1';
@@ -211,6 +221,24 @@ export class LotteryDashboardNumbers extends Component {
         if (i < 5) return "ball-azul-analitico";
         if (i < 10) return "ball-cian";
         return "ball-grisaceo";
+    }
+
+    getBallHotIdx4(i) {
+        if (i === 0) return "ball-red";
+        if (i < 3) return "ball-blue";
+        return "ball-green";
+    }
+
+    getBallColdIdx4(i) {
+        if (i === 0) return "ball-azul-analitico";
+        if (i < 3) return "ball-cian";
+        return "ball-grisaceo";
+    }
+
+    getBallIdx10(i) {
+        if (i < 3) return "ball-red";
+        if (i < 7) return "ball-blue";
+        return "ball-green";
     }
 
     async onTopNumbersWeekDay(ev) {

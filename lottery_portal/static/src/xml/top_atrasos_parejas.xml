@@ -2,39 +2,35 @@
 <templates xml:space="preserve">
     <t t-name="lottery_portal.TopAtrasosParejas" owl="1">
         <div class="card shadow border-0 overflow-hidden mb-4">
-            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
-                <div>Parejas</div>
-                <i class="fa fa-arrow-down"/>
-                <div class="mt-1">
-                    <select t-model="state.type_pareja" class="form-select form-select-sm w-auto mx-auto" t-on-change="onChangeTypeParejas" title="Atrasos de las Parejas">
+            <div class="card-header text-white text-center fw-bold">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa fa-clone"/>
+                    Parejas más Atrasadas
+                    <i class="fa fa-arrow-right"/>
+                    <select t-model="state.type_pareja" class="form-select form-select-sm w-auto"
+                            t-on-change="onChangeTypeParejas"
+                            title="Atrasos de las Parejas">
                         <option value="general">General</option>
                         <option value="afternoon">Tarde</option>
                         <option value="evening">Noche</option>
                     </select>
                 </div>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle mb-0" style="flex-grow: 1;">
-                    <thead>
-                        <tr>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
-                        </tr>
-                    </thead>
+            <div class="card-body p-2">
+                <div class="stat-rank-list">
                     <t t-foreach="state.groups_parejas" t-as="gp" t-key="gp.name">
-                        <tr>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                        <div class="stat-rank-item">
+                            <span class="stat-rank-pos">#<t t-esc="gp_index + 1"/></span>
+                            <span t-att-class="'ball stat-rank-ball ' + (gp_index &lt; 3 ? 'ball-red' : gp_index &lt; 7 ? 'ball-blue' : 'ball-green')">
                                 <t t-esc="gp.name"/>
-                            </td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="gp.atraso"/>
-                            </td>
-                        </tr>
+                            </span>
+                            <div class="stat-rank-info">
+                                <span class="stat-rank-count">× <t t-esc="gp.atraso"/></span>
+                            </div>
+                        </div>
                     </t>
-                </table>
                 </div>
-                </div>
+            </div>
         </div>
     </t>
 </templates>

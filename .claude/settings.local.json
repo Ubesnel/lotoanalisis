@@ -5,7 +5,8 @@
       "Bash(find /E/Trabajo/Odoo/Odoo17 -path \"*/website/*\" -name \"*.xml\" -type f -exec grep -l \"id=\\\\\"contactus\\\\\"\" {} \\\\;)",
       "Bash(find /E/Trabajo/Odoo/Odoo17 -name \"*.xml\" -type f -exec grep -l \"id=\\\\\"contactus\\\\\"\" {} \\\\;)",
       "Bash(find /E/Trabajo/Odoo/Odoo17/addons/website -name \"__manifest__.py\" -exec cat {} \\\\;)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(grep -E \"\\\\.\\(xml|js\\)$\")"
     ]
   }
 }
