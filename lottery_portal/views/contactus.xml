@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="lottery_contactus" inherit_id="website.contactus" name="Contacto - Estilo LotoAnálisis">
+
+        <!-- Reemplaza el hero parallax oscuro por el hero del sitio -->
+        <xpath expr="//section[hasclass('s_title')]" position="replace">
+            <div class="container pt-4 pb-2">
+                <div class="contact-hero">
+                    <div class="contact-hero-icon">
+                        <i class="fa fa-envelope"/>
+                    </div>
+                    <h1 class="contact-hero-title">Contáctanos</h1>
+                    <p class="contact-hero-subtitle">
+                        Escríbenos sobre cualquier consulta relacionada con nuestros servicios.
+                        Te responderemos a la brevedad.
+                    </p>
+                    <div class="contact-hero-line"/>
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Elimina el párrafo introductorio del formulario -->
+        <xpath expr="//div[@class='col-lg-8 mt-4 mt-lg-0']/p" position="replace"/>
+
+        <!-- Clase en columna del formulario -->
+        <xpath expr="//div[@class='col-lg-8 mt-4 mt-lg-0']" position="attributes">
+            <attribute name="class">col-lg-8 mt-4 mt-lg-0 contact-form-col</attribute>
+        </xpath>
+
+        <!-- Clase en columna de info -->
+        <xpath expr="//div[@class='col-lg-4 mt-4 mt-lg-0']" position="attributes">
+            <attribute name="class">col-lg-4 mt-4 mt-lg-0 contact-info-col</attribute>
+        </xpath>
+
+    </template>
+</odoo>

@@ -1,83 +1,5 @@
 /** @odoo-module **/
 
-//import { Component, useState, onWillStart } from "@odoo/owl";
-//import { registry } from "@web/core/registry";
-//import { useService } from "@web/core/utils/hooks";
-//
-//export class WebsiteFAQ extends Component {
-//
-//    setup() {
-//        this.orm = useService("orm");
-//        this.state = useState({
-//            openId: null,
-//            search: "",
-//            faqs: [],
-//            openCategoryId: null,
-//        });
-//
-//        onWillStart(async () => {
-//            const result = await this.orm.searchRead(
-//                "website.faq",
-//                [["active", "=", true]],
-//                ["id", "question", "answer", "category_id"]
-//            );
-//            console.log("FAQ RESULT:", result);
-//            this.state.faqs = result;
-//        });
-//    }
-//
-//    toggle(ev) {
-//        const id = parseInt(ev.currentTarget.dataset.id);
-//
-//        this.state.openId =
-//            this.state.openId === id ? null : id;
-//    }
-//    toggleCategory(ev) {
-//        const id = parseInt(ev.currentTarget.dataset.id);
-//
-//        this.state.openCategoryId =
-//            this.state.openCategoryId === id ? null : id;
-//
-//        // Opcional: cerrar pregunta abierta al cambiar categoría
-//        this.state.openId = null;
-//    }
-//
-//    get groupedFaqs() {
-//        const search = this.state.search.toLowerCase();
-//        const grouped = {};
-//
-//        for (const faq of this.state.faqs) {
-//
-//            if (search && !faq.question.toLowerCase().includes(search)) {
-//                continue;
-//            }
-//
-//            const cat = faq.category_id || [0, "Sin categoría"];
-//
-//            if (!grouped[cat[0]]) {
-//                grouped[cat[0]] = {
-//                    id: cat[0],
-//                    name: cat[1],
-//                    faqs: []
-//                };
-//            }
-//
-//            grouped[cat[0]].faqs.push(faq);
-//        }
-//
-//        return Object.values(grouped);
-//    }
-//}
-//
-//WebsiteFAQ.template = "lottery_portal.WebsiteFAQ";
-//
-//registry.category("public_components").add(
-//    "lottery_portal.WebsiteFAQ",
-//    WebsiteFAQ
-//);
-
-
-
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
@@ -118,20 +40,19 @@ export class WebsiteFAQ extends Component {
     get groupedFaqs() {
         const search = this.state.search.toLowerCase();
         const grouped = {};
+        const catMap = Object.fromEntries(this.state.categories.map(c => [c.id, c]));
 
         for (const faq of this.state.faqs) {
-            if (search && !faq.question.toLowerCase().includes(search)) {
-                continue;
-            }
+            if (search && !faq.question.toLowerCase().includes(search)) continue;
             const cat = faq.category_id || [0, "Sin categoría"];
             if (!grouped[cat[0]]) {
                 grouped[cat[0]] = {
                     id: cat[0],
                     name: cat[1],
-                    faqs: []
+                    icon: catMap[cat[0]]?.icon || 'fa-folder',
+                    faqs: [],
                 };
             }
-
             grouped[cat[0]].faqs.push(faq);
         }
 

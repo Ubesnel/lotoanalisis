@@ -3,86 +3,106 @@
     <template id="homepage_lottery_widget" inherit_id="website.homepage" name="Inicio">
         <xpath expr="//div[@id='wrap']" position="inside">
             <section class="hero-analitico">
+                <div class="hero-deco-blob hero-deco-blob--1"/>
+                <div class="hero-deco-blob hero-deco-blob--2"/>
                 <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fa fa-bar-chart"/> Pick 3 Florida · Desde 1988
+                    </div>
                     <h1 class="hero-title">
                         Analiza. <span>Comprende.</span> Decide mejor
                     </h1>
-                    <p class="hero-subfrase">
-                        <i>
-                            Histórico de números ganadores de Pick 3 Florida (29 de abril de 1988 – Actualidad)
-                        </i>
-                    </p>
-                    <h3 class="hero-title">
+                    <p class="hero-subtitle">
                         Estadísticas inteligentes en un solo lugar
-                    </h3>
+                    </p>
+                    <p class="hero-subfrase">
+                        Histórico de números ganadores de Pick 3 Florida (29 de abril de 1988 – Actualidad)
+                    </p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-val">36+</span>
+                            <span class="hero-stat-lbl">años de datos</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-val">26k+</span>
+                            <span class="hero-stat-lbl">sorteos históricos</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-val">2</span>
+                            <span class="hero-stat-lbl">sorteos diarios</span>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="/estadisticas" class="hero-btn hero-btn--primary">
+                            <i class="fa fa-th"/> Explorar Grupos
+                        </a>
+                        <a href="/estadisticas-numeros" class="hero-btn hero-btn--secondary">
+                            <i class="fa fa-sort-numeric-asc"/> Ver Números
+                        </a>
+                        <a href="/estadisticas-pintas" class="hero-btn hero-btn--secondary">
+                            <i class="fa fa-th"/> Ver Pintas
+                        </a>
+                    </div>
                 </div>
             </section>
             <div class="container mt-2 mb-2">
                 <div class="row mb-1">
                     <div class="col-md-3 mb-2">
-                        <div class="card shadow border-0 p-3 mb-4">
+                        <div class="card shadow border-0 mb-4 overflow-hidden">
                             <t t-if="lottery_data.get('afternoon')">
                                 <div class="lottery-block">
-                                    <div class="lottery-date-dia">
-                                        <i class="fa fa-sun-o sun-icon"/>
-                                        <t t-esc="lottery_data['afternoon']['date']"/>
+                                    <div class="lottery-turn-header lottery-turn-dia">
+                                        <i class="fa fa-sun-o"/> Tarde
+                                        <span class="lottery-turn-date">
+                                            <t t-esc="lottery_data['afternoon']['date']"/>
+                                        </span>
                                     </div>
                                     <div class="lottery-row">
-                                        <!-- Izquierda -->
                                         <div class="lottery-numbers">
-                                            <!-- Centena -->
                                             <div class="box-centena-dia">
                                                 <t t-esc="lottery_data['afternoon']['centena']"/>
                                             </div>
-
-                                            <!-- Número verde -->
                                             <div class="box-numero-dia">
                                                 <t t-esc="lottery_data['afternoon']['numero']"/>
                                             </div>
-
                                         </div>
-
-                                        <!-- Bola Extra -->
-                                        <div class="box-extra">
-                                            <t t-esc="lottery_data['afternoon']['extra']"/>
+                                        <div class="lottery-extra-wrap">
+                                            <span class="lottery-extra-label">Extra</span>
+                                            <div class="box-extra">
+                                                <t t-esc="lottery_data['afternoon']['extra']"/>
+                                            </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </t>
                             <t t-if="lottery_data.get('evening')">
-                                <div class="lottery-block">
-
-                                    <div class="lottery-date-noche">
-                                        <i class="fa fa-moon-o moon-icon"/>
-                                        <t t-esc="lottery_data['evening']['date']"/>
+                                <div class="lottery-block lottery-block-noche">
+                                    <div class="lottery-turn-header lottery-turn-noche">
+                                        <i class="fa fa-moon-o"/> Noche
+                                        <span class="lottery-turn-date">
+                                            <t t-esc="lottery_data['evening']['date']"/>
+                                        </span>
                                     </div>
-
                                     <div class="lottery-row">
-
                                         <div class="lottery-numbers">
-
-
                                             <div class="box-centena-noche">
                                                 <t t-esc="lottery_data['evening']['centena']"/>
                                             </div>
-
-
                                             <div class="box-numero-noche">
                                                 <t t-esc="lottery_data['evening']['numero']"/>
                                             </div>
-
                                         </div>
-
-                                        <div class="box-extra">
-                                            <t t-esc="lottery_data['evening']['extra']"/>
+                                        <div class="lottery-extra-wrap">
+                                            <span class="lottery-extra-label">Extra</span>
+                                            <div class="box-extra">
+                                                <t t-esc="lottery_data['evening']['extra']"/>
+                                            </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </t>
                         </div>
-                        <div class="card shadow border-0 p-3 mb-4">
+                        <div class="card shadow border-0 mb-4 overflow-hidden">
                             <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
                                 <i class="fa fa-search me-2"/>
                                 Buscar salida histórica
@@ -120,41 +140,50 @@
                 <div class="row">
                     <div class="col-md-12">
                         <section class="quick-access">
+                            <div class="quick-header">
+                                <h2 class="quick-title">Explora en profundidad</h2>
+                                <p class="quick-subtitle">Accede a estadísticas avanzadas y análisis detallados de cada categoría</p>
+                                <div class="quick-header-line"/>
+                            </div>
                             <div class="quick-container">
-                                <div class="quick-card contacto-card">
-                                    <h3>Consultas avanzadas Grupos</h3>
-                                    <p>
-                                        Explora frecuencias, atrasos y tendencias históricas detalladas de Grupos.
-                                    </p>
-                                    <a href="/estadisticas" class="btn-contacto">
-                                        Ir a Grupos →
+                                <div class="quick-card quick-card--grupos">
+                                    <div class="quick-card-icon-wrap">
+                                        <i class="fa fa-th"/>
+                                    </div>
+                                    <h3>Grupos</h3>
+                                    <p>Frecuencias, atrasos y tendencias históricas detalladas de Grupos.</p>
+                                    <a href="/estadisticas" class="btn-quick">
+                                        Explorar <i class="fa fa-arrow-right"/>
                                     </a>
                                 </div>
-                                <div class="quick-card contacto-card">
-                                    <h3>Consultas avanzadas Números</h3>
-                                    <p>
-                                        Explora frecuencias, atrasos y tendencias históricas detalladas de los Números.
-                                    </p>
-                                    <a href="/estadisticas-numeros" class="btn-contacto">
-                                        Ir a Números →
+                                <div class="quick-card quick-card--numeros">
+                                    <div class="quick-card-icon-wrap">
+                                        <i class="fa fa-sort-numeric-asc"/>
+                                    </div>
+                                    <h3>Números</h3>
+                                    <p>Frecuencias, atrasos y tendencias históricas detalladas de los Números.</p>
+                                    <a href="/estadisticas-numeros" class="btn-quick">
+                                        Explorar <i class="fa fa-arrow-right"/>
                                     </a>
                                 </div>
-                                <div class="quick-card contacto-card">
-                                    <h3>Consultas avanzadas Pintas</h3>
-                                    <p>
-                                        Explora frecuencias, atrasos y tendencias históricas detalladas de las Pintas.
-                                    </p>
-                                    <a href="/estadisticas-pintas" class="btn-contacto">
-                                        Ir a Pintas →
+                                <div class="quick-card quick-card--pintas">
+                                    <div class="quick-card-icon-wrap">
+                                        <i class="fa fa-paint-brush"/>
+                                    </div>
+                                    <h3>Pintas</h3>
+                                    <p>Frecuencias, atrasos y tendencias históricas detalladas de las Pintas.</p>
+                                    <a href="/estadisticas-pintas" class="btn-quick">
+                                        Explorar <i class="fa fa-arrow-right"/>
                                     </a>
                                 </div>
-                                <div class="quick-card contacto-card">
-                                    <h3>Preguntas y respuestas</h3>
-                                    <p>
-                                        Podes encontrar respuestas a muchas preguntas relacionadas con las estadísticas.
-                                    </p>
-                                    <a href="/faq" class="btn-contacto">
-                                        Revisar →
+                                <div class="quick-card quick-card--faq">
+                                    <div class="quick-card-icon-wrap">
+                                        <i class="fa fa-question-circle"/>
+                                    </div>
+                                    <h3>Preguntas frecuentes</h3>
+                                    <p>Encuentra respuestas a las dudas más comunes sobre las estadísticas.</p>
+                                    <a href="/faq" class="btn-quick">
+                                        Consultar <i class="fa fa-arrow-right"/>
                                     </a>
                                 </div>
                             </div>

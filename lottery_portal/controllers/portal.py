@@ -30,7 +30,7 @@ class LotteryPortal(http.Controller):
         faqs = request.env['website.faq'].sudo().search([('active', '=', True)])
 
         return {
-            'categories': categories.read(['name']),
+            'categories': categories.read(['name', 'icon']),
             'faqs': faqs.read(['question', 'answer', 'category_id'])
         }
 

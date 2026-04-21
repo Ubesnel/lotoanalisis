@@ -1,0 +1,271 @@
+// ── Paleta ───────────────────────────────────────────────────
+$purple-dark:   #6f4a8e;
+$purple-mid:    #8c6ca8;
+$purple-light:  #f4f1f8;
+$purple-xlight: #faf8fd;
+$purple-border: #e0d6ee;
+$text-main:     #2d2140;
+$text-body:     #4a4a5a;
+$text-soft:     #6b7280;
+$white:         #ffffff;
+
+// ── Página wrapper ────────────────────────────────────────────
+.legal-page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 16px 64px;
+}
+
+// ── Hero ──────────────────────────────────────────────────────
+.legal-hero {
+    text-align: center;
+    padding: 52px 24px 44px;
+    margin-bottom: 40px;
+    background: linear-gradient(180deg, $white 0%, $purple-light 100%);
+    border-radius: 24px;
+    border: 1.5px solid $purple-border;
+    animation: legalFadeUp 0.4s ease-out;
+}
+
+.legal-hero-icon {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $purple-dark, $purple-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 28px rgba($purple-dark, 0.28);
+
+    .fa { color: $white; font-size: 30px; }
+}
+
+.legal-hero-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: $text-main;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+}
+
+.legal-hero-subtitle {
+    font-size: 15px;
+    color: $text-soft;
+    max-width: 440px;
+    margin: 0 auto 20px;
+    line-height: 1.6;
+}
+
+.legal-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 16px;
+    background: $white;
+    border: 1.5px solid $purple-border;
+    border-radius: 50px;
+    font-size: 13px;
+    color: $purple-dark;
+    font-weight: 600;
+    margin-bottom: 24px;
+
+    .fa { font-size: 12px; opacity: 0.8; }
+}
+
+.legal-hero-line {
+    width: 48px;
+    height: 3px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, $purple-dark, $purple-mid);
+    margin: 0 auto;
+}
+
+// ── Tarjetas de sección ───────────────────────────────────────
+.legal-card {
+    background: $white;
+    border-radius: 18px;
+    border: 1.5px solid $purple-border;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba($purple-dark, 0.06);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+    animation: legalFadeUp 0.35s ease-out;
+
+    &:hover {
+        box-shadow: 0 6px 24px rgba($purple-dark, 0.12);
+        border-color: rgba($purple-mid, 0.45);
+    }
+
+    &:last-child { margin-bottom: 0; }
+}
+
+.legal-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px 16px;
+    border-bottom: 1.5px solid $purple-light;
+    background: linear-gradient(135deg, $white 0%, $purple-xlight 100%);
+}
+
+.legal-card-num {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, $purple-dark, $purple-mid);
+    color: $white;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba($purple-dark, 0.25);
+}
+
+.legal-card-icon {
+    color: $purple-mid;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.legal-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-main;
+    letter-spacing: -0.2px;
+    margin: 0;
+    word-break: break-word;
+}
+
+.legal-card-body {
+    padding: 20px 24px;
+
+    p {
+        color: $text-body;
+        font-size: 14.5px;
+        line-height: 1.75;
+        margin-bottom: 12px;
+        text-align: justify;
+
+        &:last-child { margin-bottom: 0; }
+    }
+
+    a {
+        color: $purple-dark;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px dashed rgba($purple-dark, 0.4);
+        transition: border-color 0.2s ease, color 0.2s ease;
+
+        &:hover {
+            color: $purple-mid;
+            border-bottom-style: solid;
+        }
+    }
+}
+
+// ── Sub-encabezados ───────────────────────────────────────────
+.legal-subheading {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: $purple-dark;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 16px 0 10px;
+
+    .fa {
+        font-size: 14px;
+        color: $purple-mid;
+    }
+
+    &:first-child { margin-top: 0; }
+}
+
+// ── Listas ────────────────────────────────────────────────────
+.legal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 7px 0;
+        font-size: 14.5px;
+        color: $text-body;
+        line-height: 1.6;
+        border-bottom: 1px solid $purple-light;
+
+        &:last-child { border-bottom: none; padding-bottom: 0; }
+
+        &::before {
+            content: '';
+            flex-shrink: 0;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, $purple-dark, $purple-mid);
+            margin-top: 7px;
+        }
+    }
+}
+
+// ── Card de contacto (CTA) ────────────────────────────────────
+.legal-card--contact {
+    background: linear-gradient(135deg, $purple-dark 0%, $purple-mid 100%);
+    border-color: transparent;
+    box-shadow: 0 8px 28px rgba($purple-dark, 0.30);
+
+    .legal-card-header {
+        background: transparent;
+        border-bottom-color: rgba($white, 0.15);
+    }
+
+    .legal-card-num {
+        background: rgba($white, 0.2);
+        box-shadow: none;
+    }
+
+    .legal-card-icon { color: rgba($white, 0.85); }
+    .legal-card-title { color: $white; }
+
+    .legal-card-body p {
+        color: rgba($white, 0.9);
+        text-align: center;
+        font-size: 15px;
+    }
+
+    &:hover {
+        box-shadow: 0 12px 36px rgba($purple-dark, 0.40);
+        border-color: transparent;
+    }
+}
+
+// ── Animaciones ───────────────────────────────────────────────
+@keyframes legalFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Responsive ────────────────────────────────────────────────
+@media (max-width: 600px) {
+    .legal-hero           { padding: 36px 16px 30px; margin-bottom: 24px; }
+    .legal-hero-title     { font-size: 22px; word-break: break-word; }
+    .legal-hero-subtitle  { font-size: 14px; }
+    .legal-hero-icon      { width: 62px; height: 62px; }
+    .legal-hero-icon .fa  { font-size: 24px; }
+    .legal-date-badge     { font-size: 12px; padding: 5px 14px; }
+    .legal-card-header    { padding: 14px 16px 12px; gap: 10px; }
+    .legal-card-num       { width: 28px; height: 28px; font-size: 12px; }
+    .legal-card-icon      { font-size: 16px; }
+    .legal-card-title     { font-size: 15px; }
+    .legal-card-body      { padding: 14px 16px; }
+    .legal-card-body p    { text-align: left; font-size: 14px; }
+    .legal-list li        { font-size: 14px; }
+}

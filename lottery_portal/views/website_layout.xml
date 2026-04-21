@@ -7,4 +7,18 @@
                 crossorigin="anonymous"/>
         </xpath>
     </template>
+
+    <template id="portal_website_layout_back_to_top" inherit_id="website.layout">
+        <xpath expr="//body" position="inside">
+            <button id="loto-back-top" class="loto-back-top" title="Volver al inicio">
+                <i class="fa fa-arrow-up"/>
+            </button>
+            <script>//<![CDATA[
+                document.getElementById('loto-back-top').addEventListener('click', function () {
+                    var wrap = document.getElementById('wrapwrap');
+                    if (wrap) { wrap.scrollTo({ top: 0, behavior: 'smooth' }); }
+                });
+            //]]></script>
+        </xpath>
+    </template>
 </odoo>

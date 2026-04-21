@@ -5,9 +5,26 @@
         <field name="model">website.faq.category</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="sequence"/>
+                <field name="sequence" widget="handle"/>
                 <field name="name"/>
+                <field name="icon"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_faq_category_form" model="ir.ui.view">
+        <field name="name">faq.category.form</field>
+        <field name="model">website.faq.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="sequence"/>
+                        <field name="icon" placeholder="ej: fa-users, fa-hourglass-half, fa-info-circle"/>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
 

@@ -176,11 +176,170 @@
 
 /* cuando hay grupo seleccionado */
 .chart-wrapper.open {
-    max-height: 300px; /* 🔥 ajustá según tu gráfico */
+    max-height: 300px;
     margin-top: 10px;
 }
 
-/* opcional: suavizar el contenido */
 .chart-container {
     height: 250px;
 }
+
+/* ── Card header: fuerza texto blanco ─────────────────────────── */
+.card > .card-header {
+    color: white !important;
+}
+
+/* ── Hero dashboard ───────────────────────────────────────────── */
+.hero-analitico-dashboard {
+    position: relative;
+    text-align: center;
+    padding: 52px 20px 40px;
+    background:
+        radial-gradient(ellipse 70% 55% at 15% 20%, rgba(111,74,142,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 75%, rgba(140,108,168,0.08) 0%, transparent 60%),
+        linear-gradient(170deg, #ffffff 0%, #f4f1f8 55%, #ede8f5 100%);
+    border-bottom: 1.5px solid #e0d6ee;
+    overflow: hidden;
+}
+
+.hero-title-dashboard {
+    font-size: 1.7rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 10px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(100deg, #4a2c6e 10%, #8c6ca8 90%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-title-dashboard span {
+    font-weight: 900;
+}
+
+.group-section-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 0.3px;
+}
+
+.group-section-header--general {
+    background: linear-gradient(135deg, #6f4a8e, #9b72bb);
+}
+
+.group-section-header--tarde {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+
+.group-section-header--noche {
+    background: linear-gradient(135deg, #1e3a5f, #2d5a8e);
+}
+
+/* ── Badge alignment fix inside grupo-card flex rows ─────────── */
+.grupo-card-body .badge-groups-general,
+.grupo-card-body .badge-groups-tarde,
+.grupo-card-body .badge-groups-noche,
+.grupo-card-body .badge-groups-por-dia {
+    margin-left: 0;
+}
+
+/* ── Group card (replaces inner card+table) ──────────────────── */
+.grupo-card {
+    border-radius: 10px;
+    border: 1px solid #e8e0f0;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(111,74,142,0.06);
+    overflow: hidden;
+}
+
+.grupo-card-title {
+    padding: 6px 12px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: white;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+.grupo-card-body {
+    padding: 10px 12px 8px;
+}
+
+.grupo-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0eaf8;
+}
+
+.grupo-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.grupo-stat-label {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1;
+}
+
+/* Labels used inline in analysis flex rows — fixed width so badges align */
+.d-flex > .grupo-stat-label {
+    min-width: 72px;
+    flex-shrink: 0;
+}
+
+.grupo-analysis-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.grupo-analysis-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.grupo-card-body .d-flex.flex-wrap.gap-1 {
+    gap: 8px !important;
+}
+
+/* ── Analysis badge rows: 4-per-row responsive grid ──────────── */
+.analysis-badge-row {
+    display: grid;
+    grid-template-columns: 64px repeat(4, 32px);
+    column-gap: 4px;
+    row-gap: 4px;
+    align-items: center;
+}
+@media (min-width: 768px) {
+    .analysis-badge-row {
+        grid-template-columns: 64px repeat(4, 1fr);
+        column-gap: 8px;
+        row-gap: 6px;
+    }
+}
+.analysis-badge-row > .grupo-stat-label {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    min-width: unset;
+}
+.analysis-badge-row > :nth-child(4n+2) { grid-column: 2; }
+.analysis-badge-row > :nth-child(4n+3) { grid-column: 3; }
+.analysis-badge-row > :nth-child(4n+4) { grid-column: 4; }
+.analysis-badge-row > :nth-child(4n+5) { grid-column: 5; }
