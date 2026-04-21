@@ -2,40 +2,33 @@
 <templates xml:space="preserve">
     <t t-name="lottery_portal.Top5CentenasAtrasadas" owl="1">
         <div class="card shadow border-0 overflow-hidden mb-4">
-            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
-                <div class="mb-3 d-flex align-items-center gap-2">
-                4 Centenas más Atrasadas
-                <i class="fa fa-arrow-right"/>
-                    <select t-model="state.type_c" class="form-select form-select-sm"
-                            style="width:120px;" t-on-change="onOnchangeTop5Centena"
+            <div class="card-header text-white text-center fw-bold">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa fa-th-large"/>
+                    4 Centenas más Atrasadas
+                    <i class="fa fa-arrow-right"/>
+                    <select t-model="state.type_c" class="form-select form-select-sm w-auto"
+                            t-on-change="onOnchangeTop5Centena"
                             title="4 Centenas más Atrasadas">
                         <option value="general">General</option>
                         <option value="afternoon">Tarde</option>
                         <option value="evening">Noche</option>
                     </select>
+                </div>
             </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle mb-0">
-                    <thead>
-                        <tr>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Centena</td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
-                        </tr>
-                    </thead>
+            <div class="card-body p-2">
+                <div class="stat-rank-list">
                     <t t-foreach="state.centenas" t-as="c" t-key="c.centena">
-
-                            <tr>
-                                <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                    <t t-esc="c.centena"/>
-                                </td>
-                                <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                    <t t-esc="c.atraso"/>
-                                </td>
-                            </tr>
+                        <div class="stat-rank-item">
+                            <span class="stat-rank-pos">#<t t-esc="c_index + 1"/></span>
+                            <span t-att-class="'ball stat-rank-ball ' + (c_index === 0 ? 'ball-red' : c_index &lt; 3 ? 'ball-blue' : 'ball-green')">
+                                <t t-esc="c.centena"/>
+                            </span>
+                            <div class="stat-rank-info">
+                                <span class="stat-rank-count">× <t t-esc="c.atraso"/></span>
+                            </div>
+                        </div>
                     </t>
-                </table>
                 </div>
             </div>
         </div>

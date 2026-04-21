@@ -2,53 +2,45 @@
 <templates xml:space="preserve">
     <t t-name="lottery_portal.TopAtrasos" owl="1">
         <div class="card shadow border-0 overflow-hidden mb-4">
-            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
-                <div class="mb-3 d-flex align-items-center gap-2">
-                10 Números más Atrasados
-                <i class="fa fa-arrow-right"/>
+            <div class="card-header text-white text-center fw-bold">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa fa-clock-o"/>
+                    10 Números más Atrasados
+                    <i class="fa fa-arrow-right"/>
                     <select t-model="state.type_atraso" class="form-select form-select-sm w-auto" t-on-change="onChangeType"
                             title="10 Números más Atrasados">
                         <option value="general">General</option>
                         <option value="dia">Tarde</option>
                         <option value="noche">Noche</option>
                     </select>
+                </div>
             </div>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle mb-0" style="flex-grow: 1;">
-                    <thead>
-                        <tr>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Atrasos</td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">Fecha</td>
-                            <td t-if="state.type_atraso=='general'" class="text-center fw-bold" style="color:#8c6ca8;">Horario</td>
-                        </tr>
-                    </thead>
+            <div class="card-body p-2">
+                <div class="stat-rank-list">
                     <t t-foreach="state.numbers_atrasos" t-as="na" t-key="na.name">
-                        <tr>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">
+                        <div class="stat-rank-item">
+                            <span class="stat-rank-pos">#<t t-esc="na_index + 1"/></span>
+                            <span t-att-class="'ball stat-rank-ball ' + (na_index &lt; 3 ? 'ball-red' : na_index &lt; 7 ? 'ball-blue' : 'ball-green')">
                                 <t t-esc="na.name"/>
-                            </td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="na.total_atrasadas"/>
-                            </td>
-                            <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-esc="na.ultima_fecha"/>
-                            </td>
-                            <td t-if="state.type_atraso=='general'" class="text-center fw-bold" style="color:#8c6ca8;">
-                                <t t-if="na.ultimo_turno=='afternoon'">
-                                    <i class="fa fa-sun-o sun-icon-general"/>
-                                </t>
-                                <t t-else="">
-                                    <i class="fa fa-moon-o moon-icon-general"/>
-                                </t>
-                            </td>
-                        </tr>
+                            </span>
+                            <div class="stat-rank-info">
+                                <span class="stat-rank-count">× <t t-esc="na.total_atrasadas"/></span>
+                                <span class="stat-rank-date">
+                                    <t t-if="state.type_atraso == 'general'">
+                                        <t t-if="na.ultimo_turno == 'afternoon'">
+                                            <i class="fa fa-sun-o" style="color:#f59e0b;margin-right:2px;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-moon-o" style="color:#2d5a8e;margin-right:2px;"/>
+                                        </t>
+                                    </t>
+                                    <i class="fa fa-calendar-o"/> <t t-esc="na.ultima_fecha"/>
+                                </span>
+                            </div>
+                        </div>
                     </t>
-                </table>
                 </div>
-                </div>
+            </div>
         </div>
     </t>
 </templates>

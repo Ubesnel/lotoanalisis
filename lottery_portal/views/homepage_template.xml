@@ -15,9 +15,6 @@
                     <p class="hero-subtitle">
                         Estadísticas inteligentes en un solo lugar
                     </p>
-                    <p class="hero-subfrase">
-                        Histórico de números ganadores de Pick 3 Florida (29 de abril de 1988 – Actualidad)
-                    </p>
                     <div class="hero-stats">
                         <div class="hero-stat">
                             <span class="hero-stat-val">36+</span>
@@ -39,7 +36,7 @@
                         <a href="/estadisticas-numeros" class="hero-btn hero-btn--secondary">
                             <i class="fa fa-sort-numeric-asc"/> Ver Números
                         </a>
-                        <a href="/estadisticas-pintas" class="hero-btn hero-btn--secondary">
+                        <a href="/estadisticas-pintas" class="hero-btn hero-btn--primary">
                             <i class="fa fa-th"/> Ver Pintas
                         </a>
                     </div>

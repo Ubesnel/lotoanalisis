@@ -112,20 +112,62 @@ export class LotteryDashboardPintas extends Component {
         this.state.data_noche = result;
     }
 
+    _buildChartOptions(tooltipBg, labelColor) {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'nearest', intersect: false, axis: 'x' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: tooltipBg,
+                    titleColor: "#fff",
+                    bodyColor: "rgba(255,255,255,0.85)",
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        title: (items) => `Intervalo: ${items[0].label}`,
+                        label: (ctx) => ` ${ctx.parsed.y} veces`
+                    }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    offset: 3,
+                    clamp: true,
+                    clip: false,
+                    formatter: (value) => value > 0 ? value : '',
+                    color: labelColor,
+                    font: { weight: 'bold', size: 12 },
+                    backgroundColor: "rgba(255,255,255,0.75)",
+                    borderRadius: 4,
+                    padding: { top: 2, bottom: 2, left: 5, right: 5 }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                    ticks: { maxRotation: 0, autoSkip: false, font: { size: 11, weight: '600' }, color: labelColor }
+                },
+                y: {
+                    beginAtZero: true,
+                    grace: '25%',
+                    grid: { color: 'rgba(0,0,0,0.04)' },
+                    border: { display: false },
+                    ticks: { padding: 4, font: { size: 10 }, color: '#bbb' }
+                }
+            },
+            animation: { duration: 900, easing: 'easeOutCubic' }
+        };
+    }
+
     renderChart() {
-                if (!this.canvasRef.el) {
-                    console.log("canvas no listo");
-                    return;
-                }
-
+                if (!this.canvasRef.el) return;
                 const ctx = this.canvasRef.el.getContext("2d");
-
                 const data = this.state.data_general;
-
-                if (!data || !Object.keys(data).length) {
-                    console.log("sin data");
-                    return;
-                }
+                if (!data || !Object.keys(data).length) return;
+                if (this.chart) this.chart.destroy();
 
                 const labels = ["10-20", "21-30", "31-40", "41-45", "+45"];
                 const values = [
@@ -135,136 +177,23 @@ export class LotteryDashboardPintas extends Component {
                     data.r_41_45 || 0,
                     data.r_45_plus || 0,
                 ];
-
-                if (this.chart) {
-                    this.chart.destroy();
-                }
-            this.chart = new Chart(ctx, {
-                        type: "line",
-                        data: {
-        labels,
-        datasets: [{
-            label: "Atrasos",
-            data: values,
-
-            // línea
-            borderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            borderColor: "#8c6ca8",
-            backgroundColor: "rgba(128, 90, 213, 0.15)",
-
-            // puntos (clave para mobile)
-            pointRadius: 6,
-            pointHoverRadius: 9,
-            pointHitRadius: 20, // 🔥 hace fácil tocar en celular
-            pointBackgroundColor: "#8c6ca8",
-            pointBorderColor: "#fff",
-            pointBorderWidth: 2
-        }],
-    },
-                        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-
-        // 🔥 UX móvil
-        interaction: {
-            mode: 'nearest',
-            intersect: false,
-            axis: 'x'
-        },
-
-        plugins: {
-            legend: {
-                display: false
-            },
-
-            tooltip: {
-                enabled: true,
-                backgroundColor: "#222",
-                padding: 10,
-                cornerRadius: 6,
-                callbacks: {
-                    title: (items) => `Intervalo: ${items[0].label}`,
-                    label: (ctx) => ` ${ctx.parsed.y} veces`
-                }
-            },
-
-            // 🔥 labels siempre visibles (clave)
-            datalabels: {
-                anchor: 'end',
-                align: 'top',
-                offset: 6,
-                clamp: true,
-                clip: false,
-
-                formatter: (value) => value > 0 ? value : '',
-
-                color: "#8c6ca8",
-
-                font: (ctx) => {
-                    const v = ctx.dataset.data[ctx.dataIndex];
-                    return {
-                        weight: 'bold',
-                        size: 13
-                    };
-                }
-            }
-        },
-
-        scales: {
-            x: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    maxRotation: 0,
-                    autoSkip: false,
-                    font: {
-                        size: 11
-                    }
-                }
-            },
-
-            y: {
-                beginAtZero: true,
-                grace: '50%',
-                grid: {
-                    color: 'rgba(0,0,0,0.05)',
-                    drawBorder: false
-                },
-
-                ticks: {
-                    padding: 6,
-                    font: {
-                        size: 11
-                    }
-                }
-
-            }
-        },
-        animation: {
-            duration: 800,
-            easing: 'easeOutQuart'
-        }
-    }
-            });
+                const h = this.canvasRef.el.getBoundingClientRect().height || 250;
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, "rgba(140,108,168,0.85)");
+                grad.addColorStop(1, "rgba(111,74,142,0.25)");
+                this.chart = new Chart(ctx, {
+                    type: "bar",
+                    data: { labels, datasets: [{ label: "Atrasos", data: values, backgroundColor: grad, borderColor: "#6f4a8e", borderWidth: 1.5, borderRadius: 8, borderSkipped: false }] },
+                    options: this._buildChartOptions("rgba(74,44,110,0.92)", "#6f4a8e")
+                });
     }
 
     renderChartTarde() {
-                if (!this.canvasRefTarde.el) {
-                    console.log("canvas no listo");
-                    return;
-                }
-
+                if (!this.canvasRefTarde.el) return;
                 const ctx = this.canvasRefTarde.el.getContext("2d");
-
                 const data = this.state.data_tarde;
-
-                if (!data || !Object.keys(data).length) {
-                    console.log("sin data");
-                    return;
-                }
+                if (!data || !Object.keys(data).length) return;
+                if (this.chart_tarde) this.chart_tarde.destroy();
 
                 const labels = ["10-20", "21-30", "31-40", "41-45", "+45"];
                 const values = [
@@ -274,136 +203,23 @@ export class LotteryDashboardPintas extends Component {
                     data.r_41_45 || 0,
                     data.r_45_plus || 0,
                 ];
-
-                if (this.chart_tarde) {
-                    this.chart_tarde.destroy();
-                }
-            this.chart_tarde = new Chart(ctx, {
-                        type: "line",
-                        data: {
-        labels,
-        datasets: [{
-            label: "Atrasos",
-            data: values,
-
-            // línea
-            borderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            borderColor: "#f59e0b",
-            backgroundColor: "rgba(255, 219, 187, 1)",
-
-            // puntos (clave para mobile)
-            pointRadius: 6,
-            pointHoverRadius: 9,
-            pointHitRadius: 20, // 🔥 hace fácil tocar en celular
-            pointBackgroundColor: "#f59e0b",
-            pointBorderColor: "#fff",
-            pointBorderWidth: 2
-        }],
-    },
-                        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-
-        // 🔥 UX móvil
-        interaction: {
-            mode: 'nearest',
-            intersect: false,
-            axis: 'x'
-        },
-
-        plugins: {
-            legend: {
-                display: false
-            },
-
-            tooltip: {
-                enabled: true,
-                backgroundColor: "#222",
-                padding: 10,
-                cornerRadius: 6,
-                callbacks: {
-                    title: (items) => `Intervalo: ${items[0].label}`,
-                    label: (ctx) => ` ${ctx.parsed.y} veces`
-                }
-            },
-
-            // 🔥 labels siempre visibles (clave)
-            datalabels: {
-                anchor: 'end',
-                align: 'top',
-                offset: 6,
-                clamp: true,
-                clip: false,
-
-                formatter: (value) => value > 0 ? value : '',
-
-                color: "#f59e0b",
-
-                font: (ctx) => {
-                    const v = ctx.dataset.data[ctx.dataIndex];
-                    return {
-                        weight: 'bold',
-                        size: 13
-                    };
-                }
-            }
-        },
-
-        scales: {
-            x: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    maxRotation: 0,
-                    autoSkip: false,
-                    font: {
-                        size: 11
-                    }
-                }
-            },
-
-            y: {
-                beginAtZero: true,
-                grace: '50%',
-                grid: {
-                    color: 'rgba(0,0,0,0.05)',
-                    drawBorder: false
-                },
-
-                ticks: {
-                    padding: 6,
-                    font: {
-                        size: 11
-                    }
-                }
-
-            }
-        },
-        animation: {
-            duration: 800,
-            easing: 'easeOutQuart'
-        }
-    }
-            });
+                const h = this.canvasRefTarde.el.getBoundingClientRect().height || 250;
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, "rgba(245,158,11,0.85)");
+                grad.addColorStop(1, "rgba(217,119,6,0.25)");
+                this.chart_tarde = new Chart(ctx, {
+                    type: "bar",
+                    data: { labels, datasets: [{ label: "Atrasos", data: values, backgroundColor: grad, borderColor: "#d97706", borderWidth: 1.5, borderRadius: 8, borderSkipped: false }] },
+                    options: this._buildChartOptions("rgba(180,90,0,0.92)", "#b45309")
+                });
     }
 
     renderChartNoche() {
-                if (!this.canvasRefNoche.el) {
-                    console.log("canvas no listo");
-                    return;
-                }
-
+                if (!this.canvasRefNoche.el) return;
                 const ctx = this.canvasRefNoche.el.getContext("2d");
-
                 const data = this.state.data_noche;
-
-                if (!data || !Object.keys(data).length) {
-                    console.log("sin data");
-                    return;
-                }
+                if (!data || !Object.keys(data).length) return;
+                if (this.chart_noche) this.chart_noche.destroy();
 
                 const labels = ["10-20", "21-30", "31-40", "41-45", "+45"];
                 const values = [
@@ -413,120 +229,15 @@ export class LotteryDashboardPintas extends Component {
                     data.r_41_45 || 0,
                     data.r_45_plus || 0,
                 ];
-
-                if (this.chart_noche) {
-                    this.chart_noche.destroy();
-                }
-            this.chart_noche = new Chart(ctx, {
-                        type: "line",
-                        data: {
-        labels,
-        datasets: [{
-            label: "Atrasos",
-            data: values,
-
-            // línea
-            borderWidth: 2,
-            tension: 0.35,
-            fill: true,
-            borderColor: "#1e3a5f",
-            backgroundColor: "rgba(186, 196, 209, 1)",
-
-            // puntos (clave para mobile)
-            pointRadius: 6,
-            pointHoverRadius: 9,
-            pointHitRadius: 20, // 🔥 hace fácil tocar en celular
-            pointBackgroundColor: "#1e3a5f",
-            pointBorderColor: "#fff",
-            pointBorderWidth: 2
-        }],
-    },
-                        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-
-        // 🔥 UX móvil
-        interaction: {
-            mode: 'nearest',
-            intersect: false,
-            axis: 'x'
-        },
-
-        plugins: {
-            legend: {
-                display: false
-            },
-
-            tooltip: {
-                enabled: true,
-                backgroundColor: "#222",
-                padding: 10,
-                cornerRadius: 6,
-                callbacks: {
-                    title: (items) => `Intervalo: ${items[0].label}`,
-                    label: (ctx) => ` ${ctx.parsed.y} veces`
-                }
-            },
-
-            // 🔥 labels siempre visibles (clave)
-            datalabels: {
-                anchor: 'end',
-                align: 'top',
-                offset: 6,
-                clamp: true,
-                clip: false,
-
-                formatter: (value) => value > 0 ? value : '',
-
-                color: "#1e3a5f",
-
-                font: (ctx) => {
-                    const v = ctx.dataset.data[ctx.dataIndex];
-                    return {
-                        weight: 'bold',
-                        size: 13
-                    };
-                }
-            }
-        },
-
-        scales: {
-            x: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    maxRotation: 0,
-                    autoSkip: false,
-                    font: {
-                        size: 11
-                    }
-                }
-            },
-
-            y: {
-                beginAtZero: true,
-                grace: '50%',
-                grid: {
-                    color: 'rgba(0,0,0,0.05)',
-                    drawBorder: false
-                },
-
-                ticks: {
-                    padding: 6,
-                    font: {
-                        size: 11
-                    }
-                }
-
-            }
-        },
-        animation: {
-            duration: 800,
-            easing: 'easeOutQuart'
-        }
-    }
-            });
+                const h = this.canvasRefNoche.el.getBoundingClientRect().height || 250;
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, "rgba(45,90,142,0.85)");
+                grad.addColorStop(1, "rgba(30,58,95,0.25)");
+                this.chart_noche = new Chart(ctx, {
+                    type: "bar",
+                    data: { labels, datasets: [{ label: "Atrasos", data: values, backgroundColor: grad, borderColor: "#1e3a5f", borderWidth: 1.5, borderRadius: 8, borderSkipped: false }] },
+                    options: this._buildChartOptions("rgba(20,40,70,0.92)", "#1e3a5f")
+                });
     }
 
     async toggleGroupNumber(type, groupId, groupOrden) {

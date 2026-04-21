@@ -20,15 +20,15 @@
         </xpath>
 
         <!-- Elimina el párrafo introductorio del formulario -->
-        <xpath expr="//div[@class='col-lg-8 mt-4 mt-lg-0']/p" position="replace"/>
+        <xpath expr="//div[hasclass('col-lg-8','mt-4','mt-lg-0')]/p" position="replace"/>
 
         <!-- Clase en columna del formulario -->
-        <xpath expr="//div[@class='col-lg-8 mt-4 mt-lg-0']" position="attributes">
+        <xpath expr="//div[hasclass('col-lg-8','mt-4','mt-lg-0')]" position="attributes">
             <attribute name="class">col-lg-8 mt-4 mt-lg-0 contact-form-col</attribute>
         </xpath>
 
         <!-- Clase en columna de info -->
-        <xpath expr="//div[@class='col-lg-4 mt-4 mt-lg-0']" position="attributes">
+        <xpath expr="//div[hasclass('col-lg-4','mt-4','mt-lg-0')]" position="attributes">
             <attribute name="class">col-lg-4 mt-4 mt-lg-0 contact-info-col</attribute>
         </xpath>
 

@@ -188,6 +188,12 @@
 .card > .card-header {
     color: white !important;
 }
+.card > .card-header.header-tarde {
+    background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+}
+.card > .card-header.header-noche {
+    background: linear-gradient(135deg, #1e3a5f, #2d5a8e) !important;
+}
 
 /* ── Hero dashboard ───────────────────────────────────────────── */
 .hero-analitico-dashboard {

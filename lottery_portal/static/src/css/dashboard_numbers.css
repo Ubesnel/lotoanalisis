@@ -365,6 +365,77 @@
     margin-top: 4px;
 }
 
+/* ── Ranking list (repeticiones / pegadas) ───────────────────── */
+.stat-rank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.stat-rank-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 6px;
+    border-radius: 8px;
+    background: #faf8ff;
+    border: 1px solid #ede6f8;
+    transition: background 0.15s ease;
+}
+.stat-rank-item:hover {
+    background: #f0e9fc;
+}
+.stat-rank-pos {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9e82bb;
+    min-width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+}
+.stat-rank-ball {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 12px !important;
+    flex-shrink: 0;
+}
+.stat-rank-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-width: 0;
+}
+.stat-rank-count {
+    font-size: 13px;
+    font-weight: 800;
+    color: #4a2c6e;
+}
+.stat-rank-date {
+    font-size: 10px;
+    color: #8c6ca8;
+    white-space: nowrap;
+}
+.stat-rank-date .fa {
+    color: #b09acc;
+    margin-right: 2px;
+}
+.stat-rank-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    padding: 4px 0;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8c6ca8;
+    cursor: pointer;
+    border-top: 1px solid #ede6f8;
+    transition: color 0.15s ease;
+}
+.stat-rank-toggle:hover {
+    color: #4a2c6e;
+}
+
 /* ── Etiquetas internas de Consultar acompañantes ─────────────── */
 .card-body .text-center.fw-bold[style*="color:#8c6ca8"]:not(.btn),
 .card-body .fw-bold[style*="color:#8c6ca8"]:not(.btn) {

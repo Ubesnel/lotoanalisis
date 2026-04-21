@@ -13,6 +13,7 @@ export class SalidasBuscador extends Component {
     }
     async buscar_salida() {
         if (!this.state.fecha) {
+            this.state.resultados = null;
             return;
         }
         const data = await jsonrpc("/salidas/buscar", {
