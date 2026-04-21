@@ -9,6 +9,8 @@ class WebsiteFAQCategory(models.Model):
 
     name = fields.Char(string='Nombre', required=True)
     sequence = fields.Integer(string='Secuencia', default=10)
+    icon = fields.Char(string='Ícono (Font Awesome)', default='fa-folder',
+                       help='Clase de Font Awesome sin el prefijo "fa", ej: fa-users, fa-hourglass-half')
 
 
 class WebsiteFAQ(models.Model):

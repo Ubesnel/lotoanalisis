@@ -1,0 +1,135 @@
+// ── Footer principal ──────────────────────────────────────────
+footer.o_footer {
+    background: #2d1f3d !important;
+    color: rgba(255, 255, 255, 0.8);
+
+    // Sección de contenido (columnas)
+    #footer {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+        // Separador vertical entre columnas en desktop
+        .col-lg-2,
+        .col-lg-5,
+        .col-lg-4 {
+            border-right: 1px solid rgba(255, 255, 255, 0.07);
+            &:last-child { border-right: none; }
+        }
+
+        // Headings de sección
+        h5 {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(140, 108, 168, 0.5);
+            display: inline-block;
+            margin-bottom: 16px !important;
+        }
+
+        // Texto de párrafo
+        p {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 13.5px;
+            line-height: 1.7;
+        }
+
+        // Listas de links
+        ul.list-unstyled li {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            &:last-child { border-bottom: none; }
+        }
+
+        ul.list-unstyled li a,
+        ul.list-unstyled li span a {
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px;
+            text-decoration: none;
+            transition: color 0.2s ease, padding-left 0.2s ease;
+
+            &:hover {
+                color: #c9aee0;
+                padding-left: 4px;
+            }
+        }
+
+        // Iconos FA junto a texto
+        ul.list-unstyled .fa {
+            color: #8c6ca8;
+            font-size: 14px;
+        }
+
+        // Texto plano (no link) en listas
+        ul.list-unstyled li span:not(:has(a)) {
+            color: rgba(255, 255, 255, 0.70);
+            font-size: 13.5px;
+        }
+    }
+
+    // Iconos de redes sociales
+    .s_social_media {
+        margin-top: 16px;
+
+        a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background: rgba(255, 255, 255, 0.10);
+            transition: background 0.25s ease, transform 0.2s ease;
+
+            i.fa {
+                color: rgba(255, 255, 255, 0.80) !important;
+                font-size: 15px;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+
+            &:hover {
+                background: linear-gradient(135deg, #6f4a8e, #8c6ca8);
+                transform: translateY(-3px);
+                i.fa { color: #ffffff !important; }
+            }
+        }
+    }
+}
+
+// ── Barra de copyright ────────────────────────────────────────
+.o_footer_copyright {
+    background: rgba(0, 0, 0, 0.25) !important;
+
+    .o_footer_copyright_name,
+    .o_footer_copyright_name * {
+        color: rgba(255, 255, 255, 0.55) !important;
+        font-size: 13px;
+    }
+
+    // Powered by Odoo
+    .o_brand_promotion,
+    .o_brand_promotion * {
+        color: rgba(255, 255, 255, 0.35) !important;
+        font-size: 12px;
+
+        a { color: rgba(255, 255, 255, 0.45) !important; }
+        a:hover { color: #c9aee0 !important; }
+    }
+}
+
+// ── Responsive ────────────────────────────────────────────────
+@media (max-width: 991px) {
+    footer.o_footer #footer .col-lg-2,
+    footer.o_footer #footer .col-lg-5,
+    footer.o_footer #footer .col-lg-4 {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        padding-bottom: 20px;
+        margin-bottom: 4px;
+        &:last-child { border-bottom: none; }
+    }
+}

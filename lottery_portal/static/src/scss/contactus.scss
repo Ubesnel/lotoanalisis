@@ -1,0 +1,187 @@
+// ── Paleta ───────────────────────────────────────────────────
+$purple-dark:   #6f4a8e;
+$purple-mid:    #8c6ca8;
+$purple-light:  #f4f1f8;
+$purple-xlight: #faf8fd;
+$purple-border: #e0d6ee;
+$text-main:     #2d2140;
+$text-soft:     #6b7280;
+$white:         #ffffff;
+
+// ── Hero ──────────────────────────────────────────────────────
+.contact-hero {
+    text-align: center;
+    padding: 48px 24px 40px;
+    margin-bottom: 36px;
+    background: linear-gradient(180deg, $white 0%, $purple-light 100%);
+    border-radius: 24px;
+    border: 1.5px solid $purple-border;
+    animation: contactFadeUp 0.4s ease-out;
+}
+
+.contact-hero-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $purple-dark, $purple-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    box-shadow: 0 8px 24px rgba($purple-dark, 0.28);
+
+    .fa { color: $white; font-size: 28px; }
+}
+
+.contact-hero-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: $text-main;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+}
+
+.contact-hero-subtitle {
+    font-size: 15px;
+    color: $text-soft;
+    max-width: 460px;
+    margin: 0 auto 22px;
+    line-height: 1.6;
+}
+
+.contact-hero-line {
+    width: 48px;
+    height: 3px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, $purple-dark, $purple-mid);
+    margin: 0 auto;
+}
+
+// ── Columna del formulario — card en contenedor interno ───────
+.contact-form-col .s_website_form > .container {
+    background: $white;
+    border-radius: 20px;
+    border: 1.5px solid $purple-border;
+    padding: 28px 28px 24px !important;
+    box-shadow: 0 4px 16px rgba($purple-dark, 0.07);
+}
+
+
+// ── Inputs y textarea ─────────────────────────────────────────
+#contactus_form .form-control,
+#contactus_form .s_website_form_input {
+    border: 1.5px solid $purple-border;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14.5px;
+    color: $text-main;
+    background: $purple-xlight;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.2s ease;
+
+    &::placeholder { color: #b0a8c0; }
+
+    &:focus {
+        outline: none;
+        border-color: $purple-mid;
+        background: $white;
+        box-shadow: 0 0 0 4px rgba($purple-mid, 0.14);
+    }
+}
+
+#contactus_form textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+// ── Labels ────────────────────────────────────────────────────
+#contactus_form .s_website_form_label {
+    color: $purple-dark;
+    font-weight: 600;
+    font-size: 13.5px;
+}
+
+#contactus_form .s_website_form_mark {
+    color: #e05c5c;
+}
+
+// ── Botón enviar ──────────────────────────────────────────────
+#contactus_form .btn-primary.s_website_form_send,
+#contactus_form .btn.s_website_form_send {
+    background: linear-gradient(135deg, $purple-dark, $purple-mid) !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 11px 32px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2px;
+    color: $white !important;
+    box-shadow: 0 4px 14px rgba($purple-dark, 0.30);
+    transition: box-shadow 0.25s ease, transform 0.2s ease !important;
+
+    &:hover {
+        box-shadow: 0 8px 22px rgba($purple-dark, 0.42) !important;
+        transform: translateY(-2px);
+        color: $white !important;
+    }
+
+    &:active {
+        transform: scale(0.97);
+    }
+}
+
+// ── Columna de información — card en lista interna ────────────
+.contact-info-col ul.list-unstyled {
+    background: linear-gradient(160deg, $purple-dark 0%, $purple-mid 100%);
+    border-radius: 20px;
+    padding: 28px 24px !important;
+    box-shadow: 0 8px 28px rgba($purple-dark, 0.28);
+    margin: 0 !important;
+
+    li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 0;
+        font-size: 14.5px;
+        color: rgba($white, 0.9);
+        border-bottom: 1px solid rgba($white, 0.12);
+        line-height: 1.5;
+
+        &:first-child {
+            font-weight: 800;
+            font-size: 16px;
+            color: $white;
+            padding-top: 0;
+        }
+
+        &:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .fa {
+            color: rgba($white, 0.75);
+            font-size: 15px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+    }
+}
+
+// ── Animación ────────────────────────────────────────────────
+@keyframes contactFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Espaciado en móvil ────────────────────────────────────────
+@media (max-width: 991px) {
+    .contact-info-col { margin-top: 8px; }
+}
+
+// ── Responsive ───────────────────────────────────────────────
+@media (max-width: 600px) {
+    .contact-hero         { padding: 36px 16px 30px; }
+    .contact-hero-title   { font-size: 22px; }
+    .contact-hero-icon    { width: 60px; height: 60px; }
+    .contact-hero-icon .fa { font-size: 22px; }
+    .contact-form-col .s_website_form > .container { padding: 18px 14px !important; }
+    .contact-info-col ul.list-unstyled { padding: 20px 16px !important; }
+}

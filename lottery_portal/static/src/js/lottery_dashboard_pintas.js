@@ -1,6 +1,6 @@
 /** @odoo-module **/
 
-import { Component, onWillStart, onMounted, useState, useRef} from "@odoo/owl";
+import { Component, onWillStart, onMounted, onPatched, useState, useRef} from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
 
@@ -44,6 +44,23 @@ export class LotteryDashboardPintas extends Component {
         this.canvasRefTarde = useRef("chartCanvasTarde");
         this.canvasRefNoche = useRef("chartCanvasNoche");
 
+        this._pendingCharts = { general: false, tarde: false, noche: false };
+
+        onPatched(() => {
+            if (this._pendingCharts.general && this.canvasRef.el) {
+                this._pendingCharts.general = false;
+                this.renderChart();
+            }
+            if (this._pendingCharts.tarde && this.canvasRefTarde.el) {
+                this._pendingCharts.tarde = false;
+                this.renderChartTarde();
+            }
+            if (this._pendingCharts.noche && this.canvasRefNoche.el) {
+                this._pendingCharts.noche = false;
+                this.renderChartNoche();
+            }
+        });
+
         onWillStart(async () => {
             await this.loadTop6GroupsData();
             await this.getMonthText();
@@ -75,35 +92,24 @@ export class LotteryDashboardPintas extends Component {
         const result = await jsonrpc("/lottery/get_data_chart_general_pinta", {
             group_id: select_group_id,
         });
+        this._pendingCharts.general = true;
         this.state.data_general = result;
-        setTimeout(() => {
-        if (this.canvasRef.el) {
-            this.renderChart();
-            }
-        }, 0);
     }
+
     async loadDataGeneralChartTarde(select_group_tarde_id) {
         const result = await jsonrpc("/lottery/get_data_chart_tarde_pinta", {
             group_id: select_group_tarde_id,
         });
+        this._pendingCharts.tarde = true;
         this.state.data_tarde = result;
-        setTimeout(() => {
-        if (this.canvasRefTarde.el) {
-            this.renderChartTarde();
-            }
-        }, 0);
     }
 
     async loadDataGeneralChartNoche(select_group_noche_id) {
         const result = await jsonrpc("/lottery/get_data_chart_noche_pinta", {
             group_id: select_group_noche_id,
         });
+        this._pendingCharts.noche = true;
         this.state.data_noche = result;
-        setTimeout(() => {
-        if (this.canvasRefNoche.el) {
-            this.renderChartNoche();
-            }
-        }, 0);
     }
 
     renderChart() {

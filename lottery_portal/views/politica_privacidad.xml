@@ -2,100 +2,200 @@
 <odoo>
     <template id="politica_privacidad_page" name="Política de privacidad">
         <t t-call="website.layout">
-            <section class="privacy-container">
-                <div class="privacy-header">
-                    <p class="update-date">Última actualización: 27 de marzo de 2026</p>
-                </div>
-                <div class="privacy-card">
-                    <h2>1. Introducción</h2>
-                    <p>
-                        Este sitio web proporciona acceso a información y estadísticas relacionadas con sistemas Odoo.
-                        El uso del sitio implica la aceptación de esta Política de Privacidad.
-                    </p>
-                </div>
-                <div class="privacy-card">
-                <h2>2. Datos recopilados</h2>
+            <div class="container my-5">
+                <div class="legal-page">
 
-                <h3>📊 Datos técnicos</h3>
-                <ul>
-                    <li>Dirección IP</li>
-                    <li>Tipo de navegador</li>
-                    <li>Sistema operativo</li>
-                    <li>Fecha y hora de acceso</li>
-                    <li>Páginas visitadas</li>
-                </ul>
+                    <!-- HERO -->
+                    <div class="legal-hero">
+                        <div class="legal-hero-icon">
+                            <i class="fa fa-shield"/>
+                        </div>
+                        <h1 class="legal-hero-title">Política de Privacidad</h1>
+                        <p class="legal-hero-subtitle">
+                            Tu privacidad es importante para nosotros. Aquí explicamos cómo tratamos tu información.
+                        </p>
+                        <div class="legal-date-badge">
+                            <i class="fa fa-calendar"/> Última actualización: 27 de marzo de 2026
+                        </div>
+                        <div class="legal-hero-line"/>
+                    </div>
 
-                <h3>👤 Datos de usuario (login Odoo)</h3>
-                <ul>
-                    <li>Identificador de usuario</li>
-                    <li>Nombre</li>
-                    <li>Información básica de la cuenta</li>
-                </ul>
+                    <!-- 1. Introducción -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">1</span>
+                            <i class="fa fa-info-circle legal-card-icon"/>
+                            <h2 class="legal-card-title">Introducción</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                Este sitio web proporciona acceso a información y estadísticas relacionadas
+                                con sorteos de lotería. El uso del sitio implica la aceptación de esta
+                                Política de Privacidad.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Datos recopilados -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">2</span>
+                            <i class="fa fa-database legal-card-icon"/>
+                            <h2 class="legal-card-title">Datos recopilados</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p class="legal-subheading">
+                                <i class="fa fa-bar-chart"/> Datos técnicos
+                            </p>
+                            <ul class="legal-list">
+                                <li>Dirección IP</li>
+                                <li>Tipo de navegador</li>
+                                <li>Sistema operativo</li>
+                                <li>Fecha y hora de acceso</li>
+                                <li>Páginas visitadas</li>
+                            </ul>
+                            <p class="legal-subheading" style="margin-top:18px;">
+                                <i class="fa fa-user"/> Datos de usuario (login)
+                            </p>
+                            <ul class="legal-list">
+                                <li>Identificador de usuario</li>
+                                <li>Nombre</li>
+                                <li>Información básica de la cuenta</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. Uso de los datos -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">3</span>
+                            <i class="fa fa-cog legal-card-icon"/>
+                            <h2 class="legal-card-title">Uso de los datos</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <ul class="legal-list">
+                                <li>Permitir el acceso autenticado</li>
+                                <li>Garantizar el correcto funcionamiento del sitio</li>
+                                <li>Mejorar la experiencia del usuario</li>
+                                <li>Mantener la seguridad del sistema</li>
+                                <li>Analizar el uso del sitio</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 4. Cookies -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">4</span>
+                            <i class="fa fa-history legal-card-icon"/>
+                            <h2 class="legal-card-title">Cookies</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                Este sitio utiliza cookies para mantener la sesión del usuario, recordar
+                                preferencias y mejorar la experiencia de navegación.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 5. Publicidad -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">5</span>
+                            <i class="fa fa-bullhorn legal-card-icon"/>
+                            <h2 class="legal-card-title">Publicidad</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                Este sitio puede utilizar servicios de publicidad como Google AdSense,
+                                que emplean cookies para mostrar anuncios personalizados.
+                            </p>
+                            <p>
+                                Más información:
+                                <a href="https://policies.google.com/technologies/ads" target="_blank">
+                                    Política de publicidad de Google
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 6. Compartición de datos -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">6</span>
+                            <i class="fa fa-share-alt legal-card-icon"/>
+                            <h2 class="legal-card-title">Compartición de datos</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                No se venden datos personales. Solo se compartirán en caso de obligación
+                                legal o para proteger la seguridad del sistema.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 7. Seguridad -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">7</span>
+                            <i class="fa fa-lock legal-card-icon"/>
+                            <h2 class="legal-card-title">Seguridad</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                Se aplican medidas razonables para proteger la información contra accesos
+                                no autorizados o divulgaciones indebidas.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 8. Derechos del usuario -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">8</span>
+                            <i class="fa fa-user-circle legal-card-icon"/>
+                            <h2 class="legal-card-title">Derechos del usuario</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                El usuario puede solicitar acceso, corrección o eliminación de sus datos
+                                personales cuando corresponda, conforme a la normativa aplicable.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 9. Cambios -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">9</span>
+                            <i class="fa fa-refresh legal-card-icon"/>
+                            <h2 class="legal-card-title">Cambios en la política</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                Esta política puede ser modificada en cualquier momento. Los cambios
+                                serán publicados en esta misma página con la fecha de actualización.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 10. Contacto -->
+                    <div class="legal-card legal-card--contact">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">10</span>
+                            <i class="fa fa-envelope legal-card-icon"/>
+                            <h2 class="legal-card-title">Contacto</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                Para consultas sobre esta política o el tratamiento de tus datos,
+                                utiliza los medios de contacto disponibles en el sitio.
+                            </p>
+                        </div>
+                    </div>
+
+</div>
             </div>
-                <div class="privacy-card">
-                <h2>3. Uso de los datos</h2>
-                <ul>
-                    <li>Permitir el acceso autenticado</li>
-                    <li>Garantizar el correcto funcionamiento del sitio</li>
-                    <li>Mejorar la experiencia del usuario</li>
-                    <li>Mantener la seguridad del sistema</li>
-                    <li>Analizar el uso del sitio</li>
-                </ul>
-            </div>
-                <div class="privacy-card">
-                <h2>4. Cookies</h2>
-                <p>
-                    Este sitio utiliza cookies para mantener la sesión del usuario, recordar preferencias
-                    y mejorar la experiencia de navegación.
-                </p>
-            </div>
-                <div class="privacy-card">
-                <h2>5. Publicidad</h2>
-                <p>
-                    Este sitio puede utilizar servicios de publicidad como Google AdSense, que emplean cookies
-                    para mostrar anuncios personalizados.
-                </p>
-                <p>
-                    Más información:
-                    <a href="https://policies.google.com/technologies/ads" target="_blank">
-                        https://policies.google.com/technologies/ads
-                    </a>
-                </p>
-            </div>
-                <div class="privacy-card">
-                <h2>6. Compartición de datos</h2>
-                <p>
-                    No se venden datos personales. Solo se compartirán en caso de obligación legal
-                    o para proteger la seguridad del sistema.
-                </p>
-            </div>
-                <div class="privacy-card">
-                <h2>7. Seguridad</h2>
-                <p>
-                    Se aplican medidas razonables para proteger la información contra accesos no autorizados.
-                </p>
-            </div>
-                <div class="privacy-card">
-                <h2>8. Derechos del usuario</h2>
-                <p>
-                    El usuario puede solicitar acceso, corrección o eliminación de sus datos cuando corresponda.
-                </p>
-            </div>
-                <div class="privacy-card">
-                <h2>9. Cambios</h2>
-                <p>
-                    Esta política puede ser modificada en cualquier momento. Los cambios serán publicados
-                    en esta misma página.
-                </p>
-            </div>
-                <div class="privacy-card">
-                <h2>10. Contacto</h2>
-                <p>
-                    Para consultas, utilice los medios de contacto disponibles en el sitio.
-                </p>
-            </div>
-            </section>
         </t>
     </template>
 </odoo>
-

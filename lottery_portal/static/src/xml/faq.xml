@@ -1,47 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="lottery_portal.WebsiteFAQ" owl="1">
-        <div class="faq-wrapper">
-            <input type="text" placeholder="🔎 Buscar pregunta..."
-                   class="faq-search"
-                   t-model="state.search"/>
+        <div class="faq-page">
+
+            <!-- HERO -->
+            <div class="faq-hero">
+                <div class="faq-hero-icon">
+                    <i class="fa fa-question"/>
+                </div>
+                <h1 class="faq-hero-title">Centro de Ayuda</h1>
+                <p class="faq-hero-subtitle">
+                    Encuentra respuestas a las preguntas más frecuentes sobre nuestros servicios
+                </p>
+                <div class="faq-hero-line"/>
+            </div>
+
+            <!-- BARRA DE BÚSQUEDA -->
+            <div class="faq-search-wrap">
+                <i class="fa fa-search faq-search-icon"/>
+                <input type="text"
+                       placeholder="Buscar pregunta..."
+                       class="faq-search"
+                       t-model="state.search"/>
+            </div>
+
+            <!-- SIN RESULTADOS -->
+            <t t-if="!this.groupedFaqs.length">
+                <div class="faq-empty">
+                    <i class="fa fa-search faq-empty-icon"/>
+                    <p class="faq-empty-title">Sin resultados</p>
+                    <p class="faq-empty-sub">No hay preguntas que coincidan con "<t t-esc="state.search"/>"</p>
+                </div>
+            </t>
+
+            <!-- CATEGORÍAS -->
             <t t-foreach="this.groupedFaqs" t-as="group" t-key="group.id">
-                <div class="faq-category">
-                    <!-- HEADER CATEGORÍA -->
-                    <div class="faq-category-title"
+                <div class="faq-category" t-att-class="state.openCategoryId === group.id ? 'is-open' : ''">
+
+                    <div class="faq-category-header"
                          t-on-click="toggleCategory"
                          t-att-data-id="group.id">
-                        <span>
-                            📂 <t t-esc="group.name"/>
-                        </span>
-                        <span class="faq-toggle">
-                            <t t-esc="state.openCategoryId === group.id ? ' −' : ' +'"/>
-                        </span>
+                        <div class="faq-category-left">
+                            <span class="faq-category-icon-wrap">
+                                <i t-att-class="'fa ' + (group.icon || 'fa-folder')"/>
+                            </span>
+                            <span class="faq-category-name"><t t-esc="group.name"/></span>
+                            <span class="faq-category-badge"><t t-esc="group.faqs.length"/></span>
+                        </div>
+                        <i class="fa fa-chevron-down faq-chevron"
+                           t-att-class="state.openCategoryId === group.id ? 'rotated' : ''"/>
                     </div>
-                    <!-- PREGUNTAS SOLO SI ESTÁ ABIERTA -->
-                    <div t-if="state.openCategoryId === group.id">
+
+                    <div class="faq-items-wrap" t-if="state.openCategoryId === group.id">
                         <t t-foreach="group.faqs" t-as="faq" t-key="faq.id">
-                            <div class="faq-item"
-                                 t-att-class="state.openId === faq.id ? 'open' : ''">
+                            <div class="faq-item" t-att-class="state.openId === faq.id ? 'is-open' : ''">
                                 <div class="faq-question"
                                      t-on-click="toggle"
                                      t-att-data-id="faq.id">
-                                    <span>
-                                        <t t-esc="faq.question"/>
-                                    </span>
-                                    <span class="faq-toggle">
-                                        <t t-esc="state.openId === faq.id ? ' −' : ' +'"/>
-                                    </span>
+                                    <span class="faq-question-num"><t t-esc="faq_index + 1"/></span>
+                                    <span class="faq-question-text"><t t-esc="faq.question"/></span>
+                                    <i class="fa fa-chevron-down faq-chevron"
+                                       t-att-class="state.openId === faq.id ? 'rotated' : ''"/>
                                 </div>
-                                <div class="faq-answer"
-                                     t-if="state.openId === faq.id">
+                                <div class="faq-answer" t-if="state.openId === faq.id">
                                     <t t-esc="faq.answer"/>
                                 </div>
                             </div>
                         </t>
                     </div>
+
                 </div>
             </t>
+
         </div>
     </t>
 </templates>

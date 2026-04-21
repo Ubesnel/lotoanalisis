@@ -12,8 +12,8 @@
         <div class="container mt-2 mb-2">
             <div class="row mb-2">
                 <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:#8c6ca8;">🔥 Números que más salen en <t t-esc="state.kpis.month"/></div>
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white fw-bold num-card-hot">🔥 Números que más salen en <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
                             <div class="balls-container">
                                     <t t-foreach="state.top_numbers" t-as="num" t-key="num.name">
@@ -25,48 +25,52 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 overflow-hidden mb-2">
-                        <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
-                            Información de los números que más salen en <t t-esc="state.kpis.month"/> y no han salido este año
+                    <div class="card shadow border-0 overflow-hidden mb-2">
+                        <div class="num-info-accordion"
+                             t-att-class="state.showTopNumbersInfo ? 'open' : ''"
+                             t-on-click="toggleTopNumbersInfo">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa fa-list-alt num-info-accordion-icon"/>
+                                    <span class="num-info-accordion-title">
+                                        Números de <t t-esc="state.kpis.month"/> sin salir este año
+                                    </span>
+                                    <span t-if="state.top_numbers_info.length" class="num-info-accordion-badge">
+                                        <t t-esc="state.top_numbers_info.length"/>
+                                    </span>
+                                </div>
+                                <i class="fa fa-chevron-down num-info-accordion-chevron"/>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover align-middle mb-0">
-                                <thead>
-                                <tr>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Última salida</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Turno</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Día</td>
-                                </tr>
-                            </thead>
+                        <div class="num-info-body" t-att-class="state.showTopNumbersInfo ? 'open' : ''">
+                            <div class="p-2">
                                 <t t-foreach="state.top_numbers_info" t-as="tni" t-key="tni.name">
-                                <tr>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                        <t t-esc="tni.name"/>
-                                    </td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                        <t t-esc="tni.last_date"/>
-                                    </td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
-                                        <t t-if="tni.turn_day=='afternoon'">
-                                            <i class="fa fa-sun-o sun-icon-general"/>
-                                        </t>
-                                        <t t-else="">
-                                            <i class="fa fa-moon-o moon-icon-general"/>
-                                        </t>
-                                    </td>
-                                    <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                        <t t-esc="tni.week_day_label"/>
-                                    </td>
-                                </tr>
-                            </t>
-                            </table>
+                                    <div class="num-info-item">
+                                        <div t-att-class="'num-info-ball ' + (tni.turn_day === 'afternoon' ? 'num-info-ball--tarde' : 'num-info-ball--noche')">
+                                            <t t-esc="tni.name"/>
+                                        </div>
+                                        <div class="num-info-details">
+                                            <span class="num-info-date">
+                                                <i class="fa fa-calendar-o"/> <t t-esc="tni.last_date"/>
+                                            </span>
+                                            <span class="num-info-turn">
+                                                <t t-if="tni.turn_day=='afternoon'">
+                                                    <i class="fa fa-sun-o"/> Tarde
+                                                </t>
+                                                <t t-else="">
+                                                    <i class="fa fa-moon-o"/> Noche
+                                                </t>
+                                                <span class="num-info-sep">·</span>
+                                                <t t-esc="tni.week_day_label"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </t>
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:#8c6ca8;">❄️ Números que menos salen en <t t-esc="state.kpis.month"/></div>
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white fw-bold num-card-cold">❄️ Números que menos salen en <t t-esc="state.kpis.month"/></div>
                         <div class="card-body p-3">
                             <div class="balls-container">
                                     <t t-foreach="state.bottom_numbers" t-as="num" t-key="num.name">
@@ -80,8 +84,8 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-hot">
                             <div>🔥 Números históricos que más salen por día de la semana</div>
                             <div class="mt-1">
                                 <select t-model="state.day" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopNumbersWeekDay">
@@ -106,8 +110,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-cold">
                             <div>❄️ Números históricos que menos salen por día de la semana</div>
 
                             <div class="mt-1">
@@ -133,8 +137,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-hot">
                             <div>🔥 Centenas históricas que más salen por día de la semana</div>
                             <div class="mt-1">
                                 <select t-model="state.day_centena" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopCentenaWeekDay">
@@ -159,8 +163,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-cold">
                             <div>❄️ Centenas históricas que menos salen por día de la semana</div>
 
                             <div class="mt-1">
@@ -186,8 +190,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-hot">
                             <div>🔥 Bolas extras históricas que más salen por día de la semana</div>
                             <div class="mt-1">
                                 <select t-model="state.day_bola_extra" class="form-select form-select-sm w-auto mx-auto" t-on-change="onTopBolaExtraWeekDay">
@@ -212,8 +216,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-cold">
                             <div>❄️ Bolas extras históricas que menos salen por día de la semana</div>
 
                             <div class="mt-1">
@@ -241,8 +245,8 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-hot">
                             <div>🔥 Números históricos que más salen por semana</div>
 
                             <div class="mt-1">
@@ -266,8 +270,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-cold">
                             <div>❄️ Números históricos que menos salen por semana</div>
 
                             <div class="mt-1">
@@ -291,8 +295,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-hot">
                             <div>🔥 Centenas históricas que más salen por semana</div>
 
                             <div class="mt-1">
@@ -316,8 +320,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-cold">
                             <div>❄️ Centenas históricas que menos salen por semana</div>
 
                             <div class="mt-1">
@@ -341,8 +345,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-hot">
                             <div>🔥 Bolas extras históricas que más salen por semana</div>
 
                             <div class="mt-1">
@@ -366,8 +370,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header text-center fw-bold" style="color:#8c6ca8;">
+                    <div class="card shadow border-0 mb-2 overflow-hidden">
+                        <div class="card-header text-white text-center fw-bold num-card-cold">
                             <div>❄️ Bolas extras históricas que menos salen por semana</div>
 
                             <div class="mt-1">
@@ -393,8 +397,9 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
+                    <div class="card shadow border-0 mb-2" style="overflow: visible;">
                             <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
+                                <i class="fa fa-search me-2"/>
                                 Consultar acompañantes
                             </div>
                             <div class="card-body p-3">
@@ -442,7 +447,7 @@
                                 </t>
                             </div>
                     </div>
-                    <div class="card shadow border-0 p-3 overflow-hidden mb-2">
+                    <div class="card shadow border-0 overflow-hidden mb-2">
                         <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
                             Números históricos que tienen más repeticiones
                         </div>
@@ -451,20 +456,20 @@
                                 <table class="table table-sm table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Repeticiones</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Última repetición</td>
+                                    <td class="text-center fw-bold">Número</td>
+                                    <td class="text-center fw-bold">Repeticiones</td>
+                                    <td class="text-center fw-bold" style="white-space:normal;word-break:break-word;min-width:70px">Última repetición</td>
                                 </tr>
                             </thead>
                                 <t t-foreach="state.top_repeticiones" t-as="rep" t-key="rep.name">
                                 <tr>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <td class="text-center fw-bold">
                                         <t t-esc="rep.name"/>
                                     </td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <td class="text-center fw-bold">
                                         <t t-esc="rep.repeticiones"/>
                                     </td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <td class="text-center fw-bold">
                                         <t t-esc="rep.ultima_repeticion"/>
                                     </td>
                                 </tr>
@@ -473,7 +478,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card shadow border-0 p-3 overflow-hidden mb-2">
+                    <div class="card shadow border-0 overflow-hidden mb-2">
                         <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
                             Números históricos que tienen más pegadas
                         </div>
@@ -482,20 +487,20 @@
                                 <table class="table table-sm table-hover align-middle mb-0">
                                 <thead>
                                 <tr>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Número</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Pegadas</td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">Última pegada</td>
+                                    <td class="text-center fw-bold">Número</td>
+                                    <td class="text-center fw-bold">Pegadas</td>
+                                    <td class="text-center fw-bold" style="white-space:normal;word-break:break-word;min-width:70px">Última pegada</td>
                                 </tr>
                             </thead>
                                 <t t-foreach="state.top_pegados" t-as="t_peg" t-key="t_peg.name">
                                 <tr>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <td class="text-center fw-bold">
                                         <t t-esc="t_peg.name"/>
                                     </td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <td class="text-center fw-bold">
                                         <t t-esc="t_peg.pegadas"/>
                                     </td>
-                                    <td class="text-center fw-bold" style="color:#8c6ca8;">
+                                    <td class="text-center fw-bold">
                                         <t t-esc="t_peg.ultima_pegada"/>
                                     </td>
                                 </tr>

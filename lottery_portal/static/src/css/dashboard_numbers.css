@@ -126,39 +126,69 @@
     gap: 8px;
 }
 
+/* ── Card header: fuerza texto blanco (evita morado-sobre-morado) ─ */
+.card > .card-header {
+    color: white !important;
+}
+
+/* ── Tabla última columna: permite wrap en columnas largas ────── */
+.table td:last-child {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* ── Tabla: texto morado consistente con TopAtrasos ───────────── */
+.table thead td {
+    color: #8c6ca8;
+    font-weight: 700;
+}
+.table tbody tr td:not(:has(button)) {
+    color: #8c6ca8 !important;
+}
+
+/* ── Etiquetas de Acompañantes ────────────────────────────────── */
+.acomp-section-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #4a2c6e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 0 4px;
+    border-bottom: 1px solid #e0d6ee;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+/* ── Hero dashboard (igual que homepage) ──────────────────────── */
 .hero-analitico-dashboard {
+    position: relative;
     text-align: center;
-    padding: 90px 10px 20px;
-    background: linear-gradient(180deg, #ffffff 0%, #f3f2f7 100%);
+    padding: 52px 20px 40px;
+    background:
+        radial-gradient(ellipse 70% 55% at 15% 20%, rgba(111,74,142,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 75%, rgba(140,108,168,0.08) 0%, transparent 60%),
+        linear-gradient(170deg, #ffffff 0%, #f4f1f8 55%, #ede8f5 100%);
+    border-bottom: 1.5px solid #e0d6ee;
+    overflow: hidden;
 }
 
 .hero-title-dashboard {
-    font-size: 1.8rem;
-    font-weight: 700;
+    font-size: 1.7rem;
+    font-weight: 800;
     line-height: 1.15;
     margin-bottom: 10px;
     letter-spacing: -0.5px;
-
-    background: linear-gradient(90deg, #6f4a8e, #8c6ca8);
+    background: linear-gradient(100deg, #4a2c6e 10%, #8c6ca8 90%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-/* Destacar palabra central con peso */
 .hero-title-dashboard span {
-    font-weight: 600;
-}
-
-/* Línea decorativa más fina */
-.hero-title-dashboard::after {
-    content: "";
-    display: block;
-    width: 90px;
-    height: 3px;
-    background: #8c6ca8;
-    margin: 22px auto 0;
-    border-radius: 3px;
-    opacity: 0.7;
+    font-weight: 900;
 }
 
 
@@ -180,8 +210,170 @@
 
 .balls-container-5 {
     display: grid;
-    grid-template-columns: repeat(5, auto); /* 5 por fila */
+    grid-template-columns: repeat(5, auto);
     gap: 8px;
     justify-items: center;
+}
+
+/* ── Acordeón de info de números ────────────────────────────── */
+.num-info-accordion {
+    background: #f4f1f8;
+    border-bottom: 1px solid #e2dcef;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.num-info-accordion:hover {
+    background: #ede7f6;
+}
+.num-info-accordion.open {
+    background: #8c6ca8;
+    border-color: #8c6ca8;
+}
+.num-info-accordion-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8c6ca8;
+}
+.num-info-accordion-icon {
+    font-size: 12px;
+    color: #8c6ca8;
+}
+.num-info-accordion-badge {
+    background: #8c6ca8;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 7px;
+    line-height: 1.6;
+}
+.num-info-accordion.open .num-info-accordion-title,
+.num-info-accordion.open .num-info-accordion-icon {
+    color: #fff;
+}
+.num-info-accordion.open .num-info-accordion-badge {
+    background: rgba(255,255,255,0.25);
+}
+.num-info-accordion-chevron {
+    font-size: 11px;
+    color: #8c6ca8;
+    transition: transform 0.2s ease;
+}
+.num-info-accordion.open .num-info-accordion-chevron {
+    color: #fff;
+    transform: rotate(180deg);
+}
+.num-info-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+.num-info-body.open {
+    max-height: 2000px;
+}
+
+/* ── Tarjetas de info de números ─────────────────────────────── */
+.num-info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    background: #faf8ff;
+    border: 1px solid #ede6f8;
+    margin-bottom: 5px;
+    transition: background 0.15s ease;
+}
+.num-info-item:last-child {
+    margin-bottom: 0;
+}
+.num-info-item:hover {
+    background: #f0e9fc;
+}
+.num-info-ball {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: white;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+}
+.num-info-ball--tarde {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.num-info-ball--noche {
+    background: linear-gradient(135deg, #1e3a5f, #2d5a8e);
+}
+.num-info-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.num-info-date {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #3d2060;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.num-info-date .fa {
+    color: #8c6ca8;
+    margin-right: 3px;
+}
+.num-info-turn {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #8c6ca8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.num-info-turn .fa-sun-o  { color: #f59e0b; }
+.num-info-turn .fa-moon-o { color: #1e3a5f; }
+.num-info-sep {
+    opacity: 0.4;
+    font-size: 10px;
+}
+
+/* ── Cabeceras estilo lottery-block (hot = naranja, cold = azul) ── */
+.card-header.num-card-hot,
+.card-header.num-card-cold {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 9px 14px !important;
+    border-bottom: none;
+    border-radius: 0 !important;
+}
+.card-header.num-card-hot,
+.card-header.num-card-cold {
+    background: linear-gradient(135deg, #6f4a8e, #9b72bb) !important;
+}
+.card-header.num-card-hot select,
+.card-header.num-card-cold select {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* ── Etiquetas internas de Consultar acompañantes ─────────────── */
+.card-body .text-center.fw-bold[style*="color:#8c6ca8"]:not(.btn),
+.card-body .fw-bold[style*="color:#8c6ca8"]:not(.btn) {
+    color: #4a2c6e !important;
+    font-size: 12px !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 0 3px;
+    border-bottom: 1px solid #e0d6ee;
+    margin-bottom: 6px !important;
 }
 

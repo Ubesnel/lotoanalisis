@@ -56,30 +56,39 @@
                 <t t-set="day_week" t-value="day_week_text[state.day_index]"/>
                 <t t-set="week" t-value="week_json[state.week_index]"/>
                 <div class="col-md-4 mb-2">
-                    <div class="card shadow border-0 p-3 mb-2">
-                        <div class="card-header fw-bold" style="color:white;background-color:#8c6ca8;">
-                                <div class="mb-3 d-flex align-items-center gap-2">
-                                    3 Pintas más Atrasadas
-                                    <i class="fa fa-arrow-right"/>
-                                    General
-                                </div>
-                        </div>
-                        <div class="card-body p-3">
+                    <div class="group-section-header group-section-header--general mb-2">
+                        <i class="fa fa-paint-brush me-2"/>
+                        3 Pintas más Atrasadas — General
+                    </div>
+                    <div>
                             <t t-foreach="state.top_6_groups_info || []" t-as="top_group" t-key="top_group.id">
                                 <t t-set="cfg_general" t-value="configs['general']"/>
                                 <t t-set="key_general" t-value="`general_${top_group.id}`"/>
-                                <div class="card shadow border-0 p-3 mb-1">
-                                    <div class="card-body p-3">
-                                        <table class="table table-sm table-hover align-middle mb-2">
-                                                <tr t-att-style="cfg_general.header_style">
-                                                    <th colspan="2" class="text-center text-white fw-bold">
-                                                        <t t-esc="top_group.name"/>
-                                                    </th>
-                                                </tr>
-                                            <tr>
-                                                    <td colspan="2">
-                                                        <div class="d-flex justify-content-center">
-                                            <button class="btn btn-sm fw-bold mb-2"
+                                <div class="grupo-card mb-2">
+                                    <div class="grupo-card-title" t-att-style="cfg_general.header_style">
+                                        <t t-esc="top_group.name"/>
+                                    </div>
+                                    <div class="grupo-card-body">
+                                        <div class="grupo-stats-row">
+                                            <div class="grupo-stat">
+                                                <span class="grupo-stat-label" style="color:#8c6ca8">Gral</span>
+                                                <span class="badge-groups-general"><t t-esc="top_group.salidas_atrasadas"/></span>
+                                            </div>
+                                            <div class="grupo-stat">
+                                                <span class="grupo-stat-label" style="color:#d97706">Tarde</span>
+                                                <span class="badge-groups-tarde"><t t-esc="top_group.salidas_atrasadas_dia"/></span>
+                                            </div>
+                                            <div class="grupo-stat">
+                                                <span class="grupo-stat-label" style="color:#2d5a8e">Noche</span>
+                                                <span class="badge-groups-noche"><t t-esc="top_group.salidas_atrasadas_noche"/></span>
+                                            </div>
+                                            <div class="grupo-stat">
+                                                <span class="grupo-stat-label" style="color:#16a34a"><t t-esc="day_week"/></span>
+                                                <span class="badge-groups-por-dia"><t t-esc="top_group.salidas_atrasadas_por_dia"/></span>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-center mt-1 mb-2">
+                                            <button class="btn btn-sm fw-bold"
                                                     t-att-class="cfg_general.btn_class"
                                                     t-att-style="cfg_general.btn_style"
                                                     t-on-click="() => this.toggleGroupNumber('general', top_group.id, cfg_general.field)">
@@ -87,223 +96,134 @@
                                                 <t t-else="">Ocultar</t>
                                             </button>
                                         </div>
-                                                        <div t-if="state.openGroups[key_general]"
-                                                             class="groups-numbers-grid mb-1">
-                                            <t t-foreach="state.groupNumbers[key_general] || []"
-                                               t-as="s_num"
-                                               t-key="s_num.numero">
+                                        <div t-if="state.openGroups[key_general]" class="groups-numbers-grid mb-2">
+                                            <t t-foreach="state.groupNumbers[key_general] || []" t-as="s_num" t-key="s_num.numero">
                                                 <div class="d-flex justify-content-between border-bottom py-1">
-                                                    <span t-att-class="cfg_general.ball_class">
-                                                        <t t-esc="s_num.numero"/>
-                                                    </span>
+                                                    <span t-att-class="cfg_general.ball_class"><t t-esc="s_num.numero"/></span>
                                                 </div>
                                             </t>
                                         </div>
-                                                    </td>
-                                                </tr>
-                                            <tr>
-                                                    <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                        Atrasos Generales
-                                                    </td>
-                                                <td>
-                                                        <span class="badge-groups-general">
-                                                            <t t-esc="top_group.salidas_atrasadas"/>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            <tr>
-                                                    <td class="text-start fw-bold" style="color:orange;">
-                                                        Atrasos Tarde
-                                                    </td>
-                                                <td>
-                                                        <span class="badge-groups-tarde">
-                                                            <t t-esc="top_group.salidas_atrasadas_dia"/>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            <tr>
-                                                    <td class="text-start fw-bold" style="color:#1e3a5f;">
-                                                        Atrasos Noche
-                                                    </td>
-                                                <td>
-                                                        <span class="badge-groups-noche">
-                                                            <t t-esc="top_group.salidas_atrasadas_noche"/>
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            <tr>
-                                                    <td class="text-start fw-bold" style="color:#4cd964;">
-                                                        Atrasos <t t-esc="day_week"/>
-                                                    </td>
-                                                <td>
-                                                        <span class="badge-groups-por-dia">
-                                                            <t t-esc="top_group.salidas_atrasadas_por_dia"/>
-                                                        </span>
-                                                    </td>
-                                                    </tr>
-                                            </table>
-                                        <div>
-                                            <div class="analysis-header mb-2"
-                                                 t-att-class="state.openGroupsAnalysis[key_general] ? 'open' : ''"
-                                                 t-on-click="() => this.toggleGroupsAnalysis('general', top_group.id)">
-
-                                                <div class="d-flex justify-content-between align-items-center">
-
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <i class="fa fa-chart-line icon"></i>
-                                                        <span class="title">Análisis de números</span>
-                                                    </div>
-
-                                                    <i class="fa chevron"
-                                                       t-att-class="state.openGroupsAnalysis[key_general] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                        <div class="analysis-header mb-2"
+                                             t-att-class="state.openGroupsAnalysis[key_general] ? 'open' : ''"
+                                             t-on-click="() => this.toggleGroupsAnalysis('general', top_group.id)">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="fa fa-chart-line icon"/>
+                                                    <span class="title">Análisis de números</span>
+                                                </div>
+                                                <i class="fa chevron"
+                                                   t-att-class="state.openGroupsAnalysis[key_general] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                            </div>
+                                        </div>
+                                        <t t-if="state.openGroupsAnalysis[key_general]">
+                                            <t t-set="ag" t-value="state.analysisGroups[top_group.id]"/>
+                                            <div class="acomp-section-label">Último que salió</div>
+                                            <div class="grupo-analysis-row mb-2">
+                                                <div class="grupo-analysis-item">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Gral</span>
+                                                    <span class="badge-groups-general"><t t-esc="ag.last.name"/></span>
+                                                </div>
+                                                <div class="grupo-analysis-item">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Tarde</span>
+                                                    <span class="badge-groups-tarde"><t t-esc="ag.last_day.name"/></span>
+                                                </div>
+                                                <div class="grupo-analysis-item">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Noche</span>
+                                                    <span class="badge-groups-noche"><t t-esc="ag.last_night.name"/></span>
                                                 </div>
                                             </div>
-                                            <t t-if="state.openGroupsAnalysis[key_general]">
-                                                <t t-set="ag" t-value="state.analysisGroups[top_group.id]"/>
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <div class="fw-bold" style="color:#8c6ca8;">
-                                                        Último que salió
-                                                    </div>
-                                                    <span class="badge-groups-general">
-                                                        <t t-esc="ag.last.name"/>
-                                                    </span>
-                                                </div>
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <div class="fw-bold" style="color:#f59e0b;">
-                                                        Último que salió en la Tarde
-                                                    </div>
-                                                    <span class="badge-groups-tarde">
-                                                        <t t-esc="ag.last_day.name"/>
-                                                    </span>
-                                                </div>
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <div class="fw-bold" style="color:#1e3a5f;">
-                                                        Último que salió en la Noche
-                                                    </div>
-                                                    <span class="badge-groups-noche">
-                                                        <t t-esc="ag.last_night.name"/>
-                                                    </span>
-                                                </div>
-
-                                                <div class="text-start fw-bold" style="color:#8c6ca8;">Más tiempo sin salir</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.most_delayed || []" t-as="asmd" t-key="asmd.name">
-                                                        <div class="badge-groups-general">
-                                                            <t t-esc="asmd.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#f59e0b;">Más tiempo sin salir en la Tarde</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.most_delayed_day || []" t-as="asmdd"
-                                                       t-key="asmdd.name">
-                                                        <div class="badge-groups-tarde">
-                                                            <t t-esc="asmdd.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#1e3a5f;">Más tiempo sin salir en la Noche</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.most_delayed_night || []" t-as="asmdn"
-                                                      t-key="asmdn.name">
-                                                        <div class="badge-groups-noche">
-                                                            <t t-esc="asmdn.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#4cd964;">Más salen los <t t-esc="day_week"/></div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
-                                                        <div class="badge-groups-por-dia">
-                                                            <t t-esc="agdm.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#4cd964;">Menos salen los <t t-esc="day_week"/></div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
-                                                        <div class="badge-groups-por-dia">
-                                                            <t t-esc="agdl.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#8c6ca8;">Más salen en <t t-esc="state.mesActual"/></div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
-                                                        <div class="badge-groups-general">
-                                                             <t t-esc="agmm.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#8c6ca8;">Menos salen en <t t-esc="state.mesActual"/></div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
-                                                        <div class="badge-groups-general">
-                                                             <t t-esc="agml.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#8c6ca8;">Más salen semana del <t t-esc="week"/></div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
-                                                        <div class="badge-groups-general">
-                                                             <t t-esc="wgdm.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#8c6ca8;">Menos salen semana del <t t-esc="week"/></div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
-                                                        <div class="badge-groups-general">
-                                                             <t t-esc="wgdl.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#f59e0b;">Más salen de Tarde</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
-                                                        <div class="badge-groups-tarde">
-                                                             <t t-esc="agdtm.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#f59e0b;">Menos salen de Tarde</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.day_time.least || []" t-as="agdtl"
-                                                       t-key="agdtl.name">
-                                                        <div class="badge-groups-tarde">
-                                                             <t t-esc="agdtl.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#1e3a5f;">Más salen de Noche</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.night_time.most || []" t-as="agntm"
-                                                       t-key="agntm.name">
-                                                        <div class="badge-groups-noche">
-                                                            <t t-esc="agntm.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="text-start fw-bold" style="color:#1e3a5f;">Menos salen de Noche</div>
-                                                <div class="bolas-container-pintas mb-1">
-                                                    <t t-foreach="ag.night_time.least || []" t-as="agntl"
-                                                       t-key="agntl.name">
-                                                        <div class="badge-groups-noche">
-                                                            <t t-esc="agntl.name"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                            </t>
-                                        </div>
+                                            <div class="acomp-section-label">Más tiempo sin salir</div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#8c6ca8">Gral:</span>
+                                                <t t-foreach="ag.most_delayed || []" t-as="asmd" t-key="asmd.name">
+                                                    <span class="badge-groups-general"><t t-esc="asmd.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#d97706">Tarde:</span>
+                                                <t t-foreach="ag.most_delayed_day || []" t-as="asmdd" t-key="asmdd.name">
+                                                    <span class="badge-groups-tarde"><t t-esc="asmdd.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-2">
+                                                <span class="grupo-stat-label" style="color:#2d5a8e">Noche:</span>
+                                                <t t-foreach="ag.most_delayed_night || []" t-as="asmdn" t-key="asmdn.name">
+                                                    <span class="badge-groups-noche"><t t-esc="asmdn.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="acomp-section-label">Los <t t-esc="day_week"/></div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#16a34a">Más:</span>
+                                                <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
+                                                    <span class="badge-groups-por-dia"><t t-esc="agdm.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-2">
+                                                <span class="grupo-stat-label" style="color:#16a34a">Menos:</span>
+                                                <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
+                                                    <span class="badge-groups-por-dia"><t t-esc="agdl.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="acomp-section-label">En <t t-esc="state.mesActual"/></div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
+                                                <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
+                                                    <span class="badge-groups-general"><t t-esc="agmm.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-2">
+                                                <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
+                                                <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
+                                                    <span class="badge-groups-general"><t t-esc="agml.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="acomp-section-label">Semana del <t t-esc="week"/></div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
+                                                <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
+                                                    <span class="badge-groups-general"><t t-esc="wgdm.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-2">
+                                                <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
+                                                <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
+                                                    <span class="badge-groups-general"><t t-esc="wgdl.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="acomp-section-label">Tarde / Noche</div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#d97706">Más tarde:</span>
+                                                <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
+                                                    <span class="badge-groups-tarde"><t t-esc="agdtm.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#d97706">Menos tarde:</span>
+                                                <t t-foreach="ag.day_time.least || []" t-as="agdtl" t-key="agdtl.name">
+                                                    <span class="badge-groups-tarde"><t t-esc="agdtl.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-1">
+                                                <span class="grupo-stat-label" style="color:#2d5a8e">Más noche:</span>
+                                                <t t-foreach="ag.night_time.most || []" t-as="agntm" t-key="agntm.name">
+                                                    <span class="badge-groups-noche"><t t-esc="agntm.name"/></span>
+                                                </t>
+                                            </div>
+                                            <div class="analysis-badge-row mb-2">
+                                                <span class="grupo-stat-label" style="color:#2d5a8e">Menos noche:</span>
+                                                <t t-foreach="ag.night_time.least || []" t-as="agntl" t-key="agntl.name">
+                                                    <span class="badge-groups-noche"><t t-esc="agntl.name"/></span>
+                                                </t>
+                                            </div>
+                                        </t>
                                     </div>
                                 </div>
                             </t>
-                        </div>
                     </div>
-                    <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
-                        <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
-                            Consultar Históricos Generales por Intervalos de Atrasos
+                    <div class="card shadow border-0 mb-2" style="overflow: visible;">
+                        <div class="card-header text-white fw-bold">
+                            <i class="fa fa-search me-2"/>
+                            Consultar Históricos Generales
                         </div>
                         <div class="card-body p-3">
                             <div class="position-relative mb-2" style="max-width:400px">
@@ -338,30 +258,39 @@
                     </div>
                 </div>
                 <div class="col-md-4 mb-2">
-                        <div class="card shadow border-0 p-3 mb-2">
-                            <div class="card-header fw-bold" style="color:white;background-color:orange;">
-                                    <div class="mb-3 d-flex align-items-center gap-2">
-                                        3 Pintas más Atrasadas
-                                        <i class="fa fa-arrow-right"/>
-                                        Tarde
-                                    </div>
-                            </div>
-                            <div class="card-body p-3">
+                        <div class="group-section-header group-section-header--tarde mb-2">
+                            <i class="fa fa-paint-brush me-2"/>
+                            3 Pintas más Atrasadas — Tarde
+                        </div>
+                        <div>
                                 <t t-foreach="state.top_6_groups_info_tarde || []" t-as="top_group" t-key="top_group.id">
                                     <t t-set="cfg_tarde" t-value="configs['afternoon']"/>
                                     <t t-set="key_tarde" t-value="`afternoon_${top_group.id}`"/>
-                                    <div class="card shadow border-0 p-3 mb-1">
-                                        <div class="card-body p-3">
-                                            <table class="table table-sm table-hover align-middle mb-2">
-                                                    <tr t-att-style="cfg_tarde.header_style">
-                                                        <th colspan="2" class="text-center text-white fw-bold">
-                                                            <t t-esc="top_group.name"/>
-                                                        </th>
-                                                    </tr>
-                                                <tr>
-                                                        <td colspan="2">
-                                                            <div class="d-flex justify-content-center">
-                                                <button class="btn btn-sm fw-bold mb-2"
+                                    <div class="grupo-card mb-2">
+                                        <div class="grupo-card-title" t-att-style="cfg_tarde.header_style">
+                                            <t t-esc="top_group.name"/>
+                                        </div>
+                                        <div class="grupo-card-body">
+                                            <div class="grupo-stats-row">
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Gral</span>
+                                                    <span class="badge-groups-general"><t t-esc="top_group.salidas_atrasadas"/></span>
+                                                </div>
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Tarde</span>
+                                                    <span class="badge-groups-tarde"><t t-esc="top_group.salidas_atrasadas_dia"/></span>
+                                                </div>
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Noche</span>
+                                                    <span class="badge-groups-noche"><t t-esc="top_group.salidas_atrasadas_noche"/></span>
+                                                </div>
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#16a34a"><t t-esc="day_week"/></span>
+                                                    <span class="badge-groups-por-dia"><t t-esc="top_group.salidas_atrasadas_por_dia"/></span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-center mt-1 mb-2">
+                                                <button class="btn btn-sm fw-bold"
                                                         t-att-class="cfg_tarde.btn_class"
                                                         t-att-style="cfg_tarde.btn_style"
                                                         t-on-click="() => this.toggleGroupNumber('afternoon', top_group.id, cfg_tarde.field)">
@@ -369,224 +298,134 @@
                                                     <t t-else="">Ocultar</t>
                                                 </button>
                                             </div>
-                                                            <div t-if="state.openGroups[key_tarde]"
-                                                                 class="groups-numbers-grid mb-1">
-                                                <t t-foreach="state.groupNumbers[key_tarde] || []"
-                                                   t-as="s_num"
-                                                   t-key="s_num.numero">
+                                            <div t-if="state.openGroups[key_tarde]" class="groups-numbers-grid mb-2">
+                                                <t t-foreach="state.groupNumbers[key_tarde] || []" t-as="s_num" t-key="s_num.numero">
                                                     <div class="d-flex justify-content-between border-bottom py-1">
-                                                        <span t-att-class="cfg_tarde.ball_class">
-                                                            <t t-esc="s_num.numero"/>
-                                                        </span>
+                                                        <span t-att-class="cfg_tarde.ball_class"><t t-esc="s_num.numero"/></span>
                                                     </div>
                                                 </t>
                                             </div>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Atrasos Generales
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-general">
-                                                                <t t-esc="top_group.salidas_atrasadas"/>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:orange;">
-                                                            Atrasos Tarde
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-tarde">
-                                                                <t t-esc="top_group.salidas_atrasadas_dia"/>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:#1e3a5f;">
-                                                            Atrasos Noche
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-noche">
-                                                                <t t-esc="top_group.salidas_atrasadas_noche"/>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:#4cd964;">
-                                                            Atrasos <t t-esc="day_week"/>
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-por-dia">
-                                                                <t t-esc="top_group.salidas_atrasadas_por_dia"/>
-                                                            </span>
-                                                        </td>
-                                                        </tr>
-                                                </table>
-
-                                            <div>
-                                                <div class="analysis-header-tarde mb-2"
-                                                     t-att-class="state.openGroupsAnalysis[key_tarde] ? 'open' : ''"
-                                                     t-on-click="() => this.toggleGroupsAnalysis('afternoon', top_group.id)">
-
-                                                    <div class="d-flex justify-content-between align-items-center">
-
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <i class="fa fa-chart-line icon"></i>
-                                                            <span class="title">Análisis de números</span>
-                                                        </div>
-
-                                                        <i class="fa chevron"
-                                                           t-att-class="state.openGroupsAnalysis[key_tarde] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                            <div class="analysis-header mb-2"
+                                                 t-att-class="state.openGroupsAnalysis[key_tarde] ? 'open' : ''"
+                                                 t-on-click="() => this.toggleGroupsAnalysis('afternoon', top_group.id)">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <i class="fa fa-chart-line icon"/>
+                                                        <span class="title">Análisis de números</span>
+                                                    </div>
+                                                    <i class="fa chevron"
+                                                       t-att-class="state.openGroupsAnalysis[key_tarde] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                                </div>
+                                            </div>
+                                            <t t-if="state.openGroupsAnalysis[key_tarde]">
+                                                <t t-set="ag" t-value="state.analysisGroupsTarde[top_group.id]"/>
+                                                <div class="acomp-section-label">Último que salió</div>
+                                                <div class="grupo-analysis-row mb-2">
+                                                    <div class="grupo-analysis-item">
+                                                        <span class="grupo-stat-label" style="color:#8c6ca8">Gral</span>
+                                                        <span class="badge-groups-general"><t t-esc="ag.last.name"/></span>
+                                                    </div>
+                                                    <div class="grupo-analysis-item">
+                                                        <span class="grupo-stat-label" style="color:#d97706">Tarde</span>
+                                                        <span class="badge-groups-tarde"><t t-esc="ag.last_day.name"/></span>
+                                                    </div>
+                                                    <div class="grupo-analysis-item">
+                                                        <span class="grupo-stat-label" style="color:#2d5a8e">Noche</span>
+                                                        <span class="badge-groups-noche"><t t-esc="ag.last_night.name"/></span>
                                                     </div>
                                                 </div>
-                                                <t t-if="state.openGroupsAnalysis[key_tarde]">
-                                                    <t t-set="ag" t-value="state.analysisGroupsTarde[top_group.id]"/>
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="fw-bold" style="color:#8c6ca8;">
-                                                            Último que salió
-                                                        </div>
-                                                        <span class="badge-groups-general">
-                                                            <t t-esc="ag.last.name"/>
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="fw-bold" style="color:#f59e0b;">
-                                                            Último que salió en la Tarde
-                                                        </div>
-                                                        <span class="badge-groups-tarde">
-                                                            <t t-esc="ag.last_day.name"/>
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="fw-bold" style="color:#1e3a5f;">
-                                                            Último que salió en la Noche
-                                                        </div>
-                                                        <span class="badge-groups-noche">
-                                                            <t t-esc="ag.last_night.name"/>
-                                                        </span>
-                                                    </div>
-
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Más tiempo sin salir</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.most_delayed || []" t-as="asmd" t-key="asmd.name">
-                                                            <div class="badge-groups-general">
-                                                                <t t-esc="asmd.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#f59e0b;">Más tiempo sin salir en la Tarde</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.most_delayed_day || []" t-as="asmdd"
-                                                           t-key="asmdd.name">
-                                                            <div class="badge-groups-tarde">
-                                                                <t t-esc="asmdd.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#1e3a5f;">Más tiempo sin salir en la Noche</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.most_delayed_night || []" t-as="asmdn"
-                                                          t-key="asmdn.name">
-                                                            <div class="badge-groups-noche">
-                                                                <t t-esc="asmdn.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#4cd964;">Más salen los <t t-esc="day_week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
-                                                            <div class="badge-groups-por-dia">
-                                                                <t t-esc="agdm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#4cd964;">Menos salen los <t t-esc="day_week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
-                                                            <div class="badge-groups-por-dia">
-                                                                <t t-esc="agdl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Más salen en <t t-esc="state.mesActual"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="agmm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Menos salen en <t t-esc="state.mesActual"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="agml.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Más salen semana del <t t-esc="week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="wgdm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Menos salen semana del <t t-esc="week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="wgdl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#f59e0b;">Más salen de Tarde</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
-                                                            <div class="badge-groups-tarde">
-                                                                 <t t-esc="agdtm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#f59e0b;">Menos salen de Tarde</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day_time.least || []" t-as="agdtl"
-                                                           t-key="agdtl.name">
-                                                            <div class="badge-groups-tarde">
-                                                                 <t t-esc="agdtl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#1e3a5f;">Más salen de Noche</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.night_time.most || []" t-as="agntm"
-                                                           t-key="agntm.name">
-                                                            <div class="badge-groups-noche">
-                                                                <t t-esc="agntm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#1e3a5f;">Menos salen de Noche</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.night_time.least || []" t-as="agntl"
-                                                           t-key="agntl.name">
-                                                            <div class="badge-groups-noche">
-                                                                <t t-esc="agntl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                </t>
-                                            </div>
+                                                <div class="acomp-section-label">Más tiempo sin salir</div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Gral:</span>
+                                                    <t t-foreach="ag.most_delayed || []" t-as="asmd" t-key="asmd.name">
+                                                        <span class="badge-groups-general"><t t-esc="asmd.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Tarde:</span>
+                                                    <t t-foreach="ag.most_delayed_day || []" t-as="asmdd" t-key="asmdd.name">
+                                                        <span class="badge-groups-tarde"><t t-esc="asmdd.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Noche:</span>
+                                                    <t t-foreach="ag.most_delayed_night || []" t-as="asmdn" t-key="asmdn.name">
+                                                        <span class="badge-groups-noche"><t t-esc="asmdn.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">Los <t t-esc="day_week"/></div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#16a34a">Más:</span>
+                                                    <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
+                                                        <span class="badge-groups-por-dia"><t t-esc="agdm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#16a34a">Menos:</span>
+                                                    <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
+                                                        <span class="badge-groups-por-dia"><t t-esc="agdl.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">En <t t-esc="state.mesActual"/></div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
+                                                    <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
+                                                        <span class="badge-groups-general"><t t-esc="agmm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
+                                                    <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
+                                                        <span class="badge-groups-general"><t t-esc="agml.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">Semana del <t t-esc="week"/></div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
+                                                    <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
+                                                        <span class="badge-groups-general"><t t-esc="wgdm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
+                                                    <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
+                                                        <span class="badge-groups-general"><t t-esc="wgdl.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">Tarde / Noche</div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Más tarde:</span>
+                                                    <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
+                                                        <span class="badge-groups-tarde"><t t-esc="agdtm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Menos tarde:</span>
+                                                    <t t-foreach="ag.day_time.least || []" t-as="agdtl" t-key="agdtl.name">
+                                                        <span class="badge-groups-tarde"><t t-esc="agdtl.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Más noche:</span>
+                                                    <t t-foreach="ag.night_time.most || []" t-as="agntm" t-key="agntm.name">
+                                                        <span class="badge-groups-noche"><t t-esc="agntm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Menos noche:</span>
+                                                    <t t-foreach="ag.night_time.least || []" t-as="agntl" t-key="agntl.name">
+                                                        <span class="badge-groups-noche"><t t-esc="agntl.name"/></span>
+                                                    </t>
+                                                </div>
+                                            </t>
                                         </div>
                                     </div>
                                 </t>
-                            </div>
                         </div>
-                        <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
-                        <div class="card-header text-white fw-bold" style="background-color:#f59e0b;">
-                           Consultar Históricos de Tarde por Intervalos de Atrasos
+                        <div class="card shadow border-0 mb-2" style="overflow: visible;">
+                        <div class="card-header text-white fw-bold">
+                            <i class="fa fa-search me-2"/>
+                            Consultar Históricos de Tarde
                         </div>
                         <div class="card-body p-3">
                             <div class="position-relative mb-2" style="max-width:400px">
@@ -621,30 +460,39 @@
                     </div>
                     </div>
                 <div class="col-md-4 mb-2">
-                        <div class="card shadow border-0 p-3 mb-2">
-                            <div class="card-header fw-bold" style="color:white;background-color:#1e3a5f;">
-                                    <div class="mb-3 d-flex align-items-center gap-2">
-                                        3 Pintas más Atrasadas
-                                        <i class="fa fa-arrow-right"/>
-                                        Noche
-                                    </div>
-                            </div>
-                            <div class="card-body p-3">
+                        <div class="group-section-header group-section-header--noche mb-2">
+                            <i class="fa fa-paint-brush me-2"/>
+                            3 Pintas más Atrasadas — Noche
+                        </div>
+                        <div>
                                 <t t-foreach="state.top_6_groups_info_noche || []" t-as="top_group" t-key="top_group.id">
                                     <t t-set="cfg_noche" t-value="configs['evening']"/>
                                     <t t-set="key_noche" t-value="`evening_${top_group.id}`"/>
-                                    <div class="card shadow border-0 p-3 mb-1">
-                                        <div class="card-body p-3">
-                                            <table class="table table-sm table-hover align-middle mb-2">
-                                                    <tr t-att-style="cfg_noche.header_style">
-                                                        <th colspan="2" class="text-center text-white fw-bold">
-                                                            <t t-esc="top_group.name"/>
-                                                        </th>
-                                                    </tr>
-                                                <tr>
-                                                        <td colspan="2">
-                                                            <div class="d-flex justify-content-center">
-                                                <button class="btn btn-sm fw-bold mb-2"
+                                    <div class="grupo-card mb-2">
+                                        <div class="grupo-card-title" t-att-style="cfg_noche.header_style">
+                                            <t t-esc="top_group.name"/>
+                                        </div>
+                                        <div class="grupo-card-body">
+                                            <div class="grupo-stats-row">
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Gral</span>
+                                                    <span class="badge-groups-general"><t t-esc="top_group.salidas_atrasadas"/></span>
+                                                </div>
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Tarde</span>
+                                                    <span class="badge-groups-tarde"><t t-esc="top_group.salidas_atrasadas_dia"/></span>
+                                                </div>
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Noche</span>
+                                                    <span class="badge-groups-noche"><t t-esc="top_group.salidas_atrasadas_noche"/></span>
+                                                </div>
+                                                <div class="grupo-stat">
+                                                    <span class="grupo-stat-label" style="color:#16a34a"><t t-esc="day_week"/></span>
+                                                    <span class="badge-groups-por-dia"><t t-esc="top_group.salidas_atrasadas_por_dia"/></span>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-center mt-1 mb-2">
+                                                <button class="btn btn-sm fw-bold"
                                                         t-att-class="cfg_noche.btn_class"
                                                         t-att-style="cfg_noche.btn_style"
                                                         t-on-click="() => this.toggleGroupNumber('evening', top_group.id, cfg_noche.field)">
@@ -652,224 +500,134 @@
                                                     <t t-else="">Ocultar</t>
                                                 </button>
                                             </div>
-                                                            <div t-if="state.openGroups[key_noche]"
-                                                                 class="groups-numbers-grid mb-1">
-                                                <t t-foreach="state.groupNumbers[key_noche] || []"
-                                                   t-as="s_num"
-                                                   t-key="s_num.numero">
+                                            <div t-if="state.openGroups[key_noche]" class="groups-numbers-grid mb-2">
+                                                <t t-foreach="state.groupNumbers[key_noche] || []" t-as="s_num" t-key="s_num.numero">
                                                     <div class="d-flex justify-content-between border-bottom py-1">
-                                                        <span t-att-class="cfg_noche.ball_class">
-                                                            <t t-esc="s_num.numero"/>
-                                                        </span>
+                                                        <span t-att-class="cfg_noche.ball_class"><t t-esc="s_num.numero"/></span>
                                                     </div>
                                                 </t>
                                             </div>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:#8c6ca8;">
-                                                            Atrasos Generales
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-general">
-                                                                <t t-esc="top_group.salidas_atrasadas"/>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:orange;">
-                                                            Atrasos Tarde
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-tarde">
-                                                                <t t-esc="top_group.salidas_atrasadas_dia"/>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:#1e3a5f;">
-                                                            Atrasos Noche
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-noche">
-                                                                <t t-esc="top_group.salidas_atrasadas_noche"/>
-                                                            </span>
-                                                        </td>
-                                                    </tr>
-                                                <tr>
-                                                        <td class="text-start fw-bold" style="color:#4cd964;">
-                                                            Atrasos <t t-esc="day_week"/>
-                                                        </td>
-                                                    <td>
-                                                            <span class="badge-groups-por-dia">
-                                                                <t t-esc="top_group.salidas_atrasadas_por_dia"/>
-                                                            </span>
-                                                        </td>
-                                                        </tr>
-                                                </table>
-                                            <div>
-                                                <div class="analysis-header-noche mb-2"
-                                                     t-att-class="state.openGroupsAnalysis[key_noche] ? 'open' : ''"
-                                                     t-on-click="() => this.toggleGroupsAnalysis('evening', top_group.id)">
-
-                                                    <div class="d-flex justify-content-between align-items-center">
-
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <i class="fa fa-chart-line icon"></i>
-                                                            <span class="title">Análisis de números</span>
-                                                        </div>
-
-                                                        <i class="fa chevron"
-                                                           t-att-class="state.openGroupsAnalysis[key_noche] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                            <div class="analysis-header mb-2"
+                                                 t-att-class="state.openGroupsAnalysis[key_noche] ? 'open' : ''"
+                                                 t-on-click="() => this.toggleGroupsAnalysis('evening', top_group.id)">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <i class="fa fa-chart-line icon"/>
+                                                        <span class="title">Análisis de números</span>
+                                                    </div>
+                                                    <i class="fa chevron"
+                                                       t-att-class="state.openGroupsAnalysis[key_noche] ? 'fa-chevron-up' : 'fa-chevron-down'"/>
+                                                </div>
+                                            </div>
+                                            <t t-if="state.openGroupsAnalysis[key_noche]">
+                                                <t t-set="ag" t-value="state.analysisGroupsNoche[top_group.id]"/>
+                                                <div class="acomp-section-label">Último que salió</div>
+                                                <div class="grupo-analysis-row mb-2">
+                                                    <div class="grupo-analysis-item">
+                                                        <span class="grupo-stat-label" style="color:#8c6ca8">Gral</span>
+                                                        <span class="badge-groups-general"><t t-esc="ag.last.name"/></span>
+                                                    </div>
+                                                    <div class="grupo-analysis-item">
+                                                        <span class="grupo-stat-label" style="color:#d97706">Tarde</span>
+                                                        <span class="badge-groups-tarde"><t t-esc="ag.last_day.name"/></span>
+                                                    </div>
+                                                    <div class="grupo-analysis-item">
+                                                        <span class="grupo-stat-label" style="color:#2d5a8e">Noche</span>
+                                                        <span class="badge-groups-noche"><t t-esc="ag.last_night.name"/></span>
                                                     </div>
                                                 </div>
-                                                <t t-if="state.openGroupsAnalysis[key_noche]">
-                                                    <t t-set="ag" t-value="state.analysisGroupsNoche[top_group.id]"/>
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="fw-bold" style="color:#8c6ca8;">
-                                                            Último que salió
-                                                        </div>
-                                                        <span class="badge-groups-general">
-                                                            <t t-esc="ag.last.name"/>
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="fw-bold" style="color:#f59e0b;">
-                                                            Último que salió en la Tarde
-                                                        </div>
-                                                        <span class="badge-groups-tarde">
-                                                            <t t-esc="ag.last_day.name"/>
-                                                        </span>
-                                                    </div>
-                                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                                        <div class="fw-bold" style="color:#1e3a5f;">
-                                                            Último que salió en la Noche
-                                                        </div>
-                                                        <span class="badge-groups-noche">
-                                                            <t t-esc="ag.last_night.name"/>
-                                                        </span>
-                                                    </div>
-
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Más tiempo sin salir</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.most_delayed || []" t-as="asmd" t-key="asmd.name">
-                                                            <div class="badge-groups-general">
-                                                                <t t-esc="asmd.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#f59e0b;">Más tiempo sin salir en la Tarde</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.most_delayed_day || []" t-as="asmdd"
-                                                           t-key="asmdd.name">
-                                                            <div class="badge-groups-tarde">
-                                                                <t t-esc="asmdd.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#1e3a5f;">Más tiempo sin salir en la Noche</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.most_delayed_night || []" t-as="asmdn"
-                                                          t-key="asmdn.name">
-                                                            <div class="badge-groups-noche">
-                                                                <t t-esc="asmdn.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#4cd964;">Más salen los <t t-esc="day_week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
-                                                            <div class="badge-groups-por-dia">
-                                                                <t t-esc="agdm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#4cd964;">Menos salen los <t t-esc="day_week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
-                                                            <div class="badge-groups-por-dia">
-                                                                <t t-esc="agdl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Más salen en <t t-esc="state.mesActual"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="agmm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Menos salen en <t t-esc="state.mesActual"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="agml.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Más salen semana del <t t-esc="week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="wgdm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#8c6ca8;">Menos salen semana del <t t-esc="week"/></div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
-                                                            <div class="badge-groups-general">
-                                                                 <t t-esc="wgdl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#f59e0b;">Más salen de Tarde</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
-                                                            <div class="badge-groups-tarde">
-                                                                 <t t-esc="agdtm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#f59e0b;">Menos salen de Tarde</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.day_time.least || []" t-as="agdtl"
-                                                           t-key="agdtl.name">
-                                                            <div class="badge-groups-tarde">
-                                                                 <t t-esc="agdtl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#1e3a5f;">Más salen de Noche</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.night_time.most || []" t-as="agntm"
-                                                           t-key="agntm.name">
-                                                            <div class="badge-groups-noche">
-                                                                <t t-esc="agntm.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="text-start fw-bold" style="color:#1e3a5f;">Menos salen de Noche</div>
-                                                    <div class="bolas-container-pintas mb-1">
-                                                        <t t-foreach="ag.night_time.least || []" t-as="agntl"
-                                                           t-key="agntl.name">
-                                                            <div class="badge-groups-noche">
-                                                                <t t-esc="agntl.name"/>
-                                                            </div>
-                                                        </t>
-                                                    </div>
-                                                </t>
-                                            </div>
-
+                                                <div class="acomp-section-label">Más tiempo sin salir</div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Gral:</span>
+                                                    <t t-foreach="ag.most_delayed || []" t-as="asmd" t-key="asmd.name">
+                                                        <span class="badge-groups-general"><t t-esc="asmd.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Tarde:</span>
+                                                    <t t-foreach="ag.most_delayed_day || []" t-as="asmdd" t-key="asmdd.name">
+                                                        <span class="badge-groups-tarde"><t t-esc="asmdd.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Noche:</span>
+                                                    <t t-foreach="ag.most_delayed_night || []" t-as="asmdn" t-key="asmdn.name">
+                                                        <span class="badge-groups-noche"><t t-esc="asmdn.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">Los <t t-esc="day_week"/></div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#16a34a">Más:</span>
+                                                    <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
+                                                        <span class="badge-groups-por-dia"><t t-esc="agdm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#16a34a">Menos:</span>
+                                                    <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
+                                                        <span class="badge-groups-por-dia"><t t-esc="agdl.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">En <t t-esc="state.mesActual"/></div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
+                                                    <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
+                                                        <span class="badge-groups-general"><t t-esc="agmm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
+                                                    <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
+                                                        <span class="badge-groups-general"><t t-esc="agml.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">Semana del <t t-esc="week"/></div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
+                                                    <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
+                                                        <span class="badge-groups-general"><t t-esc="wgdm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
+                                                    <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
+                                                        <span class="badge-groups-general"><t t-esc="wgdl.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="acomp-section-label">Tarde / Noche</div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Más tarde:</span>
+                                                    <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
+                                                        <span class="badge-groups-tarde"><t t-esc="agdtm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#d97706">Menos tarde:</span>
+                                                    <t t-foreach="ag.day_time.least || []" t-as="agdtl" t-key="agdtl.name">
+                                                        <span class="badge-groups-tarde"><t t-esc="agdtl.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-1">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Más noche:</span>
+                                                    <t t-foreach="ag.night_time.most || []" t-as="agntm" t-key="agntm.name">
+                                                        <span class="badge-groups-noche"><t t-esc="agntm.name"/></span>
+                                                    </t>
+                                                </div>
+                                                <div class="analysis-badge-row mb-2">
+                                                    <span class="grupo-stat-label" style="color:#2d5a8e">Menos noche:</span>
+                                                    <t t-foreach="ag.night_time.least || []" t-as="agntl" t-key="agntl.name">
+                                                        <span class="badge-groups-noche"><t t-esc="agntl.name"/></span>
+                                                    </t>
+                                                </div>
+                                            </t>
                                         </div>
                                     </div>
                                 </t>
-                            </div>
                         </div>
-                        <div class="card shadow border-0 p-3 mb-2" style="overflow: visible;">
-                        <div class="card-header text-white fw-bold" style="background-color:#1e3a5f;">
-                            Consultar Históricos de Noche por Intervalos de Atrasos
+                        <div class="card shadow border-0 mb-2" style="overflow: visible;">
+                        <div class="card-header text-white fw-bold">
+                            <i class="fa fa-search me-2"/>
+                            Consultar Históricos de Noche
                         </div>
                         <div class="card-body p-3">
                             <div class="position-relative mb-2" style="max-width:400px">
