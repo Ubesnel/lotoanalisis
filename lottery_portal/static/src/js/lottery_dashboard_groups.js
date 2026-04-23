@@ -362,6 +362,18 @@ export class LotteryDashboardGroups extends Component {
         this.state.sugerencias_grupos_noche = [];
         this.loadDataGeneralChartNoche(parseInt(id));
         }
+
+    getBallAnalysisHot3(i) {
+        if (i === 0) return "ball ball-red";
+        if (i === 1) return "ball ball-blue";
+        return "ball ball-green";
+    }
+
+    getBallAnalysisCold3(i) {
+        if (i === 0) return "ball ball-azul-analitico";
+        if (i === 1) return "ball ball-cian";
+        return "ball ball-grisaceo";
+    }
 }
 
 LotteryDashboardGroups.template = "lottery_portal.LotteryDashboardGroups";

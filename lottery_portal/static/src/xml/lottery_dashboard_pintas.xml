@@ -155,64 +155,64 @@
                                             <div class="analysis-badge-row mb-1">
                                                 <span class="grupo-stat-label" style="color:#16a34a">Más:</span>
                                                 <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
-                                                    <span class="badge-groups-por-dia"><t t-esc="agdm.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Hot(agdm_index)"><t t-esc="agdm.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="analysis-badge-row mb-2">
                                                 <span class="grupo-stat-label" style="color:#16a34a">Menos:</span>
                                                 <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
-                                                    <span class="badge-groups-por-dia"><t t-esc="agdl.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Cold(agdl_index)"><t t-esc="agdl.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="acomp-section-label">En <t t-esc="state.mesActual"/></div>
                                             <div class="analysis-badge-row mb-1">
                                                 <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
                                                 <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
-                                                    <span class="badge-groups-general"><t t-esc="agmm.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Hot(agmm_index)"><t t-esc="agmm.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="analysis-badge-row mb-2">
                                                 <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
                                                 <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
-                                                    <span class="badge-groups-general"><t t-esc="agml.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Cold(agml_index)"><t t-esc="agml.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="acomp-section-label">Semana del <t t-esc="week"/></div>
                                             <div class="analysis-badge-row mb-1">
                                                 <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
                                                 <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
-                                                    <span class="badge-groups-general"><t t-esc="wgdm.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Hot(wgdm_index)"><t t-esc="wgdm.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="analysis-badge-row mb-2">
                                                 <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
                                                 <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
-                                                    <span class="badge-groups-general"><t t-esc="wgdl.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Cold(wgdl_index)"><t t-esc="wgdl.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="acomp-section-label">Tarde / Noche</div>
                                             <div class="analysis-badge-row mb-1">
                                                 <span class="grupo-stat-label" style="color:#d97706">Más tarde:</span>
                                                 <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
-                                                    <span class="badge-groups-tarde"><t t-esc="agdtm.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Hot(agdtm_index)"><t t-esc="agdtm.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="analysis-badge-row mb-1">
                                                 <span class="grupo-stat-label" style="color:#d97706">Menos tarde:</span>
                                                 <t t-foreach="ag.day_time.least || []" t-as="agdtl" t-key="agdtl.name">
-                                                    <span class="badge-groups-tarde"><t t-esc="agdtl.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Cold(agdtl_index)"><t t-esc="agdtl.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="analysis-badge-row mb-1">
                                                 <span class="grupo-stat-label" style="color:#2d5a8e">Más noche:</span>
                                                 <t t-foreach="ag.night_time.most || []" t-as="agntm" t-key="agntm.name">
-                                                    <span class="badge-groups-noche"><t t-esc="agntm.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Hot(agntm_index)"><t t-esc="agntm.name"/></span>
                                                 </t>
                                             </div>
                                             <div class="analysis-badge-row mb-2">
                                                 <span class="grupo-stat-label" style="color:#2d5a8e">Menos noche:</span>
                                                 <t t-foreach="ag.night_time.least || []" t-as="agntl" t-key="agntl.name">
-                                                    <span class="badge-groups-noche"><t t-esc="agntl.name"/></span>
+                                                    <span t-att-class="getBallAnalysis8Cold(agntl_index)"><t t-esc="agntl.name"/></span>
                                                 </t>
                                             </div>
                                         </t>
@@ -357,64 +357,64 @@
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#16a34a">Más:</span>
                                                     <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
-                                                        <span class="badge-groups-por-dia"><t t-esc="agdm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agdm_index)"><t t-esc="agdm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#16a34a">Menos:</span>
                                                     <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
-                                                        <span class="badge-groups-por-dia"><t t-esc="agdl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agdl_index)"><t t-esc="agdl.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="acomp-section-label">En <t t-esc="state.mesActual"/></div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
                                                     <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
-                                                        <span class="badge-groups-general"><t t-esc="agmm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agmm_index)"><t t-esc="agmm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
                                                     <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
-                                                        <span class="badge-groups-general"><t t-esc="agml.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agml_index)"><t t-esc="agml.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="acomp-section-label">Semana del <t t-esc="week"/></div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
                                                     <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
-                                                        <span class="badge-groups-general"><t t-esc="wgdm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(wgdm_index)"><t t-esc="wgdm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
                                                     <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
-                                                        <span class="badge-groups-general"><t t-esc="wgdl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(wgdl_index)"><t t-esc="wgdl.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="acomp-section-label">Tarde / Noche</div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#d97706">Más tarde:</span>
                                                     <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
-                                                        <span class="badge-groups-tarde"><t t-esc="agdtm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agdtm_index)"><t t-esc="agdtm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#d97706">Menos tarde:</span>
                                                     <t t-foreach="ag.day_time.least || []" t-as="agdtl" t-key="agdtl.name">
-                                                        <span class="badge-groups-tarde"><t t-esc="agdtl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agdtl_index)"><t t-esc="agdtl.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#2d5a8e">Más noche:</span>
                                                     <t t-foreach="ag.night_time.most || []" t-as="agntm" t-key="agntm.name">
-                                                        <span class="badge-groups-noche"><t t-esc="agntm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agntm_index)"><t t-esc="agntm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#2d5a8e">Menos noche:</span>
                                                     <t t-foreach="ag.night_time.least || []" t-as="agntl" t-key="agntl.name">
-                                                        <span class="badge-groups-noche"><t t-esc="agntl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agntl_index)"><t t-esc="agntl.name"/></span>
                                                     </t>
                                                 </div>
                                             </t>
@@ -559,64 +559,64 @@
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#16a34a">Más:</span>
                                                     <t t-foreach="ag.day.most || []" t-as="agdm" t-key="agdm.name">
-                                                        <span class="badge-groups-por-dia"><t t-esc="agdm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agdm_index)"><t t-esc="agdm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#16a34a">Menos:</span>
                                                     <t t-foreach="ag.day.least || []" t-as="agdl" t-key="agdl.name">
-                                                        <span class="badge-groups-por-dia"><t t-esc="agdl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agdl_index)"><t t-esc="agdl.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="acomp-section-label">En <t t-esc="state.mesActual"/></div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
                                                     <t t-foreach="ag.month.most || []" t-as="agmm" t-key="agmm.name">
-                                                        <span class="badge-groups-general"><t t-esc="agmm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agmm_index)"><t t-esc="agmm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
                                                     <t t-foreach="ag.month.least || []" t-as="agml" t-key="agml.name">
-                                                        <span class="badge-groups-general"><t t-esc="agml.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agml_index)"><t t-esc="agml.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="acomp-section-label">Semana del <t t-esc="week"/></div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Más:</span>
                                                     <t t-foreach="ag.week.most || []" t-as="wgdm" t-key="wgdm.name">
-                                                        <span class="badge-groups-general"><t t-esc="wgdm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(wgdm_index)"><t t-esc="wgdm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#8c6ca8">Menos:</span>
                                                     <t t-foreach="ag.week.least || []" t-as="wgdl" t-key="wgdl.name">
-                                                        <span class="badge-groups-general"><t t-esc="wgdl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(wgdl_index)"><t t-esc="wgdl.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="acomp-section-label">Tarde / Noche</div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#d97706">Más tarde:</span>
                                                     <t t-foreach="ag.day_time.most || []" t-as="agdtm" t-key="agdtm.name">
-                                                        <span class="badge-groups-tarde"><t t-esc="agdtm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agdtm_index)"><t t-esc="agdtm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#d97706">Menos tarde:</span>
                                                     <t t-foreach="ag.day_time.least || []" t-as="agdtl" t-key="agdtl.name">
-                                                        <span class="badge-groups-tarde"><t t-esc="agdtl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agdtl_index)"><t t-esc="agdtl.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-1">
                                                     <span class="grupo-stat-label" style="color:#2d5a8e">Más noche:</span>
                                                     <t t-foreach="ag.night_time.most || []" t-as="agntm" t-key="agntm.name">
-                                                        <span class="badge-groups-noche"><t t-esc="agntm.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Hot(agntm_index)"><t t-esc="agntm.name"/></span>
                                                     </t>
                                                 </div>
                                                 <div class="analysis-badge-row mb-2">
                                                     <span class="grupo-stat-label" style="color:#2d5a8e">Menos noche:</span>
                                                     <t t-foreach="ag.night_time.least || []" t-as="agntl" t-key="agntl.name">
-                                                        <span class="badge-groups-noche"><t t-esc="agntl.name"/></span>
+                                                        <span t-att-class="getBallAnalysis8Cold(agntl_index)"><t t-esc="agntl.name"/></span>
                                                     </t>
                                                 </div>
                                             </t>
