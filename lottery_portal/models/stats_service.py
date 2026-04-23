@@ -282,12 +282,12 @@ class LotteryStatsService(models.Model):
                     ROW_NUMBER() OVER (
                         ORDER BY {field} DESC, ln.id DESC
                     ) AS rank,
-                    EXISTS (
-                        SELECT 1 FROM lottery_output lo
+                    (
+                        SELECT COUNT(*) FROM lottery_output lo
                         WHERE lo.number_id = ln.id
                           AND lo.month = %(month)s::text
                           AND lo.year = %(year)s
-                    ) AS salido_este_anio,
+                    ) AS salidas_mes_anio,
                     last_info.last_month_date,
                     last_info.last_month_turn,
                     last_info.last_month_week_day
@@ -332,12 +332,12 @@ class LotteryStatsService(models.Model):
                     ROW_NUMBER() OVER (
                         ORDER BY {field} DESC, ln.id DESC
                     ) + 30 AS rank,
-                    EXISTS (
-                        SELECT 1 FROM lottery_output lo
+                    (
+                        SELECT COUNT(*) FROM lottery_output lo
                         WHERE lo.number_id = ln.id
                           AND lo.month = %(month)s::text
                           AND lo.year = %(year)s
-                    ) AS salido_este_anio,
+                    ) AS salidas_mes_anio,
                     last_info.last_month_date,
                     last_info.last_month_turn,
                     last_info.last_month_week_day
@@ -415,12 +415,12 @@ class LotteryStatsService(models.Model):
                         ROW_NUMBER() OVER (
                             ORDER BY {field}, ln.id DESC
                         ) AS rank,
-                        EXISTS (
-                            SELECT 1 FROM lottery_output lo
+                        (
+                            SELECT COUNT(*) FROM lottery_output lo
                             WHERE lo.number_id = ln.id
                               AND lo.month = %(month)s::text
                               AND lo.year = %(year)s
-                        ) AS salido_este_anio,
+                        ) AS salidas_mes_anio,
                         last_info.last_month_date,
                         last_info.last_month_turn,
                         last_info.last_month_week_day

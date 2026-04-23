@@ -22,8 +22,8 @@
                                                   t-att-title="'Cantidad de salidas históricas: ' + num.total">
                                                 <t t-esc="num.name"/>
                                             </span>
-                                            <span t-if="num.salido_este_anio" class="ball-salido-badge" title="Ya salió este año">✓</span>
-                                            <span t-if="!num.salido_este_anio and num.last_month_date"
+                                            <span t-if="num.salidas_mes_anio" class="ball-salido-badge" t-att-title="'Salidas en mes actual: ' + num.salidas_mes_anio"><t t-esc="num.salidas_mes_anio"/></span>
+                                            <span t-if="!num.salidas_mes_anio and num.last_month_date"
                                                   t-att-class="'ball-unseen-label ' + (num.last_month_turn === 'afternoon' ? 'tarde' : 'noche')">
                                                 <t t-esc="num.last_month_date"/>&#160;<t t-esc="num.last_month_week_day"/>
                                             </span>
@@ -45,8 +45,8 @@
                                               t-att-title="'Cantidad de salidas históricas: ' + num.total">
                                             <t t-esc="num.name"/>
                                         </span>
-                                        <span t-if="num.salido_este_anio" class="ball-salido-badge" title="Ya salió este año">✓</span>
-                                        <span t-if="!num.salido_este_anio and num.last_month_date"
+                                        <span t-if="num.salidas_mes_anio" class="ball-salido-badge" t-att-title="'Salidas en mes actual: ' + num.salidas_mes_anio"><t t-esc="num.salidas_mes_anio"/></span>
+                                        <span t-if="!num.salidas_mes_anio and num.last_month_date"
                                               t-att-class="'ball-unseen-label ' + (num.last_month_turn === 'afternoon' ? 'tarde' : 'noche')">
                                             <t t-esc="num.last_month_date"/>&#160;<t t-esc="num.last_month_week_day"/>
                                         </span>
@@ -65,8 +65,8 @@
                                                   t-att-title="'Cantidad de salidas históricas: ' + num.total">
                                                 <t t-esc="num.name"/>
                                             </span>
-                                            <span t-if="num.salido_este_anio" class="ball-salido-badge" title="Ya salió este año">✓</span>
-                                            <span t-if="!num.salido_este_anio and num.last_month_date"
+                                            <span t-if="num.salidas_mes_anio" class="ball-salido-badge" t-att-title="'Salidas en mes actual: ' + num.salidas_mes_anio"><t t-esc="num.salidas_mes_anio"/></span>
+                                            <span t-if="!num.salidas_mes_anio and num.last_month_date"
                                                   t-att-class="'ball-unseen-label ' + (num.last_month_turn === 'afternoon' ? 'tarde' : 'noche')">
                                                 <t t-esc="num.last_month_date"/>&#160;<t t-esc="num.last_month_week_day"/>
                                             </span>

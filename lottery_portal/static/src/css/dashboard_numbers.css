@@ -88,12 +88,13 @@
 .ball-salido-badge {
     position: absolute;
     top: -4px;
-    right: -4px;
-    width: 14px;
+    right: -6px;
+    min-width: 14px;
     height: 14px;
+    padding: 0 3px;
     background: #22c55e;
     color: white;
-    border-radius: 50%;
+    border-radius: 8px;
     font-size: 8px;
     font-weight: 800;
     display: flex;
@@ -101,7 +102,12 @@
     justify-content: center;
     border: 1.5px solid white;
     line-height: 1;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: default;
+    transition: transform 0.2s ease;
+}
+.ball-salido-badge:hover {
+    transform: scale(1.6);
 }
 
 /* Base */
