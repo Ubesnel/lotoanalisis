@@ -268,25 +268,104 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('month')
-    def get_top_numbers_month(self, month=None):
+    @tools.ormcache('month', 'current_year')
+    def get_top_numbers_month(self, month=None, current_year=None):
         field = MONTH_FIELD_MAP.get(month)
 
         if not field:
             return []
         query = f"""
                 SELECT
-                    id,
-                    LPAD(name::text, 2, '0') AS name,
+                    ln.id,
+                    LPAD(ln.name::text, 2, '0') AS name,
                     {field} AS total,
                     ROW_NUMBER() OVER (
-                        ORDER BY {field} DESC, id desc
-                    ) AS rank
-                FROM lottery_number
-                ORDER BY {field} DESC, id desc
+                        ORDER BY {field} DESC, ln.id DESC
+                    ) AS rank,
+                    EXISTS (
+                        SELECT 1 FROM lottery_output lo
+                        WHERE lo.number_id = ln.id
+                          AND lo.month = %(month)s::text
+                          AND lo.year = %(year)s
+                    ) AS salido_este_anio,
+                    last_info.last_month_date,
+                    last_info.last_month_turn,
+                    last_info.last_month_week_day
+                FROM lottery_number ln
+                LEFT JOIN LATERAL (
+                    SELECT
+                        TO_CHAR(lo2.date, 'DD/MM/YYYY') AS last_month_date,
+                        lo2.turn_day AS last_month_turn,
+                        CASE lo2.week_day
+                            WHEN 'lu' THEN 'Lun'
+                            WHEN 'ma' THEN 'Mar'
+                            WHEN 'mi' THEN 'Mié'
+                            WHEN 'ju' THEN 'Jue'
+                            WHEN 'vi' THEN 'Vie'
+                            WHEN 'sa' THEN 'Sáb'
+                            WHEN 'do' THEN 'Dom'
+                            ELSE lo2.week_day
+                        END AS last_month_week_day
+                    FROM lottery_output lo2
+                    WHERE lo2.number_id = ln.id
+                      AND lo2.month = %(month)s::text
+                    ORDER BY lo2.date DESC
+                    LIMIT 1
+                ) last_info ON true
+                ORDER BY {field} DESC, ln.id DESC
                 LIMIT 30;
             """
-        self.env.cr.execute(query)
+        self.env.cr.execute(query, {'month': month, 'year': current_year})
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    @tools.ormcache('month', 'current_year')
+    def get_remaining_numbers_month(self, month=None, current_year=None):
+        field = MONTH_FIELD_MAP.get(month)
+        if not field:
+            return []
+        query = f"""
+                SELECT
+                    ln.id,
+                    LPAD(ln.name::text, 2, '0') AS name,
+                    {field} AS total,
+                    ROW_NUMBER() OVER (
+                        ORDER BY {field} DESC, ln.id DESC
+                    ) + 30 AS rank,
+                    EXISTS (
+                        SELECT 1 FROM lottery_output lo
+                        WHERE lo.number_id = ln.id
+                          AND lo.month = %(month)s::text
+                          AND lo.year = %(year)s
+                    ) AS salido_este_anio,
+                    last_info.last_month_date,
+                    last_info.last_month_turn,
+                    last_info.last_month_week_day
+                FROM lottery_number ln
+                LEFT JOIN LATERAL (
+                    SELECT
+                        TO_CHAR(lo2.date, 'DD/MM/YYYY') AS last_month_date,
+                        lo2.turn_day AS last_month_turn,
+                        CASE lo2.week_day
+                            WHEN 'lu' THEN 'Lun'
+                            WHEN 'ma' THEN 'Mar'
+                            WHEN 'mi' THEN 'Mié'
+                            WHEN 'ju' THEN 'Jue'
+                            WHEN 'vi' THEN 'Vie'
+                            WHEN 'sa' THEN 'Sáb'
+                            WHEN 'do' THEN 'Dom'
+                            ELSE lo2.week_day
+                        END AS last_month_week_day
+                    FROM lottery_output lo2
+                    WHERE lo2.number_id = ln.id
+                      AND lo2.month = %(month)s::text
+                    ORDER BY lo2.date DESC
+                    LIMIT 1
+                ) last_info ON true
+                ORDER BY {field} DESC, ln.id DESC
+                OFFSET 30 LIMIT 40;
+            """
+        self.env.cr.execute(query, {'month': month, 'year': current_year})
         return self.env.cr.dictfetchall()
 
     @api.model
@@ -322,24 +401,54 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('month')
-    def get_bottom_numbers_month(self, month=None):
+    @tools.ormcache('month', 'current_year')
+    def get_bottom_numbers_month(self, month=None, current_year=None):
         field = MONTH_FIELD_MAP.get(month)
 
         if not field:
             return []
         query = f"""
                     SELECT
-                        LPAD(name::text, 2, '0') AS name,
+                        ln.id,
+                        LPAD(ln.name::text, 2, '0') AS name,
                         {field} AS total,
                         ROW_NUMBER() OVER (
-                            ORDER BY {field}, id desc
-                        ) AS rank
-                    FROM lottery_number
-                    ORDER BY {field}, id desc
+                            ORDER BY {field}, ln.id DESC
+                        ) AS rank,
+                        EXISTS (
+                            SELECT 1 FROM lottery_output lo
+                            WHERE lo.number_id = ln.id
+                              AND lo.month = %(month)s::text
+                              AND lo.year = %(year)s
+                        ) AS salido_este_anio,
+                        last_info.last_month_date,
+                        last_info.last_month_turn,
+                        last_info.last_month_week_day
+                    FROM lottery_number ln
+                    LEFT JOIN LATERAL (
+                        SELECT
+                            TO_CHAR(lo2.date, 'DD/MM/YYYY') AS last_month_date,
+                            lo2.turn_day AS last_month_turn,
+                            CASE lo2.week_day
+                                WHEN 'lu' THEN 'Lun'
+                                WHEN 'ma' THEN 'Mar'
+                                WHEN 'mi' THEN 'Mié'
+                                WHEN 'ju' THEN 'Jue'
+                                WHEN 'vi' THEN 'Vie'
+                                WHEN 'sa' THEN 'Sáb'
+                                WHEN 'do' THEN 'Dom'
+                                ELSE lo2.week_day
+                            END AS last_month_week_day
+                        FROM lottery_output lo2
+                        WHERE lo2.number_id = ln.id
+                          AND lo2.month = %(month)s::text
+                        ORDER BY lo2.date DESC
+                        LIMIT 1
+                    ) last_info ON true
+                    ORDER BY {field}, ln.id DESC
                     LIMIT 30;
                 """
-        self.env.cr.execute(query)
+        self.env.cr.execute(query, {'month': month, 'year': current_year})
         return self.env.cr.dictfetchall()
 
     @api.model

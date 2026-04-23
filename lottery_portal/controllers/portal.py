@@ -56,11 +56,12 @@ class LotteryPortal(http.Controller):
 
     @http.route('/estadisticas-numeros/dashboard_data', type='json', auth='public')
     def dashboard_info_numbers(self, month=False):
-        month_filter = month or datetime.today().month
-        top_numbers = request.env['lottery.stats.service'].sudo().get_top_numbers_month(month_filter)
-        bottom_numbers = request.env['lottery.stats.service'].sudo().get_bottom_numbers_month(month_filter)
-
-        top_numbers_info = request.env['lottery.stats.service'].sudo().get_top_numbers_month_info(str(month_filter), top_numbers)
+        today = datetime.today()
+        month_filter = month or today.month
+        current_year = today.year
+        top_numbers = request.env['lottery.stats.service'].sudo().get_top_numbers_month(month_filter, current_year)
+        bottom_numbers = request.env['lottery.stats.service'].sudo().get_bottom_numbers_month(month_filter, current_year)
+        remaining_numbers = request.env['lottery.stats.service'].sudo().get_remaining_numbers_month(month_filter, current_year)
 
         return {
             "kpis": {
@@ -68,7 +69,7 @@ class LotteryPortal(http.Controller):
             },
             "top_numbers": top_numbers,
             "bottom_numbers": bottom_numbers,
-            "top_numbers_info": top_numbers_info,
+            "remaining_numbers": remaining_numbers,
         }
 
     @http.route('/estadisticas-numeros/top-number-week-day', type='json', auth='public')

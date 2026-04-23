@@ -52,7 +52,56 @@
     grid-template-columns: repeat(5, 1fr);
     gap: 8px;
     justify-items: center;
+}
 
+.ball-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.ball-unseen-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #8c6ca8;
+    text-align: center;
+    line-height: 1.3;
+    margin-top: 3px;
+    max-width: 52px;
+    word-break: break-word;
+    cursor: default;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+.ball-unseen-label:hover {
+    transform: scale(1.4);
+}
+.ball-unseen-label.tarde {
+    color: #d97706;
+}
+.ball-unseen-label.noche {
+    color: #1e3a5f;
+}
+
+.ball-salido-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
+    background: #22c55e;
+    color: white;
+    border-radius: 50%;
+    font-size: 8px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid white;
+    line-height: 1;
+    pointer-events: none;
 }
 
 /* Base */
@@ -208,12 +257,27 @@
     background: linear-gradient(135deg, #8c6ca8);
 }
 
+.ball-lila {
+    background: linear-gradient(135deg, #c4a8e0, #a87fc7);
+}
+
 .balls-container-5 {
     display: grid;
     grid-template-columns: repeat(5, auto);
     gap: 8px;
     justify-items: center;
 }
+
+/* Layout 3-4-3 para acompañantes (10 bolas: 3 rojas + 4 azules + 3 verdes) */
+.balls-container-343 {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 5px;
+    justify-items: center;
+}
+.balls-container-343 .ball:nth-child(-n+3)          { grid-column: span 4; }
+.balls-container-343 .ball:nth-child(n+4):nth-child(-n+7) { grid-column: span 3; }
+.balls-container-343 .ball:nth-child(n+8)           { grid-column: span 4; }
 
 /* ── Acordeón de info de números ────────────────────────────── */
 .num-info-accordion {
@@ -303,6 +367,11 @@
     justify-content: center;
     flex-shrink: 0;
     box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+.num-info-ball:hover {
+    transform: scale(1.3);
 }
 .num-info-ball--tarde {
     background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -347,7 +416,6 @@
 /* ── Cabeceras estilo lottery-block (hot = naranja, cold = azul) ── */
 .card-header.num-card-hot,
 .card-header.num-card-cold {
-    font-size: 11px !important;
     font-weight: 800 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -411,7 +479,8 @@
     color: #4a2c6e;
 }
 .stat-rank-date {
-    font-size: 10px;
+    font-size: 12px;
+    font-weight: 600;
     color: #8c6ca8;
     white-space: nowrap;
 }

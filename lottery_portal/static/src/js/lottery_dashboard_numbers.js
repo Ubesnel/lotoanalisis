@@ -15,10 +15,10 @@ export class LotteryDashboardNumbers extends Component {
             loading: true,
             kpis: {},
             top_numbers: [],
-            top_numbers_info: [],
             top_repeticiones: [],
             top_pegados: [],
             bottom_numbers: [],
+            remaining_numbers: [],
             top_numbers_by_week_day: [],
             top_numbers_by_week: [],
             bottom_numbers_by_week_day: [],
@@ -49,7 +49,6 @@ export class LotteryDashboardNumbers extends Component {
             socios_posteriores: [],
             socios_anteriores: [],
             month_index: monthsMap[monthIndex],
-            showTopNumbersInfo: false,
             showAllRepeticiones: false,
             showAllPegados: false,
         });
@@ -79,8 +78,8 @@ export class LotteryDashboardNumbers extends Component {
         });
         this.state.kpis = data.kpis;
         this.state.top_numbers = data.top_numbers;
-        this.state.top_numbers_info = data.top_numbers_info;
         this.state.bottom_numbers = data.bottom_numbers;
+        this.state.remaining_numbers = data.remaining_numbers;
         this.state.loading = false;
     }
 
@@ -176,10 +175,6 @@ export class LotteryDashboardNumbers extends Component {
     async loadDataTopPegados() {
         const data = await jsonrpc("/estadisticas-numeros/top-pegados", {});
         this.state.top_pegados = data.top_pegados;
-    }
-
-    toggleTopNumbersInfo() {
-        this.state.showTopNumbersInfo = !this.state.showTopNumbersInfo;
     }
 
     toggleRepeticiones() {

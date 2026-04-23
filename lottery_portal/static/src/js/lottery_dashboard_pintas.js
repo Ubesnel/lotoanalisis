@@ -361,6 +361,18 @@ export class LotteryDashboardPintas extends Component {
         this.state.sugerencias_grupos_noche = [];
         this.loadDataGeneralChartNoche(parseInt(id));
         }
+
+    getBallAnalysis8Hot(i) {
+        if (i < 3) return "ball ball-red";
+        if (i < 5) return "ball ball-blue";
+        return "ball ball-green";
+    }
+
+    getBallAnalysis8Cold(i) {
+        if (i < 3) return "ball ball-azul-analitico";
+        if (i < 5) return "ball ball-cian";
+        return "ball ball-grisaceo";
+    }
 }
 
 LotteryDashboardPintas.template = "lottery_portal.LotteryDashboardPintas";
