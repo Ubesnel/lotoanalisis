@@ -150,7 +150,7 @@
 
 .ball-salido-badge {
     position: absolute;
-    top: -4px;
+    top: 20px;
     right: -6px;
     min-width: 14px;
     height: 14px;
@@ -169,6 +169,7 @@
     cursor: default;
     transition: transform 0.2s ease;
 }
+
 .ball-salido-badge:hover {
     transform: scale(1.6);
 }
@@ -191,16 +192,20 @@
     transition: transform 0.2s ease;
 }
 
-.ball.top {
-    width: 40px;
-    height: 40px;
-}
-
-/* Hover pro */
 .ball:hover {
     transform: scale(1.3);
     position: relative;
     z-index: 100;
+}
+
+.balls-no-zoom .ball:hover {
+    transform: none;
+    z-index: auto;
+}
+
+.ball.top {
+    width: 40px;
+    height: 40px;
 }
 
 /* 🔴 Top 10 */

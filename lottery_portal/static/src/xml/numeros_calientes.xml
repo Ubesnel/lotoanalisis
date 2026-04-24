@@ -103,6 +103,24 @@
 
                 </div>
 
+                <!-- Header Menos Calientes -->
+                <div class="nc-cold-header">
+                    <div class="nc-header-left">
+                        <i class="fa fa-snowflake-o nc-snow-icon"/>
+                        <div>
+                            <div class="nc-title">Menos Calientes · Próximo Sorteo</div>
+                            <div class="nc-subtitle">Basado en 7 criterios de ponderación</div>
+                        </div>
+                    </div>
+                    <div class="nc-header-right">
+                        <t t-if="!state.loading and nextDraw">
+                            <span class="nc-next-date">
+                                <i class="fa fa-calendar-o"/> <t t-esc="nextDraw"/>
+                            </span>
+                        </t>
+                    </div>
+                </div>
+
                 <!-- Zona 3: Menos Calientes -->
                 <div class="nc-section nc-section--cold">
                     <div class="nc-section-head">
