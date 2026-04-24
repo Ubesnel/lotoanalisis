@@ -413,3 +413,16 @@ class LotteryController(http.Controller):
             'afternoon': stats.get_top5_bola_extra_afternoon(),
             'evening': stats.get_top5_bola_extra_evening(),
         }
+
+    @http.route('/lottery/numeros-calientes', type='json', auth='public', website=True)
+    def get_numeros_calientes(self, turn_day='afternoon', **kwargs):
+        from datetime import date
+        if turn_day not in ('afternoon', 'evening'):
+            turn_day = 'afternoon'
+        stats = request.env['lottery.stats.service'].sudo()
+        return stats.get_numeros_calientes(turn_day, str(date.today()))
+
+    @http.route('/lottery/calientes-all', type='json', auth='public', website=True)
+    def get_calientes_all(self, **kwargs):
+        from datetime import date
+        return request.env['lottery.stats.service'].sudo().get_calientes_all(str(date.today()))

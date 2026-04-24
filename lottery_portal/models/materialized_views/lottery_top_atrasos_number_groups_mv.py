@@ -14,16 +14,25 @@ class LotteryTopAtrasosNumberGroupsMV(models.Model):
 
         self.env.cr.execute("""
             CREATE MATERIALIZED VIEW lottery_number_groups_atrasos_mv AS
-             SELECT
+            SELECT
                 lg.code AS group_code,
                 ln.id AS number_id,
                 LPAD(ln.name::text, 2, '0') AS name,
                 ln.total_atrasadas AS general,
                 ln.total_atrasadas_dia AS afternoon,
-                ln.total_atrasadas_noche AS evening
+                ln.total_atrasadas_noche AS evening,
+                TO_CHAR(last_out.last_date, 'DD/MM/YYYY') AS last_date,
+                last_out.last_turn
             FROM lottery_group lg
             JOIN lottery_group_number_rel rel ON rel.group_id = lg.id
-            JOIN lottery_number ln ON ln.id = rel.number_id;          
+            JOIN lottery_number ln ON ln.id = rel.number_id
+            LEFT JOIN LATERAL (
+                SELECT lo.date AS last_date, lo.turn_day AS last_turn
+                FROM lottery_output lo
+                WHERE lo.number_id = ln.id
+                ORDER BY lo.date DESC, lo.id DESC
+                LIMIT 1
+            ) last_out ON TRUE;
         """)
 
         self.env.cr.execute("""CREATE INDEX idx_number_groups_mv_group_code ON lottery_number_groups_atrasos_mv (group_code);""")

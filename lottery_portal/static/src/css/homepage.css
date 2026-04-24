@@ -1104,5 +1104,272 @@ html, #wrapwrap { scroll-behavior: smooth; }
 }
 
 
+/* ═══════════════════════════════════════════════════════════════
+   NÚMEROS CALIENTES
+═══════════════════════════════════════════════════════════════ */
 
+/* ── Card wrapper ────────────────────────────────────────────── */
+.nc-card {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(111, 74, 142, 0.12);
+    border: 1px solid #ece6f5;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.nc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px;
+    background: linear-gradient(90deg, #6f4a8e, #9b72bb);
+}
+
+.nc-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nc-fire-icon {
+    color: #fbbf24;
+    font-size: 1.3rem;
+    animation: nc-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes nc-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.7; transform: scale(0.88); }
+}
+
+@keyframes nc-float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-6px); }
+}
+
+.nc-float {
+    animation: nc-float 2.2s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nc-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.nc-subtitle {
+    color: rgba(255,255,255,0.68);
+    font-size: 0.7rem;
+}
+
+.nc-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nc-next-date {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #fff;
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.nc-next-date .fa { opacity: 0.8; margin-right: 3px; }
+
+.nc-turn-select {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    border-radius: 7px;
+    padding: 4px 10px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.nc-turn-select option { background: #6f4a8e; color: #fff; }
+
+.nc-loading {
+    color: #8c6ca8;
+    text-align: center;
+    padding: 22px;
+    font-size: 0.88rem;
+    background: #f5f3f8;
+}
+
+/* ── Sección genérica ────────────────────────────────────────── */
+.nc-section {
+    border-top: 1px solid #ece6f5;
+}
+
+.nc-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 14px 4px;
+    background: #faf8fd;
+}
+
+.nc-section-title {
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #6f4a8e;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nc-section-title .fa { opacity: 0.7; font-size: 0.7rem; }
+
+.nc-section-badge {
+    font-size: 0.68rem;
+    color: #9b72bb;
+    font-weight: 500;
+}
+
+/* ── Leyenda inline ──────────────────────────────────────────── */
+.nc-legend-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.68rem;
+    color: #8c6ca8;
+}
+
+.nc-pip {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.nc-pip--hot  { background: #ef4444; }
+.nc-pip--warm { background: #2e5490; }
+.nc-pip--cool { background: #9b72bb; }
+
+/* ── Grid de números (10 columnas → 3 filas de 10) ───────────── */
+.nc-numbers-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    padding: 10px 12px 12px;
+    background: #f5f3f8;
+}
+
+.nc-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Bola ────────────────────────────────────────────────────── */
+.nc-ball {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.78rem;
+    cursor: default;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+}
+
+.nc-ball:hover {
+    transform: scale(1.3);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.28);
+    z-index: 2;
+}
+
+.nc-ball-hot  { background: radial-gradient(circle at 35% 35%, #f87171, #b91c1c); color: #fff; }
+.nc-ball-warm { background: radial-gradient(circle at 35% 35%, #3b6fd4, #1e3a5f); color: #fff; }
+.nc-ball-cool { background: radial-gradient(circle at 35% 35%, #a78bca, #6f4a8e); color: #fff; }
+
+/* ── Zona centenas + bola extra ──────────────────────────────── */
+.nc-cebs-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    border-top: 1px solid #ece6f5;
+}
+
+.nc-cebs-divider {
+    width: 1px;
+    background: #ece6f5;
+    align-self: stretch;
+}
+
+.nc-cebs-col { display: flex; flex-direction: column; }
+
+.nc-cebs-grid {
+    display: flex;
+    gap: 10px;
+    padding: 10px 14px 14px;
+    background: #f5f3f8;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.nc-ceb-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.nc-rank {
+    font-size: 0.62rem;
+    color: #9b72bb;
+    font-weight: 600;
+}
+
+/* ── Badges centenas / bola extra ────────────────────────────── */
+.nc-badge-ceb {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    height: 34px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 0 10px;
+    letter-spacing: 1px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.13);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: default;
+}
+
+.nc-badge-ceb:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.22);
+}
+
+.nc-badge-ceb--hot  { background: linear-gradient(135deg, #f87171, #b91c1c); color: #fff; }
+.nc-badge-ceb--warm { background: linear-gradient(135deg, #3b6fd4, #1e3a5f); color: #fff; }
+
+.nc-badge-ceb--extra { }
+.nc-badge-ceb--extra-hot  { background: linear-gradient(135deg, #fbbf24, #b45309); color: #fff; }
+.nc-badge-ceb--extra-warm { background: linear-gradient(135deg, #34d399, #065f46); color: #fff; }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .nc-numbers-grid { grid-template-columns: repeat(6, 1fr); }
+    .nc-cebs-row     { grid-template-columns: 1fr; }
+    .nc-cebs-divider { display: none; }
+}
 
