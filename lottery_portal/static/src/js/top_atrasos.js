@@ -6,6 +6,7 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 
 export class TopAtrasos extends Component {
     setup() {
+        this._cache = {};
         this.state = useState({
             type_atraso: "general",
             numbers_atrasos: [],
@@ -15,15 +16,14 @@ export class TopAtrasos extends Component {
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top10_atrasos", {
-            type: this.state.type_atraso,
-        });
-        this.state.numbers_atrasos = result;
+        const result = await jsonrpc("/lottery/top10_atrasos_all", {});
+        this._cache = result;
+        this.state.numbers_atrasos = result[this.state.type_atraso] || [];
     }
 
-    async onChangeType(ev) {
+    onChangeType(ev) {
         this.state.type_atraso = ev.target.value;
-        await this.loadData();
+        this.state.numbers_atrasos = this._cache[ev.target.value] || [];
     }
 
 }

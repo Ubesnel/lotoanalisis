@@ -43,6 +43,31 @@ class LotteryStatsService(models.Model):
     _name = 'lottery.stats.service'
     _description = 'Lottery Statistics Service'
 
+    @api.model
+    @tools.ormcache()
+    def get_hero_stats(self):
+        self.env.cr.execute("""
+            SELECT
+                COUNT(*) AS total_sorteos,
+                MIN(date) AS primer_fecha
+            FROM lottery_output
+        """)
+        row = self.env.cr.dictfetchone()
+        total = row['total_sorteos'] or 0
+        primer_fecha = row['primer_fecha'] or date.today()
+        hoy = date.today()
+        anios = hoy.year - primer_fecha.year - (
+            1 if (hoy.month, hoy.day) < (primer_fecha.month, primer_fecha.day) else 0
+        )
+        if total >= 1000:
+            total_fmt = '%dk+' % (total // 1000)
+        else:
+            total_fmt = str(total)
+        return {
+            'anios': anios,
+            'total_sorteos': total_fmt,
+        }
+
     @tools.ormcache()
     def get_last_results_full(self):
         LotteryOutput = self.env['lottery.output'].sudo()
@@ -108,15 +133,15 @@ class LotteryStatsService(models.Model):
     @tools.ormcache('day')
     def get_ultimas_salidas_por_dia(self, day):
         self.env.cr.execute("""
-                SELECT *
-                FROM lottery_ultima_salida_dia_semana_mv
+            SELECT * FROM (
+                SELECT * FROM lottery_ultima_salida_dia_semana_mv
                 WHERE week_day = %s
                 ORDER BY date DESC
                 LIMIT 7
-            """, (day,))
-        records = self.env.cr.dictfetchall()
-        records.sort(key=lambda x: datetime.strptime(x['fecha'], '%d/%m/%Y'))
-        return records
+            ) sub
+            ORDER BY date ASC
+        """, (day,))
+        return self.env.cr.dictfetchall()
 
     @tools.ormcache('month', 'year')
     def get_month_year(self, month, year):
@@ -452,6 +477,147 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
+    def get_numbers_all_weekdays(self):
+        self.env.cr.execute("""
+            SELECT LPAD(name::text, 2, '0') AS name, id,
+                total_lunes, total_martes, total_miercoles,
+                total_jueves, total_viernes, total_sabado, total_domingo
+            FROM lottery_number
+            ORDER BY id
+        """)
+        rows = self.env.cr.dictfetchall()
+        day_fields = [
+            ('lu', 'total_lunes'), ('ma', 'total_martes'), ('mi', 'total_miercoles'),
+            ('ju', 'total_jueves'), ('vi', 'total_viernes'), ('sa', 'total_sabado'), ('do', 'total_domingo'),
+        ]
+        result = {'top': {}, 'bottom': {}}
+        for day, field in day_fields:
+            desc = sorted(rows, key=lambda x: (x[field] or 0, x['id']), reverse=True)[:15]
+            asc = sorted(rows, key=lambda x: (x[field] or 0, -x['id']))[:15]
+            result['top'][day] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(desc)]
+            result['bottom'][day] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(asc)]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_numbers_all_weeks(self):
+        self.env.cr.execute("""
+            SELECT LPAD(name::text, 2, '0') AS name, id,
+                total_semana_1, total_semana_2, total_semana_3, total_semana_4, total_semana_5
+            FROM lottery_number
+            ORDER BY id
+        """)
+        rows = self.env.cr.dictfetchall()
+        week_fields = [
+            ('sem_1', 'total_semana_1'), ('sem_2', 'total_semana_2'), ('sem_3', 'total_semana_3'),
+            ('sem_4', 'total_semana_4'), ('sem_5', 'total_semana_5'),
+        ]
+        result = {'top': {}, 'bottom': {}}
+        for week, field in week_fields:
+            desc = sorted(rows, key=lambda x: (x[field] or 0, x['id']), reverse=True)[:15]
+            asc = sorted(rows, key=lambda x: (x[field] or 0, -x['id']))[:15]
+            result['top'][week] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(desc)]
+            result['bottom'][week] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(asc)]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_centenas_all_weekdays(self):
+        self.env.cr.execute("""
+            SELECT week_day, field_type, centena, total_salidas
+            FROM lottery_centena_weekday_mv
+            ORDER BY week_day, field_type, total_salidas DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        result = {'top_centena': {}, 'bottom_centena': {}, 'top_bola': {}, 'bottom_bola': {}}
+        from collections import defaultdict
+        grouped = defaultdict(list)
+        for r in rows:
+            grouped[(r['week_day'], r['field_type'])].append(r)
+        for (day, field_type), items in grouped.items():
+            key_top = 'top_centena' if field_type == 'hundreds_id' else 'top_bola'
+            key_bottom = 'bottom_centena' if field_type == 'hundreds_id' else 'bottom_bola'
+            result[key_top][day] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in items[:4]]
+            result[key_bottom][day] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in reversed(items[-4:])]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_centenas_all_weeks(self):
+        self.env.cr.execute("""
+            SELECT week_segment, field_type, centena, total_salidas
+            FROM lottery_centena_week_mv
+            ORDER BY week_segment, field_type, total_salidas DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        result = {'top_centena': {}, 'bottom_centena': {}, 'top_bola': {}, 'bottom_bola': {}}
+        from collections import defaultdict
+        grouped = defaultdict(list)
+        for r in rows:
+            grouped[(r['week_segment'], r['field_type'])].append(r)
+        for (week, field_type), items in grouped.items():
+            key_top = 'top_centena' if field_type == 'hundreds_id' else 'top_bola'
+            key_bottom = 'bottom_centena' if field_type == 'hundreds_id' else 'bottom_bola'
+            result[key_top][week] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in items[:4]]
+            result[key_bottom][week] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in reversed(items[-4:])]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_all_atrasos_lineas(self):
+        self.env.cr.execute("""
+            SELECT name, general, afternoon, evening
+            FROM lottery_top_atrasos_lineas_mv
+            ORDER BY general DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        return {
+            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
+            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+        }
+
+    @api.model
+    @tools.ormcache()
+    def get_all_atrasos_terminales(self):
+        self.env.cr.execute("""
+            SELECT name, general, afternoon, evening
+            FROM lottery_top_atrasos_terminales_mv
+            ORDER BY general DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        return {
+            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
+            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+        }
+
+    @api.model
+    @tools.ormcache()
+    def get_all_atrasos_parejas(self):
+        self.env.cr.execute("""
+            SELECT name, general, afternoon, evening, last_date, last_turn
+            FROM lottery_number_groups_atrasos_mv
+            WHERE group_code = 'resta_0'
+        """)
+        rows = self.env.cr.dictfetchall()
+
+        def _fmt(r, field):
+            return {
+                'name': r['name'],
+                'atraso': r[field],
+                'last_date': r['last_date'] or '',
+                'last_turn': r['last_turn'] or '',
+            }
+
+        return {
+            'general': [_fmt(r, 'general') for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
+            'afternoon': [_fmt(r, 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [_fmt(r, 'evening') for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+        }
+
+    @api.model
     @tools.ormcache('day')
     def get_top_numbers_by_week_day(self, day):
         field = WEEKDAY_FIELD_MAP.get(day)
@@ -538,141 +704,97 @@ class LotteryStatsService(models.Model):
     @api.model
     @tools.ormcache('number_id')
     def get_salidas_numeros_despues_numero(self, number_id):
-        query = f"""
-            SELECT    
+        self.env.cr.execute("""
+            SELECT
                 LPAD(ln_next.name::text, 2, '0') AS name,
-                count(ln_next.name) as cantidad_veces            
+                COUNT(ln_next.name) AS cantidad_veces
             FROM (
-                SELECT 
-                    lo.*,
-                    LEAD(lo.id) OVER (ORDER BY lo.date ASC, CASE 
-                                                            WHEN lo.turn_day = 'afternoon' THEN 1
-                                                            WHEN lo.turn_day = 'evening' THEN 2
-                                    END) AS next_id
-                    FROM lottery_output lo) lo_actual
-            
+                SELECT lo.*,
+                    LEAD(lo.id) OVER (
+                        ORDER BY lo.date ASC,
+                                 CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                    ) AS next_id
+                FROM lottery_output lo
+            ) lo_actual
             JOIN lottery_output lo_next ON lo_next.id = lo_actual.next_id
-            JOIN lottery_number ln_actual ON ln_actual.id = lo_actual.number_id
             JOIN lottery_number ln_next ON ln_next.id = lo_next.number_id
-            WHERE lo_actual.number_id = {number_id}
-            group by ln_next.name order by count(ln_next.name) desc, ln_next.name limit 10;
-        """
-        self.env.cr.execute(query)
+            WHERE lo_actual.number_id = %s
+            GROUP BY ln_next.name
+            ORDER BY COUNT(ln_next.name) DESC, ln_next.name
+            LIMIT 10
+        """, (number_id,))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('number_id')
     def get_salidas_numeros_antes_numero(self, number_id):
-        query = f"""
-                SELECT  
+        self.env.cr.execute("""
+            SELECT
                 LPAD(ln_prev.name::text, 2, '0') AS name,
-                count(ln_prev.name) as cantidad_veces  
-                FROM (
-                    SELECT 
-                        lo.*,
-                        LAG(lo.id) OVER (
-                            ORDER BY 
-                                lo.date ASC,
-                                CASE 
-                                    WHEN lo.turn_day = 'afternoon' THEN 1
-                                    WHEN lo.turn_day = 'evening' THEN 2
-                                END
-                        ) AS prev_id
-                    FROM lottery_output lo
-                ) lo_actual                
-                JOIN lottery_output lo_prev ON lo_prev.id = lo_actual.prev_id
-                JOIN lottery_number ln_actual ON ln_actual.id = lo_actual.number_id
-                JOIN lottery_number ln_prev ON ln_prev.id = lo_prev.number_id
-                WHERE lo_actual.number_id = {number_id}
-                group by ln_prev.name order by count(ln_prev.name) desc, ln_prev.name limit 10;
-            """
-        self.env.cr.execute(query)
+                COUNT(ln_prev.name) AS cantidad_veces
+            FROM (
+                SELECT lo.*,
+                    LAG(lo.id) OVER (
+                        ORDER BY lo.date ASC,
+                                 CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                    ) AS prev_id
+                FROM lottery_output lo
+            ) lo_actual
+            JOIN lottery_output lo_prev ON lo_prev.id = lo_actual.prev_id
+            JOIN lottery_number ln_prev ON ln_prev.id = lo_prev.number_id
+            WHERE lo_actual.number_id = %s
+            GROUP BY ln_prev.name
+            ORDER BY COUNT(ln_prev.name) DESC, ln_prev.name
+            LIMIT 10
+        """, (number_id,))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('day', 'field')
     def get_top_centenas_by_week_day(self, day, field):
-        query = f"""SELECT                
-                ln.name AS centena,
-                COUNT(*) AS total_salidas
-            FROM lottery_output lo
-            JOIN lottery_number ln ON ln.id = lo.{field}
-            WHERE lo.week_day = '{day}'
-            GROUP BY lo.{field}, ln.name
-            ORDER BY total_salidas DESC, lo.{field}
-        LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_weekday_mv
+            WHERE week_day = %s AND field_type = %s
+            ORDER BY total_salidas DESC
+            LIMIT 4
+        """, (day, field))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('day', 'field')
     def get_bottom_centenas_by_week_day(self, day, field):
-        query = f"""SELECT                
-                    ln.name AS centena,
-                    COUNT(*) AS total_salidas
-                FROM lottery_output lo
-                JOIN lottery_number ln ON ln.id = lo.{field}
-                WHERE lo.week_day = '{day}'
-                GROUP BY lo.{field}, ln.name
-                ORDER BY total_salidas , lo.{field}
-            LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_weekday_mv
+            WHERE week_day = %s AND field_type = %s
+            ORDER BY total_salidas ASC
+            LIMIT 4
+        """, (day, field))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('week', 'field')
     def get_top_centenas_by_week(self, week, field):
-        query = f"""WITH data AS (
-                SELECT
-                    lo.{field},
-                    CASE
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 15 AND 21 THEN 'sem_3'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 22 AND 28 THEN 'sem_4'
-                        ELSE 'sem_5'
-                    END AS week_segment
-                FROM lottery_output lo
-            )
-            SELECT
-                d.{field},
-                ln.name AS centena,
-                COUNT(*) AS total_salidas
-            FROM data d
-            JOIN lottery_number ln ON ln.id = d.{field}
-            WHERE d.week_segment = '{week}'
-            GROUP BY d.{field}, ln.name
-            ORDER BY total_salidas desc,d.{field}
-            LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_week_mv
+            WHERE week_segment = %s AND field_type = %s
+            ORDER BY total_salidas DESC
+            LIMIT 4
+        """, (week, field))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('week', 'field')
     def get_bottom_centenas_by_week(self, week, field):
-        query = f"""WITH data AS (
-                SELECT
-                    lo.{field},
-                    CASE
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 15 AND 21 THEN 'sem_3'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 22 AND 28 THEN 'sem_4'
-                        ELSE 'sem_5'
-                    END AS week_segment
-                FROM lottery_output lo
-            )
-            SELECT
-                d.{field},
-                ln.name AS centena,
-                COUNT(*) AS total_salidas
-            FROM data d
-            JOIN lottery_number ln ON ln.id = d.{field}
-            WHERE d.week_segment = '{week}'
-            GROUP BY d.{field}, ln.name
-            ORDER BY total_salidas ,d.{field}
-            LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_week_mv
+            WHERE week_segment = %s AND field_type = %s
+            ORDER BY total_salidas ASC
+            LIMIT 4
+        """, (week, field))
         return self.env.cr.dictfetchall()
 
     @api.model
@@ -990,4 +1112,270 @@ class LotteryStatsService(models.Model):
 
         return self.env.cr.dictfetchone()
 
+    # ─── Números Calientes ───────────────────────────────────────────────────
+
+    @api.model
+    @tools.ormcache('turn_day', 'today_str')
+    def get_numeros_calientes(self, turn_day, today_str):
+        """
+        Ponderación separada: estadísticas GENERALES aplican igual a ambos turnos;
+        estadísticas POR TURNO solo suman al turno correspondiente.
+
+        GENERALES (mismo peso tarde y noche):
+          C1    22 pts  Top 70 salidores del mes actual
+          C2g    8 pts  Top 5 grupos más atrasados — GENERAL
+          C3g    6 pts  Top 5 pintas más atrasadas — GENERAL
+          C4    14 pts  Más sale en la semana del mes actual
+          C5    12 pts  Más sale en el día de la semana actual
+          C7     3 pts  Decena/unidad coincide con dígitos últimos 5 sorteos
+
+        POR TURNO (tarde → afternoon / noche → evening):
+          C2t   14 pts  Top 5 grupos más atrasados del turno
+          C3t   12 pts  Top 5 pintas más atrasadas del turno
+          C6     9 pts  Salidor del mes × atraso del turno
+
+        Máx: 100 pts
+        """
+        from datetime import date as _date
+        today = _date.fromisoformat(today_str)
+        month = today.month
+        pg_dow = (today.weekday() + 1) % 7        # Python Mon=0 → PG Mon=1, PG Sun=0
+        day = today.day
+
+        if turn_day not in ('afternoon', 'evening'):
+            turn_day = 'afternoon'
+
+        month_field = MONTH_FIELD_MAP[month]
+        dow_field = {
+            0: 'total_domingo', 1: 'total_lunes', 2: 'total_martes',
+            3: 'total_miercoles', 4: 'total_jueves', 5: 'total_viernes', 6: 'total_sabado'
+        }[pg_dow]
+        week_field = (
+            'total_semana_1' if day <= 7 else
+            'total_semana_2' if day <= 14 else
+            'total_semana_3' if day <= 21 else
+            'total_semana_4' if day <= 28 else
+            'total_semana_5'
+        )
+        turn_atraso_field = 'total_atrasadas_dia' if turn_day == 'afternoon' else 'total_atrasadas_noche'
+        turn_mv_field = 'afternoon' if turn_day == 'afternoon' else 'evening'
+
+        # ── 1. Todos los números con sus stats ──────────────────────────────
+        self.env.cr.execute(f"""
+            SELECT id,
+                   LPAD(name::text, 2, '0') AS name,
+                   name::int                AS num_int,
+                   {month_field}            AS salidas_mes,
+                   {dow_field}              AS salidas_dow,
+                   {week_field}             AS salidas_semana,
+                   {turn_atraso_field}      AS atraso_turno
+            FROM lottery_number
+        """)
+        numbers = {r['id']: r for r in self.env.cr.dictfetchall()}
+
+        def _fetch_group_ids(extra_where=''):
+            """Devuelve (general_ids, turn_ids) para grupos o pintas."""
+            self.env.cr.execute(f"""
+                SELECT group_code,
+                       MIN(general)           AS atraso_gen,
+                       MIN({turn_mv_field})   AS atraso_turn
+                FROM lottery_number_groups_atrasos_mv
+                {extra_where}
+                GROUP BY group_code
+            """)
+            rows = self.env.cr.dictfetchall()
+            rows_gen  = sorted(rows, key=lambda r: r['atraso_gen']  or 0, reverse=True)[:5]
+            rows_turn = sorted(rows, key=lambda r: r['atraso_turn'] or 0, reverse=True)[:5]
+            top_gen  = [r['group_code'] for r in rows_gen]
+            top_turn = [r['group_code'] for r in rows_turn]
+
+            def _number_ids(codes):
+                if not codes:
+                    return set()
+                self.env.cr.execute("""
+                    SELECT DISTINCT rel.number_id
+                    FROM lottery_group lg
+                    JOIN lottery_group_number_rel rel ON rel.group_id = lg.id
+                    WHERE lg.code = ANY(%s)
+                """, (codes,))
+                return {r['number_id'] for r in self.env.cr.dictfetchall()}
+
+            return _number_ids(top_gen), _number_ids(top_turn)
+
+        # ── 2. Grupos atrasados (general + turno por separado) ───────────────
+        gen_group_ids, turn_group_ids = _fetch_group_ids()
+
+        # ── 3. Pintas atrasadas (general + turno por separado) ───────────────
+        gen_pinta_ids, turn_pinta_ids = _fetch_group_ids("WHERE group_code LIKE 'pinta_%%'")
+
+        # ── Rankings en Python ───────────────────────────────────────────────
+        N = max(len(numbers), 1)
+        sorted_mes    = sorted(numbers.values(), key=lambda x: x['salidas_mes']    or 0, reverse=True)
+        sorted_dow    = sorted(numbers.values(), key=lambda x: x['salidas_dow']    or 0, reverse=True)
+        sorted_semana = sorted(numbers.values(), key=lambda x: x['salidas_semana'] or 0, reverse=True)
+        sorted_c6     = sorted(numbers.values(),
+                               key=lambda x: (x['salidas_mes'] or 0) * (x['atraso_turno'] or 0),
+                               reverse=True)
+
+        rank_mes    = {r['id']: i + 1 for i, r in enumerate(sorted_mes)}
+        rank_dow    = {r['id']: i + 1 for i, r in enumerate(sorted_dow)}
+        rank_semana = {r['id']: i + 1 for i, r in enumerate(sorted_semana)}
+        rank_c6     = {r['id']: i + 1 for i, r in enumerate(sorted_c6)}
+
+        # ── 7. Dígitos de los últimos 5 sorteos ─────────────────────────────
+        self.env.cr.execute("""
+            SELECT ln.name::int AS num_val, ln2.name::int AS cen_val
+            FROM lottery_output lo
+            JOIN lottery_number ln  ON ln.id  = lo.number_id
+            LEFT JOIN lottery_number ln2 ON ln2.id = lo.hundreds_id
+            ORDER BY lo.date DESC, lo.id DESC
+            LIMIT 5
+        """)
+        digit_set = set()
+        for draw in self.env.cr.dictfetchall():
+            nv = draw['num_val']
+            digit_set.add(nv // 10)
+            digit_set.add(nv % 10)
+            if draw['cen_val']:
+                cv = draw['cen_val']
+                digit_set.add(cv // 100)
+                digit_set.add((cv // 10) % 10)
+                digit_set.add(cv % 10)
+
+        # ── Ponderación ──────────────────────────────────────────────────────
+        scores = []
+        for num_id, n in numbers.items():
+            rm  = rank_mes[num_id]
+            rd  = rank_dow[num_id]
+            rs  = rank_semana[num_id]
+            rc6 = rank_c6[num_id]
+
+            # Generales (mismo peso en tarde y noche)
+            s1  = 22.0 * (1 - (rm - 1) / 70) if rm <= 70 else 0
+            s2g =  8.0 if num_id in gen_group_ids  else 0
+            s3g =  6.0 if num_id in gen_pinta_ids  else 0
+            s4  = 14.0 * (1 - (rs - 1) / N)
+            s5  = 12.0 * (1 - (rd - 1) / N)
+            ni  = n['num_int']
+            s7  =  3.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
+
+            # Por turno (solo suma al turno correspondiente)
+            s2t = 14.0 if num_id in turn_group_ids else 0
+            s3t = 12.0 if num_id in turn_pinta_ids else 0
+            s6  =  9.0 * (1 - (rc6 - 1) / N)
+
+            scores.append({
+                'name': n['name'],
+                'score': round(s1 + s2g + s3g + s4 + s5 + s7 + s2t + s3t + s6, 1),
+            })
+
+        scores.sort(key=lambda x: x['score'], reverse=True)
+        return scores[:30]
+
+    def _get_calientes_cebs(self, turn_day, pg_dow, week_seg, turn_mv, gen_mv, freq_field_type):
+        """
+        Algoritmo compartido para centenas y bola extra calientes.
+        Combina atraso (turno + general) con frecuencia (día semana + semana del mes).
+        Retorna los 4 mejores.
+        """
+        PG_DOW_CODE = {0: 'do', 1: 'lu', 2: 'ma', 3: 'mi', 4: 'ju', 5: 'vi', 6: 'sa'}
+        week_day_code = PG_DOW_CODE[pg_dow]
+
+        # Candidatos: top delayed del turno + top delayed general
+        self.env.cr.execute(f"""
+            SELECT centena, atraso AS atraso_turn, NULL::int AS atraso_gen FROM {turn_mv}
+            UNION
+            SELECT centena, NULL::int, atraso FROM {gen_mv}
+        """)
+        cands = {}
+        for r in self.env.cr.dictfetchall():
+            name = r['centena']
+            if name not in cands:
+                cands[name] = {'name': name, 'atraso_turn': 0, 'atraso_gen': 0, 'freq_dow': 0, 'freq_week': 0}
+            if r['atraso_turn'] is not None:
+                cands[name]['atraso_turn'] = r['atraso_turn'] or 0
+            if r['atraso_gen'] is not None:
+                cands[name]['atraso_gen'] = r['atraso_gen'] or 0
+
+        if not cands:
+            return []
+
+        cand_names = list(cands.keys())
+
+        self.env.cr.execute("""
+            SELECT centena, total_salidas FROM lottery_centena_weekday_mv
+            WHERE week_day = %s AND field_type = %s AND centena = ANY(%s)
+        """, (week_day_code, freq_field_type, cand_names))
+        for r in self.env.cr.dictfetchall():
+            if r['centena'] in cands:
+                cands[r['centena']]['freq_dow'] = r['total_salidas'] or 0
+
+        self.env.cr.execute("""
+            SELECT centena, total_salidas FROM lottery_centena_week_mv
+            WHERE week_segment = %s AND field_type = %s AND centena = ANY(%s)
+        """, (week_seg, freq_field_type, cand_names))
+        for r in self.env.cr.dictfetchall():
+            if r['centena'] in cands:
+                cands[r['centena']]['freq_week'] = r['total_salidas'] or 0
+
+        vals = list(cands.values())
+        mx_turn = max((v['atraso_turn'] for v in vals), default=1) or 1
+        mx_gen  = max((v['atraso_gen']  for v in vals), default=1) or 1
+        mx_dow  = max((v['freq_dow']    for v in vals), default=1) or 1
+        mx_week = max((v['freq_week']   for v in vals), default=1) or 1
+
+        for v in vals:
+            v['score'] = round(
+                50.0 * v['atraso_turn'] / mx_turn +
+                30.0 * v['atraso_gen']  / mx_gen  +
+                15.0 * v['freq_dow']    / mx_dow  +
+                 5.0 * v['freq_week']   / mx_week, 1
+            )
+
+        vals.sort(key=lambda x: x['score'], reverse=True)
+        return [{'name': v['name']} for v in vals[:4]]
+
+    @api.model
+    @tools.ormcache('today_str')
+    def get_calientes_all(self, today_str):
+        """Endpoint unificado: números, centenas y bola extra calientes para ambos turnos."""
+        from datetime import date as _date
+        today = _date.fromisoformat(today_str)
+        pg_dow   = (today.weekday() + 1) % 7
+        day      = today.day
+        week_seg = (
+            'sem_1' if day <= 7  else
+            'sem_2' if day <= 14 else
+            'sem_3' if day <= 21 else
+            'sem_4' if day <= 28 else
+            'sem_5'
+        )
+
+        # Fecha del próximo sorteo = última salida del turno + 1 día
+        DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+        self.env.cr.execute("""
+            SELECT
+                MAX(date) FILTER (WHERE turn_day = 'afternoon') + INTERVAL '1 day' AS next_afternoon,
+                MAX(date) FILTER (WHERE turn_day = 'evening')   + INTERVAL '1 day' AS next_evening
+            FROM lottery_output
+        """)
+        row = self.env.cr.dictfetchone() or {}
+
+        def _fmt_date(d):
+            if not d:
+                return ''
+            return '%s %s' % (DAY_NAMES[d.weekday()], d.strftime('%d/%m/%Y'))
+
+        result = {}
+        for turn in ('afternoon', 'evening'):
+            turn_cen_mv = 'lottery_top5_centena_dia_mv'    if turn == 'afternoon' else 'lottery_top5_centena_noche_mv'
+            turn_be_mv  = 'lottery_top5_bola_extra_dia_mv' if turn == 'afternoon' else 'lottery_top5_bola_extra_noche_mv'
+            next_date   = row.get('next_' + turn)
+            result[turn] = {
+                'numbers':    self.get_numeros_calientes(turn, today_str),
+                'centenas':   self._get_calientes_cebs(turn, pg_dow, week_seg, turn_cen_mv, 'lottery_top5_centena_general_mv',    'hundreds_id'),
+                'bola_extra': self._get_calientes_cebs(turn, pg_dow, week_seg, turn_be_mv,  'lottery_top5_bola_extra_general_mv', 'fireball_id'),
+                'next_draw':  _fmt_date(next_date),
+            }
+        return result
 

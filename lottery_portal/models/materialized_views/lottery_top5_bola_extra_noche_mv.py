@@ -7,42 +7,28 @@ class LotteryTop5BolaExtraNocheMV(models.Model):
     _description = 'Lottery Top 5 Bola Extra Noche Materialized View'
     _auto = False
 
-
     def init(self):
         tools.drop_view_if_exists(self.env.cr, 'lottery_top5_bola_extra_noche_mv')
 
         self.env.cr.execute("""
             CREATE MATERIALIZED VIEW lottery_top5_bola_extra_noche_mv AS
-            WITH calendar AS (
-                            SELECT generate_series(
-                                (SELECT MIN(date) FROM lottery_output WHERE turn_day = 'evening'),
-                                (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'evening'),
-                                interval '1 day'
-                            )::date AS draw_date
-                        ),
-                    centena_last AS (
-                        SELECT fireball_id, MAX(date) AS last_date
-                        FROM lottery_output
-                        WHERE turn_day = 'evening'
-                        GROUP BY fireball_id
-                    )
-                    SELECT
-                        n.name AS centena,
-                        COUNT(c.draw_date) AS atraso
-                    FROM centena_last l
-                    JOIN lottery_number n ON n.id = l.fireball_id
-                    JOIN calendar c
-                        ON c.draw_date > l.last_date
-                    LEFT JOIN lottery_output lo
-                        ON lo.fireball_id = l.fireball_id
-                       AND lo.turn_day = 'evening'
-                       AND lo.date = c.draw_date
-                    WHERE lo.id IS NULL
-                    GROUP BY n.name
-                    ORDER BY atraso desc
-                    limit 4;
+            WITH last_seen AS (
+                SELECT
+                    fireball_id,
+                    (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'evening')
+                    - MAX(date) AS atraso
+                FROM lottery_output
+                WHERE turn_day = 'evening' AND fireball_id IS NOT NULL
+                GROUP BY fireball_id
+            )
+            SELECT n.name AS centena, ls.atraso
+            FROM last_seen ls
+            JOIN lottery_number n ON n.id = ls.fireball_id
+            ORDER BY atraso DESC
+            LIMIT 4;
         """)
 
-        self.env.cr.execute("""CREATE INDEX idx_bola_extra_atrasos_noche_mv
-                    ON lottery_top5_bola_extra_noche_mv (atraso DESC);""")
-
+        self.env.cr.execute("""
+            CREATE INDEX idx_bola_extra_atrasos_noche_mv
+            ON lottery_top5_bola_extra_noche_mv (atraso DESC);
+        """)

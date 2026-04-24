@@ -15,8 +15,8 @@ class LotteryPortal(http.Controller):
         year = request.env.company.portal_calendar_year
         response.qcontext.update({
             'lottery_data': stats.get_last_results_full(),
-            'month_year': stats.get_month_year(month, year)
-
+            'month_year': stats.get_month_year(month, year),
+            'hero_stats': stats.get_hero_stats(),
         })
         return response
 
@@ -66,11 +66,28 @@ class LotteryPortal(http.Controller):
         return {
             "kpis": {
                 "month": MONTHS_DICT[str(month_filter)],
+                "year": current_year,
             },
             "top_numbers": top_numbers,
             "bottom_numbers": bottom_numbers,
             "remaining_numbers": remaining_numbers,
         }
+
+    @http.route('/estadisticas-numeros/numbers-week-day-all', type='json', auth='public')
+    def dashboard_numbers_week_day_all(self):
+        return request.env['lottery.stats.service'].sudo().get_numbers_all_weekdays()
+
+    @http.route('/estadisticas-numeros/numbers-week-all', type='json', auth='public')
+    def dashboard_numbers_week_all(self):
+        return request.env['lottery.stats.service'].sudo().get_numbers_all_weeks()
+
+    @http.route('/estadisticas-numeros/centena-week-day-all', type='json', auth='public')
+    def dashboard_centena_week_day_all(self):
+        return request.env['lottery.stats.service'].sudo().get_centenas_all_weekdays()
+
+    @http.route('/estadisticas-numeros/centena-week-all', type='json', auth='public')
+    def dashboard_centena_week_all(self):
+        return request.env['lottery.stats.service'].sudo().get_centenas_all_weeks()
 
     @http.route('/estadisticas-numeros/top-number-week-day', type='json', auth='public')
     def dashboard_top_number_week_day(self, day=False):
@@ -288,15 +305,36 @@ class LotteryController(http.Controller):
         records = request.env['lottery.stats.service'].sudo().get_top_10_por_dia_semana(day)
         return records
 
+    @http.route('/lottery/top10_by_day_all', type='json', auth='public', website=True)
+    def top10_by_day_all(self):
+        stats = request.env['lottery.stats.service'].sudo()
+        days = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do']
+        return {day: stats.get_top_10_por_dia_semana(day) for day in days}
+
     @http.route('/lottery/top10_atrasos', type='json', auth='public', website=True)
     def top10_atrasos(self, type):
         stats = request.env['lottery.stats.service'].sudo()
         method = f'get_top_10_{type}'
         return getattr(stats, method, lambda: [])()
 
+    @http.route('/lottery/top10_atrasos_all', type='json', auth='public', website=True)
+    def top10_atrasos_all(self):
+        stats = request.env['lottery.stats.service'].sudo()
+        return {
+            'general': stats.get_top_10_general(),
+            'dia': stats.get_top_10_dia(),
+            'noche': stats.get_top_10_noche(),
+        }
+
     @http.route('/lottery/ultimas_salidas_by_day', type='json', auth='public', website=True)
     def ultimas_salidas_by_day(self, day):
         return request.env['lottery.stats.service'].sudo().get_ultimas_salidas_por_dia(day)
+
+    @http.route('/lottery/ultimas_salidas_by_day_all', type='json', auth='public', website=True)
+    def ultimas_salidas_by_day_all(self):
+        stats = request.env['lottery.stats.service'].sudo()
+        days = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do']
+        return {day: stats.get_ultimas_salidas_por_dia(day) for day in days}
 
     @http.route('/salidas/buscar', type='json', auth='public')
     def buscar_salidas(self, fecha):
@@ -328,20 +366,63 @@ class LotteryController(http.Controller):
         method = f'get_top5_centenas_{type}'
         return getattr(stats, method, lambda: [])()
 
+    @http.route('/lottery/top5_centenas_all', type='json', auth='public', website=True)
+    def top5_centenas_all(self):
+        stats = request.env['lottery.stats.service'].sudo()
+        return {
+            'general': stats.get_top5_centenas_general(),
+            'afternoon': stats.get_top5_centenas_afternoon(),
+            'evening': stats.get_top5_centenas_evening(),
+        }
+
     @http.route('/lottery/top_atrasos_lineas', type='json', auth='public', website=True)
     def get_top_atrasos_lineas(self, type):
         return request.env['lottery.stats.service'].sudo().get_top_atrasos_lineas(type)
+
+    @http.route('/lottery/top_atrasos_lineas_all', type='json', auth='public', website=True)
+    def get_top_atrasos_lineas_all(self):
+        return request.env['lottery.stats.service'].sudo().get_all_atrasos_lineas()
 
     @http.route('/lottery/top_atrasos_terminales', type='json', auth='public', website=True)
     def get_top_atrasos_terminales(self, type):
         return request.env['lottery.stats.service'].sudo().get_top_atrasos_terminales(type)
 
+    @http.route('/lottery/top_atrasos_terminales_all', type='json', auth='public', website=True)
+    def get_top_atrasos_terminales_all(self):
+        return request.env['lottery.stats.service'].sudo().get_all_atrasos_terminales()
+
     @http.route('/lottery/top_atrasos_parejas', type='json', auth='public', website=True)
     def get_top_atrasos_parejas(self, type):
         return request.env['lottery.stats.service'].sudo().get_top_atrasos_number_groups(type, groups_code=['resta_0'])
+
+    @http.route('/lottery/top_atrasos_parejas_all', type='json', auth='public', website=True)
+    def get_top_atrasos_parejas_all(self):
+        return request.env['lottery.stats.service'].sudo().get_all_atrasos_parejas()
 
     @http.route('/lottery/top5_bola_extra', type='json', auth='public', website=True)
     def top5_bola_extra(self, type):
         stats = request.env['lottery.stats.service'].sudo()
         method = f'get_top5_bola_extra_{type}'
         return getattr(stats, method, lambda: [])()
+
+    @http.route('/lottery/top5_bola_extra_all', type='json', auth='public', website=True)
+    def top5_bola_extra_all(self):
+        stats = request.env['lottery.stats.service'].sudo()
+        return {
+            'general': stats.get_top5_bola_extra_general(),
+            'afternoon': stats.get_top5_bola_extra_afternoon(),
+            'evening': stats.get_top5_bola_extra_evening(),
+        }
+
+    @http.route('/lottery/numeros-calientes', type='json', auth='public', website=True)
+    def get_numeros_calientes(self, turn_day='afternoon', **kwargs):
+        from datetime import date
+        if turn_day not in ('afternoon', 'evening'):
+            turn_day = 'afternoon'
+        stats = request.env['lottery.stats.service'].sudo()
+        return stats.get_numeros_calientes(turn_day, str(date.today()))
+
+    @http.route('/lottery/calientes-all', type='json', auth='public', website=True)
+    def get_calientes_all(self, **kwargs):
+        from datetime import date
+        return request.env['lottery.stats.service'].sudo().get_calientes_all(str(date.today()))

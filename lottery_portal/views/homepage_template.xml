@@ -17,11 +17,11 @@
                     </p>
                     <div class="hero-stats">
                         <div class="hero-stat">
-                            <span class="hero-stat-val">36+</span>
+                            <span class="hero-stat-val"><t t-esc="hero_stats['anios']"/>+</span>
                             <span class="hero-stat-lbl">años de datos</span>
                         </div>
                         <div class="hero-stat">
-                            <span class="hero-stat-val">26k+</span>
+                            <span class="hero-stat-val"><t t-esc="hero_stats['total_sorteos']"/></span>
                             <span class="hero-stat-lbl">sorteos históricos</span>
                         </div>
                         <div class="hero-stat">
@@ -42,6 +42,13 @@
                     </div>
                 </div>
             </section>
+            <div class="container mt-3 mb-0">
+                <div class="row">
+                    <div class="col-12">
+                        <owl-component name="lottery_portal.NumerosCalientes"/>
+                    </div>
+                </div>
+            </div>
             <div class="container mt-2 mb-2">
                 <div class="row mb-1">
                     <div class="col-md-3 mb-2">

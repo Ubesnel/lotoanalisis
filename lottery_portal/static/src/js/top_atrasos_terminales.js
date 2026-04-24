@@ -6,6 +6,7 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 
 export class TopAtrasosTerminales extends Component {
     setup() {
+        this._cache = {};
         this.state = useState({
             type_terminal: "general",
             groups_terminales: [],
@@ -15,15 +16,14 @@ export class TopAtrasosTerminales extends Component {
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top_atrasos_terminales", {
-            type: this.state.type_terminal,
-        });
-        this.state.groups_terminales = result;
+        const result = await jsonrpc("/lottery/top_atrasos_terminales_all", {});
+        this._cache = result;
+        this.state.groups_terminales = result[this.state.type_terminal] || [];
     }
 
-    async onChangeTypeTerminales(ev) {
+    onChangeTypeTerminales(ev) {
         this.state.type_terminal = ev.target.value;
-        await this.loadData();
+        this.state.groups_terminales = this._cache[ev.target.value] || [];
     }
 
 }
