@@ -10,6 +10,7 @@ export class Top10ByDay extends Component {
         const todayIndex = new Date().getDay();
         const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
 
+        this._cache = {};
         this.state = useState({
             day: daysMap[todayIndex],
             numbers: [],
@@ -19,15 +20,14 @@ export class Top10ByDay extends Component {
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top10_by_day", {
-            day: this.state.day,
-        });
-        this.state.numbers = result;
+        const result = await jsonrpc("/lottery/top10_by_day_all", {});
+        this._cache = result;
+        this.state.numbers = result[this.state.day] || [];
     }
 
-    async onChangeDay(ev) {
+    onChangeDay(ev) {
         this.state.day = ev.target.value;
-        await this.loadData();
+        this.state.numbers = this._cache[ev.target.value] || [];
     }
 }
 

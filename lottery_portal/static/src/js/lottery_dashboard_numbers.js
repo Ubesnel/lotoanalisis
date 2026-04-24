@@ -54,127 +54,111 @@ export class LotteryDashboardNumbers extends Component {
         });
 
         onWillStart(async () => {
-            await this.loadData();
-            await this.loadDataTopNumbersWeekDay();
-            await this.loadDataTopNumbersWeek();
-            await this.loadDataBottomNumbersWeekDay();
-            await this.loadDataBottomNumbersWeek();
-            await this.loadDataTopCentenaWeekDay();
-            await this.loadDataTopCentenaWeek();
-            await this.loadDataBottomCentenaWeekDay();
-            await this.loadDataBottomCentenaWeek();
-            await this.loadDataTopBolaExtraWeekDay();
-            await this.loadDataTopBolaExtraWeek();
-            await this.loadDataBottomBolaExtraWeekDay();
-            await this.loadDataBottomBolaExtraWeek();
-            await this.loadDataTopRepeticiones();
-            await this.loadDataTopPegados();
+            const [
+                mainData,
+                numWeekDay,
+                numWeek,
+                centenaWeekDay,
+                centenaWeek,
+                repData,
+                pegData,
+            ] = await Promise.all([
+                jsonrpc("/estadisticas-numeros/dashboard_data", { month: this.state.month_index }),
+                jsonrpc("/estadisticas-numeros/numbers-week-day-all", {}),
+                jsonrpc("/estadisticas-numeros/numbers-week-all", {}),
+                jsonrpc("/estadisticas-numeros/centena-week-day-all", {}),
+                jsonrpc("/estadisticas-numeros/centena-week-all", {}),
+                jsonrpc("/estadisticas-numeros/top-repeticiones", {}),
+                jsonrpc("/estadisticas-numeros/top-pegados", {}),
+            ]);
+
+            this.state.kpis = mainData.kpis;
+            this.state.top_numbers = mainData.top_numbers;
+            this.state.bottom_numbers = mainData.bottom_numbers;
+            this.state.remaining_numbers = mainData.remaining_numbers;
+            this.state.loading = false;
+
+            this._numWeekDay = numWeekDay;
+            this._numWeek = numWeek;
+            this._centenaWeekDay = centenaWeekDay;
+            this._centenaWeek = centenaWeek;
+
+            this.state.top_numbers_by_week_day = numWeekDay.top[this.state.day] || [];
+            this.state.bottom_numbers_by_week_day = numWeekDay.bottom[this.state.day_menos] || [];
+            this.state.top_numbers_by_week = numWeek.top[this.state.week] || [];
+            this.state.bottom_numbers_by_week = numWeek.bottom[this.state.week_menos] || [];
+            this.state.top_centena_by_week_day = centenaWeekDay.top_centena[this.state.day_centena] || [];
+            this.state.bottom_centena_by_week_day = centenaWeekDay.bottom_centena[this.state.day_menos_centena] || [];
+            this.state.top_centena_by_week = centenaWeek.top_centena[this.state.week_centena] || [];
+            this.state.bottom_centena_by_week = centenaWeek.bottom_centena[this.state.week_menos_centena] || [];
+            this.state.top_bola_extra_by_week_day = centenaWeekDay.top_bola[this.state.day_bola_extra] || [];
+            this.state.bottom_bola_extra_by_week_day = centenaWeekDay.bottom_bola[this.state.day_menos_bola_extra] || [];
+            this.state.top_bola_extra_by_week = centenaWeek.top_bola[this.state.week_bola_extra] || [];
+            this.state.bottom_bola_extra_by_week = centenaWeek.bottom_bola[this.state.week_menos_bola_extra] || [];
+
+            this.state.top_repeticiones = repData.top_repeticiones;
+            this.state.top_pegados = pegData.top_pegados;
         });
     }
 
-    async loadData() {
-        const data = await jsonrpc("/estadisticas-numeros/dashboard_data", {
-            month: this.state.month_index
-        });
-        this.state.kpis = data.kpis;
-        this.state.top_numbers = data.top_numbers;
-        this.state.bottom_numbers = data.bottom_numbers;
-        this.state.remaining_numbers = data.remaining_numbers;
-        this.state.loading = false;
+    onTopNumbersWeekDay(ev) {
+        this.state.day = ev.target.value;
+        this.state.top_numbers_by_week_day = this._numWeekDay.top[ev.target.value] || [];
     }
 
-    async loadDataTopNumbersWeekDay() {
-        const data = await jsonrpc("/estadisticas-numeros/top-number-week-day", {
-            day: this.state.day
-        });
-        this.state.top_numbers_by_week_day = data.top_numbers_by_week_day;
+    onBottomNumbersWeekDay(ev) {
+        this.state.day_menos = ev.target.value;
+        this.state.bottom_numbers_by_week_day = this._numWeekDay.bottom[ev.target.value] || [];
     }
 
-    async loadDataBottomNumbersWeekDay() {
-        const data = await jsonrpc("/estadisticas-numeros/bottom-number-week-day", {
-            day: this.state.day_menos
-        });
-        this.state.bottom_numbers_by_week_day = data.bottom_numbers_by_week_day;
+    onTopNumbersWeek(ev) {
+        this.state.week = ev.target.value;
+        this.state.top_numbers_by_week = this._numWeek.top[ev.target.value] || [];
     }
 
-    async loadDataTopNumbersWeek() {
-        const data = await jsonrpc("/estadisticas-numeros/top-number-week", {
-        week: this.state.week,
-        });
-        this.state.top_numbers_by_week = data.top_numbers_by_week;
+    onBottomNumbersWeek(ev) {
+        this.state.week_menos = ev.target.value;
+        this.state.bottom_numbers_by_week = this._numWeek.bottom[ev.target.value] || [];
     }
 
-    async loadDataBottomNumbersWeek() {
-        const data = await jsonrpc("/estadisticas-numeros/bottom-number-week", {
-        week: this.state.week_menos,
-        });
-        this.state.bottom_numbers_by_week = data.bottom_numbers_by_week;
+    onTopCentenaWeekDay(ev) {
+        this.state.day_centena = ev.target.value;
+        this.state.top_centena_by_week_day = this._centenaWeekDay.top_centena[ev.target.value] || [];
     }
 
-    async loadDataTopCentenaWeekDay() {
-        const data = await jsonrpc("/estadisticas-numeros/top-centena-week-day", {
-            day: this.state.day_centena, field: 'hundreds_id'
-        });
-        this.state.top_centena_by_week_day = data.top_info_by_week_day;
+    onBottomCentenaWeekDay(ev) {
+        this.state.day_menos_centena = ev.target.value;
+        this.state.bottom_centena_by_week_day = this._centenaWeekDay.bottom_centena[ev.target.value] || [];
     }
 
-    async loadDataBottomCentenaWeekDay() {
-        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week-day", {
-            day: this.state.day_menos_centena, field: 'hundreds_id'
-        });
-        this.state.bottom_centena_by_week_day = data.bottom_info_by_week_day;
+    onTopCentenaWeek(ev) {
+        this.state.week_centena = ev.target.value;
+        this.state.top_centena_by_week = this._centenaWeek.top_centena[ev.target.value] || [];
     }
 
-    async loadDataTopCentenaWeek() {
-        const data = await jsonrpc("/estadisticas-numeros/top-centena-week", {
-        week: this.state.week_centena, field: 'hundreds_id'
-        });
-        this.state.top_centena_by_week = data.top_info_by_week;
+    onBottomCentenaWeek(ev) {
+        this.state.week_menos_centena = ev.target.value;
+        this.state.bottom_centena_by_week = this._centenaWeek.bottom_centena[ev.target.value] || [];
     }
 
-    async loadDataBottomCentenaWeek() {
-        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week", {
-        week: this.state.week_menos_centena, field: 'hundreds_id'
-        });
-        this.state.bottom_centena_by_week = data.bottom_info_by_week;
+    onTopBolaExtraWeekDay(ev) {
+        this.state.day_bola_extra = ev.target.value;
+        this.state.top_bola_extra_by_week_day = this._centenaWeekDay.top_bola[ev.target.value] || [];
     }
 
-    async loadDataTopBolaExtraWeekDay() {
-        const data = await jsonrpc("/estadisticas-numeros/top-centena-week-day", {
-            day: this.state.day_bola_extra, field: 'fireball_id'
-        });
-        this.state.top_bola_extra_by_week_day = data.top_info_by_week_day;
+    onBottomBolaExtraWeekDay(ev) {
+        this.state.day_menos_bola_extra = ev.target.value;
+        this.state.bottom_bola_extra_by_week_day = this._centenaWeekDay.bottom_bola[ev.target.value] || [];
     }
 
-    async loadDataBottomBolaExtraWeekDay() {
-        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week-day", {
-            day: this.state.day_menos_bola_extra, field: 'fireball_id'
-        });
-        this.state.bottom_bola_extra_by_week_day = data.bottom_info_by_week_day;
+    onTopBolaExtraWeek(ev) {
+        this.state.week_bola_extra = ev.target.value;
+        this.state.top_bola_extra_by_week = this._centenaWeek.top_bola[ev.target.value] || [];
     }
 
-    async loadDataTopBolaExtraWeek() {
-        const data = await jsonrpc("/estadisticas-numeros/top-centena-week", {
-        week: this.state.week_bola_extra, field: 'fireball_id'
-        });
-        this.state.top_bola_extra_by_week = data.top_info_by_week;
-    }
-
-    async loadDataBottomBolaExtraWeek() {
-        const data = await jsonrpc("/estadisticas-numeros/bottom-centena-week", {
-        week: this.state.week_menos_bola_extra, field: 'fireball_id'
-        });
-        this.state.bottom_bola_extra_by_week = data.bottom_info_by_week;
-    }
-
-    async loadDataTopRepeticiones() {
-        const data = await jsonrpc("/estadisticas-numeros/top-repeticiones", {});
-        this.state.top_repeticiones = data.top_repeticiones;
-    }
-
-    async loadDataTopPegados() {
-        const data = await jsonrpc("/estadisticas-numeros/top-pegados", {});
-        this.state.top_pegados = data.top_pegados;
+    onBottomBolaExtraWeek(ev) {
+        this.state.week_menos_bola_extra = ev.target.value;
+        this.state.bottom_bola_extra_by_week = this._centenaWeek.bottom_bola[ev.target.value] || [];
     }
 
     toggleRepeticiones() {
@@ -192,6 +176,10 @@ export class LotteryDashboardNumbers extends Component {
         if (today >= 15 && today <= 21) return 'sem_3';
         if (today >= 22 && today <= 28) return 'sem_4';
         return 'sem_5';
+    }
+
+    getTotalSalidasMes(numbers) {
+        return numbers.reduce((sum, n) => sum + (n.salidas_mes_anio || 0), 0);
     }
 
     getBallClass(rank) {
@@ -234,66 +222,6 @@ export class LotteryDashboardNumbers extends Component {
         if (i < 3) return "ball-red";
         if (i < 7) return "ball-blue";
         return "ball-green";
-    }
-
-    async onTopNumbersWeekDay(ev) {
-        this.state.day = ev.target.value;
-        await this.loadDataTopNumbersWeekDay();
-    }
-
-    async onTopNumbersWeek(ev) {
-        this.state.week = ev.target.value;
-        await this.loadDataTopNumbersWeek();
-    }
-
-    async onBottomNumbersWeekDay(ev) {
-        this.state.day_menos = ev.target.value;
-        await this.loadDataBottomNumbersWeekDay();
-    }
-
-    async onBottomNumbersWeek(ev) {
-        this.state.week_menos = ev.target.value;
-        await this.loadDataBottomNumbersWeek();
-    }
-
-    async onTopCentenaWeekDay(ev) {
-        this.state.day_centena = ev.target.value;
-        await this.loadDataTopCentenaWeekDay();
-    }
-
-    async onTopCentenaWeek(ev) {
-        this.state.week_centena = ev.target.value;
-        await this.loadDataTopCentenaWeek();
-    }
-
-    async onBottomCentenaWeekDay(ev) {
-        this.state.day_menos_centena = ev.target.value;
-        await this.loadDataBottomCentenaWeekDay();
-    }
-
-    async onBottomCentenaWeek(ev) {
-        this.state.week_menos_centena = ev.target.value;
-        await this.loadDataBottomCentenaWeek();
-    }
-
-    async onTopBolaExtraWeekDay(ev) {
-        this.state.day_bola_extra = ev.target.value;
-        await this.loadDataTopBolaExtraWeekDay();
-    }
-
-    async onTopBolaExtraWeek(ev) {
-        this.state.week_bola_extra = ev.target.value;
-        await this.loadDataTopBolaExtraWeek();
-    }
-
-    async onBottomBolaExtraWeekDay(ev) {
-        this.state.day_menos_bola_extra = ev.target.value;
-        await this.loadDataBottomBolaExtraWeekDay();
-    }
-
-    async onBottomBolaExtraWeek(ev) {
-        this.state.week_menos_bola_extra = ev.target.value;
-        await this.loadDataBottomBolaExtraWeek();
     }
 
     async onBuscarNumero(ev) {

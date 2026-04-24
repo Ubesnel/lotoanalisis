@@ -6,6 +6,7 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 
 export class Top5CentenasAtrasadas extends Component {
     setup() {
+        this._cache = {};
         this.state = useState({
             type_c: "general",
             centenas: [],
@@ -15,15 +16,14 @@ export class Top5CentenasAtrasadas extends Component {
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top5_centenas", {
-            type: this.state.type_c,
-        });
-        this.state.centenas = result;
+        const result = await jsonrpc("/lottery/top5_centenas_all", {});
+        this._cache = result;
+        this.state.centenas = result[this.state.type_c] || [];
     }
 
-    async onOnchangeTop5Centena(ev) {
+    onOnchangeTop5Centena(ev) {
         this.state.type_c = ev.target.value;
-        await this.loadData();
+        this.state.centenas = this._cache[ev.target.value] || [];
     }
 
 }

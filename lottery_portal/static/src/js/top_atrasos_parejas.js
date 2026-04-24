@@ -6,6 +6,7 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 
 export class TopAtrasosParejas extends Component {
     setup() {
+        this._cache = {};
         this.state = useState({
             type_pareja: "general",
             groups_parejas: [],
@@ -15,15 +16,14 @@ export class TopAtrasosParejas extends Component {
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top_atrasos_parejas", {
-            type: this.state.type_pareja,
-        });
-        this.state.groups_parejas = result;
+        const result = await jsonrpc("/lottery/top_atrasos_parejas_all", {});
+        this._cache = result;
+        this.state.groups_parejas = result[this.state.type_pareja] || [];
     }
 
-    async onChangeTypeParejas(ev) {
+    onChangeTypeParejas(ev) {
         this.state.type_pareja = ev.target.value;
-        await this.loadData();
+        this.state.groups_parejas = this._cache[ev.target.value] || [];
     }
 
 }

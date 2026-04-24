@@ -43,6 +43,31 @@ class LotteryStatsService(models.Model):
     _name = 'lottery.stats.service'
     _description = 'Lottery Statistics Service'
 
+    @api.model
+    @tools.ormcache()
+    def get_hero_stats(self):
+        self.env.cr.execute("""
+            SELECT
+                COUNT(*) AS total_sorteos,
+                MIN(date) AS primer_fecha
+            FROM lottery_output
+        """)
+        row = self.env.cr.dictfetchone()
+        total = row['total_sorteos'] or 0
+        primer_fecha = row['primer_fecha'] or date.today()
+        hoy = date.today()
+        anios = hoy.year - primer_fecha.year - (
+            1 if (hoy.month, hoy.day) < (primer_fecha.month, primer_fecha.day) else 0
+        )
+        if total >= 1000:
+            total_fmt = '%dk+' % (total // 1000)
+        else:
+            total_fmt = str(total)
+        return {
+            'anios': anios,
+            'total_sorteos': total_fmt,
+        }
+
     @tools.ormcache()
     def get_last_results_full(self):
         LotteryOutput = self.env['lottery.output'].sudo()
