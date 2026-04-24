@@ -1373,3 +1373,14 @@ html, #wrapwrap { scroll-behavior: smooth; }
     .nc-cebs-divider { display: none; }
 }
 
+@media (max-width: 576px) {
+    .nc-header        { flex-wrap: wrap; gap: 5px; padding: 8px 12px; }
+    .nc-header-left   { flex: 1 1 100%; }
+    .nc-header-right  { flex: 1 1 100%; justify-content: space-between; gap: 6px; }
+    .nc-subtitle      { display: none; }
+    .nc-title         { font-size: 0.84rem; }
+    .nc-next-date     { font-size: 0.7rem; padding: 3px 8px; }
+    .nc-turn-select   { font-size: 0.75rem; padding: 3px 8px; flex: 1; }
+    .nc-numbers-grid  { grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; }
+}
+
