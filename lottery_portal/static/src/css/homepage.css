@@ -1201,6 +1201,21 @@ html, #wrapwrap { scroll-behavior: smooth; }
 
 .nc-turn-select option { background: #6f4a8e; color: #fff; }
 
+.nc-cold-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 16px;
+    background: linear-gradient(90deg, #1d4ed8, #2563eb);
+    margin-top: 6px;
+}
+
+.nc-snow-icon {
+    color: #bae6fd;
+    font-size: 1.3rem;
+    animation: nc-pulse 2.4s ease-in-out infinite;
+}
+
 .nc-loading {
     color: #8c6ca8;
     text-align: center;
