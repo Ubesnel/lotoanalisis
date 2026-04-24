@@ -1123,16 +1123,16 @@ class LotteryStatsService(models.Model):
 
         GENERALES (mismo peso tarde y noche):
           C1    22 pts  Top 70 salidores del mes actual
-          C2g    8 pts  Top 5 grupos más atrasados — GENERAL
-          C3g    6 pts  Top 5 pintas más atrasadas — GENERAL
-          C4    14 pts  Más sale en la semana del mes actual
-          C5    12 pts  Más sale en el día de la semana actual
-          C7     3 pts  Decena/unidad coincide con dígitos últimos 5 sorteos
+          C7    12 pts  Decena/unidad coincide con dígitos últimos 5 sorteos
+          C2g   10 pts  Top 5 grupos más atrasados — GENERAL
+          C3g    9 pts  Top 5 pintas más atrasadas — GENERAL
+          C4     7 pts  Más sale en la semana del mes actual
+          C5     5 pts  Más sale en el día de la semana actual
 
         POR TURNO (tarde → afternoon / noche → evening):
           C2t   14 pts  Top 5 grupos más atrasados del turno
-          C3t   12 pts  Top 5 pintas más atrasadas del turno
-          C6     9 pts  Salidor del mes × atraso del turno
+          C3t   11 pts  Top 5 pintas más atrasadas del turno
+          C6    10 pts  Salidor del mes × atraso del turno
 
         Máx: 100 pts
         """
@@ -1222,14 +1222,14 @@ class LotteryStatsService(models.Model):
         rank_semana = {r['id']: i + 1 for i, r in enumerate(sorted_semana)}
         rank_c6     = {r['id']: i + 1 for i, r in enumerate(sorted_c6)}
 
-        # ── 7. Dígitos de los últimos 5 sorteos ─────────────────────────────
+        # ── 7. Dígitos de los últimos 3 sorteos ─────────────────────────────
         self.env.cr.execute("""
             SELECT ln.name::int AS num_val, ln2.name::int AS cen_val
             FROM lottery_output lo
             JOIN lottery_number ln  ON ln.id  = lo.number_id
             LEFT JOIN lottery_number ln2 ON ln2.id = lo.hundreds_id
             ORDER BY lo.date DESC, lo.id DESC
-            LIMIT 5
+            LIMIT 3
         """)
         digit_set = set()
         for draw in self.env.cr.dictfetchall():
@@ -1252,17 +1252,17 @@ class LotteryStatsService(models.Model):
 
             # Generales (mismo peso en tarde y noche)
             s1  = 22.0 * (1 - (rm - 1) / 70) if rm <= 70 else 0
-            s2g =  8.0 if num_id in gen_group_ids  else 0
-            s3g =  6.0 if num_id in gen_pinta_ids  else 0
-            s4  = 14.0 * (1 - (rs - 1) / N)
-            s5  = 12.0 * (1 - (rd - 1) / N)
+            s2g = 10.0 if num_id in gen_group_ids  else 0
+            s3g =  9.0 if num_id in gen_pinta_ids  else 0
+            s4  =  7.0 * (1 - (rs - 1) / N)
+            s5  =  5.0 * (1 - (rd - 1) / N)
             ni  = n['num_int']
-            s7  =  3.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
+            s7  = 12.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
 
             # Por turno (solo suma al turno correspondiente)
             s2t = 14.0 if num_id in turn_group_ids else 0
-            s3t = 12.0 if num_id in turn_pinta_ids else 0
-            s6  =  9.0 * (1 - (rc6 - 1) / N)
+            s3t = 11.0 if num_id in turn_pinta_ids else 0
+            s6  = 10.0 * (1 - (rc6 - 1) / N)
 
             scores.append({
                 'name': n['name'],
@@ -1270,7 +1270,7 @@ class LotteryStatsService(models.Model):
             })
 
         scores.sort(key=lambda x: x['score'], reverse=True)
-        return scores[:30]
+        return scores
 
     def _get_calientes_cebs(self, turn_day, pg_dow, week_seg, turn_mv, gen_mv, freq_field_type):
         """
@@ -1335,6 +1335,19 @@ class LotteryStatsService(models.Model):
         vals.sort(key=lambda x: x['score'], reverse=True)
         return [{'name': v['name']} for v in vals[:4]]
 
+    def _get_frios_cebs(self, turn_day, output_id_field):
+        """Devuelve las 4 centenas/bola extra que salieron más recientemente en el turno dado."""
+        self.env.cr.execute(f"""
+            SELECT n.name AS name
+            FROM lottery_output lo
+            JOIN lottery_number n ON n.id = lo.{output_id_field}
+            WHERE lo.turn_day = %s AND lo.{output_id_field} IS NOT NULL
+            GROUP BY lo.{output_id_field}, n.name
+            ORDER BY MAX(lo.date) DESC
+            LIMIT 4
+        """, (turn_day,))
+        return [{'name': r['name']} for r in self.env.cr.dictfetchall()]
+
     @api.model
     @tools.ormcache('today_str')
     def get_calientes_all(self, today_str):
@@ -1371,11 +1384,15 @@ class LotteryStatsService(models.Model):
             turn_cen_mv = 'lottery_top5_centena_dia_mv'    if turn == 'afternoon' else 'lottery_top5_centena_noche_mv'
             turn_be_mv  = 'lottery_top5_bola_extra_dia_mv' if turn == 'afternoon' else 'lottery_top5_bola_extra_noche_mv'
             next_date   = row.get('next_' + turn)
+            all_scores  = self.get_numeros_calientes(turn, today_str)
             result[turn] = {
-                'numbers':    self.get_numeros_calientes(turn, today_str),
-                'centenas':   self._get_calientes_cebs(turn, pg_dow, week_seg, turn_cen_mv, 'lottery_top5_centena_general_mv',    'hundreds_id'),
-                'bola_extra': self._get_calientes_cebs(turn, pg_dow, week_seg, turn_be_mv,  'lottery_top5_bola_extra_general_mv', 'fireball_id'),
-                'next_draw':  _fmt_date(next_date),
+                'numbers':         all_scores[:30],
+                'numbers_cold':    list(reversed(all_scores[-30:])),
+                'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg, turn_cen_mv, 'lottery_top5_centena_general_mv',    'hundreds_id'),
+                'centenas_cold':   self._get_frios_cebs(turn, 'hundreds_id'),
+                'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg, turn_be_mv,  'lottery_top5_bola_extra_general_mv', 'fireball_id'),
+                'bola_extra_cold': self._get_frios_cebs(turn, 'fireball_id'),
+                'next_draw':       _fmt_date(next_date),
             }
         return result
 
