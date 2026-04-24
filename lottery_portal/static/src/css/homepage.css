@@ -1255,9 +1255,9 @@ html, #wrapwrap { scroll-behavior: smooth; }
     border-radius: 50%;
 }
 
-.nc-pip--hot  { background: #ef4444; }
-.nc-pip--warm { background: #2e5490; }
-.nc-pip--cool { background: #9b72bb; }
+.nc-pip--hot  { background: linear-gradient(135deg, #ff4d4d, #cc0000); }
+.nc-pip--warm { background: linear-gradient(135deg, #4da6ff, #0066cc); }
+.nc-pip--cool { background: linear-gradient(135deg, #2ecc71, #27ae60); }
 
 /* ── Grid de números (10 columnas → 3 filas de 10) ───────────── */
 .nc-numbers-grid {
@@ -1296,9 +1296,9 @@ html, #wrapwrap { scroll-behavior: smooth; }
     z-index: 2;
 }
 
-.nc-ball-hot  { background: radial-gradient(circle at 35% 35%, #f87171, #b91c1c); color: #fff; }
-.nc-ball-warm { background: radial-gradient(circle at 35% 35%, #3b6fd4, #1e3a5f); color: #fff; }
-.nc-ball-cool { background: radial-gradient(circle at 35% 35%, #a78bca, #6f4a8e); color: #fff; }
+.nc-ball-hot  { background: linear-gradient(135deg, #ff4d4d, #cc0000); color: #fff; }
+.nc-ball-warm { background: linear-gradient(135deg, #4da6ff, #0066cc); color: #fff; }
+.nc-ball-cool { background: linear-gradient(135deg, #2ecc71, #27ae60); color: #fff; }
 
 /* ── Zona centenas + bola extra ──────────────────────────────── */
 .nc-cebs-row {
@@ -1365,6 +1365,26 @@ html, #wrapwrap { scroll-behavior: smooth; }
 .nc-badge-ceb--extra { }
 .nc-badge-ceb--extra-hot  { background: linear-gradient(135deg, #fbbf24, #b45309); color: #fff; }
 .nc-badge-ceb--extra-warm { background: linear-gradient(135deg, #34d399, #065f46); color: #fff; }
+
+/* ── Sección Menos Calientes ─────────────────────────────────── */
+.nc-section--cold { background: #f0f6ff; }
+
+.nc-section-title--cold { color: #2d6ab4; }
+.nc-section-title--cold .fa { color: #4a9de0; }
+
+/* Bolas frías */
+.nc-ball-cold1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8);color:white; }
+.nc-ball-cold2 { background: linear-gradient(135deg, #06b6d4, #0066cc);color:white; }
+.nc-ball-cold3 { background: linear-gradient(135deg, #64748b, #2ecc71);color:white; }
+
+/* Pips leyenda fría */
+.nc-pip--cold1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.nc-pip--cold2 { background: linear-gradient(135deg, #06b6d4, #0066cc); }
+.nc-pip--cold3 { background: linear-gradient(135deg, #64748b, #2ecc71); }
+
+/* Badges centenas/bola extra fríos */
+.nc-badge-ceb--cold1 { background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; }
+.nc-badge-ceb--cold2 { background: linear-gradient(135deg, #64748b, #475569); color: #fff; }
 
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {

@@ -21,11 +21,14 @@ export class NumerosCalientes extends Component {
         });
     }
 
-    get current()   { return this.state.data[this.state.turn]; }
-    get numbers()   { return this.current.numbers    || []; }
-    get centenas()  { return this.current.centenas   || []; }
-    get bolaExtra() { return this.current.bola_extra || []; }
-    get nextDraw()  { return this.current.next_draw  || ''; }
+    get current()        { return this.state.data[this.state.turn]; }
+    get numbers()        { return this.current.numbers         || []; }
+    get centenas()       { return this.current.centenas        || []; }
+    get bolaExtra()      { return this.current.bola_extra      || []; }
+    get numbersCold()    { return this.current.numbers_cold    || []; }
+    get centenasCold()   { return this.current.centenas_cold   || []; }
+    get bolaExtraCold()  { return this.current.bola_extra_cold || []; }
+    get nextDraw()       { return this.current.next_draw       || ''; }
 
     onChangeTurn(ev) { this.state.turn = ev.target.value; }
 }
