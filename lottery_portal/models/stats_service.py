@@ -133,15 +133,15 @@ class LotteryStatsService(models.Model):
     @tools.ormcache('day')
     def get_ultimas_salidas_por_dia(self, day):
         self.env.cr.execute("""
-                SELECT *
-                FROM lottery_ultima_salida_dia_semana_mv
+            SELECT * FROM (
+                SELECT * FROM lottery_ultima_salida_dia_semana_mv
                 WHERE week_day = %s
                 ORDER BY date DESC
                 LIMIT 7
-            """, (day,))
-        records = self.env.cr.dictfetchall()
-        records.sort(key=lambda x: datetime.strptime(x['fecha'], '%d/%m/%Y'))
-        return records
+            ) sub
+            ORDER BY date ASC
+        """, (day,))
+        return self.env.cr.dictfetchall()
 
     @tools.ormcache('month', 'year')
     def get_month_year(self, month, year):
@@ -477,6 +477,139 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache()
+    def get_numbers_all_weekdays(self):
+        self.env.cr.execute("""
+            SELECT LPAD(name::text, 2, '0') AS name, id,
+                total_lunes, total_martes, total_miercoles,
+                total_jueves, total_viernes, total_sabado, total_domingo
+            FROM lottery_number
+            ORDER BY id
+        """)
+        rows = self.env.cr.dictfetchall()
+        day_fields = [
+            ('lu', 'total_lunes'), ('ma', 'total_martes'), ('mi', 'total_miercoles'),
+            ('ju', 'total_jueves'), ('vi', 'total_viernes'), ('sa', 'total_sabado'), ('do', 'total_domingo'),
+        ]
+        result = {'top': {}, 'bottom': {}}
+        for day, field in day_fields:
+            desc = sorted(rows, key=lambda x: (x[field] or 0, x['id']), reverse=True)[:15]
+            asc = sorted(rows, key=lambda x: (x[field] or 0, -x['id']))[:15]
+            result['top'][day] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(desc)]
+            result['bottom'][day] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(asc)]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_numbers_all_weeks(self):
+        self.env.cr.execute("""
+            SELECT LPAD(name::text, 2, '0') AS name, id,
+                total_semana_1, total_semana_2, total_semana_3, total_semana_4, total_semana_5
+            FROM lottery_number
+            ORDER BY id
+        """)
+        rows = self.env.cr.dictfetchall()
+        week_fields = [
+            ('sem_1', 'total_semana_1'), ('sem_2', 'total_semana_2'), ('sem_3', 'total_semana_3'),
+            ('sem_4', 'total_semana_4'), ('sem_5', 'total_semana_5'),
+        ]
+        result = {'top': {}, 'bottom': {}}
+        for week, field in week_fields:
+            desc = sorted(rows, key=lambda x: (x[field] or 0, x['id']), reverse=True)[:15]
+            asc = sorted(rows, key=lambda x: (x[field] or 0, -x['id']))[:15]
+            result['top'][week] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(desc)]
+            result['bottom'][week] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(asc)]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_centenas_all_weekdays(self):
+        self.env.cr.execute("""
+            SELECT week_day, field_type, centena, total_salidas
+            FROM lottery_centena_weekday_mv
+            ORDER BY week_day, field_type, total_salidas DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        result = {'top_centena': {}, 'bottom_centena': {}, 'top_bola': {}, 'bottom_bola': {}}
+        from collections import defaultdict
+        grouped = defaultdict(list)
+        for r in rows:
+            grouped[(r['week_day'], r['field_type'])].append(r)
+        for (day, field_type), items in grouped.items():
+            key_top = 'top_centena' if field_type == 'hundreds_id' else 'top_bola'
+            key_bottom = 'bottom_centena' if field_type == 'hundreds_id' else 'bottom_bola'
+            result[key_top][day] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in items[:4]]
+            result[key_bottom][day] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in reversed(items[-4:])]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_centenas_all_weeks(self):
+        self.env.cr.execute("""
+            SELECT week_segment, field_type, centena, total_salidas
+            FROM lottery_centena_week_mv
+            ORDER BY week_segment, field_type, total_salidas DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        result = {'top_centena': {}, 'bottom_centena': {}, 'top_bola': {}, 'bottom_bola': {}}
+        from collections import defaultdict
+        grouped = defaultdict(list)
+        for r in rows:
+            grouped[(r['week_segment'], r['field_type'])].append(r)
+        for (week, field_type), items in grouped.items():
+            key_top = 'top_centena' if field_type == 'hundreds_id' else 'top_bola'
+            key_bottom = 'bottom_centena' if field_type == 'hundreds_id' else 'bottom_bola'
+            result[key_top][week] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in items[:4]]
+            result[key_bottom][week] = [{'centena': r['centena'], 'total_salidas': r['total_salidas']} for r in reversed(items[-4:])]
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_all_atrasos_lineas(self):
+        self.env.cr.execute("""
+            SELECT name, general, afternoon, evening
+            FROM lottery_top_atrasos_lineas_mv
+            ORDER BY general DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        return {
+            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
+            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+        }
+
+    @api.model
+    @tools.ormcache()
+    def get_all_atrasos_terminales(self):
+        self.env.cr.execute("""
+            SELECT name, general, afternoon, evening
+            FROM lottery_top_atrasos_terminales_mv
+            ORDER BY general DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        return {
+            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
+            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+        }
+
+    @api.model
+    @tools.ormcache()
+    def get_all_atrasos_parejas(self):
+        self.env.cr.execute("""
+            SELECT name, general, afternoon, evening
+            FROM lottery_number_groups_atrasos_mv
+            WHERE group_code = 'resta_0'
+            ORDER BY general DESC
+        """)
+        rows = self.env.cr.dictfetchall()
+        return {
+            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
+            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+        }
+
+    @api.model
     @tools.ormcache('day')
     def get_top_numbers_by_week_day(self, day):
         field = WEEKDAY_FIELD_MAP.get(day)
@@ -563,141 +696,97 @@ class LotteryStatsService(models.Model):
     @api.model
     @tools.ormcache('number_id')
     def get_salidas_numeros_despues_numero(self, number_id):
-        query = f"""
-            SELECT    
+        self.env.cr.execute("""
+            SELECT
                 LPAD(ln_next.name::text, 2, '0') AS name,
-                count(ln_next.name) as cantidad_veces            
+                COUNT(ln_next.name) AS cantidad_veces
             FROM (
-                SELECT 
-                    lo.*,
-                    LEAD(lo.id) OVER (ORDER BY lo.date ASC, CASE 
-                                                            WHEN lo.turn_day = 'afternoon' THEN 1
-                                                            WHEN lo.turn_day = 'evening' THEN 2
-                                    END) AS next_id
-                    FROM lottery_output lo) lo_actual
-            
+                SELECT lo.*,
+                    LEAD(lo.id) OVER (
+                        ORDER BY lo.date ASC,
+                                 CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                    ) AS next_id
+                FROM lottery_output lo
+            ) lo_actual
             JOIN lottery_output lo_next ON lo_next.id = lo_actual.next_id
-            JOIN lottery_number ln_actual ON ln_actual.id = lo_actual.number_id
             JOIN lottery_number ln_next ON ln_next.id = lo_next.number_id
-            WHERE lo_actual.number_id = {number_id}
-            group by ln_next.name order by count(ln_next.name) desc, ln_next.name limit 10;
-        """
-        self.env.cr.execute(query)
+            WHERE lo_actual.number_id = %s
+            GROUP BY ln_next.name
+            ORDER BY COUNT(ln_next.name) DESC, ln_next.name
+            LIMIT 10
+        """, (number_id,))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('number_id')
     def get_salidas_numeros_antes_numero(self, number_id):
-        query = f"""
-                SELECT  
+        self.env.cr.execute("""
+            SELECT
                 LPAD(ln_prev.name::text, 2, '0') AS name,
-                count(ln_prev.name) as cantidad_veces  
-                FROM (
-                    SELECT 
-                        lo.*,
-                        LAG(lo.id) OVER (
-                            ORDER BY 
-                                lo.date ASC,
-                                CASE 
-                                    WHEN lo.turn_day = 'afternoon' THEN 1
-                                    WHEN lo.turn_day = 'evening' THEN 2
-                                END
-                        ) AS prev_id
-                    FROM lottery_output lo
-                ) lo_actual                
-                JOIN lottery_output lo_prev ON lo_prev.id = lo_actual.prev_id
-                JOIN lottery_number ln_actual ON ln_actual.id = lo_actual.number_id
-                JOIN lottery_number ln_prev ON ln_prev.id = lo_prev.number_id
-                WHERE lo_actual.number_id = {number_id}
-                group by ln_prev.name order by count(ln_prev.name) desc, ln_prev.name limit 10;
-            """
-        self.env.cr.execute(query)
+                COUNT(ln_prev.name) AS cantidad_veces
+            FROM (
+                SELECT lo.*,
+                    LAG(lo.id) OVER (
+                        ORDER BY lo.date ASC,
+                                 CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                    ) AS prev_id
+                FROM lottery_output lo
+            ) lo_actual
+            JOIN lottery_output lo_prev ON lo_prev.id = lo_actual.prev_id
+            JOIN lottery_number ln_prev ON ln_prev.id = lo_prev.number_id
+            WHERE lo_actual.number_id = %s
+            GROUP BY ln_prev.name
+            ORDER BY COUNT(ln_prev.name) DESC, ln_prev.name
+            LIMIT 10
+        """, (number_id,))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('day', 'field')
     def get_top_centenas_by_week_day(self, day, field):
-        query = f"""SELECT                
-                ln.name AS centena,
-                COUNT(*) AS total_salidas
-            FROM lottery_output lo
-            JOIN lottery_number ln ON ln.id = lo.{field}
-            WHERE lo.week_day = '{day}'
-            GROUP BY lo.{field}, ln.name
-            ORDER BY total_salidas DESC, lo.{field}
-        LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_weekday_mv
+            WHERE week_day = %s AND field_type = %s
+            ORDER BY total_salidas DESC
+            LIMIT 4
+        """, (day, field))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('day', 'field')
     def get_bottom_centenas_by_week_day(self, day, field):
-        query = f"""SELECT                
-                    ln.name AS centena,
-                    COUNT(*) AS total_salidas
-                FROM lottery_output lo
-                JOIN lottery_number ln ON ln.id = lo.{field}
-                WHERE lo.week_day = '{day}'
-                GROUP BY lo.{field}, ln.name
-                ORDER BY total_salidas , lo.{field}
-            LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_weekday_mv
+            WHERE week_day = %s AND field_type = %s
+            ORDER BY total_salidas ASC
+            LIMIT 4
+        """, (day, field))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('week', 'field')
     def get_top_centenas_by_week(self, week, field):
-        query = f"""WITH data AS (
-                SELECT
-                    lo.{field},
-                    CASE
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 15 AND 21 THEN 'sem_3'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 22 AND 28 THEN 'sem_4'
-                        ELSE 'sem_5'
-                    END AS week_segment
-                FROM lottery_output lo
-            )
-            SELECT
-                d.{field},
-                ln.name AS centena,
-                COUNT(*) AS total_salidas
-            FROM data d
-            JOIN lottery_number ln ON ln.id = d.{field}
-            WHERE d.week_segment = '{week}'
-            GROUP BY d.{field}, ln.name
-            ORDER BY total_salidas desc,d.{field}
-            LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_week_mv
+            WHERE week_segment = %s AND field_type = %s
+            ORDER BY total_salidas DESC
+            LIMIT 4
+        """, (week, field))
         return self.env.cr.dictfetchall()
 
     @api.model
     @tools.ormcache('week', 'field')
     def get_bottom_centenas_by_week(self, week, field):
-        query = f"""WITH data AS (
-                SELECT
-                    lo.{field},
-                    CASE
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 15 AND 21 THEN 'sem_3'
-                        WHEN EXTRACT(DAY FROM lo.date) BETWEEN 22 AND 28 THEN 'sem_4'
-                        ELSE 'sem_5'
-                    END AS week_segment
-                FROM lottery_output lo
-            )
-            SELECT
-                d.{field},
-                ln.name AS centena,
-                COUNT(*) AS total_salidas
-            FROM data d
-            JOIN lottery_number ln ON ln.id = d.{field}
-            WHERE d.week_segment = '{week}'
-            GROUP BY d.{field}, ln.name
-            ORDER BY total_salidas ,d.{field}
-            LIMIT 4;"""
-        self.env.cr.execute(query)
+        self.env.cr.execute("""
+            SELECT centena, total_salidas
+            FROM lottery_centena_week_mv
+            WHERE week_segment = %s AND field_type = %s
+            ORDER BY total_salidas ASC
+            LIMIT 4
+        """, (week, field))
         return self.env.cr.dictfetchall()
 
     @api.model

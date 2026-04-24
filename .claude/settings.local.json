@@ -8,7 +8,8 @@
       "Bash(xargs grep *)",
       "Bash(grep -E \"\\\\.\\(xml|js\\)$\")",
       "Bash(xargs ls *)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(grep -E \"\\(auto_database_backup|lottery_base|lottery_delays_number|lottery_fireball|lottery_groups|query_deluxe\\)$\")"
     ]
   }
 }

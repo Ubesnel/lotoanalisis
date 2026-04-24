@@ -75,43 +75,19 @@ class LotteryPortal(http.Controller):
 
     @http.route('/estadisticas-numeros/numbers-week-day-all', type='json', auth='public')
     def dashboard_numbers_week_day_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        days = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do']
-        return {
-            'top': {d: stats.get_top_numbers_by_week_day(d) for d in days},
-            'bottom': {d: stats.get_bottom_numbers_by_week_day(d) for d in days},
-        }
+        return request.env['lottery.stats.service'].sudo().get_numbers_all_weekdays()
 
     @http.route('/estadisticas-numeros/numbers-week-all', type='json', auth='public')
     def dashboard_numbers_week_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        weeks = ['sem_1', 'sem_2', 'sem_3', 'sem_4', 'sem_5']
-        return {
-            'top': {w: stats.get_top_numbers_by_week(w) for w in weeks},
-            'bottom': {w: stats.get_bottom_numbers_by_week(w) for w in weeks},
-        }
+        return request.env['lottery.stats.service'].sudo().get_numbers_all_weeks()
 
     @http.route('/estadisticas-numeros/centena-week-day-all', type='json', auth='public')
     def dashboard_centena_week_day_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        days = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do']
-        return {
-            'top_centena': {d: stats.get_top_centenas_by_week_day(d, 'hundreds_id') for d in days},
-            'bottom_centena': {d: stats.get_bottom_centenas_by_week_day(d, 'hundreds_id') for d in days},
-            'top_bola': {d: stats.get_top_centenas_by_week_day(d, 'fireball_id') for d in days},
-            'bottom_bola': {d: stats.get_bottom_centenas_by_week_day(d, 'fireball_id') for d in days},
-        }
+        return request.env['lottery.stats.service'].sudo().get_centenas_all_weekdays()
 
     @http.route('/estadisticas-numeros/centena-week-all', type='json', auth='public')
     def dashboard_centena_week_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        weeks = ['sem_1', 'sem_2', 'sem_3', 'sem_4', 'sem_5']
-        return {
-            'top_centena': {w: stats.get_top_centenas_by_week(w, 'hundreds_id') for w in weeks},
-            'bottom_centena': {w: stats.get_bottom_centenas_by_week(w, 'hundreds_id') for w in weeks},
-            'top_bola': {w: stats.get_top_centenas_by_week(w, 'fireball_id') for w in weeks},
-            'bottom_bola': {w: stats.get_bottom_centenas_by_week(w, 'fireball_id') for w in weeks},
-        }
+        return request.env['lottery.stats.service'].sudo().get_centenas_all_weeks()
 
     @http.route('/estadisticas-numeros/top-number-week-day', type='json', auth='public')
     def dashboard_top_number_week_day(self, day=False):
@@ -405,8 +381,7 @@ class LotteryController(http.Controller):
 
     @http.route('/lottery/top_atrasos_lineas_all', type='json', auth='public', website=True)
     def get_top_atrasos_lineas_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        return {t: stats.get_top_atrasos_lineas(t) for t in ['general', 'afternoon', 'evening']}
+        return request.env['lottery.stats.service'].sudo().get_all_atrasos_lineas()
 
     @http.route('/lottery/top_atrasos_terminales', type='json', auth='public', website=True)
     def get_top_atrasos_terminales(self, type):
@@ -414,8 +389,7 @@ class LotteryController(http.Controller):
 
     @http.route('/lottery/top_atrasos_terminales_all', type='json', auth='public', website=True)
     def get_top_atrasos_terminales_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        return {t: stats.get_top_atrasos_terminales(t) for t in ['general', 'afternoon', 'evening']}
+        return request.env['lottery.stats.service'].sudo().get_all_atrasos_terminales()
 
     @http.route('/lottery/top_atrasos_parejas', type='json', auth='public', website=True)
     def get_top_atrasos_parejas(self, type):
@@ -423,8 +397,7 @@ class LotteryController(http.Controller):
 
     @http.route('/lottery/top_atrasos_parejas_all', type='json', auth='public', website=True)
     def get_top_atrasos_parejas_all(self):
-        stats = request.env['lottery.stats.service'].sudo()
-        return {t: stats.get_top_atrasos_number_groups(t, groups_code=['resta_0']) for t in ['general', 'afternoon', 'evening']}
+        return request.env['lottery.stats.service'].sudo().get_all_atrasos_parejas()
 
     @http.route('/lottery/top5_bola_extra', type='json', auth='public', website=True)
     def top5_bola_extra(self, type):

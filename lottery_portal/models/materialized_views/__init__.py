@@ -15,3 +15,5 @@ from . import lottery_top5_bola_extra_noche_mv
 from . import lottery_top_10_dia_semana_mv
 from . import lottery_top_atrasos_number_groups_mv
 from . import lottery_groups_analysis_mv
+from . import lottery_centena_weekday_mv
+from . import lottery_centena_week_mv
