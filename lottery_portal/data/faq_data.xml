@@ -5,6 +5,7 @@
         <record id="website_faq_category_pagina_principal" model="website.faq.category">
             <field name="name">Página Principal</field>
             <field name="sequence">1</field>
+            <field name="icon">fa-home</field>
         </record>
         <record id="website_faq_pp_1" model="website.faq">
             <field name="question">¿Qué información brinda Calientes · Próximo Sorteo?</field>
@@ -39,6 +40,7 @@
         <record id="website_faq_category_grupos" model="website.faq.category">
             <field name="name">Grupos</field>
             <field name="sequence">5</field>
+            <field name="icon">fa-th</field>
         </record>
         <record id="website_faq_1" model="website.faq">
             <field name="question">¿Qué números integra el grupo Línea 0?</field>
@@ -115,6 +117,7 @@
         <record id="website_faq_category_pintas" model="website.faq.category">
             <field name="name">Pintas</field>
             <field name="sequence">10</field>
+            <field name="icon">fa-paint-brush</field>
         </record>
         <record id="website_faq_54" model="website.faq">
             <field name="question">¿Qué números integra el grupo pinta 0?</field>
@@ -191,12 +194,14 @@
         <record id="website_faq_category_numeros" model="website.faq.category">
             <field name="name">Números</field>
             <field name="sequence">15</field>
+            <field name="icon">fa-sort-numeric-asc</field>
         </record>
 
         <!--Generales-->
         <record id="website_faq_category_generales" model="website.faq.category">
             <field name="name">Generales</field>
             <field name="sequence">20</field>
+            <field name="icon">fa-random</field>
         </record>
 
         <record id="website_faq_11" model="website.faq">
