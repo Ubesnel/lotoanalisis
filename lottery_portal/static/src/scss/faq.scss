@@ -182,19 +182,28 @@ $shadow-lg:     0 12px 40px rgba(111, 74, 142, 0.18);
 }
 
 .faq-category-icon-wrap {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, $purple-dark, $purple-mid);
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $purple-dark 0%, $purple-mid 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba($purple-dark, 0.40), 0 0 0 3px rgba($purple-mid, 0.18);
+    border: 2px solid rgba($white, 0.25);
+    transition: box-shadow 0.3s ease, transform 0.25s ease;
 
     .fa {
         color: $white;
-        font-size: 14px;
+        font-size: 18px;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.20);
     }
+}
+
+.faq-category-header:hover .faq-category-icon-wrap {
+    box-shadow: 0 6px 20px rgba($purple-dark, 0.50), 0 0 0 4px rgba($purple-mid, 0.25);
+    transform: scale(1.07);
 }
 
 .faq-category-name {
@@ -298,13 +307,29 @@ $shadow-lg:     0 12px 40px rgba(111, 74, 142, 0.18);
 }
 
 .faq-answer {
-    padding: 14px 18px 16px 56px;
-    font-size: 14px;
-    color: $text-soft;
-    line-height: 1.7;
-    border-top: 1px solid $purple-light;
-    background: $purple-xlight;
+    position: relative;
+    padding: 18px 24px 20px 28px;
+    font-size: 14.5px;
+    color: $text-main;
+    line-height: 1.85;
+    border-top: 1px solid $purple-border;
+    border-left: 4px solid $purple-dark;
+    background: linear-gradient(135deg, $purple-xlight 0%, #f0eaf8 100%);
+    text-align: justify;
+    text-justify: inter-word;
     animation: faqFadeIn 0.2s ease-out;
+
+    &::before {
+        content: '\201C';
+        position: absolute;
+        top: -4px;
+        left: 10px;
+        font-size: 52px;
+        font-family: Georgia, 'Times New Roman', serif;
+        color: rgba($purple-mid, 0.20);
+        line-height: 1;
+        pointer-events: none;
+    }
 }
 
 // ── Animaciones ───────────────────────────────────────────────

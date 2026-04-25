@@ -22,5 +22,5 @@ class WebsiteFAQ(models.Model):
     question = fields.Char(string='Pregunta', required=True)
     answer = fields.Text(string='Respuesta', required=True)
     sequence = fields.Integer(string='Secuencia')
-    category_id = fields.Many2one('website.faq.category', string='Categoría', required=True)
+    category_id = fields.Many2one('website.faq.category', string='Categoría', ondelete='cascade')
     active = fields.Boolean(string='Activo', default=True)
