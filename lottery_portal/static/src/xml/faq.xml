@@ -63,7 +63,7 @@
                                        t-att-class="state.openId === faq.id ? 'rotated' : ''"/>
                                 </div>
                                 <div class="faq-answer" t-if="state.openId === faq.id">
-                                    <t t-esc="faq.answer"/>
+                                    <t t-esc="cleanAnswer(faq.answer)"/>
                                 </div>
                             </div>
                         </t>

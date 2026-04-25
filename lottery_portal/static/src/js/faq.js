@@ -37,6 +37,10 @@ export class WebsiteFAQ extends Component {
         this.state.openId = null;
     }
 
+    cleanAnswer(answer) {
+        return (answer || '').replace(/^R\/\s*/i, '');
+    }
+
     get groupedFaqs() {
         const search = this.state.search.toLowerCase();
         const grouped = {};
