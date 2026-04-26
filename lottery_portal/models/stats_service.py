@@ -137,7 +137,7 @@ class LotteryStatsService(models.Model):
                 SELECT * FROM lottery_ultima_salida_dia_semana_mv
                 WHERE week_day = %s
                 ORDER BY date DESC
-                LIMIT 7
+                LIMIT 8
             ) sub
             ORDER BY date ASC
         """, (day,))
@@ -597,24 +597,34 @@ class LotteryStatsService(models.Model):
     @tools.ormcache()
     def get_all_atrasos_parejas(self):
         self.env.cr.execute("""
-            SELECT name, general, afternoon, evening, last_date, last_turn
+            SELECT name, general, afternoon, evening, last_date, last_turn,
+                   last_date_afternoon, last_date_evening
             FROM lottery_number_groups_atrasos_mv
             WHERE group_code = 'resta_0'
         """)
         rows = self.env.cr.dictfetchall()
 
-        def _fmt(r, field):
+        def _fmt(r, field, turn=None):
+            if turn == 'afternoon':
+                ld = r['last_date_afternoon'] or ''
+                lt = 'afternoon'
+            elif turn == 'evening':
+                ld = r['last_date_evening'] or ''
+                lt = 'evening'
+            else:
+                ld = r['last_date'] or ''
+                lt = r['last_turn'] or ''
             return {
                 'name': r['name'],
                 'atraso': r[field],
-                'last_date': r['last_date'] or '',
-                'last_turn': r['last_turn'] or '',
+                'last_date': ld,
+                'last_turn': lt,
             }
 
         return {
             'general': [_fmt(r, 'general') for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
-            'afternoon': [_fmt(r, 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
-            'evening': [_fmt(r, 'evening') for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+            'afternoon': [_fmt(r, 'afternoon', 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening': [_fmt(r, 'evening', 'evening') for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
         }
 
     @api.model
@@ -1123,7 +1133,11 @@ class LotteryStatsService(models.Model):
 
         GENERALES (mismo peso tarde y noche):
           C1    22 pts  Top 70 salidores del mes actual
-          C7    12 pts  Decena/unidad coincide con dígitos últimos 5 sorteos
+          C7    12 pts  Decena/unidad coincide con dígitos de últimos 3 sorteos
+                        (se consideran también los vecinos ±1 de cada número sorteado)
+          C8   −12 pts  Penalización por recencia (últimos 5 sorteos):
+                        −12 si el número salió exacto, −6 si es ±1 de alguno
+                        Score bajo → improbable → cae en lista de fríos
           C2g   10 pts  Top 5 grupos más atrasados — GENERAL
           C3g    9 pts  Top 5 pintas más atrasadas — GENERAL
           C4     7 pts  Más sale en la semana del mes actual
@@ -1134,7 +1148,7 @@ class LotteryStatsService(models.Model):
           C3t   11 pts  Top 5 pintas más atrasadas del turno
           C6    10 pts  Salidor del mes × atraso del turno
 
-        Máx: 100 pts
+        Máx: ~100 pts  (C8 puede restar hasta 12 pts adicionales)
         """
         from datetime import date as _date
         today = _date.fromisoformat(today_str)
@@ -1222,25 +1236,36 @@ class LotteryStatsService(models.Model):
         rank_semana = {r['id']: i + 1 for i, r in enumerate(sorted_semana)}
         rank_c6     = {r['id']: i + 1 for i, r in enumerate(sorted_c6)}
 
-        # ── 7. Dígitos de los últimos 3 sorteos ─────────────────────────────
+        # ── C7. Dígitos últimos 3 sorteos + vecinos ±1 ("alante y atras") ──
         self.env.cr.execute("""
-            SELECT ln.name::int AS num_val, ln2.name::int AS cen_val
+            SELECT ln.name::int AS num_val
             FROM lottery_output lo
-            JOIN lottery_number ln  ON ln.id  = lo.number_id
-            LEFT JOIN lottery_number ln2 ON ln2.id = lo.hundreds_id
+            JOIN lottery_number ln ON ln.id = lo.number_id
             ORDER BY lo.date DESC, lo.id DESC
             LIMIT 3
         """)
         digit_set = set()
         for draw in self.env.cr.dictfetchall():
-            nv = draw['num_val']
-            digit_set.add(nv // 10)
-            digit_set.add(nv % 10)
-            if draw['cen_val']:
-                cv = draw['cen_val']
-                digit_set.add(cv // 100)
-                digit_set.add((cv // 10) % 10)
-                digit_set.add(cv % 10)
+            for delta in (-1, 0, 1):
+                nv = draw['num_val'] + delta
+                if 0 <= nv <= 99:
+                    digit_set.add(nv // 10)
+                    digit_set.add(nv % 10)
+
+        # ── C8. Penalización por recencia: exacto o ±1 en últimos 5 sorteos ─
+        self.env.cr.execute("""
+            SELECT ln.name::int AS num_val
+            FROM lottery_output lo
+            JOIN lottery_number ln ON ln.id = lo.number_id
+            ORDER BY lo.date DESC, lo.id DESC
+            LIMIT 5
+        """)
+        recent_nums = {r['num_val'] for r in self.env.cr.dictfetchall()}
+        adjacent_nums = {
+            adj for n in recent_nums
+            for adj in (n - 1, n + 1)
+            if 0 <= adj <= 99 and adj not in recent_nums
+        }
 
         # ── Ponderación ──────────────────────────────────────────────────────
         scores = []
@@ -1257,7 +1282,15 @@ class LotteryStatsService(models.Model):
             s4  =  7.0 * (1 - (rs - 1) / N)
             s5  =  5.0 * (1 - (rd - 1) / N)
             ni  = n['num_int']
+            # C7: bonus por coincidencia de dígitos (decena/unidad) con últimos 3 sorteos ±1
             s7  = 12.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
+            # C8: penalización por recencia — baja calientes, hunde fríos
+            if ni in recent_nums:
+                s8 = -12.0
+            elif ni in adjacent_nums:
+                s8 = -6.0
+            else:
+                s8 = 0.0
 
             # Por turno (solo suma al turno correspondiente)
             s2t = 14.0 if num_id in turn_group_ids else 0
@@ -1266,7 +1299,7 @@ class LotteryStatsService(models.Model):
 
             scores.append({
                 'name': n['name'],
-                'score': round(s1 + s2g + s3g + s4 + s5 + s7 + s2t + s3t + s6, 1),
+                'score': round(s1 + s2g + s3g + s4 + s5 + s7 + s8 + s2t + s3t + s6, 1),
             })
 
         scores.sort(key=lambda x: x['score'], reverse=True)
@@ -1369,7 +1402,8 @@ class LotteryStatsService(models.Model):
         self.env.cr.execute("""
             SELECT
                 MAX(date) FILTER (WHERE turn_day = 'afternoon') + INTERVAL '1 day' AS next_afternoon,
-                MAX(date) FILTER (WHERE turn_day = 'evening')   + INTERVAL '1 day' AS next_evening
+                MAX(date) FILTER (WHERE turn_day = 'evening')   + INTERVAL '1 day' AS next_evening,
+                (SELECT turn_day FROM lottery_output ORDER BY date DESC, id DESC LIMIT 1) AS last_turn
             FROM lottery_output
         """)
         row = self.env.cr.dictfetchone() or {}
@@ -1394,5 +1428,6 @@ class LotteryStatsService(models.Model):
                 'bola_extra_cold': self._get_frios_cebs(turn, 'fireball_id'),
                 'next_draw':       _fmt_date(next_date),
             }
+        result['last_turn'] = row.get('last_turn') or 'afternoon'
         return result
 

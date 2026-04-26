@@ -5,11 +5,11 @@
             <div class="card-header text-white text-center fw-bold">
                 <div class="d-flex align-items-center justify-content-center gap-2">
                     <i class="fa fa-history"/>
-                    Últimas 7 salidas
+                    Últimas 8 salidas
                     <i class="fa fa-arrow-right"/>
                     <select t-model="state.day_us" class="form-select form-select-sm w-auto"
                             t-on-change="onChangeUltimasSalidas"
-                            title="Últimas 7 salidas del día seleccionado">
+                            title="Últimas 8 salidas del día seleccionado">
                         <option value="lu">Lunes</option>
                         <option value="ma">Martes</option>
                         <option value="mi">Miércoles</option>

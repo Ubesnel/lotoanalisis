@@ -538,9 +538,13 @@
     flex-shrink: 0;
 }
 .stat-rank-ball {
-    width: 32px !important;
+    width: auto !important;
+    min-width: 32px !important;
     height: 32px !important;
-    font-size: 12px !important;
+    border-radius: 16px !important;
+    padding: 0 7px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
     flex-shrink: 0;
 }
 .stat-rank-info {
