@@ -1167,6 +1167,7 @@ html, #wrapwrap { scroll-behavior: smooth; }
 .nc-subtitle {
     color: rgba(255,255,255,0.68);
     font-size: 0.7rem;
+    font-weight: 400;
 }
 
 .nc-header-right {
@@ -1202,11 +1203,7 @@ html, #wrapwrap { scroll-behavior: smooth; }
 .nc-turn-select option { background: #6f4a8e; color: #fff; }
 
 .nc-cold-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 11px 16px;
-    background: linear-gradient(90deg, #1d4ed8, #2563eb);
+    background: linear-gradient(90deg, #1d4ed8, #2563eb) !important;
     margin-top: 6px;
 }
 
@@ -1417,5 +1414,348 @@ html, #wrapwrap { scroll-behavior: smooth; }
     .nc-next-date     { font-size: 0.7rem; padding: 3px 8px; }
     .nc-turn-select   { font-size: 0.75rem; padding: 3px 8px; flex: 1; }
     .nc-numbers-grid  { grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; }
+}
+
+/* ── Sábado + Domingo · Grupos más frecuentes ───────────────────── */
+.wkd-grid {
+    display: grid;
+    grid-template-columns: 1fr 4px 1fr;
+    gap: 0;
+}
+.wkd-divider {
+    background: linear-gradient(180deg, transparent, #ede6f8 20%, #ede6f8 80%, transparent);
+    margin: 12px 0;
+}
+.wkd-section { padding: 10px 14px 14px; }
+
+.wkd-section-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4a2c6e;
+    padding-bottom: 8px;
+    margin-bottom: 6px;
+    border-bottom: 2px solid #ede6f8;
+    letter-spacing: 0.01em;
+}
+.wkd-section-title .fa { margin-right: 6px; color: #9e82bb; }
+
+.wkd-list { display: flex; flex-direction: column; gap: 8px; }
+
+.wkd-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: #faf7ff;
+    border: 1px solid #ede6f8;
+    transition: transform 0.18s, box-shadow 0.18s, background 0.15s;
+    cursor: default;
+}
+.wkd-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(74,44,110,0.13);
+    background: #f3eeff;
+    border-color: #c4a8e0;
+}
+
+/* Rank badge */
+.wkd-rank {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    flex-shrink: 0;
+    color: #fff;
+}
+.wkd-rank--1 { background: linear-gradient(135deg, #fbbf24, #d97706); box-shadow: 0 2px 6px rgba(251,191,36,.45); }
+.wkd-rank--2 { background: linear-gradient(135deg, #94a3b8, #64748b); }
+.wkd-rank--3 { background: linear-gradient(135deg, #f97316, #c2410c); }
+.wkd-rank--4,
+.wkd-rank--5 { background: linear-gradient(135deg, #7c3aed, #4c1d95); }
+
+/* Ball — reuses seq-from-ball colors */
+.wkd-ball {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 3px 7px rgba(0,0,0,0.22);
+    transition: transform 0.18s;
+}
+.wkd-row:hover .wkd-ball { transform: scale(1.12); }
+
+/* Info block */
+.wkd-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.wkd-info-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px;
+}
+.wkd-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3b1f5e;
+    white-space: nowrap;
+}
+.wkd-count {
+    font-size: 13px;
+    font-weight: 900;
+    color: #7c3aed;
+    white-space: nowrap;
+}
+
+/* Progress bar */
+.wkd-bar-track {
+    height: 7px;
+    background: #e9e3f5;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.wkd-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+}
+.wkd-bar--1 { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.wkd-bar--2 { background: linear-gradient(90deg, #ff4d4d, #cc0000); }
+.wkd-bar--3 { background: linear-gradient(90deg, #4da6ff, #0066cc); }
+.wkd-bar--4 { background: linear-gradient(90deg, #4cd964, #2ecc71); }
+.wkd-bar--5 { background: linear-gradient(90deg, #4cd964, #2ecc71); }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 768px) {
+    .wkd-grid { grid-template-columns: 1fr; }
+    .wkd-divider {
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #ede6f8 20%, #ede6f8 80%, transparent);
+        margin: 0 14px;
+    }
+}
+@media (max-width: 480px) {
+    .wkd-section { padding: 8px 10px 10px; }
+    .wkd-row     { padding: 6px 8px; gap: 7px; }
+    .wkd-ball    { width: 30px; height: 30px; font-size: 9px; }
+    .wkd-label   { font-size: 12px; }
+    .wkd-count   { font-size: 12px; }
+}
+
+/* ── Secuencias de Grupos (Líneas / Terminales Consecutivos) ─────── */
+.seq-wrapper { }
+
+.seq-grid {
+    display: grid;
+    grid-template-columns: 1fr 4px 1fr;
+}
+.seq-vdivider {
+    background: linear-gradient(180deg, transparent, #ede6f8 15%, #ede6f8 85%, transparent);
+    margin: 10px 0;
+}
+
+/* Colores de bolas (compartidos con wkd) */
+.seq-from-ball--0 { background: linear-gradient(135deg, #7c3aed, #4c1d95); }
+.seq-from-ball--1 { background: linear-gradient(135deg, #2563eb, #1e40af); }
+.seq-from-ball--2 { background: linear-gradient(135deg, #059669, #065f46); }
+.seq-from-ball--3 { background: linear-gradient(135deg, #d97706, #92400e); }
+.seq-from-ball--4 { background: linear-gradient(135deg, #dc2626, #991b1b); }
+.seq-from-ball--5 { background: linear-gradient(135deg, #0891b2, #164e63); }
+.seq-from-ball--6 { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+.seq-from-ball--7 { background: linear-gradient(135deg, #0d9488, #134e4a); }
+.seq-from-ball--8 { background: linear-gradient(135deg, #9333ea, #6b21a8); }
+.seq-from-ball--9 { background: linear-gradient(135deg, #1d4ed8, #1e3a8a); }
+
+.seq-section { padding: 10px 12px 12px; }
+
+.seq-section-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #4a2c6e;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    border-bottom: 2px solid #ede6f8;
+}
+.seq-section-title .fa { margin-right: 6px; color: #9e82bb; }
+
+.seq-table { display: flex; flex-direction: column; gap: 6px; }
+
+.seq-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: #faf7ff;
+    border: 1px solid #ede6f8;
+    border-left: 3px solid transparent;
+    transition: transform 0.18s, box-shadow 0.18s, background 0.15s, border-left-color 0.15s;
+    cursor: default;
+}
+.seq-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 16px rgba(74,44,110,0.12);
+    background: #f3eeff;
+    border-left-color: #7c3aed;
+}
+
+/* Grupo origen */
+.seq-source {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    width: 46px;
+}
+.seq-source-ball {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 3px 7px rgba(0,0,0,0.22);
+    transition: transform 0.18s;
+}
+.seq-row:hover .seq-source-ball { transform: scale(1.1); }
+
+.seq-source-sub {
+    font-size: 9px;
+    color: #9e82bb;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.seq-arrow {
+    color: #c4b5d6;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* 5 seguidores */
+.seq-followers {
+    display: flex;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+}
+
+.seq-f-item {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 4px 4px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e9e3f5;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    transition: transform 0.18s, box-shadow 0.18s;
+    cursor: default;
+}
+.seq-f-item:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 6px 16px rgba(74,44,110,0.18);
+    z-index: 5;
+    position: relative;
+}
+/* Borde superior de color por rango */
+.seq-f-item--1 { border-top: 3px solid #fbbf24; }
+.seq-f-item--2 { border-top: 3px solid #ff4d4d; }
+.seq-f-item--3 { border-top: 3px solid #4da6ff; }
+.seq-f-item--4,
+.seq-f-item--5 { border-top: 3px solid #4cd964; }
+
+.seq-f-ball {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+}
+.seq-f-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: #3b1f5e;
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.1;
+}
+.seq-f-count {
+    font-size: 10px;
+    font-weight: 900;
+    color: #7c3aed;
+    line-height: 1;
+}
+.seq-f-bar-track {
+    width: 100%;
+    height: 4px;
+    background: #e9e3f5;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1px;
+}
+.seq-f-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+}
+.seq-f-bar--1 { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.seq-f-bar--2 { background: linear-gradient(90deg, #ff4d4d, #cc0000); }
+.seq-f-bar--3 { background: linear-gradient(90deg, #4da6ff, #0066cc); }
+.seq-f-bar--4,
+.seq-f-bar--5 { background: linear-gradient(90deg, #4cd964, #2ecc71); }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 768px) {
+    .seq-grid       { grid-template-columns: 1fr; }
+    .seq-vdivider   { height: 2px; background: linear-gradient(90deg, transparent, #ede6f8 20%, #ede6f8 80%, transparent); margin: 0 12px; }
+    .seq-section    { padding: 8px 10px 10px; }
+    .seq-row        { padding: 6px 8px; gap: 6px; }
+    .seq-source     { width: 40px; }
+    .seq-source-ball{ width: 30px; height: 30px; font-size: 9px; }
+    .seq-f-ball     { width: 22px; height: 22px; font-size: 9px; }
+    .seq-f-label    { font-size: 8px; }
+    .seq-f-count    { font-size: 9px; }
+}
+@media (max-width: 480px) {
+    .seq-row        { gap: 4px; padding: 5px 6px; }
+    .seq-source     { width: 34px; gap: 2px; }
+    .seq-source-sub { display: none; }
+    .seq-source-ball{ width: 28px; height: 28px; }
+    .seq-followers  { gap: 3px; }
+    .seq-f-item     { padding: 4px 2px 3px; }
+    .seq-f-ball     { width: 20px; height: 20px; font-size: 8px; }
+    .seq-f-label    { font-size: 7px; }
+    .seq-f-count    { font-size: 8px; }
+    .seq-arrow      { display: none; }
 }
 

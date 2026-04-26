@@ -391,6 +391,14 @@ class LotteryController(http.Controller):
     def get_top_atrasos_terminales_all(self):
         return request.env['lottery.stats.service'].sudo().get_all_atrasos_terminales()
 
+    @http.route('/lottery/weekend-groups', type='json', auth='public', website=True)
+    def get_weekend_groups(self, **kwargs):
+        return request.env['lottery.stats.service'].sudo().get_weekend_groups()
+
+    @http.route('/lottery/group-sequences', type='json', auth='public', website=True)
+    def get_group_sequences(self, **kwargs):
+        return request.env['lottery.stats.service'].sudo().get_all_group_sequences()
+
     @http.route('/lottery/top_atrasos_parejas', type='json', auth='public', website=True)
     def get_top_atrasos_parejas(self, type):
         return request.env['lottery.stats.service'].sudo().get_top_atrasos_number_groups(type, groups_code=['resta_0'])
