@@ -35,6 +35,55 @@
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
         </record>
+        <record id="website_faq_pp_5" model="website.faq">
+            <field name="question">¿Qué información brinda Últimas 8 Salidas por día de la semana?</field>
+            <field name="answer">R/ Muestra las últimas 8 salidas por cada día de la semana. Incluye centena, número y bola extra.</field>
+            <field name="sequence">5</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
+        <record id="website_faq_pp_6" model="website.faq">
+            <field name="question">¿En Buscar Salida Histórica, puedo obtener la información de cualquier sorteo de Pick3 Florida?</field>
+            <field name="answer">R/ Si, te muestra los resultados de sorteos para la fecha seleccionada en cada turno.</field>
+            <field name="sequence">6</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
+        <record id="website_faq_pp_7" model="website.faq">
+            <field name="question">¿Qué información brinda Líneas más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las líneas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">7</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
+        <record id="website_faq_pp_8" model="website.faq">
+            <field name="question">¿Qué información brinda Terminales más Atrasados por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada los terminales que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">8</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
+        <record id="website_faq_pp_9" model="website.faq">
+            <field name="question">¿Qué información brinda Parejas más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las parejas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente. También muestra la fecha de la última vez que salió la pareja.</field>
+            <field name="sequence">9</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
+        <record id="website_faq_pp_10" model="website.faq">
+            <field name="question">¿Qué información brinda 4 Centenas más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las centenas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">10</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
+        <record id="website_faq_pp_11" model="website.faq">
+            <field name="question">¿Qué información brinda 4 Bolas extras más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las bolas extras que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">11</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
+        </record>
 
         <!--Grupos-->
         <record id="website_faq_category_grupos" model="website.faq.category">
@@ -112,139 +161,6 @@
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
-
-        <!--Pintas-->
-        <record id="website_faq_category_pintas" model="website.faq.category">
-            <field name="name">Pintas</field>
-            <field name="sequence">10</field>
-            <field name="icon">fa-paint-brush</field>
-        </record>
-        <record id="website_faq_54" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 0?</field>
-            <field name="answer">R/ El grupo pinta 0 está integrado por los números 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90.</field>
-            <field name="sequence">54</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_55" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 1?</field>
-            <field name="answer">R/ El grupo pinta 1 está integrado por los números 1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 31, 41, 51, 61, 71, 81, 91.</field>
-            <field name="sequence">55</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_56" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 2?</field>
-            <field name="answer">R/ El grupo pinta 2 está integrado por los números 2, 12, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 42, 52, 62, 72, 82, 92.</field>
-            <field name="sequence">56</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_57" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 3?</field>
-            <field name="answer">R/ El grupo pinta 3 está integrado por los números 3, 13, 23, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 43, 53, 63, 73, 83, 93.</field>
-            <field name="sequence">57</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_58" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 4?</field>
-            <field name="answer">R/ El grupo pinta 4 está integrado por los números 4, 14, 24, 34, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 54, 64, 74, 84, 94.</field>
-            <field name="sequence">58</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_59" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 5?</field>
-            <field name="answer">R/ El grupo pinta 5 está integrado por los números 5, 15, 25, 35, 45, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 65, 75, 85, 95.</field>
-            <field name="sequence">59</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_60" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 6?</field>
-            <field name="answer">R/ El grupo pinta 6 está integrado por los números 6, 16, 26, 36, 46, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 76, 86, 96.</field>
-            <field name="sequence">60</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_61" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 7?</field>
-            <field name="answer">R/ El grupo pinta 7 está integrado por los números 7, 17, 27, 37, 47, 57, 67, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 87, 97.</field>
-            <field name="sequence">61</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-        <record id="website_faq_62" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 8?</field>
-            <field name="answer">R/ El grupo pinta 8 está integrado por los números 8, 18, 28, 38, 48, 58, 68, 78, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 98.</field>
-            <field name="sequence">62</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-         <record id="website_faq_63" model="website.faq">
-            <field name="question">¿Qué números integra el grupo pinta 9?</field>
-            <field name="answer">R/ El grupo pinta 9 está integrado por los números 9, 19, 29, 39, 49, 59, 69, 79, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99.</field>
-            <field name="sequence">63</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
-        </record>
-
-        <!--Números-->
-        <record id="website_faq_category_numeros" model="website.faq.category">
-            <field name="name">Números</field>
-            <field name="sequence">15</field>
-            <field name="icon">fa-sort-numeric-asc</field>
-        </record>
-
-        <!--Generales-->
-        <record id="website_faq_category_generales" model="website.faq.category">
-            <field name="name">Generales</field>
-            <field name="sequence">20</field>
-            <field name="icon">fa-random</field>
-        </record>
-
-        <record id="website_faq_11" model="website.faq">
-            <field name="question">¿Qué significa el atraso general de un número?</field>
-            <field name="answer">R/ El atraso general de un número es la diferencia entre la última salida registrada y la última salida del número.</field>
-            <field name="sequence">11</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
-        </record>
-        <record id="website_faq_12" model="website.faq">
-            <field name="question">¿Qué significa el atraso por la tarde de un número?</field>
-            <field name="answer">R/ El atraso por la tarde de un número es la diferencia entre la última salida registrada por la Tarde y la última salida del número por la Tarde.</field>
-            <field name="sequence">12</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
-        </record>
-        <record id="website_faq_13" model="website.faq">
-            <field name="question">¿Qué significa el atraso por la noche de un número?</field>
-            <field name="answer">R/ El atraso por la noche de un número es la diferencia entre la última salida registrada por la Noche y la última salida del número por la Noche.</field>
-            <field name="sequence">12</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
-        </record>
-        <record id="website_faq_94" model="website.faq">
-            <field name="question">¿La web garantiza ganar Sorteos de números?</field>
-            <field name="answer">R/ No, esta web solo proporciona estadísticas e información relacionada a los Sorteos diarios de Pick3 de la Florida.</field>
-            <field name="sequence">94</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
-        </record>
-        <record id="website_faq_95" model="website.faq">
-            <field name="question">¿Los números Calientes · Próximo Sorteo garantizan aceptar los Sorteos?</field>
-            <field name="answer">R/ Estos números no garantizan aceptar Sorteos, representan un ranking de probabilidad teniendo en cuenta varios criterios sobre la información registrada en el sistema.</field>
-            <field name="sequence">95</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
-        </record>
-
-
-
-
-
-
         <record id="website_faq_14" model="website.faq">
             <field name="question">¿Qué números integra el grupo 0 con Acompañante Mayor?</field>
             <field name="answer">R/ El grupo 0 con Acompañante Mayor está integrado por los números 5, 6, 7, 8, 9, 50, 60, 70, 80, 90.</field>
@@ -762,7 +678,7 @@
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
 
-         <record id="86" model="website.faq">
+         <record id="website_faq_86" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 2 ?</field>
             <field name="answer">R/ El grupo terminal 2 está integrado por los números  2, 12, 22, 32, 42, 52, 62, 72, 82, 92.</field>
             <field name="sequence">86</field>
@@ -770,7 +686,7 @@
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
 
-         <record id="87" model="website.faq">
+         <record id="website_faq_87" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 3 ?</field>
             <field name="answer">R/ El grupo terminal 3 está integrado por los números  3, 13, 23, 33, 43, 53, 63, 73, 83, 93.</field>
             <field name="sequence">87</field>
@@ -778,7 +694,7 @@
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
 
-         <record id="88" model="website.faq">
+         <record id="website_faq_88" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 4 ?</field>
             <field name="answer">R/ El grupo terminal 4 está integrado por los números  4, 14, 24, 34, 44, 54, 64, 74, 84, 94.</field>
             <field name="sequence">88</field>
@@ -786,47 +702,348 @@
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
 
-        <record id="89" model="website.faq">
+        <record id="website_faq_89" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 5 ?</field>
             <field name="answer">R/ El grupo terminal 5 está integrado por los números  5, 15, 25, 35, 45, 55, 65, 75, 85, 95.</field>
             <field name="sequence">89</field>
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
-
-         <record id="90" model="website.faq">
+         <record id="website_faq_90" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 6 ?</field>
             <field name="answer">R/ El grupo terminal 6 está integrado por los números  6, 16, 26, 36, 46, 56, 66, 76, 86, 96.</field>
             <field name="sequence">90</field>
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
-
-         <record id="91" model="website.faq">
+         <record id="website_faq_91" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 7 ?</field>
             <field name="answer">R/ El grupo terminal 7 está integrado por los números  7, 17, 27, 37, 47, 57, 67, 77, 87, 97.</field>
             <field name="sequence">91</field>
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
-
-        <record id="92" model="website.faq">
+        <record id="website_faq_92" model="website.faq">
             <field name="question">¿Qué números integra el grupo terminal 8 ?</field>
             <field name="answer">R/ El grupo terminal 8 está integrado por los números  8, 18, 28, 38, 48, 58, 68, 78, 88, 98.</field>
             <field name="sequence">92</field>
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
-
-        <record id="93" model="website.faq">
-            <field name="question">¿Qué números integra el grupo terminal 9 ?</field>
-            <field name="answer">R/ El grupo terminal 9 está integrado por los números  9, 19, 29, 39, 49, 59, 69, 79, 89, 99.</field>
+        <record id="website_faq_93" model="website.faq">
+            <field name="question">¿Qué números integra el grupo terminal 9?</field>
+            <field name="answer">R/ El grupo terminal 9 está integrado por los números 9, 19, 29, 39, 49, 59, 69, 79, 89, 99.</field>
             <field name="sequence">93</field>
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
         </record>
+        <record id="website_faq_g_94" model="website.faq">
+            <field name="question">¿Cómo se interpreta el gráfico al Consultar Históricos Generales en página de Grupos?</field>
+            <field name="answer">R/ El gráfico muestra la cantidad de veces que un grupo se ha atrasado por la general en dichos intervalos, permite determinar cuáles son los mayores atrasos que ha tenido el grupo.</field>
+            <field name="sequence">94</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
+        <record id="website_faq_g_95" model="website.faq">
+            <field name="question">¿Cómo se interpreta el gráfico al Consultar Históricos De Tarde en página de Grupos?</field>
+            <field name="answer">R/ El gráfico muestra la cantidad de veces que un grupo se ha atrasado por la tarde en dichos intervalos, permite determinar cuáles son los mayores atrasos que ha tenido el grupo.</field>
+            <field name="sequence">95</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
+        <record id="website_faq_g_96" model="website.faq">
+            <field name="question">¿Cómo se interpreta el gráfico al Consultar Históricos De Noche en página de Grupos?</field>
+            <field name="answer">R/ El gráfico muestra la cantidad de veces que un grupo se ha atrasado por la noche en dichos intervalos, permite determinar cuáles son los mayores atrasos que ha tenido el grupo.</field>
+            <field name="sequence">95</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
+        <record id="website_faq_g_97" model="website.faq">
+            <field name="question">¿Cómo se determina el atraso general de un grupo?</field>
+            <field name="answer">R/ El atraso general de un grupo lo marca el último número que salió de dicho grupo.</field>
+            <field name="sequence">97</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
+        <record id="website_faq_g_98" model="website.faq">
+            <field name="question">¿Cómo se determina el atraso por la tarde de un grupo?</field>
+            <field name="answer">R/ El atraso por la tarde de un grupo lo marca el último número que salió de dicho grupo en el turno de la tarde.</field>
+            <field name="sequence">98</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
+        <record id="website_faq_g_99" model="website.faq">
+            <field name="question">¿Cómo se determina el atraso por la noche de un grupo?</field>
+            <field name="answer">R/ El atraso por la noche de un grupo lo marca el último número que salió de dicho grupo en el turno de la noche.</field>
+            <field name="sequence">99</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
+        <record id="website_faq_g_100" model="website.faq">
+            <field name="question">¿Qué es un grupo?</field>
+            <field name="answer">R/ Conjunto de 9 a 10 números que comparten criterios en común.</field>
+            <field name="sequence">100</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_grupos"/>
+        </record>
 
+        <!--Pintas-->
+        <record id="website_faq_category_pintas" model="website.faq.category">
+            <field name="name">Pintas</field>
+            <field name="sequence">10</field>
+            <field name="icon">fa-paint-brush</field>
+        </record>
+        <record id="website_faq_54" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 0?</field>
+            <field name="answer">R/ El grupo pinta 0 está integrado por los números 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90.</field>
+            <field name="sequence">54</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_55" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 1?</field>
+            <field name="answer">R/ El grupo pinta 1 está integrado por los números 1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 31, 41, 51, 61, 71, 81, 91.</field>
+            <field name="sequence">55</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_56" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 2?</field>
+            <field name="answer">R/ El grupo pinta 2 está integrado por los números 2, 12, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 42, 52, 62, 72, 82, 92.</field>
+            <field name="sequence">56</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_57" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 3?</field>
+            <field name="answer">R/ El grupo pinta 3 está integrado por los números 3, 13, 23, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 43, 53, 63, 73, 83, 93.</field>
+            <field name="sequence">57</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_58" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 4?</field>
+            <field name="answer">R/ El grupo pinta 4 está integrado por los números 4, 14, 24, 34, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 54, 64, 74, 84, 94.</field>
+            <field name="sequence">58</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_59" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 5?</field>
+            <field name="answer">R/ El grupo pinta 5 está integrado por los números 5, 15, 25, 35, 45, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 65, 75, 85, 95.</field>
+            <field name="sequence">59</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_60" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 6?</field>
+            <field name="answer">R/ El grupo pinta 6 está integrado por los números 6, 16, 26, 36, 46, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 76, 86, 96.</field>
+            <field name="sequence">60</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_61" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 7?</field>
+            <field name="answer">R/ El grupo pinta 7 está integrado por los números 7, 17, 27, 37, 47, 57, 67, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 87, 97.</field>
+            <field name="sequence">61</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_62" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 8?</field>
+            <field name="answer">R/ El grupo pinta 8 está integrado por los números 8, 18, 28, 38, 48, 58, 68, 78, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 98.</field>
+            <field name="sequence">62</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_63" model="website.faq">
+            <field name="question">¿Qué números integra el grupo pinta 9?</field>
+            <field name="answer">R/ El grupo pinta 9 está integrado por los números 9, 19, 29, 39, 49, 59, 69, 79, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99.</field>
+            <field name="sequence">63</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_64" model="website.faq">
+            <field name="question">¿Cómo se interpreta el gráfico al Consultar Históricos Generales en página de Pintas?</field>
+            <field name="answer">R/ El gráfico muestra la cantidad de veces que una pinta se ha atrasado por la general en dichos intervalos, permite determinar cuáles son los mayores atrasos que ha tenido la pinta.</field>
+            <field name="sequence">64</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_65" model="website.faq">
+            <field name="question">¿Cómo se interpreta el gráfico al Consultar Históricos De Tarde en página de Grupos?</field>
+            <field name="answer">R/ El gráfico muestra la cantidad de veces que una pinta se ha atrasado por la tarde en dichos intervalos, permite determinar cuáles son los mayores atrasos que ha tenido la pinta.</field>
+            <field name="sequence">65</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_66" model="website.faq">
+            <field name="question">¿Cómo se interpreta el gráfico al Consultar Históricos De Noche en página de Pintas?</field>
+            <field name="answer">R/ El gráfico muestra la cantidad de veces que una pinta se ha atrasado por la noche en dichos intervalos, permite determinar cuáles son los mayores atrasos que ha tenido la pinta.</field>
+            <field name="sequence">66</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_67" model="website.faq">
+            <field name="question">¿Qué es una pinta?</field>
+            <field name="answer">R/ Grupo de 19 números formado por los grupos de líneas y terminales de un mismo número.</field>
+            <field name="sequence">67</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_68" model="website.faq">
+            <field name="question">¿Cómo se determina el atraso general de una pinta?</field>
+            <field name="answer">R/ El atraso general de una pinta lo marca el último número que salió de dicha pinta.</field>
+            <field name="sequence">68</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_69" model="website.faq">
+            <field name="question">¿Cómo se determina el atraso por la tarde de una pinta?</field>
+            <field name="answer">R/ El atraso por la tarde de una pinta lo marca el último número que salió de dicha pinta en el turno de la tarde.</field>
+            <field name="sequence">69</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
+        <record id="website_faq_p_70" model="website.faq">
+            <field name="question">¿Cómo se determina el atraso por la noche de una pinta?</field>
+            <field name="answer">R/ El atraso por la noche de una pinta lo marca el último número que salió de dicha pinta en el turno de la noche.</field>
+            <field name="sequence">70</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_pintas"/>
+        </record>
 
+        <!--Números-->
+        <record id="website_faq_category_numeros" model="website.faq.category">
+            <field name="name">Números</field>
+            <field name="sequence">15</field>
+            <field name="icon">fa-sort-numeric-asc</field>
+        </record>
+        <record id="website_faq_11" model="website.faq">
+            <field name="question">¿Qué significa el atraso general de un número?</field>
+            <field name="answer">R/ El atraso general de un número es la diferencia entre la última salida registrada y la última salida del número.</field>
+            <field name="sequence">11</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_12" model="website.faq">
+            <field name="question">¿Qué significa el atraso por la tarde de un número?</field>
+            <field name="answer">R/ El atraso por la tarde de un número es la diferencia entre la última salida registrada por la Tarde y la última salida del número por la Tarde.</field>
+            <field name="sequence">12</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_13" model="website.faq">
+            <field name="question">¿Qué significa el atraso por la noche de un número?</field>
+            <field name="answer">R/ El atraso por la noche de un número es la diferencia entre la última salida registrada por la Noche y la última salida del número por la Noche.</field>
+            <field name="sequence">13</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_n_14" model="website.faq">
+            <field name="question">¿Qué significa el círculo verde con un número pequeño en las sesiones Más Salen, Intermedios y Menos Salen de página Números?</field>
+            <field name="answer">R/ Este número representa la cantidad de veces que ha salido en el mes y año actual, los números que no tengan esto es porque no han salido en mes y año actual.</field>
+            <field name="sequence">14</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_n_15" model="website.faq">
+            <field name="question">¿Qué significa la fecha debajo de los números en las sesiones Más Salen, Intermedios y Menos Salen de página Números?</field>
+            <field name="answer">R/ Esta sección muestra la última fecha en que salió el número, día de la semana y el turno: Naranja - Tarde, Azul oscuro - Noche.</field>
+            <field name="sequence">15</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_n_16" model="website.faq">
+            <field name="question">¿Qué significa números acompañantes posteriores?</field>
+            <field name="answer">R/ Son los números que tienen más salidas posteriores al número seleccionado.</field>
+            <field name="sequence">16</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_n_17" model="website.faq">
+            <field name="question">¿Qué significa números acompañantes anteriores?</field>
+            <field name="answer">R/ Son los números que tienen más salidas anteriores al número seleccionado.</field>
+            <field name="sequence">17</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_n_18" model="website.faq">
+            <field name="question">¿Qué información brinda Más repeticiones consecutivas?</field>
+            <field name="answer">R/ Muestra los números que más se han repetido históricamente. Se considera repetición donde el número que sale coincide con la salida anterior o posterior</field>
+            <field name="sequence">18</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
+        <record id="website_faq_n_19" model="website.faq">
+            <field name="question">¿Qué información brinda Números con más pegadas?</field>
+            <field name="answer">R/ Muestra los números que más se han pegado históricamente. Se considera pegada donde el número que sale + 1 coincide con la salida posterior. Ejemplo salió el 10 y el posterior fue 11.</field>
+            <field name="sequence">18</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_numeros"/>
+        </record>
 
+        <!--Generales-->
+        <record id="website_faq_category_generales" model="website.faq.category">
+            <field name="name">Generales</field>
+            <field name="sequence">20</field>
+            <field name="icon">fa-random</field>
+        </record>
+        <record id="website_faq_94" model="website.faq">
+            <field name="question">¿La web garantiza ganar Sorteos de números?</field>
+            <field name="answer">R/ No, esta web solo proporciona estadísticas e información relacionada a los Sorteos diarios de Pick3 de la Florida.</field>
+            <field name="sequence">94</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_95" model="website.faq">
+            <field name="question">¿Los números Calientes · Próximo Sorteo garantizan aceptar los Sorteos?</field>
+            <field name="answer">R/ Estos números no garantizan aceptar Sorteos, representan un ranking de probabilidad teniendo en cuenta varios criterios sobre la información registrada en el sistema.</field>
+            <field name="sequence">95</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_gr_96" model="website.faq">
+            <field name="question">¿Qué significa Acompañante mayor?</field>
+            <field name="answer">R/ Significa que el número acompañante está entre 5 y 9.</field>
+            <field name="sequence">96</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_gr_97" model="website.faq">
+            <field name="question">¿Qué significa Acompañante menor?</field>
+            <field name="answer">R/ Significa que el número acompañante está entre 0 y 4.</field>
+            <field name="sequence">97</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_gr_98" model="website.faq">
+            <field name="question">¿Qué significa Acompañante par?</field>
+            <field name="answer">R/ Significa que el número acompañante es par.</field>
+            <field name="sequence">98</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_gr_99" model="website.faq">
+            <field name="question">¿Qué significa Acompañante impar?</field>
+            <field name="answer">R/ Significa que el número acompañante es impar.</field>
+            <field name="sequence">99</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_gr_100" model="website.faq">
+            <field name="question">¿Qué criterio se aplica para los grupos Resta?</field>
+            <field name="answer">R/ La diferencia entre decena y unidad se corresponde al nombre del grupo, cuando decena es menor a unidad se le pone un 1 delante a la decena para la resta.</field>
+            <field name="sequence">100</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_gr_101" model="website.faq">
+            <field name="question">¿Qué criterio se aplica para los grupos Suma?</field>
+            <field name="answer">R/ La suma entre decena y unidad se corresponde al nombre del grupo, cuando la suma es mayor a nueve se quita el 1 delante del resultado de la suma.</field>
+            <field name="sequence">100</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
     </data>
 </odoo>

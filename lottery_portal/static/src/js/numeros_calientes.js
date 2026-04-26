@@ -6,9 +6,8 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 
 export class NumerosCalientes extends Component {
     setup() {
-        const hour = new Date().getHours();
         this.state = useState({
-            turn: hour < 13 ? "afternoon" : "evening",
+            turn: "afternoon",
             data: { afternoon: { numbers: [], centenas: [], bola_extra: [] },
                     evening:   { numbers: [], centenas: [], bola_extra: [] } },
             loading: true,
@@ -17,6 +16,7 @@ export class NumerosCalientes extends Component {
         onWillStart(async () => {
             const data = await jsonrpc("/lottery/calientes-all", {});
             this.state.data = data || this.state.data;
+            this.state.turn = data?.last_turn === "afternoon" ? "evening" : "afternoon";
             this.state.loading = false;
         });
     }

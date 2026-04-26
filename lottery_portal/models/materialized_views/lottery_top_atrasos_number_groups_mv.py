@@ -22,7 +22,9 @@ class LotteryTopAtrasosNumberGroupsMV(models.Model):
                 ln.total_atrasadas_dia AS afternoon,
                 ln.total_atrasadas_noche AS evening,
                 TO_CHAR(last_out.last_date, 'DD/MM/YYYY') AS last_date,
-                last_out.last_turn
+                last_out.last_turn,
+                TO_CHAR(last_out_afternoon.last_date_afternoon, 'DD/MM/YYYY') AS last_date_afternoon,
+                TO_CHAR(last_out_evening.last_date_evening, 'DD/MM/YYYY') AS last_date_evening
             FROM lottery_group lg
             JOIN lottery_group_number_rel rel ON rel.group_id = lg.id
             JOIN lottery_number ln ON ln.id = rel.number_id
@@ -32,7 +34,21 @@ class LotteryTopAtrasosNumberGroupsMV(models.Model):
                 WHERE lo.number_id = ln.id
                 ORDER BY lo.date DESC, lo.id DESC
                 LIMIT 1
-            ) last_out ON TRUE;
+            ) last_out ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT lo.date AS last_date_afternoon
+                FROM lottery_output lo
+                WHERE lo.number_id = ln.id AND lo.turn_day = 'afternoon'
+                ORDER BY lo.date DESC, lo.id DESC
+                LIMIT 1
+            ) last_out_afternoon ON TRUE
+            LEFT JOIN LATERAL (
+                SELECT lo.date AS last_date_evening
+                FROM lottery_output lo
+                WHERE lo.number_id = ln.id AND lo.turn_day = 'evening'
+                ORDER BY lo.date DESC, lo.id DESC
+                LIMIT 1
+            ) last_out_evening ON TRUE;
         """)
 
         self.env.cr.execute("""CREATE INDEX idx_number_groups_mv_group_code ON lottery_number_groups_atrasos_mv (group_code);""")

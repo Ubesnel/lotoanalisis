@@ -27,11 +27,13 @@
                             <div class="stat-rank-info">
                                 <span class="stat-rank-count">× <t t-esc="gp.atraso"/></span>
                                 <span class="stat-rank-date">
-                                    <t t-if="gp.last_turn == 'afternoon'">
-                                        <i class="fa fa-sun-o" style="color:#f59e0b;margin-right:2px;"/>
-                                    </t>
-                                    <t t-else="">
-                                        <i class="fa fa-moon-o" style="color:#2d5a8e;margin-right:2px;"/>
+                                    <t t-if="state.type_pareja == 'general'">
+                                        <t t-if="gp.last_turn == 'afternoon'">
+                                            <i class="fa fa-sun-o" style="color:#f59e0b;margin-right:2px;"/>
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-moon-o" style="color:#2d5a8e;margin-right:2px;"/>
+                                        </t>
                                     </t>
                                     <i class="fa fa-calendar-o"/> <t t-esc="gp.last_date"/>
                                 </span>
