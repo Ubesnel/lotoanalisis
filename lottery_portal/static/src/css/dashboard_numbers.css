@@ -585,6 +585,56 @@
 .stat-rank-toggle:hover {
     color: #4a2c6e;
 }
+/* ── Badges último/mayor-atraso inside lineas/terminales ── */
+.srt-tags {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    flex-shrink: 0;
+}
+.srt-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+.srt-badge .fa {
+    font-size: 9px;
+    flex-shrink: 0;
+}
+.srt-badge strong {
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 0.3px;
+}
+.srt-date {
+    opacity: 0.75;
+    font-size: 9px;
+    font-weight: 400;
+}
+.srt-badge--recent {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+.srt-badge--recent .fa { color: #16a34a; }
+.srt-badge--delay {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+.srt-badge--delay .fa { color: #d97706; }
+@media (max-width: 480px) {
+    .srt-badge { font-size: 9px; padding: 2px 5px; }
+    .srt-badge strong { font-size: 10px; }
+}
 
 /* ── Etiquetas internas de Consultar acompañantes ─────────────── */
 .card-body .text-center.fw-bold[style*="color:#8c6ca8"]:not(.btn),

@@ -567,31 +567,156 @@ class LotteryStatsService(models.Model):
     @tools.ormcache()
     def get_all_atrasos_lineas(self):
         self.env.cr.execute("""
-            SELECT name, general, afternoon, evening
+            SELECT name, general, afternoon, evening,
+                   last_num_general, last_date_general,
+                   last_num_afternoon, last_date_afternoon,
+                   last_num_evening, last_date_evening,
+                   max_delay_num_general, max_delay_val_general, max_delay_date_general,
+                   max_delay_num_afternoon, max_delay_val_afternoon, max_delay_date_afternoon,
+                   max_delay_num_evening, max_delay_val_evening, max_delay_date_evening
             FROM lottery_top_atrasos_lineas_mv
-            ORDER BY general DESC
         """)
         rows = self.env.cr.dictfetchall()
+
+        def _row(r, turn):
+            return {
+                'name': r['name'],
+                'atraso': r[turn] or 0,
+                'last_num': r[f'last_num_{turn}'],
+                'last_date': r[f'last_date_{turn}'],
+                'max_delay_num': r[f'max_delay_num_{turn}'],
+                'max_delay_val': r[f'max_delay_val_{turn}'],
+                'max_delay_date': r[f'max_delay_date_{turn}'],
+            }
+
         return {
-            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
-            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
-            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+            'general':   [_row(r, 'general')   for r in sorted(rows, key=lambda x: x['general'] or 0,   reverse=True)],
+            'afternoon': [_row(r, 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening':   [_row(r, 'evening')   for r in sorted(rows, key=lambda x: x['evening'] or 0,   reverse=True)],
         }
 
     @api.model
     @tools.ormcache()
     def get_all_atrasos_terminales(self):
         self.env.cr.execute("""
-            SELECT name, general, afternoon, evening
+            SELECT name, general, afternoon, evening,
+                   last_num_general, last_date_general,
+                   last_num_afternoon, last_date_afternoon,
+                   last_num_evening, last_date_evening,
+                   max_delay_num_general, max_delay_val_general, max_delay_date_general,
+                   max_delay_num_afternoon, max_delay_val_afternoon, max_delay_date_afternoon,
+                   max_delay_num_evening, max_delay_val_evening, max_delay_date_evening
             FROM lottery_top_atrasos_terminales_mv
-            ORDER BY general DESC
         """)
         rows = self.env.cr.dictfetchall()
+
+        def _row(r, turn):
+            return {
+                'name': r['name'],
+                'atraso': r[turn] or 0,
+                'last_num': r[f'last_num_{turn}'],
+                'last_date': r[f'last_date_{turn}'],
+                'max_delay_num': r[f'max_delay_num_{turn}'],
+                'max_delay_val': r[f'max_delay_val_{turn}'],
+                'max_delay_date': r[f'max_delay_date_{turn}'],
+            }
+
         return {
-            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
-            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
-            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+            'general':   [_row(r, 'general')   for r in sorted(rows, key=lambda x: x['general'] or 0,   reverse=True)],
+            'afternoon': [_row(r, 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening':   [_row(r, 'evening')   for r in sorted(rows, key=lambda x: x['evening'] or 0,   reverse=True)],
         }
+
+    @api.model
+    @tools.ormcache()
+    def get_weekend_groups(self):
+        """Top 5 líneas y terminales que más salen en sábado + domingo."""
+        self.env.cr.execute("""
+            SELECT grp_type, grp_code, total_general, total_afternoon, total_evening
+            FROM lottery_weekend_groups_mv
+        """)
+        rows = self.env.cr.dictfetchall()
+
+        def _label(code):
+            n = int(code.split('_')[1])
+            return f'{n * 10:02d}-{n * 10 + 9:02d}' if code.startswith('line_') else f'{n:02d}→{90 + n:02d}'
+
+        def _top5(type_rows, field):
+            ordered = sorted(type_rows, key=lambda x: x[field] or 0, reverse=True)[:5]
+            max_val = ordered[0][field] if ordered else 1
+            return [
+                {
+                    'num':   r['grp_code'].split('_')[1],
+                    'label': _label(r['grp_code']),
+                    'total': r[field] or 0,
+                    'pct':   round(100 * (r[field] or 0) / max(max_val, 1)),
+                }
+                for r in ordered if (r[field] or 0) > 0
+            ]
+
+        result = {}
+        for grp_type in ('line', 'terminal'):
+            type_rows = [r for r in rows if r['grp_type'] == grp_type]
+            result[grp_type] = {
+                'general':   _top5(type_rows, 'total_general'),
+                'afternoon': _top5(type_rows, 'total_afternoon'),
+                'evening':   _top5(type_rows, 'total_evening'),
+            }
+        return result
+
+    @api.model
+    @tools.ormcache()
+    def get_all_group_sequences(self):
+        """Para cada línea/terminal, top 5 grupos que salen más frecuentemente a continuación."""
+        from collections import defaultdict
+
+        self.env.cr.execute("""
+            SELECT grp_type, from_code, to_code,
+                   total_general, total_afternoon, total_evening
+            FROM lottery_group_sequences_mv
+        """)
+        rows = self.env.cr.dictfetchall()
+
+        LINE_RANGES = {f'line_{i}': f'{i * 10:02d}-{i * 10 + 9:02d}' for i in range(10)}
+
+        data = defaultdict(lambda: defaultdict(list))
+        for r in rows:
+            data[r['grp_type']][r['from_code']].append(r)
+
+        def _label(code):
+            n = int(code.split('_')[1])
+            if code.startswith('line_'):
+                return f'{n * 10:02d}-{n * 10 + 9:02d}'
+            return f'{n:02d}→{90 + n:02d}'
+
+        def _top5(rows_list, field):
+            ordered = sorted(rows_list, key=lambda x: x[field] or 0, reverse=True)
+            top = [r for r in ordered[:5] if (r[field] or 0) > 0]
+            max_val = top[0][field] if top else 1
+            return [
+                {
+                    'label':    _label(r['to_code']),
+                    'ball_num': r['to_code'].split('_')[1],
+                    'total':    r[field] or 0,
+                    'pct':      round(100 * (r[field] or 0) / max(max_val, 1)),
+                }
+                for r in top
+            ]
+
+        result = {}
+        for grp_type in ('line', 'terminal'):
+            result[grp_type] = []
+            for i in range(10):
+                code = f'{grp_type}_{i}'
+                from_rows = data[grp_type].get(code, [])
+                result[grp_type].append({
+                    'num': str(i),
+                    'sublabel': LINE_RANGES[f'line_{i}'] if grp_type == 'line' else f'{i:02d}→{90 + i:02d}',
+                    'general':   _top5(from_rows, 'total_general'),
+                    'afternoon': _top5(from_rows, 'total_afternoon'),
+                    'evening':   _top5(from_rows, 'total_evening'),
+                })
+        return result
 
     @api.model
     @tools.ormcache()

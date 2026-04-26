@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.LotteryGroupSequences" owl="1">
+        <div class="seq-wrapper card shadow border-0 overflow-hidden mb-4">
+
+            <div class="card-header text-white text-center fw-bold">
+                <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                    <i class="fa fa-random"/>
+                    Secuencias de Grupos
+                    <i class="fa fa-arrow-right"/>
+                    Top 5 siguientes después de cada grupo
+                    <i class="fa fa-arrow-right"/>
+                    <select class="form-select form-select-sm w-auto" t-on-change="onChangeTurn">
+                        <option value="general">General</option>
+                        <option value="afternoon">☀ Tarde</option>
+                        <option value="evening">🌙 Noche</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="seq-grid">
+
+                <!-- ── Líneas ── -->
+                <div class="seq-section">
+                    <div class="seq-section-title">
+                        <i class="fa fa-bars"/> Líneas Consecutivas
+                    </div>
+                    <div class="seq-table">
+                        <t t-foreach="lineRows" t-as="row" t-key="'L' + row.num">
+                            <div class="seq-row">
+                                <div class="seq-source">
+                                    <span t-att-class="'seq-source-ball seq-from-ball--' + row.num">
+                                        L<t t-esc="row.num"/>
+                                    </span>
+                                    <span class="seq-source-sub"><t t-esc="row.sublabel"/></span>
+                                </div>
+                                <i class="fa fa-long-arrow-right seq-arrow"/>
+                                <div class="seq-followers">
+                                    <t t-foreach="topFor(row)" t-as="f" t-key="f.label">
+                                        <div t-att-class="'seq-f-item seq-f-item--' + (f_index + 1)">
+                                            <span t-att-class="'seq-f-ball seq-from-ball--' + f.ball_num">
+                                                <t t-esc="f.ball_num"/>
+                                            </span>
+                                            <span class="seq-f-label"><t t-esc="f.label"/></span>
+                                            <span class="seq-f-count">×<t t-esc="f.total"/></span>
+                                            <div class="seq-f-bar-track">
+                                                <div t-att-class="'seq-f-bar seq-f-bar--' + (f_index + 1)"
+                                                     t-att-style="'width:' + f.pct + '%'"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="seq-vdivider"/>
+
+                <!-- ── Terminales ── -->
+                <div class="seq-section">
+                    <div class="seq-section-title">
+                        <i class="fa fa-hashtag"/> Terminales Consecutivos
+                    </div>
+                    <div class="seq-table">
+                        <t t-foreach="terminalRows" t-as="row" t-key="'T' + row.num">
+                            <div class="seq-row">
+                                <div class="seq-source">
+                                    <span t-att-class="'seq-source-ball seq-from-ball--' + row.num">
+                                        T<t t-esc="row.num"/>
+                                    </span>
+                                    <span class="seq-source-sub"><t t-esc="row.sublabel"/></span>
+                                </div>
+                                <i class="fa fa-long-arrow-right seq-arrow"/>
+                                <div class="seq-followers">
+                                    <t t-foreach="topFor(row)" t-as="f" t-key="f.label">
+                                        <div t-att-class="'seq-f-item seq-f-item--' + (f_index + 1)">
+                                            <span t-att-class="'seq-f-ball seq-from-ball--' + f.ball_num">
+                                                <t t-esc="f.ball_num"/>
+                                            </span>
+                                            <span class="seq-f-label"><t t-esc="f.label"/></span>
+                                            <span class="seq-f-count">×<t t-esc="f.total"/></span>
+                                            <div class="seq-f-bar-track">
+                                                <div t-att-class="'seq-f-bar seq-f-bar--' + (f_index + 1)"
+                                                     t-att-style="'width:' + f.pct + '%'"/>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

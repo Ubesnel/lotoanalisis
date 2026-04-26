@@ -17,3 +17,5 @@ from . import lottery_top_atrasos_number_groups_mv
 from . import lottery_groups_analysis_mv
 from . import lottery_centena_weekday_mv
 from . import lottery_centena_week_mv
+from . import lottery_group_sequences_mv
+from . import lottery_weekend_groups_mv

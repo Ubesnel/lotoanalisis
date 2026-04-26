@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.LotteryWeekendGroups" owl="1">
+        <div class="wkd-card card shadow border-0 overflow-hidden mb-4">
+
+            <div class="card-header text-white text-center fw-bold">
+                <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                    <i class="fa fa-calendar-check-o"/>
+                    Sábado + Domingo · Grupos más frecuentes
+                    <i class="fa fa-arrow-right"/>
+                    <select class="form-select form-select-sm w-auto" t-on-change="onChangeTurn">
+                        <option value="general">General</option>
+                        <option value="afternoon">☀ Tarde</option>
+                        <option value="evening">🌙 Noche</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="wkd-grid">
+
+                <!-- Líneas -->
+                <div class="wkd-section">
+                    <div class="wkd-section-title">
+                        <i class="fa fa-bars"/> Líneas
+                    </div>
+                    <div class="wkd-list">
+                        <t t-foreach="lines" t-as="item" t-key="item.num">
+                            <div class="wkd-row">
+                                <div t-att-class="'wkd-rank wkd-rank--' + (item_index + 1)">
+                                    <t t-if="item_index === 0"><i class="fa fa-star"/></t>
+                                    <t t-else=""><t t-esc="item_index + 1"/></t>
+                                </div>
+                                <span t-att-class="'wkd-ball seq-from-ball--' + item.num">
+                                    L<t t-esc="item.num"/>
+                                </span>
+                                <div class="wkd-info">
+                                    <div class="wkd-info-top">
+                                        <span class="wkd-label"><t t-esc="item.label"/></span>
+                                        <span class="wkd-count"><t t-esc="item.total"/></span>
+                                    </div>
+                                    <div class="wkd-bar-track">
+                                        <div t-att-class="'wkd-bar wkd-bar--' + (item_index + 1)"
+                                             t-att-style="'width:' + item.pct + '%'"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="wkd-divider"/>
+
+                <!-- Terminales -->
+                <div class="wkd-section">
+                    <div class="wkd-section-title">
+                        <i class="fa fa-hashtag"/> Terminales
+                    </div>
+                    <div class="wkd-list">
+                        <t t-foreach="terminals" t-as="item" t-key="item.num">
+                            <div class="wkd-row">
+                                <div t-att-class="'wkd-rank wkd-rank--' + (item_index + 1)">
+                                    <t t-if="item_index === 0"><i class="fa fa-star"/></t>
+                                    <t t-else=""><t t-esc="item_index + 1"/></t>
+                                </div>
+                                <span t-att-class="'wkd-ball seq-from-ball--' + item.num">
+                                    T<t t-esc="item.num"/>
+                                </span>
+                                <div class="wkd-info">
+                                    <div class="wkd-info-top">
+                                        <span class="wkd-label"><t t-esc="item.label"/></span>
+                                        <span class="wkd-count"><t t-esc="item.total"/></span>
+                                    </div>
+                                    <div class="wkd-bar-track">
+                                        <div t-att-class="'wkd-bar wkd-bar--' + (item_index + 1)"
+                                             t-att-style="'width:' + item.pct + '%'"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </t>
+</templates>

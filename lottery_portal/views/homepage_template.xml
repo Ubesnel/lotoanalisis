@@ -127,18 +127,24 @@
                     </div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-md-3 mb-1">
+                    <div class="col-md-4 mb-1">
                         <owl-component name="lottery_portal.TopAtrasosLineas"/>
                     </div>
-                    <div class="col-md-3 mb-1">
+                    <div class="col-md-4 mb-1">
                         <owl-component name="lottery_portal.TopAtrasosTerminales"/>
                     </div>
-                    <div class="col-md-3 mb-1">
+                    <div class="col-md-4 mb-1">
                         <owl-component name="lottery_portal.TopAtrasosParejas"/>
                     </div>
-                    <div class="col-md-3 mb-1">
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4 mb-2">
                         <owl-component name="lottery_portal.Top5CentenasAtrasadas"/>
                         <owl-component name="lottery_portal.Top5BolaExtraAtrasadas"/>
+                        <owl-component name="lottery_portal.LotteryWeekendGroups"/>
+                    </div>
+                    <div class="col-md-8 mb-2">
+                        <owl-component name="lottery_portal.LotteryGroupSequences"/>
                     </div>
                 </div>
                 <div class="row">
