@@ -9,7 +9,9 @@
       "Bash(grep -E \"\\\\.\\(xml|js\\)$\")",
       "Bash(xargs ls *)",
       "Bash(python -c ' *)",
-      "Bash(grep -E \"\\(auto_database_backup|lottery_base|lottery_delays_number|lottery_fireball|lottery_groups|query_deluxe\\)$\")"
+      "Bash(grep -E \"\\(auto_database_backup|lottery_base|lottery_delays_number|lottery_fireball|lottery_groups|query_deluxe\\)$\")",
+      "Bash(python3 -c \"s='terminal_0'; print\\(s[9:]\\)\")",
+      "PowerShell(\"terminal_0\".Substring\\(9\\))"
     ]
   }
 }

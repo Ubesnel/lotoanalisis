@@ -567,30 +567,64 @@ class LotteryStatsService(models.Model):
     @tools.ormcache()
     def get_all_atrasos_lineas(self):
         self.env.cr.execute("""
-            SELECT name, general, afternoon, evening
+            SELECT name, general, afternoon, evening,
+                   last_num_general, last_date_general,
+                   last_num_afternoon, last_date_afternoon,
+                   last_num_evening, last_date_evening,
+                   max_delay_num_general, max_delay_val_general, max_delay_date_general,
+                   max_delay_num_afternoon, max_delay_val_afternoon, max_delay_date_afternoon,
+                   max_delay_num_evening, max_delay_val_evening, max_delay_date_evening
             FROM lottery_top_atrasos_lineas_mv
-            ORDER BY general DESC
         """)
         rows = self.env.cr.dictfetchall()
+
+        def _row(r, turn):
+            return {
+                'name': r['name'],
+                'atraso': r[turn] or 0,
+                'last_num': r[f'last_num_{turn}'],
+                'last_date': r[f'last_date_{turn}'],
+                'max_delay_num': r[f'max_delay_num_{turn}'],
+                'max_delay_val': r[f'max_delay_val_{turn}'],
+                'max_delay_date': r[f'max_delay_date_{turn}'],
+            }
+
         return {
-            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
-            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
-            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+            'general':   [_row(r, 'general')   for r in sorted(rows, key=lambda x: x['general'] or 0,   reverse=True)],
+            'afternoon': [_row(r, 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening':   [_row(r, 'evening')   for r in sorted(rows, key=lambda x: x['evening'] or 0,   reverse=True)],
         }
 
     @api.model
     @tools.ormcache()
     def get_all_atrasos_terminales(self):
         self.env.cr.execute("""
-            SELECT name, general, afternoon, evening
+            SELECT name, general, afternoon, evening,
+                   last_num_general, last_date_general,
+                   last_num_afternoon, last_date_afternoon,
+                   last_num_evening, last_date_evening,
+                   max_delay_num_general, max_delay_val_general, max_delay_date_general,
+                   max_delay_num_afternoon, max_delay_val_afternoon, max_delay_date_afternoon,
+                   max_delay_num_evening, max_delay_val_evening, max_delay_date_evening
             FROM lottery_top_atrasos_terminales_mv
-            ORDER BY general DESC
         """)
         rows = self.env.cr.dictfetchall()
+
+        def _row(r, turn):
+            return {
+                'name': r['name'],
+                'atraso': r[turn] or 0,
+                'last_num': r[f'last_num_{turn}'],
+                'last_date': r[f'last_date_{turn}'],
+                'max_delay_num': r[f'max_delay_num_{turn}'],
+                'max_delay_val': r[f'max_delay_val_{turn}'],
+                'max_delay_date': r[f'max_delay_date_{turn}'],
+            }
+
         return {
-            'general': [{'name': r['name'], 'atraso': r['general']} for r in sorted(rows, key=lambda x: x['general'] or 0, reverse=True)],
-            'afternoon': [{'name': r['name'], 'atraso': r['afternoon']} for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
-            'evening': [{'name': r['name'], 'atraso': r['evening']} for r in sorted(rows, key=lambda x: x['evening'] or 0, reverse=True)],
+            'general':   [_row(r, 'general')   for r in sorted(rows, key=lambda x: x['general'] or 0,   reverse=True)],
+            'afternoon': [_row(r, 'afternoon') for r in sorted(rows, key=lambda x: x['afternoon'] or 0, reverse=True)],
+            'evening':   [_row(r, 'evening')   for r in sorted(rows, key=lambda x: x['evening'] or 0,   reverse=True)],
         }
 
     @api.model

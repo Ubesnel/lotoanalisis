@@ -24,8 +24,18 @@
                             <span t-att-class="'ball stat-rank-ball ' + (group_l_index &lt; 3 ? 'ball-red' : group_l_index &lt; 7 ? 'ball-blue' : 'ball-green')">
                                 <t t-esc="group_l.name"/>
                             </span>
-                            <div class="stat-rank-info">
-                                <span class="stat-rank-count">× <t t-esc="group_l.atraso"/></span>
+                            <span class="stat-rank-count">× <t t-esc="group_l.atraso"/></span>
+                            <div class="srt-tags">
+                                <span class="srt-badge srt-badge--recent" title="Último en salir">
+                                    <i class="fa fa-check-circle"/>
+                                    <strong><t t-esc="group_l.last_num"/></strong>
+                                    <span class="srt-date"><t t-esc="group_l.last_date"/></span>
+                                </span>
+                                <span class="srt-badge srt-badge--delay" title="Mayor atraso del grupo">
+                                    <i class="fa fa-hourglass-half"/>
+                                    <strong><t t-esc="group_l.max_delay_num"/></strong>
+                                    <span class="srt-date"><t t-esc="group_l.max_delay_date"/></span>
+                                </span>
                             </div>
                         </div>
                     </t>
