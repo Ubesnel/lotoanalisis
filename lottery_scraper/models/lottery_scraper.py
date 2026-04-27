@@ -25,10 +25,26 @@ _ES_MONTHS = {
 _AFTERNOON_KW = ('midday', 'mid', 'tarde', 'afternoon', 'día', 'dia')
 _EVENING_KW   = ('evening', 'eve', 'noche', 'night')
 
+import platform
+
 
 class LotteryScraper(models.Model):
     _name = 'lottery.scraper'
     _description = 'Importador automático Florida Pick 3'
+
+    @api.model
+    def get_default_chrome_driver_path(self):
+        path = '/usr/local/bin/chromedriver'
+        if platform.system() == "Windows":
+            path = "E:\BOLITA\chromedriver-win64\chromedriver.exe"
+        return path
+
+    @api.model
+    def get_default_chrome_binary_path(self):
+        path = '/usr/bin/google-chrome'
+        if platform.system() == "Windows":
+            path = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+        return path
 
     name = fields.Char(default='Florida Pick 3', readonly=True)
 
@@ -43,12 +59,12 @@ class LotteryScraper(models.Model):
 
     # ── Configuración Chrome / Chromium ──────────────────────────
     chrome_driver_path = fields.Char(
-        'Ruta ChromeDriver (opcional)', default='',
+        'Ruta ChromeDriver (opcional)',
         help='Dejar vacío para detección automática.\n'
              'Windows: C:\\chromedriver\\chromedriver.exe\n'
-             'Ubuntu:  /usr/bin/chromedriver')
+             'Ubuntu:  /usr/bin/chromedriver', default=get_default_chrome_driver_path)
     chrome_binary_path = fields.Char(
-        'Ruta binario Chrome/Chromium (opcional)', default='',
+        'Ruta binario Chrome/Chromium (opcional)', default=get_default_chrome_binary_path,
         help='Dejar vacío para detección automática.\n'
              'Ubuntu Chromium: /usr/bin/chromium-browser\n'
              'Ubuntu Chrome:   /usr/bin/google-chrome')
@@ -156,30 +172,22 @@ class LotteryScraper(models.Model):
             ) from exc
 
         options = Options()
-        options.add_argument('--headless=new')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--disable-extensions')
-        options.add_argument('--disable-background-networking')
-        options.add_argument('--disable-default-apps')
-        options.add_argument("--single-process")
-        options.add_argument("--no-zygote")
+        options.add_argument("--headless=new")
+        options.add_argument("--window-size=1920,1080")
+        if platform.system() == 'Linux':
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--remote-debugging-port=9222")
+            # 🔥 clave para Odoo
+            options.add_argument("--user-data-dir=/var/lib/odoo/chrome")
+            options.add_argument("--data-path=/var/lib/odoo/chrome/data")
+            options.add_argument("--disk-cache-dir=/var/lib/odoo/chrome/cache")
+            # 🔥 clave para VPS
+            options.add_argument("--single-process")
+            options.add_argument("--no-zygote")
+        else:
+            options.add_argument("--disable-gpu")
 
-        # estabilidad en servidores
-        options.add_argument("--disable-software-rasterizer")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--disable-background-networking")
-        options.add_argument("--disable-sync")
-        options.add_argument("--metrics-recording-only")
-        options.add_argument("--no-first-run")
-        options.add_argument("--safebrowsing-disable-auto-update")
-
-        options.add_argument(
-            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-        )
 
         driver = self._build_driver(options)
         try:
@@ -211,19 +219,11 @@ class LotteryScraper(models.Model):
              del ChromeDriver correcto para la versión instalada de Chrome)
           3. webdriver-manager → Chromium  (Ubuntu Server sin Chrome)
         """
-        import platform
         from selenium import webdriver
         from selenium.webdriver.chrome.service import Service
 
         if self.chrome_binary_path:
             options.binary_location = self.chrome_binary_path
-
-        if platform.system() == 'Linux':
-            options.add_argument('--disable-setuid-sandbox')
-            options.add_argument('--remote-debugging-port=9222')
-            options.add_argument("--user-data-dir=/var/lib/odoo/chrome")
-            options.add_argument("--data-path=/var/lib/odoo/chrome/data")
-            options.add_argument("--disk-cache-dir=/var/lib/odoo/chrome/cache")
 
         # ── 1. Ruta manual del driver ──────────────────────────
         if self.chrome_driver_path:
