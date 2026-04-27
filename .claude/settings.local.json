@@ -13,7 +13,8 @@
       "Bash(python3 -c \"s='terminal_0'; print\\(s[9:]\\)\")",
       "PowerShell(\"terminal_0\".Substring\\(9\\))",
       "WebFetch(domain:floridalottery.com)",
-      "WebFetch(domain:www.flalottery.com)"
+      "WebFetch(domain:www.flalottery.com)",
+      "Bash(grep -E \"requirements|setup|docker|Dockerfile|\\\\.txt$|\\\\.conf|\\\\.ini\")"
     ]
   }
 }
