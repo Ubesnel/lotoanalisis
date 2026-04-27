@@ -207,7 +207,7 @@ class LotteryScraper(models.Model):
 
         if platform.system() == 'Linux':
             options.add_argument('--disable-setuid-sandbox')
-            options.add_argument('--single-process')
+            options.add_argument('--remote-debugging-port=0')
 
         # ── 1. Ruta manual del driver ──────────────────────────
         if self.chrome_driver_path:
