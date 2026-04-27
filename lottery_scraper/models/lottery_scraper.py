@@ -211,7 +211,7 @@ class LotteryScraper(models.Model):
         from selenium.webdriver.chrome.service import Service
         from webdriver_manager.chrome import ChromeDriverManager
 
-        driver_path = ChromeDriverManager(version="147.0.7727.116").install()
+        driver_path = ChromeDriverManager(driver_version="147.0.7727.116").install()
 
         return webdriver.Chrome(
             service=Service(driver_path),
