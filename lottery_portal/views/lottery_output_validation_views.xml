@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Tree principal ────────────────────────────────────────── -->
+    <record id="view_lottery_output_tree_validation" model="ir.ui.view">
+        <field name="name">lottery.output.tree.validation</field>
+        <field name="model">lottery.output</field>
+        <field name="inherit_id" ref="lottery_base.view_lottery_output_tree"/>
+        <field name="arch" type="xml">
+            <field name="complete_number" position="after">
+                <field name="hot_ok"  string="🔥 Cal."  optional="hide" widget="boolean_toggle"/>
+                <field name="cold_ok" string="❄ Frío"   optional="hide" widget="boolean_toggle"/>
+                <field name="hot_numero_ok"   string="🔥 Está en 30 números calientes?" optional="show" widget="boolean_toggle"/>
+                <field name="hot_centena_ok"  string="C🔥" optional="hide" widget="boolean_toggle"/>
+                <field name="hot_extra_ok"    string="E🔥" optional="hide" widget="boolean_toggle"/>
+                <field name="cold_numero_ok"  string="❄ No está en 30 números fríos?"  optional="show" widget="boolean_toggle"/>
+                <field name="cold_centena_ok" string="C❄"  optional="hide" widget="boolean_toggle"/>
+                <field name="cold_extra_ok"   string="E❄"  optional="hide" widget="boolean_toggle"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ── Tree "todas" ──────────────────────────────────────────── -->
+    <record id="view_lottery_output_all_tree_validation" model="ir.ui.view">
+        <field name="name">lottery.output.all.tree.validation</field>
+        <field name="model">lottery.output</field>
+        <field name="inherit_id" ref="lottery_base.view_lottery_output_all_tree"/>
+        <field name="arch" type="xml">
+            <field name="complete_number" position="after">
+                <field name="hot_numero_ok"  string="🔥 Está en 30 números calientes?" optional="show" widget="boolean_toggle"/>
+                <field name="cold_numero_ok" string="❄ No está en 30 números fríos?"   optional="show" widget="boolean_toggle"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ── Form: pestaña de validación ──────────────────────────── -->
+    <record id="view_lottery_output_form_validation" model="ir.ui.view">
+        <field name="name">lottery.output.form.validation</field>
+        <field name="model">lottery.output</field>
+        <field name="inherit_id" ref="lottery_base.view_lottery_output_form"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <notebook>
+                    <page string="Predicción vs Resultado" name="validation">
+                        <group>
+                            <group string="🔥 Caliente — ¿se cumplió?">
+                                <field name="hot_numero_ok"  string="Número en top 30 calientes"/>
+                                <field name="hot_centena_ok" string="Centena en top 4 calientes"/>
+                                <field name="hot_extra_ok"   string="Extra en top 4 calientes"/>
+                                <field name="hot_ok"         string="Satisfactorio caliente"/>
+                            </group>
+                            <group string="❄ Frío — ¿no salió ningún frío?">
+                                <field name="cold_numero_ok"  string="Número fuera del top 30 fríos"/>
+                                <field name="cold_centena_ok" string="Centena fuera del top 4 frías"/>
+                                <field name="cold_extra_ok"   string="Extra fuera del top 4 fríos"/>
+                                <field name="cold_ok"         string="Satisfactorio frío"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="validation_date" string="Validado en"/>
+                        </group>
+                    </page>
+                </notebook>
+            </sheet>
+        </field>
+    </record>
+
+    <!-- ── Filtros de búsqueda ────────────────────────────────────── -->
+    <record id="view_lottery_output_search_validation" model="ir.ui.view">
+        <field name="name">lottery.output.search.validation</field>
+        <field name="model">lottery.output</field>
+        <field name="inherit_id" ref="lottery_base.view_lottery_output_search"/>
+        <field name="arch" type="xml">
+            <filter name="lottery_output_evening" position="after">
+                <separator/>
+                <filter string="🔥 Satisfactorio caliente"
+                        name="hot_ok"
+                        domain="[('hot_ok', '=', True)]"/>
+                <filter string="❄ Satisfactorio frío"
+                        name="cold_ok"
+                        domain="[('cold_ok', '=', True)]"/>
+                <filter string="🔥❄ Ambos satisfactorios"
+                        name="both_ok"
+                        domain="[('hot_ok', '=', True), ('cold_ok', '=', True)]"/>
+                <filter string="Sin validar"
+                        name="not_validated"
+                        domain="[('validation_date', '=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

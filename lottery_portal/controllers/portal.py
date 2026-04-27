@@ -424,13 +424,27 @@ class LotteryController(http.Controller):
 
     @http.route('/lottery/numeros-calientes', type='json', auth='public', website=True)
     def get_numeros_calientes(self, turn_day='afternoon', **kwargs):
-        from datetime import date
         if turn_day not in ('afternoon', 'evening'):
             turn_day = 'afternoon'
         stats = request.env['lottery.stats.service'].sudo()
-        return stats.get_numeros_calientes(turn_day, str(date.today()))
+        return stats.get_numeros_calientes(turn_day, self._next_draw_date_str())
 
     @http.route('/lottery/calientes-all', type='json', auth='public', website=True)
     def get_calientes_all(self, **kwargs):
-        from datetime import date
-        return request.env['lottery.stats.service'].sudo().get_calientes_all(str(date.today()))
+        return request.env['lottery.stats.service'].sudo().get_calientes_all(self._next_draw_date_str())
+
+    def _next_draw_date_str(self):
+        """
+        Fecha del próximo sorteo = MAX(date) de lottery_output + 1 día.
+        Se usa como today_str para que el portal y la validación del snapshot
+        empleen el mismo contexto (día de semana, semana del mes, mes).
+        Si no hay sorteos registrados, devuelve hoy.
+        """
+        from datetime import date, timedelta
+        request.env.cr.execute(
+            "SELECT (MAX(date) + INTERVAL '1 day')::date AS next_date FROM lottery_output"
+        )
+        row = request.env.cr.dictfetchone()
+        if row and row['next_date']:
+            return str(row['next_date'])
+        return str(date.today())
