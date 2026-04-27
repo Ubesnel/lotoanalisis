@@ -5,7 +5,7 @@ from datetime import date as date_type, datetime, timezone, timedelta
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-
+import os
 _logger = logging.getLogger(__name__)
 
 SCRAPER_URL = 'https://floridalottery.com/es/games/draw-games/pick-3'
@@ -222,6 +222,14 @@ class LotteryScraper(models.Model):
         from selenium import webdriver
         from selenium.webdriver.chrome.service import Service
 
+        if platform.system() == "Linux":
+            os.environ["HOME"] = "/var/lib/odoo"
+            os.environ["XDG_RUNTIME_DIR"] = "/tmp/runtime-odoo"
+            os.makedirs("/var/lib/odoo/chrome", exist_ok=True)
+            os.makedirs("/var/lib/odoo/chrome/data", exist_ok=True)
+            os.makedirs("/var/lib/odoo/chrome/cache", exist_ok=True)
+            os.makedirs("/tmp/runtime-odoo", exist_ok=True)
+
         if self.chrome_binary_path:
             options.binary_location = self.chrome_binary_path
 
@@ -247,10 +255,12 @@ class LotteryScraper(models.Model):
             from webdriver_manager.chrome import ChromeDriverManager
             from webdriver_manager.core.os_manager import ChromeType
             _logger.info('Scraper: usando webdriver-manager (Chromium).')
+            service = Service(
+                ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(),
+                log_path="/tmp/chromedriver.log"  # 🔍 debug real si falla
+            )
             return webdriver.Chrome(
-                service=Service(
-                    ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-                ),
+                service=service,
                 options=options,
             )
         except Exception as exc:
