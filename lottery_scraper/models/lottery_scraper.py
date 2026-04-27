@@ -242,7 +242,8 @@ class LotteryScraper(models.Model):
             _logger.info('Scraper: usando Selenium Manager (detección automática).')
             return webdriver.Chrome(options=options)
         except Exception as exc:
-            _logger.warning('Scraper: Selenium Manager falló: %s', exc)
+            _logger.error('Scraper: Selenium Manager falló:', exc_info=True)
+            raise
 
         # ── 3. webdriver-manager → Chromium (Ubuntu sin Chrome) ─
         try:
