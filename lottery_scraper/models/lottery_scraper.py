@@ -207,66 +207,15 @@ class LotteryScraper(models.Model):
         return self._parse_draws(soup)
 
     def _build_driver(self, options):
-        """
-        Construye el WebDriver de forma agnóstica al SO.
-
-        Orden de intentos:
-          1. Ruta manual (chrome_driver_path configurado en el form)
-          2. Selenium Manager integrado en Selenium 4.6+ (descarga automática
-             del ChromeDriver correcto para la versión instalada de Chrome)
-          3. webdriver-manager → Chromium  (Ubuntu Server sin Chrome)
-        """
         from selenium import webdriver
         from selenium.webdriver.chrome.service import Service
+        from webdriver_manager.chrome import ChromeDriverManager
 
-        if platform.system() == "Linux":
-            os.environ["HOME"] = "/var/lib/odoo"
-            os.environ["XDG_RUNTIME_DIR"] = "/tmp/runtime-odoo"
-            os.makedirs("/var/lib/odoo/chrome", exist_ok=True)
-            os.makedirs("/var/lib/odoo/chrome/data", exist_ok=True)
-            os.makedirs("/var/lib/odoo/chrome/cache", exist_ok=True)
-            os.makedirs("/tmp/runtime-odoo", exist_ok=True)
+        driver_path = ChromeDriverManager().install()
 
-        if self.chrome_binary_path:
-            options.binary_location = self.chrome_binary_path
-
-        # ── 1. Ruta manual del driver ──────────────────────────
-        if self.chrome_driver_path:
-            _logger.info('Scraper: usando ChromeDriver manual: %s', self.chrome_driver_path)
-            return webdriver.Chrome(
-                service=Service(self.chrome_driver_path),
-                options=options,
-            )
-
-        # ── 2. Selenium Manager (Selenium ≥ 4.6) ──────────────
-        # Detecta la versión de Chrome instalada y descarga el ChromeDriver
-        # correcto automáticamente sin necesidad de webdriver-manager.
-        try:
-            _logger.info('Scraper: usando Selenium Manager (detección automática).')
-            return webdriver.Chrome(options=options)
-        except Exception as exc:
-            _logger.error('Scraper: Selenium Manager falló:', exc_info=True)
-            raise
-
-        # ── 3. webdriver-manager → Chromium (Ubuntu sin Chrome) ─
-        try:
-            from webdriver_manager.chrome import ChromeDriverManager
-            from webdriver_manager.core.os_manager import ChromeType
-            _logger.info('Scraper: usando webdriver-manager (Chromium).')
-            service = Service(
-                ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install(),
-                log_path="/tmp/chromedriver.log"  # 🔍 debug real si falla
-            )
-            return webdriver.Chrome(
-                service=service,
-                options=options,
-            )
-        except Exception as exc:
-            _logger.warning('Scraper: webdriver-manager Chromium falló: %s', exc)
-
-        raise RuntimeError(
-            'No se pudo iniciar ChromeDriver. Instala Chrome/Chromium o configura '
-            'la ruta manual en el formulario del scraper.'
+        return webdriver.Chrome(
+            service=Service(driver_path),
+            options=options,
         )
 
     # ── Lógica de importación ─────────────────────────────────────
