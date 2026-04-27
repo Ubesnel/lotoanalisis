@@ -122,6 +122,14 @@ class LotteryScraper(models.Model):
                 'message': self.last_result or 'Sin resultados nuevos.',
                 'type': 'success',
                 'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'res_model': self._name,
+                    'res_id': self.id,
+                    'view_mode': 'form',
+                    'views': [[False, 'form']],
+                    'target': 'current',
+                },
             },
         }
 
@@ -186,19 +194,17 @@ class LotteryScraper(models.Model):
 
         Orden de intentos:
           1. Ruta manual (chrome_driver_path configurado en el form)
-          2. webdriver-manager con Chrome
-          3. webdriver-manager con Chromium  (habitual en Ubuntu Server)
-          4. chromedriver en PATH del sistema
+          2. Selenium Manager integrado en Selenium 4.6+ (descarga automática
+             del ChromeDriver correcto para la versión instalada de Chrome)
+          3. webdriver-manager → Chromium  (Ubuntu Server sin Chrome)
         """
         import platform
         from selenium import webdriver
         from selenium.webdriver.chrome.service import Service
 
-        # Binario personalizado (ej. /usr/bin/chromium-browser en Ubuntu)
         if self.chrome_binary_path:
             options.binary_location = self.chrome_binary_path
 
-        # En Linux añadir flags extra que suelen necesitarse en servidor
         if platform.system() == 'Linux':
             options.add_argument('--disable-setuid-sandbox')
             options.add_argument('--single-process')
@@ -211,18 +217,16 @@ class LotteryScraper(models.Model):
                 options=options,
             )
 
-        # ── 2. webdriver-manager → Chrome ─────────────────────
+        # ── 2. Selenium Manager (Selenium ≥ 4.6) ──────────────
+        # Detecta la versión de Chrome instalada y descarga el ChromeDriver
+        # correcto automáticamente sin necesidad de webdriver-manager.
         try:
-            from webdriver_manager.chrome import ChromeDriverManager
-            _logger.info('Scraper: usando webdriver-manager (Chrome).')
-            return webdriver.Chrome(
-                service=Service(ChromeDriverManager().install()),
-                options=options,
-            )
+            _logger.info('Scraper: usando Selenium Manager (detección automática).')
+            return webdriver.Chrome(options=options)
         except Exception as exc:
-            _logger.warning('Scraper: webdriver-manager Chrome falló: %s', exc)
+            _logger.warning('Scraper: Selenium Manager falló: %s', exc)
 
-        # ── 3. webdriver-manager → Chromium (Ubuntu) ──────────
+        # ── 3. webdriver-manager → Chromium (Ubuntu sin Chrome) ─
         try:
             from webdriver_manager.chrome import ChromeDriverManager
             from webdriver_manager.core.os_manager import ChromeType
@@ -236,9 +240,10 @@ class LotteryScraper(models.Model):
         except Exception as exc:
             _logger.warning('Scraper: webdriver-manager Chromium falló: %s', exc)
 
-        # ── 4. chromedriver en PATH del sistema ────────────────
-        _logger.info('Scraper: usando chromedriver del PATH del sistema.')
-        return webdriver.Chrome(options=options)
+        raise RuntimeError(
+            'No se pudo iniciar ChromeDriver. Instala Chrome/Chromium o configura '
+            'la ruta manual en el formulario del scraper.'
+        )
 
     # ── Lógica de importación ─────────────────────────────────────
 
@@ -281,8 +286,23 @@ class LotteryScraper(models.Model):
 
             li_items = [li for li in numbers_ul.find_all('li')
                         if li.get_text(strip=True).isdigit()]
-            if len(li_items) < 4:
-                _logger.warning('Scraper: esperaba ≥4 li numéricos, encontró %d', len(li_items))
+            if len(li_items) < 3:
+                _logger.warning('Scraper: esperaba ≥3 li numéricos, encontró %d', len(li_items))
+                continue
+
+            # Bola extra: span.game-numbers__bonus-text dentro de .game-numbers__bonus
+            bonus_el = container.find(class_='game-numbers__bonus')
+            extra_text = None
+            if bonus_el:
+                bonus_span = bonus_el.find(class_='game-numbers__bonus-text')
+                if bonus_span:
+                    extra_text = bonus_span.get_text(strip=True)
+            # Fallback: 4° li si la bola extra sigue en la lista principal
+            if not extra_text and len(li_items) >= 4:
+                extra_text = li_items[3].get_text(strip=True)
+
+            if not extra_text or not extra_text.isdigit():
+                _logger.warning('Scraper: bola extra no encontrada o inválida: %r', extra_text)
                 continue
 
             draw_date = self._parse_date(date_el.get_text(strip=True))
@@ -293,7 +313,7 @@ class LotteryScraper(models.Model):
             try:
                 centena = int(li_items[0].get_text(strip=True))
                 numero  = int(li_items[1].get_text(strip=True) + li_items[2].get_text(strip=True))
-                extra   = int(li_items[3].get_text(strip=True))
+                extra   = int(extra_text)
             except ValueError as exc:
                 _logger.warning('Scraper: dígitos inválidos %s: %s', draw_date, exc)
                 continue
