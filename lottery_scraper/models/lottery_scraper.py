@@ -164,6 +164,8 @@ class LotteryScraper(models.Model):
         options.add_argument('--disable-extensions')
         options.add_argument('--disable-background-networking')
         options.add_argument('--disable-default-apps')
+        options.add_argument("--single-process")
+        options.add_argument("--no-zygote")
 
         # estabilidad en servidores
         options.add_argument("--disable-software-rasterizer")
