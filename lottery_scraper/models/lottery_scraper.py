@@ -177,14 +177,8 @@ class LotteryScraper(models.Model):
         if platform.system() == 'Linux':
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
-            options.add_argument("--remote-debugging-port=9222")
-            # 🔥 clave para Odoo
+            # 🔥 único realmente necesario en Odoo
             options.add_argument("--user-data-dir=/var/lib/odoo/chrome")
-            options.add_argument("--data-path=/var/lib/odoo/chrome/data")
-            options.add_argument("--disk-cache-dir=/var/lib/odoo/chrome/cache")
-            # 🔥 clave para VPS
-            options.add_argument("--single-process")
-            options.add_argument("--no-zygote")
         else:
             options.add_argument("--disable-gpu")
 
