@@ -161,12 +161,13 @@ class LotteryScraper(models.Model):
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-gpu')
         options.add_argument('--window-size=1920,1080')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--disable-background-networking')
+        options.add_argument('--disable-default-apps')
         options.add_argument(
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         )
-        # Silenciar logs de Chrome en consola
-        options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
         driver = self._build_driver(options)
         try:
@@ -207,7 +208,7 @@ class LotteryScraper(models.Model):
 
         if platform.system() == 'Linux':
             options.add_argument('--disable-setuid-sandbox')
-            options.add_argument('--remote-debugging-port=0')
+            options.add_argument('--remote-debugging-port=9222')
 
         # ── 1. Ruta manual del driver ──────────────────────────
         if self.chrome_driver_path:
