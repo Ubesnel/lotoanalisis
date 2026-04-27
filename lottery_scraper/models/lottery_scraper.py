@@ -2,7 +2,7 @@
 import logging
 import re
 from datetime import date as date_type, datetime, timezone, timedelta
-
+import tempfile
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 import os
@@ -178,7 +178,10 @@ class LotteryScraper(models.Model):
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
             # 🔥 único realmente necesario en Odoo
-            options.add_argument("--user-data-dir=/var/lib/odoo/chrome")
+            user_data_dir = tempfile.mkdtemp()
+            options.add_argument(f"--user-data-dir={user_data_dir}")
+            options.add_argument("--no-first-run")
+            options.add_argument("--no-default-browser-check")
         else:
             options.add_argument("--disable-gpu")
 
