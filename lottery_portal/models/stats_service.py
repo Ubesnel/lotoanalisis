@@ -1385,7 +1385,9 @@ class LotteryStatsService(models.Model):
             ORDER BY lo.date DESC, lo.id DESC
             LIMIT 5
         """)
-        recent_nums = {r['num_val'] for r in self.env.cr.dictfetchall()}
+        recent_rows = self.env.cr.dictfetchall()
+        most_recent_num = recent_rows[0]['num_val'] if recent_rows else None
+        recent_nums = {r['num_val'] for r in recent_rows}
         adjacent_nums = {
             adj for n in recent_nums
             for adj in (n - 1, n + 1)
@@ -1407,10 +1409,18 @@ class LotteryStatsService(models.Model):
             s4  =  7.0 * (1 - (rs - 1) / N)
             s5  =  5.0 * (1 - (rd - 1) / N)
             ni  = n['num_int']
-            # C7: bonus por coincidencia de dígitos (decena/unidad) con últimos 3 sorteos ±1
-            s7  = 12.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
+            # C7: bonus por dígitos de sorteos recientes ±1
+            # No aplica si el propio número acaba de salir (evita que C7 cancele a C8)
+            if ni not in recent_nums:
+                s7 = 12.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
+            else:
+                s7 = 0.0
             # C8: penalización por recencia — baja calientes, hunde fríos
-            if ni in recent_nums:
+            # El sorteo más reciente recibe penalización reforzada para garantizar que
+            # un número que acaba de salir no quede en la lista caliente del siguiente turno
+            if ni == most_recent_num:
+                s8 = -30.0
+            elif ni in recent_nums:
                 s8 = -12.0
             elif ni in adjacent_nums:
                 s8 = -6.0
@@ -1538,6 +1548,20 @@ class LotteryStatsService(models.Model):
                 return ''
             return '%s %s' % (DAY_NAMES[d.weekday()], d.strftime('%d/%m/%Y'))
 
+        def _cut_with_ties(scores_desc, n):
+            """Top-n calientes expandido: incluye empates en el límite."""
+            if len(scores_desc) <= n:
+                return scores_desc
+            boundary = scores_desc[n - 1]['score']
+            return [s for s in scores_desc if s['score'] >= boundary]
+
+        def _cut_cold_with_ties(scores_desc, n):
+            """Bottom-n fríos expandido: incluye empates en el límite."""
+            if len(scores_desc) <= n:
+                return list(reversed(scores_desc))
+            boundary = scores_desc[len(scores_desc) - n]['score']
+            return list(reversed([s for s in scores_desc if s['score'] <= boundary]))
+
         result = {}
         for turn in ('afternoon', 'evening'):
             turn_cen_mv = 'lottery_top5_centena_dia_mv'    if turn == 'afternoon' else 'lottery_top5_centena_noche_mv'
@@ -1545,8 +1569,8 @@ class LotteryStatsService(models.Model):
             next_date   = row.get('next_' + turn)
             all_scores  = self.get_numeros_calientes(turn, today_str)
             result[turn] = {
-                'numbers':         all_scores[:30],
-                'numbers_cold':    list(reversed(all_scores[-30:])),
+                'numbers':         _cut_with_ties(all_scores, 30),
+                'numbers_cold':    _cut_cold_with_ties(all_scores, 30),
                 'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg, turn_cen_mv, 'lottery_top5_centena_general_mv',    'hundreds_id'),
                 'centenas_cold':   self._get_frios_cebs(turn, 'hundreds_id'),
                 'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg, turn_be_mv,  'lottery_top5_bola_extra_general_mv', 'fireball_id'),

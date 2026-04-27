@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Corre cada 10 minutos.
+        El método evalúa internamente si estamos dentro de una ventana horaria ET:
+          · Tarde  → 2:00 PM – 3:30 PM  ET  (configurable)
+          · Noche  → 10:00 PM – 11:30 PM ET  (configurable)
+        Si el sorteo del turno ya fue importado para hoy → no hace nada.
+        Si el sitio aún no publicó el resultado → registra "PENDIENTE" y reintenta en 10 min.
+    -->
+    <record id="cron_import_lottery_results" model="ir.cron">
+        <field name="name">Pick 3 · Importar resultados diarios</field>
+        <field name="model_id" ref="model_lottery_scraper"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">10</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+        <field name="nextcall">2026-04-27 18:00:00</field>
+    </record>
+</odoo>

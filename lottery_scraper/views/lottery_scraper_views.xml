@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_scraper_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.form</field>
+        <field name="model">lottery.scraper</field>
+        <field name="arch" type="xml">
+            <form string="Importador Pick 3 · Florida">
+                <header>
+                    <button name="action_import_now"
+                            string="Importar ahora"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <group string="Ventanas horarias (hora ET)">
+                        <group string="Tarde  ☀  (sorteo ~1:30 PM ET)">
+                            <field name="afternoon_start"
+                                   widget="float_time"
+                                   string="Inicio"/>
+                            <field name="afternoon_end"
+                                   widget="float_time"
+                                   string="Fin"/>
+                        </group>
+                        <group string="Noche  🌙  (sorteo ~9:45 PM ET)">
+                            <field name="evening_start"
+                                   widget="float_time"
+                                   string="Inicio"/>
+                            <field name="evening_end"
+                                   widget="float_time"
+                                   string="Fin"/>
+                        </group>
+                    </group>
+                    <group string="Zona horaria">
+                        <field name="et_offset"
+                               string="Offset UTC→ET (horas)"
+                               help="-4 en verano EDT (mar-nov) · -5 en invierno EST (nov-mar)"/>
+                    </group>
+                    <group string="Chrome / Selenium">
+                        <field name="chrome_driver_path"
+                               string="Ruta ChromeDriver"
+                               placeholder="Vacío = auto-detección"/>
+                        <field name="chrome_binary_path"
+                               string="Binario Chrome/Chromium"
+                               placeholder="Vacío = auto-detección"/>
+                        <field name="page_load_timeout" string="Timeout (seg)"/>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                        <field name="last_result" nolabel="1" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper" model="ir.actions.act_window">
+        <field name="name">Importador Pick 3</field>
+        <field name="res_model">lottery.scraper</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_root"
+              name="Importador"
+              sequence="99"/>
+
+    <menuitem id="menu_lottery_scraper"
+              name="Pick 3 · Florida"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper"
+              sequence="10"/>
+</odoo>

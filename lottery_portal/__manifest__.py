@@ -26,6 +26,7 @@
         "views/website_layout.xml",
         "views/res_config_settings.xml",
         "views/menu.xml",
+        "views/lottery_output_validation_views.xml",
     ],
     'assets': {
         'web.assets_frontend': [
