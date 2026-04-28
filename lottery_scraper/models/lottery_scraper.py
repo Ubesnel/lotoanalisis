@@ -2,10 +2,10 @@
 import logging
 import re
 from datetime import date as date_type, datetime, timezone, timedelta
-
+import tempfile
 from odoo import api, fields, models
 from odoo.exceptions import UserError
-
+import os
 _logger = logging.getLogger(__name__)
 
 SCRAPER_URL = 'https://floridalottery.com/es/games/draw-games/pick-3'
@@ -177,14 +177,11 @@ class LotteryScraper(models.Model):
         if platform.system() == 'Linux':
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
-            options.add_argument("--remote-debugging-port=9222")
-            # 🔥 clave para Odoo
-            options.add_argument("--user-data-dir=/var/lib/odoo/chrome")
-            options.add_argument("--data-path=/var/lib/odoo/chrome/data")
-            options.add_argument("--disk-cache-dir=/var/lib/odoo/chrome/cache")
-            # 🔥 clave para VPS
-            options.add_argument("--single-process")
-            options.add_argument("--no-zygote")
+            # 🔥 único realmente necesario en Odoo
+            user_data_dir = tempfile.mkdtemp()
+            options.add_argument(f"--user-data-dir={user_data_dir}")
+            options.add_argument("--no-first-run")
+            options.add_argument("--no-default-browser-check")
         else:
             options.add_argument("--disable-gpu")
 
@@ -210,55 +207,15 @@ class LotteryScraper(models.Model):
         return self._parse_draws(soup)
 
     def _build_driver(self, options):
-        """
-        Construye el WebDriver de forma agnóstica al SO.
-
-        Orden de intentos:
-          1. Ruta manual (chrome_driver_path configurado en el form)
-          2. Selenium Manager integrado en Selenium 4.6+ (descarga automática
-             del ChromeDriver correcto para la versión instalada de Chrome)
-          3. webdriver-manager → Chromium  (Ubuntu Server sin Chrome)
-        """
         from selenium import webdriver
         from selenium.webdriver.chrome.service import Service
+        from webdriver_manager.chrome import ChromeDriverManager
 
-        if self.chrome_binary_path:
-            options.binary_location = self.chrome_binary_path
+        driver_path = ChromeDriverManager(driver_version="147.0.7727.116").install()
 
-        # ── 1. Ruta manual del driver ──────────────────────────
-        if self.chrome_driver_path:
-            _logger.info('Scraper: usando ChromeDriver manual: %s', self.chrome_driver_path)
-            return webdriver.Chrome(
-                service=Service(self.chrome_driver_path),
-                options=options,
-            )
-
-        # ── 2. Selenium Manager (Selenium ≥ 4.6) ──────────────
-        # Detecta la versión de Chrome instalada y descarga el ChromeDriver
-        # correcto automáticamente sin necesidad de webdriver-manager.
-        try:
-            _logger.info('Scraper: usando Selenium Manager (detección automática).')
-            return webdriver.Chrome(options=options)
-        except Exception as exc:
-            _logger.warning('Scraper: Selenium Manager falló: %s', exc)
-
-        # ── 3. webdriver-manager → Chromium (Ubuntu sin Chrome) ─
-        try:
-            from webdriver_manager.chrome import ChromeDriverManager
-            from webdriver_manager.core.os_manager import ChromeType
-            _logger.info('Scraper: usando webdriver-manager (Chromium).')
-            return webdriver.Chrome(
-                service=Service(
-                    ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
-                ),
-                options=options,
-            )
-        except Exception as exc:
-            _logger.warning('Scraper: webdriver-manager Chromium falló: %s', exc)
-
-        raise RuntimeError(
-            'No se pudo iniciar ChromeDriver. Instala Chrome/Chromium o configura '
-            'la ruta manual en el formulario del scraper.'
+        return webdriver.Chrome(
+            service=Service(driver_path),
+            options=options,
         )
 
     # ── Lógica de importación ─────────────────────────────────────
