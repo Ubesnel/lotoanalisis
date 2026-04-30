@@ -3,23 +3,42 @@
     <t t-name="lottery_portal.NumerosCalientes" owl="1">
         <div class="nc-card card shadow border-0 overflow-hidden">
 
-            <div class="card-header text-white text-center fw-bold">
-                <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                    <i class="fa fa-fire nc-fire-icon"/>
-                    Calientes · Próximo Sorteo
-                    <t t-if="!state.loading and nextDraw">
-                        <i class="fa fa-arrow-right"/>
-                        <span class="nc-next-date">
-                            <i class="fa fa-calendar-o"/> <t t-esc="nextDraw"/>
-                        </span>
-                    </t>
-                    <i class="fa fa-arrow-right"/>
-                    <select class="form-select form-select-sm w-auto" t-on-change="onChangeTurn">
-                        <option value="afternoon" t-att-selected="state.turn === 'afternoon' ? 'selected' : false">☀ Tarde</option>
-                        <option value="evening"   t-att-selected="state.turn === 'evening'   ? 'selected' : false">🌙 Noche</option>
-                    </select>
+            <!-- ══ Header Calientes ══ -->
+            <div class="nc-hdr nc-hdr--hot"
+                 t-on-click="toggleHot"
+                 role="button"
+                 t-att-aria-expanded="state.showHot ? 'true' : 'false'">
+                <div class="nc-hdr-main">
+
+                    <!-- izquierda -->
+                    <div class="nc-hdr-left">
+                        <div class="nc-hdr-icon">
+                            <i class="fa fa-fire"/>
+                        </div>
+                        <div class="nc-hdr-titles">
+                            <span class="nc-hdr-title">Calientes</span>
+                            <span class="nc-hdr-tagline">Próximo Sorteo · 17 criterios</span>
+                        </div>
+                        <div t-att-class="'nc-hdr-chevron ' + (state.showHot ? 'nc-hdr-chevron--open' : '')">
+                            <i class="fa fa-chevron-down"/>
+                        </div>
+                    </div>
+
+                    <!-- derecha: fecha + selector (sin toggle) -->
+                    <div class="nc-hdr-right" t-on-click.stop="">
+                        <t t-if="!state.loading and nextDraw">
+                            <span class="nc-hdr-date">
+                                <i class="fa fa-calendar-o"/>
+                                <t t-esc="nextDraw"/>
+                            </span>
+                        </t>
+                        <select class="nc-hdr-select" t-on-change="onChangeTurn">
+                            <option value="afternoon" t-att-selected="state.turn === 'afternoon' ? 'selected' : false">☀ Tarde</option>
+                            <option value="evening"   t-att-selected="state.turn === 'evening'   ? 'selected' : false">🌙 Noche</option>
+                        </select>
+                    </div>
+
                 </div>
-                <div class="nc-subtitle mt-1">Basado en 8 criterios de ponderación</div>
             </div>
 
             <t t-if="state.loading">
@@ -27,49 +46,27 @@
             </t>
             <t t-else="">
 
-                <!-- Zona 1: Números -->
-                <div class="nc-section">
-                    <div class="nc-section-head">
-                        <span class="nc-section-title"><i class="fa fa-sort-numeric-asc"/> Números</span>
-                        <div class="nc-legend-inline">
-                            <span class="nc-pip nc-pip--hot"/><span>1–10</span>
-                            <span class="nc-pip nc-pip--warm"/><span>11–20</span>
-                            <span class="nc-pip nc-pip--cool"/><span>21–30</span>
-                        </div>
-                    </div>
-                    <div class="nc-numbers-grid">
-                        <t t-foreach="numbers" t-as="num" t-key="num.name">
-                            <div class="nc-cell">
-                                <!-- Float wrapper solo para top 10 con delay escalonado -->
-                                <div t-att-class="num_index &lt; 10 ? 'nc-float' : ''"
-                                     t-att-style="num_index &lt; 10 ? 'animation-delay:' + (num_index * 0.22) + 's' : ''">
-                                    <span t-att-class="'nc-ball ' + (num_index &lt; 10 ? 'nc-ball-hot' : num_index &lt; 20 ? 'nc-ball-warm' : 'nc-ball-cool')"
-                                          t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
-                                        <t t-esc="num.name"/>
-                                    </span>
-                                </div>
+                <!-- ── Contenido Calientes (colapsable) ── -->
+                <div t-att-class="'nc-collapsible ' + (state.showHot ? 'nc-collapsible--open' : '')">
+
+                    <!-- Zona 1: Números -->
+                    <div class="nc-section">
+                        <div class="nc-section-head">
+                            <span class="nc-section-title"><i class="fa fa-sort-numeric-asc"/> Números</span>
+                            <div class="nc-legend-inline">
+                                <span class="nc-pip nc-pip--hot"/><span>1–10</span>
+                                <span class="nc-pip nc-pip--warm"/><span>11–20</span>
+                                <span class="nc-pip nc-pip--cool"/><span>21–30</span>
                             </div>
-                        </t>
-                    </div>
-                </div>
-
-                <!-- Zona 2: Centenas + Bola Extra -->
-                <div class="nc-cebs-row">
-
-                    <div class="nc-cebs-col">
-                        <div class="nc-section-head">
-                            <span class="nc-section-title"><i class="fa fa-th"/> Centenas</span>
-                            <span class="nc-section-badge">Top 4</span>
                         </div>
-                        <div class="nc-cebs-grid">
-                            <t t-foreach="centenas" t-as="cen" t-key="cen.name">
-                                <div class="nc-ceb-item">
-                                    <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
-                                    <!-- Float solo para top 2 -->
-                                    <div t-att-class="cen_index &lt; 2 ? 'nc-float' : ''"
-                                         t-att-style="cen_index &lt; 2 ? 'animation-delay:' + (cen_index * 0.45) + 's' : ''">
-                                        <span t-att-class="'nc-badge-ceb ' + (cen_index &lt; 2 ? 'nc-badge-ceb--hot' : 'nc-badge-ceb--warm')">
-                                            <t t-esc="cen.name"/>
+                        <div class="nc-numbers-grid">
+                            <t t-foreach="numbers" t-as="num" t-key="num.name">
+                                <div class="nc-cell">
+                                    <div t-att-class="num_index &lt; 10 ? 'nc-float' : ''"
+                                         t-att-style="num_index &lt; 10 ? 'animation-delay:' + (num_index * 0.22) + 's' : ''">
+                                        <span t-att-class="'nc-ball ' + (num_index &lt; 10 ? 'nc-ball-hot' : num_index &lt; 20 ? 'nc-ball-warm' : 'nc-ball-cool')"
+                                              t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
+                                            <t t-esc="num.name"/>
                                         </span>
                                     </div>
                                 </div>
@@ -77,88 +74,114 @@
                         </div>
                     </div>
 
-                    <div class="nc-cebs-divider"/>
-
-                    <div class="nc-cebs-col">
-                        <div class="nc-section-head">
-                            <span class="nc-section-title"><i class="fa fa-star"/> Bola Extra</span>
-                            <span class="nc-section-badge">Top 4</span>
-                        </div>
-                        <div class="nc-cebs-grid">
-                            <t t-foreach="bolaExtra" t-as="be" t-key="be.name">
-                                <div class="nc-ceb-item">
-                                    <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
-                                    <div t-att-class="be_index &lt; 2 ? 'nc-float' : ''"
-                                         t-att-style="be_index &lt; 2 ? 'animation-delay:' + (be_index * 0.45) + 's' : ''">
-                                        <span t-att-class="'nc-badge-ceb nc-badge-ceb--extra ' + (be_index &lt; 2 ? 'nc-badge-ceb--extra-hot' : 'nc-badge-ceb--extra-warm')">
-                                            <t t-esc="be.name"/>
-                                        </span>
+                    <!-- Zona 2: Centenas + Bola Extra -->
+                    <div class="nc-cebs-row">
+                        <div class="nc-cebs-col">
+                            <div class="nc-section-head">
+                                <span class="nc-section-title"><i class="fa fa-th"/> Centenas</span>
+                                <span class="nc-section-badge">Top 4</span>
+                            </div>
+                            <div class="nc-cebs-grid">
+                                <t t-foreach="centenas" t-as="cen" t-key="cen.name">
+                                    <div class="nc-ceb-item">
+                                        <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
+                                        <div t-att-class="cen_index &lt; 2 ? 'nc-float' : ''"
+                                             t-att-style="cen_index &lt; 2 ? 'animation-delay:' + (cen_index * 0.45) + 's' : ''">
+                                            <span t-att-class="'nc-badge-ceb ' + (cen_index &lt; 2 ? 'nc-badge-ceb--hot' : 'nc-badge-ceb--warm')">
+                                                <t t-esc="cen.name"/>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </t>
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="nc-cebs-divider"/>
+
+                        <div class="nc-cebs-col">
+                            <div class="nc-section-head">
+                                <span class="nc-section-title"><i class="fa fa-star"/> Bola Extra</span>
+                                <span class="nc-section-badge">Top 4</span>
+                            </div>
+                            <div class="nc-cebs-grid">
+                                <t t-foreach="bolaExtra" t-as="be" t-key="be.name">
+                                    <div class="nc-ceb-item">
+                                        <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
+                                        <div t-att-class="be_index &lt; 2 ? 'nc-float' : ''"
+                                             t-att-style="be_index &lt; 2 ? 'animation-delay:' + (be_index * 0.45) + 's' : ''">
+                                            <span t-att-class="'nc-badge-ceb nc-badge-ceb--extra ' + (be_index &lt; 2 ? 'nc-badge-ceb--extra-hot' : 'nc-badge-ceb--extra-warm')">
+                                                <t t-esc="be.name"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
                         </div>
                     </div>
 
-                </div>
+                </div><!-- /nc-collapsible calientes -->
 
-                <!-- Header Más Fríos -->
-                <div class="card-header text-white text-center fw-bold nc-cold-header">
-                    <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                        <i class="fa fa-snowflake-o nc-snow-icon"/>
-                        Más Fríos · Próximo Sorteo
-                        <t t-if="nextDraw">
-                            <i class="fa fa-arrow-right"/>
-                            <span class="nc-next-date">
-                                <i class="fa fa-calendar-o"/> <t t-esc="nextDraw"/>
+                <!-- ══ Header Fríos ══ -->
+                <div class="nc-hdr nc-hdr--cold"
+                     t-on-click="toggleCold"
+                     role="button"
+                     t-att-aria-expanded="state.showCold ? 'true' : 'false'">
+                    <div class="nc-hdr-main">
+
+                        <!-- izquierda -->
+                        <div class="nc-hdr-left">
+                            <div class="nc-hdr-icon">
+                                <i class="fa fa-snowflake-o"/>
+                            </div>
+                            <div class="nc-hdr-titles">
+                                <span class="nc-hdr-title">Más Fríos</span>
+                                <span class="nc-hdr-tagline">Próximo Sorteo · 17 criterios</span>
+                            </div>
+                            <div t-att-class="'nc-hdr-chevron ' + (state.showCold ? 'nc-hdr-chevron--open' : '')">
+                                <i class="fa fa-chevron-down"/>
+                            </div>
+                        </div>
+
+                        <!-- derecha: fecha + turno activo -->
+                        <div class="nc-hdr-right">
+                            <t t-if="nextDraw">
+                                <span class="nc-hdr-date">
+                                    <i class="fa fa-calendar-o"/>
+                                    <t t-esc="nextDraw"/>
+                                </span>
+                            </t>
+                            <span class="nc-hdr-badge">
+                                <t t-if="state.turn === 'afternoon'">☀ Tarde</t>
+                                <t t-else="">🌙 Noche</t>
                             </span>
-                        </t>
+                        </div>
+
                     </div>
-                    <div class="nc-subtitle mt-1">Basado en 8 criterios de ponderación</div>
                 </div>
 
-                <!-- Zona 3: Más Fríos -->
-                <div class="nc-section nc-section--cold">
-                    <div class="nc-section-head">
-                        <span class="nc-section-title nc-section-title--cold">
-                            <i class="fa fa-snowflake-o"/> Más Fríos
-                        </span>
-                        <div class="nc-legend-inline">
-                            <span class="nc-pip nc-pip--cold1"/><span>1–10</span>
-                            <span class="nc-pip nc-pip--cold2"/><span>11–20</span>
-                            <span class="nc-pip nc-pip--cold3"/><span>21–30</span>
-                        </div>
-                    </div>
-                    <div class="nc-numbers-grid">
-                        <t t-foreach="numbersCold" t-as="num" t-key="'cold_' + num.name">
-                            <div class="nc-cell">
-                                <div t-att-class="num_index &lt; 10 ? 'nc-float' : ''"
-                                     t-att-style="num_index &lt; 10 ? 'animation-delay:' + (num_index * 0.22) + 's' : ''">
-                                    <span t-att-class="'nc-ball ' + (num_index &lt; 10 ? 'nc-ball-cold1' : num_index &lt; 20 ? 'nc-ball-cold2' : 'nc-ball-cold3')"
-                                          t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
-                                        <t t-esc="num.name"/>
-                                    </span>
-                                </div>
+                <!-- ── Contenido Fríos (colapsable) ── -->
+                <div t-att-class="'nc-collapsible nc-collapsible--cold ' + (state.showCold ? 'nc-collapsible--open' : '')">
+
+                    <!-- Zona 3: Números fríos -->
+                    <div class="nc-section nc-section--cold">
+                        <div class="nc-section-head">
+                            <span class="nc-section-title nc-section-title--cold">
+                                <i class="fa fa-snowflake-o"/> Más Fríos
+                            </span>
+                            <div class="nc-legend-inline">
+                                <span class="nc-pip nc-pip--cold1"/><span>1–10</span>
+                                <span class="nc-pip nc-pip--cold2"/><span>11–20</span>
+                                <span class="nc-pip nc-pip--cold3"/><span>21–30</span>
                             </div>
-                        </t>
-                    </div>
-                </div>
-
-                <!-- Zona 4: Centenas frías + Bola Extra fría -->
-                <div class="nc-cebs-row">
-
-                    <div class="nc-cebs-col">
-                        <div class="nc-section-head">
-                            <span class="nc-section-title nc-section-title--cold"><i class="fa fa-th"/> Centenas frías</span>
-                            <span class="nc-section-badge">Top 2</span>
                         </div>
-                        <div class="nc-cebs-grid">
-                            <t t-foreach="centenasCold" t-as="cen" t-key="'ccold_' + cen.name">
-                                <div class="nc-ceb-item">
-                                    <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
-                                    <div t-att-class="cen_index &lt; 2 ? 'nc-float' : ''"
-                                         t-att-style="cen_index &lt; 2 ? 'animation-delay:' + (cen_index * 0.45) + 's' : ''">
-                                        <span t-att-class="'nc-badge-ceb nc-badge-ceb--cold ' + (cen_index &lt; 2 ? 'nc-badge-ceb--cold1' : 'nc-badge-ceb--cold2')">
-                                            <t t-esc="cen.name"/>
+                        <div class="nc-numbers-grid">
+                            <t t-foreach="numbersCold" t-as="num" t-key="'cold_' + num.name">
+                                <div class="nc-cell">
+                                    <div t-att-class="num_index &lt; 10 ? 'nc-float' : ''"
+                                         t-att-style="num_index &lt; 10 ? 'animation-delay:' + (num_index * 0.22) + 's' : ''">
+                                        <span t-att-class="'nc-ball ' + (num_index &lt; 10 ? 'nc-ball-cold1' : num_index &lt; 20 ? 'nc-ball-cold2' : 'nc-ball-cold3')"
+                                              t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
+                                            <t t-esc="num.name"/>
                                         </span>
                                     </div>
                                 </div>
@@ -166,29 +189,52 @@
                         </div>
                     </div>
 
-                    <div class="nc-cebs-divider"/>
-
-                    <div class="nc-cebs-col">
-                        <div class="nc-section-head">
-                            <span class="nc-section-title nc-section-title--cold"><i class="fa fa-star"/> Bola Extra fría</span>
-                            <span class="nc-section-badge">Top 2</span>
-                        </div>
-                        <div class="nc-cebs-grid">
-                            <t t-foreach="bolaExtraCold" t-as="be" t-key="'becold_' + be.name">
-                                <div class="nc-ceb-item">
-                                    <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
-                                    <div t-att-class="be_index &lt; 2 ? 'nc-float' : ''"
-                                         t-att-style="be_index &lt; 2 ? 'animation-delay:' + (be_index * 0.45) + 's' : ''">
-                                        <span t-att-class="'nc-badge-ceb nc-badge-ceb--extra nc-badge-ceb--cold ' + (be_index &lt; 2 ? 'nc-badge-ceb--cold1' : 'nc-badge-ceb--cold2')">
-                                            <t t-esc="be.name"/>
-                                        </span>
+                    <!-- Zona 4: Centenas frías + Bola Extra fría -->
+                    <div class="nc-cebs-row">
+                        <div class="nc-cebs-col">
+                            <div class="nc-section-head">
+                                <span class="nc-section-title nc-section-title--cold"><i class="fa fa-th"/> Centenas frías</span>
+                                <span class="nc-section-badge">Top 4</span>
+                            </div>
+                            <div class="nc-cebs-grid">
+                                <t t-foreach="centenasCold" t-as="cen" t-key="'ccold_' + cen.name">
+                                    <div class="nc-ceb-item">
+                                        <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
+                                        <div t-att-class="cen_index &lt; 2 ? 'nc-float' : ''"
+                                             t-att-style="cen_index &lt; 2 ? 'animation-delay:' + (cen_index * 0.45) + 's' : ''">
+                                            <span t-att-class="'nc-badge-ceb nc-badge-ceb--cold ' + (cen_index &lt; 2 ? 'nc-badge-ceb--cold1' : 'nc-badge-ceb--cold2')">
+                                                <t t-esc="cen.name"/>
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            </t>
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="nc-cebs-divider"/>
+
+                        <div class="nc-cebs-col">
+                            <div class="nc-section-head">
+                                <span class="nc-section-title nc-section-title--cold"><i class="fa fa-star"/> Bola Extra fría</span>
+                                <span class="nc-section-badge">Top 4</span>
+                            </div>
+                            <div class="nc-cebs-grid">
+                                <t t-foreach="bolaExtraCold" t-as="be" t-key="'becold_' + be.name">
+                                    <div class="nc-ceb-item">
+                                        <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
+                                        <div t-att-class="be_index &lt; 2 ? 'nc-float' : ''"
+                                             t-att-style="be_index &lt; 2 ? 'animation-delay:' + (be_index * 0.45) + 's' : ''">
+                                            <span t-att-class="'nc-badge-ceb nc-badge-ceb--extra nc-badge-ceb--cold ' + (be_index &lt; 2 ? 'nc-badge-ceb--cold1' : 'nc-badge-ceb--cold2')">
+                                                <t t-esc="be.name"/>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
                         </div>
                     </div>
 
-                </div>
+                </div><!-- /nc-collapsible fríos -->
 
             </t>
         </div>

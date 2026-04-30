@@ -11,6 +11,8 @@ export class NumerosCalientes extends Component {
             data: { afternoon: { numbers: [], centenas: [], bola_extra: [] },
                     evening:   { numbers: [], centenas: [], bola_extra: [] } },
             loading: true,
+            showHot:  false,   // sección calientes colapsada por defecto
+            showCold: false,   // sección fríos colapsada por defecto
         });
 
         onWillStart(async () => {
@@ -31,6 +33,8 @@ export class NumerosCalientes extends Component {
     get nextDraw()       { return this.current.next_draw       || ''; }
 
     onChangeTurn(ev) { this.state.turn = ev.target.value; }
+    toggleHot()      { this.state.showHot  = !this.state.showHot;  }
+    toggleCold()     { this.state.showCold = !this.state.showCold; }
 }
 
 NumerosCalientes.template = "lottery_portal.NumerosCalientes";
