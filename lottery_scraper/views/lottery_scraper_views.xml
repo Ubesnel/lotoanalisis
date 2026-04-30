@@ -14,7 +14,7 @@
                 </header>
                 <sheet>
                     <group string="Ventanas horarias (hora ET)">
-                        <group string="Tarde  ☀  (sorteo ~1:30 PM ET)">
+                        <group string="TARDE ☀ (sorteo ~1:30 PM ET)">
                             <field name="afternoon_start"
                                    widget="float_time"
                                    string="Inicio"/>
@@ -22,7 +22,7 @@
                                    widget="float_time"
                                    string="Fin"/>
                         </group>
-                        <group string="Noche  🌙  (sorteo ~9:45 PM ET)">
+                        <group string="NOCHE 🌙 (sorteo ~9:45 PM ET)">
                             <field name="evening_start"
                                    widget="float_time"
                                    string="Inicio"/>
@@ -36,19 +36,22 @@
                                string="Offset UTC→ET (horas)"
                                help="-4 en verano EDT (mar-nov) · -5 en invierno EST (nov-mar)"/>
                     </group>
-                    <group string="Chrome / Selenium">
-                        <field name="chrome_driver_path"
-                               string="Ruta ChromeDriver"
-                               placeholder="Vacío = auto-detección"/>
-                        <field name="chrome_binary_path"
-                               string="Binario Chrome/Chromium"
-                               placeholder="Vacío = auto-detección"/>
-                        <field name="page_load_timeout" string="Timeout (seg)"/>
+                    <group string="Importación manual por rango">
+                        <group>
+                            <field name="date_from" string="Fecha desde"/>
+                            <field name="date_to"   string="Fecha hasta"/>
+                        </group>
+                        <group>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                            <field name="api_url"
+                                   string="URL de API"
+                                   placeholder="Vacío = API oficial Florida Lottery"/>
+                        </group>
                     </group>
                     <group string="Estado">
                         <field name="last_run" string="Última ejecución"/>
-                        <field name="last_result" nolabel="1" widget="text"/>
                     </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
                 </sheet>
             </form>
         </field>
