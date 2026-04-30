@@ -186,22 +186,12 @@ class LotteryScraper(models.Model):
             'last_result': self._build_result_html(log_lines),
         })
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Importación completada',
-                'message': self.last_result or 'Sin resultados nuevos.',
-                'type': 'success',
-                'sticky': False,
-                'next': {
-                    'type': 'ir.actions.act_window',
-                    'res_model': self._name,
-                    'res_id': self.id,
-                    'view_mode': 'form',
-                    'views': [[False, 'form']],
-                    'target': 'current',
-                },
-            },
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [[False, 'form']],
+            'target': 'current',
         }
 
     # ── Scraping con requests (sin Selenium) ─────────────────────
