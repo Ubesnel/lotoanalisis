@@ -14,7 +14,9 @@
       "PowerShell(\"terminal_0\".Substring\\(9\\))",
       "WebFetch(domain:floridalottery.com)",
       "WebFetch(domain:www.flalottery.com)",
-      "Bash(grep -E \"requirements|setup|docker|Dockerfile|\\\\.txt$|\\\\.conf|\\\\.ini\")"
+      "Bash(grep -E \"requirements|setup|docker|Dockerfile|\\\\.txt$|\\\\.conf|\\\\.ini\")",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import sys; print\\(sys.version\\)\")"
     ]
   }
 }

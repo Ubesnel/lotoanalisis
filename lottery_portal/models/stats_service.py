@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 
 from odoo import models, api, tools
 import calendar
@@ -1062,7 +1062,7 @@ class LotteryStatsService(models.Model):
         if not rows:
             return {}
 
-        # 🔹 helpers
+        # ðŸ”¹ helpers
         def top(rows, field, n=1, reverse=True):
             return sorted(rows, key=lambda x: x[field] or 0, reverse=reverse)[:n]
 
@@ -1075,7 +1075,7 @@ class LotteryStatsService(models.Model):
         def s_list(lst):
             return [s(x) for x in lst]
 
-        # 🔹 MAPAS DINÁMICOS
+        # ðŸ”¹ MAPAS DINÁMICOS
 
         month_map = {
             1: "cant_salidas_enero",
@@ -1256,24 +1256,37 @@ class LotteryStatsService(models.Model):
         Ponderación separada: estadísticas GENERALES aplican igual a ambos turnos;
         estadísticas POR TURNO solo suman al turno correspondiente.
 
+        Todos los criterios están en rango 7–15 pts (ratio máx/mín ≤ 2×) para que
+        ningún criterio individual domine el ranking.
+
         GENERALES (mismo peso tarde y noche):
-          C1    22 pts  Top 70 salidores del mes actual
-          C7    12 pts  Decena/unidad coincide con dígitos de últimos 3 sorteos
-                        (se consideran también los vecinos ±1 de cada número sorteado)
-          C8   −12 pts  Penalización por recencia (últimos 5 sorteos):
-                        −12 si el número salió exacto, −6 si es ±1 de alguno
-                        Score bajo → improbable → cae en lista de fríos
-          C2g   10 pts  Top 5 grupos más atrasados — GENERAL
-          C3g    9 pts  Top 5 pintas más atrasadas — GENERAL
-          C4     7 pts  Más sale en la semana del mes actual
-          C5     5 pts  Más sale en el día de la semana actual
+          C1   15 pts  Top 70 salidores del mes actual
+          C2   13 pts  Top 5 líneas (decenas) que más siguen a la última sorteada
+          C3   11 pts  Top 5 terminales que más siguen al último sorteado
+                       +4 pts bonus si coinciden línea Y terminal
+          C4   10 pts  Líneas pendientes: sin cumplir el patrón en últimos 4 ciclos
+          C5    9 pts  Terminales pendientes: igual lógica que C4
+          C6   10 pts  Top 5 grupos más atrasados — GENERAL
+          C7    9 pts  Top 5 pintas más atrasadas — GENERAL
+          C8    8 pts  Semana del mes: 40 % frecuencia + 60 % atraso acumulado
+          C9    7 pts  Día de la semana: 40 % frecuencia + 60 % atraso acumulado
+          C13  10 pts  Decena/unidad coincide con dígitos de últimos 3 sorteos ±1
+          C14 −20 pts  Penalización por recencia (−20 exacto / −10 reciente / −5 adyacente)
+          C15   8 pts  Top 5 líneas en fin de semana  (solo sáb/dom)
+          C16   7 pts  Top 5 terminales en fin de semana (solo sáb/dom)
+                       +3 pts bonus si coinciden C15 y C16
+          C17   5 pts  Presión de fríos: solo bottom-30 del mes, escalado por la
+                       proporción de los últimos 6 sorteos que fueron del top-70
+                       (0 → sin presión · 5 → todos los recientes eran top-70)
 
         POR TURNO (tarde → afternoon / noche → evening):
-          C2t   14 pts  Top 5 grupos más atrasados del turno
-          C3t   11 pts  Top 5 pintas más atrasadas del turno
-          C6    10 pts  Salidor del mes × atraso del turno
+          C10  12 pts  Top 5 grupos más atrasados del turno
+          C11  10 pts  Top 5 pintas más atrasadas del turno
+          C12   9 pts  Salidor del mes × atraso del turno
 
-        Máx: ~100 pts  (C8 puede restar hasta 12 pts adicionales)
+        Máx semana:      ~112 pts aprox. (sin penalización, rango comprimido)
+        Máx fin de semana: ~130 pts aprox. (+ C15 + C16 + bonus)
+        Bottom-30 max C17: +5 pts adicionales cuando cold_pressure = 1.0
         """
         from datetime import date as _date
         today = _date.fromisoformat(today_str)
@@ -1283,6 +1296,29 @@ class LotteryStatsService(models.Model):
 
         if turn_day not in ('afternoon', 'evening'):
             turn_day = 'afternoon'
+
+        # ── Resumen de criterios (rango 7–15 pts, ratio ≤ 2×) ──────────────
+        # GENERALES:
+        #   C1   15 pts  Top 70 salidores del mes actual
+        #   C2   13 pts  Top 5 líneas que más siguen a la última línea sorteada
+        #   C3   11 pts  Top 5 terminales que más siguen al último terminal
+        #                +4 pts bonus si coinciden línea Y terminal
+        #   C4   10 pts  Líneas pendientes (sin cumplir en 4 ciclos recientes)
+        #   C5    9 pts  Terminales pendientes (ídem)
+        #   C6   10 pts  Top 5 grupos más atrasados — GENERAL
+        #   C7    9 pts  Top 5 pintas más atrasadas — GENERAL
+        #   C8    8 pts  Semana del mes: 40% freq + 60% atraso normalizado
+        #   C9    7 pts  Día de la semana: 40% freq + 60% atraso normalizado
+        #   C13  10 pts  Dígitos de últimos 3 sorteos ±1
+        #   C14 −20 pts  Penalización por recencia (−20/−10/−5)
+        #   C15   8 pts  Top 5 líneas en fin de semana   (solo sáb/dom)
+        #   C16   7 pts  Top 5 terminales en fin de semana (solo sáb/dom)
+        #                +3 pts bonus si coinciden C15 y C16
+        #   C17   5 pts  Presión fríos: solo bottom-30, escalado por cold_pressure
+        # POR TURNO:
+        #   C10  12 pts  Top 5 grupos más atrasados del turno
+        #   C11  10 pts  Top 5 pintas más atrasadas del turno
+        #   C12   9 pts  Salidor del mes × atraso del turno
 
         month_field = MONTH_FIELD_MAP[month]
         dow_field = {
@@ -1361,7 +1397,7 @@ class LotteryStatsService(models.Model):
         rank_semana = {r['id']: i + 1 for i, r in enumerate(sorted_semana)}
         rank_c6     = {r['id']: i + 1 for i, r in enumerate(sorted_c6)}
 
-        # ── C7. Dígitos últimos 3 sorteos + vecinos ±1 ("alante y atras") ──
+        # ── C13. Dígitos últimos 3 sorteos + vecinos ±1  (antes C7) ────────
         self.env.cr.execute("""
             SELECT ln.name::int AS num_val
             FROM lottery_output lo
@@ -1377,7 +1413,7 @@ class LotteryStatsService(models.Model):
                     digit_set.add(nv // 10)
                     digit_set.add(nv % 10)
 
-        # ── C8. Penalización por recencia: exacto o ±1 en últimos 5 sorteos ─
+        # ── C14. Penalización por recencia: exacto o ±1 en últimos 5 sorteos ─
         self.env.cr.execute("""
             SELECT ln.name::int AS num_val
             FROM lottery_output lo
@@ -1394,6 +1430,222 @@ class LotteryStatsService(models.Model):
             if 0 <= adj <= 99 and adj not in recent_nums
         }
 
+        # ── C2 + C4. Líneas (decenas) consecutivas y pendientes ─────────────
+        # C2: top 5 líneas que más aparecen en el sorteo siguiente a la última línea sorteada
+        # C4: de esas top 5, cuántas veces NO se cumplieron en los últimos 4 ciclos (pendientes)
+        self.env.cr.execute("""
+            WITH ordered AS (
+                SELECT
+                    (ln.name::int / 10)                          AS linea,
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id)  AS rn
+                FROM lottery_output lo
+                JOIN lottery_number ln ON ln.id = lo.number_id
+            ),
+            last_linea AS (
+                SELECT linea FROM ordered ORDER BY rn DESC LIMIT 1
+            ),
+            top_consec AS (
+                SELECT nxt.linea AS next_linea, COUNT(*) AS freq
+                FROM ordered cur
+                JOIN ordered nxt ON nxt.rn = cur.rn + 1
+                WHERE cur.linea = (SELECT linea FROM last_linea)
+                GROUP BY nxt.linea
+                ORDER BY freq DESC
+                LIMIT 5
+            ),
+            last_4_occ AS (
+                SELECT rn FROM ordered
+                WHERE linea = (SELECT linea FROM last_linea)
+                ORDER BY rn DESC
+                OFFSET 1 LIMIT 4
+            ),
+            fulfilled AS (
+                SELECT o.linea AS fulfilled_linea, COUNT(*) AS cnt
+                FROM ordered o
+                JOIN last_4_occ l4 ON o.rn = l4.rn + 1
+                WHERE o.linea IN (SELECT next_linea FROM top_consec)
+                GROUP BY o.linea
+            )
+            SELECT
+                t.next_linea,
+                t.freq,
+                (SELECT linea FROM last_linea)   AS last_linea_val,
+                COALESCE(f.cnt, 0)               AS count_fulfilled
+            FROM top_consec t
+            LEFT JOIN fulfilled f ON f.fulfilled_linea = t.next_linea
+        """)
+        linea_rows = self.env.cr.dictfetchall()
+        last_linea_val  = linea_rows[0]['last_linea_val'] if linea_rows else None
+        top_lineas      = {r['next_linea']: r for r in linea_rows}
+        # fulfilled_lineas: cuántas veces (de 4) ya se cumplió → más cumplida = menos pendiente
+
+        # ── C3 + C5. Terminales (unidades) consecutivos y pendientes ────────
+        self.env.cr.execute("""
+            WITH ordered AS (
+                SELECT
+                    (ln.name::int % 10)                          AS terminal,
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id)  AS rn
+                FROM lottery_output lo
+                JOIN lottery_number ln ON ln.id = lo.number_id
+            ),
+            last_terminal AS (
+                SELECT terminal FROM ordered ORDER BY rn DESC LIMIT 1
+            ),
+            top_consec AS (
+                SELECT nxt.terminal AS next_terminal, COUNT(*) AS freq
+                FROM ordered cur
+                JOIN ordered nxt ON nxt.rn = cur.rn + 1
+                WHERE cur.terminal = (SELECT terminal FROM last_terminal)
+                GROUP BY nxt.terminal
+                ORDER BY freq DESC
+                LIMIT 5
+            ),
+            last_4_occ AS (
+                SELECT rn FROM ordered
+                WHERE terminal = (SELECT terminal FROM last_terminal)
+                ORDER BY rn DESC
+                OFFSET 1 LIMIT 4
+            ),
+            fulfilled AS (
+                SELECT o.terminal AS fulfilled_terminal, COUNT(*) AS cnt
+                FROM ordered o
+                JOIN last_4_occ l4 ON o.rn = l4.rn + 1
+                WHERE o.terminal IN (SELECT next_terminal FROM top_consec)
+                GROUP BY o.terminal
+            )
+            SELECT
+                t.next_terminal,
+                t.freq,
+                (SELECT terminal FROM last_terminal) AS last_terminal_val,
+                COALESCE(f.cnt, 0)                   AS count_fulfilled
+            FROM top_consec t
+            LEFT JOIN fulfilled f ON f.fulfilled_terminal = t.next_terminal
+        """)
+        terminal_rows     = self.env.cr.dictfetchall()
+        last_terminal_val = terminal_rows[0]['last_terminal_val'] if terminal_rows else None
+        top_terminals     = {r['next_terminal']: r for r in terminal_rows}
+
+        # ── Variables auxiliares ─────────────────────────────────────────────
+        week_seg_num = (1 if day <= 7 else 2 if day <= 14 else
+                        3 if day <= 21 else 4 if day <= 28 else 5)
+        is_weekend = pg_dow in (0, 6)   # 0=domingo, 6=sábado
+
+        # ── C9 delay. Atraso de cada número en el día de semana actual ───────
+        # Cuántas veces ha ocurrido este weekday desde la última aparición del número
+        self.env.cr.execute("""
+            WITH dow_draws AS (
+                SELECT
+                    lo.number_id,
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS dow_rn
+                FROM lottery_output lo
+                WHERE EXTRACT(DOW FROM lo.date) = %s
+            ),
+            max_rn    AS (SELECT COALESCE(MAX(dow_rn), 1) AS val FROM dow_draws),
+            last_app  AS (SELECT number_id, MAX(dow_rn) AS last_rn FROM dow_draws GROUP BY number_id)
+            SELECT
+                ln.id                                              AS number_id,
+                (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0) AS atraso_dow
+            FROM lottery_number ln
+            LEFT JOIN last_app l ON l.number_id = ln.id
+        """, (pg_dow,))
+        atraso_dow_num    = {r['number_id']: r['atraso_dow'] for r in self.env.cr.dictfetchall()}
+        max_atraso_dow    = max(atraso_dow_num.values(), default=1) or 1
+
+        # ── C8 delay. Atraso de cada número en la semana del mes actual ──────
+        self.env.cr.execute("""
+            WITH seg_draws AS (
+                SELECT
+                    lo.number_id,
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS seg_rn
+                FROM lottery_output lo
+                WHERE (CASE
+                           WHEN EXTRACT(DAY FROM lo.date) <= 7  THEN 1
+                           WHEN EXTRACT(DAY FROM lo.date) <= 14 THEN 2
+                           WHEN EXTRACT(DAY FROM lo.date) <= 21 THEN 3
+                           WHEN EXTRACT(DAY FROM lo.date) <= 28 THEN 4
+                           ELSE 5 END) = %s
+            ),
+            max_rn    AS (SELECT COALESCE(MAX(seg_rn), 1) AS val FROM seg_draws),
+            last_app  AS (SELECT number_id, MAX(seg_rn) AS last_rn FROM seg_draws GROUP BY number_id)
+            SELECT
+                ln.id                                              AS number_id,
+                (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0) AS atraso_semana
+            FROM lottery_number ln
+            LEFT JOIN last_app l ON l.number_id = ln.id
+        """, (week_seg_num,))
+        atraso_semana_num = {r['number_id']: r['atraso_semana'] for r in self.env.cr.dictfetchall()}
+        max_atraso_semana = max(atraso_semana_num.values(), default=1) or 1
+
+        # ── C15 + C16. Líneas y terminales de fin de semana (solo sáb/dom) ───
+        # Top 5 líneas/terminales por frecuencia en fines de semana + su atraso
+        weekend_top_lineas    = {}
+        weekend_top_terminals = {}
+        max_wd_linea_delay    = 1
+        max_wd_terminal_delay = 1
+
+        if is_weekend:
+            # Líneas de fin de semana
+            self.env.cr.execute("""
+                WITH wd AS (
+                    SELECT
+                        (ln.name::int / 10)                         AS linea,
+                        ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE EXTRACT(DOW FROM lo.date) IN (0, 6)
+                ),
+                freq      AS (SELECT linea, COUNT(*) AS freq,
+                                     ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) AS freq_rank
+                              FROM wd GROUP BY linea),
+                top5      AS (SELECT * FROM freq WHERE freq_rank <= 5),
+                max_rn    AS (SELECT COALESCE(MAX(rn), 1) AS val FROM wd),
+                last_app  AS (SELECT linea, MAX(rn) AS last_rn FROM wd GROUP BY linea)
+                SELECT t.linea, t.freq, t.freq_rank,
+                       (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0) AS atraso_weekend
+                FROM top5 t LEFT JOIN last_app l ON l.linea = t.linea
+            """)
+            weekend_top_lineas    = {r['linea']: r for r in self.env.cr.dictfetchall()}
+            max_wd_linea_delay    = max((v['atraso_weekend'] for v in weekend_top_lineas.values()), default=1) or 1
+
+            # Terminales de fin de semana
+            self.env.cr.execute("""
+                WITH wd AS (
+                    SELECT
+                        (ln.name::int % 10)                         AS terminal,
+                        ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE EXTRACT(DOW FROM lo.date) IN (0, 6)
+                ),
+                freq      AS (SELECT terminal, COUNT(*) AS freq,
+                                     ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) AS freq_rank
+                              FROM wd GROUP BY terminal),
+                top5      AS (SELECT * FROM freq WHERE freq_rank <= 5),
+                max_rn    AS (SELECT COALESCE(MAX(rn), 1) AS val FROM wd),
+                last_app  AS (SELECT terminal, MAX(rn) AS last_rn FROM wd GROUP BY terminal)
+                SELECT t.terminal, t.freq, t.freq_rank,
+                       (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0) AS atraso_weekend
+                FROM top5 t LEFT JOIN last_app l ON l.terminal = t.terminal
+            """)
+            weekend_top_terminals = {r['terminal']: r for r in self.env.cr.dictfetchall()}
+            max_wd_terminal_delay = max((v['atraso_weekend'] for v in weekend_top_terminals.values()), default=1) or 1
+
+        # ── C17: Presión de números fríos ────────────────────────────────────
+        # Si los últimos 6 sorteos salieron mayoritariamente del top-70,
+        # hay presión estadística para que el siguiente venga del bottom-30.
+        # cold_pressure = 1.0 → todos los recientes eran top-70
+        # cold_pressure = 0.0 → ninguno era top-70
+        top70_ids = {nid for nid, rk in rank_mes.items() if rk <= 70}
+        self.env.cr.execute("""
+            SELECT lo.number_id
+            FROM lottery_output lo
+            ORDER BY lo.date DESC, lo.id DESC
+            LIMIT 6
+        """)
+        recent_6_ids = [r['number_id'] for r in self.env.cr.dictfetchall()]
+        hot_in_recent = sum(1 for nid in recent_6_ids if nid in top70_ids)
+        cold_pressure = hot_in_recent / max(len(recent_6_ids), 1)
+
         # ── Ponderación ──────────────────────────────────────────────────────
         scores = []
         for num_id, n in numbers.items():
@@ -1401,120 +1653,813 @@ class LotteryStatsService(models.Model):
             rd  = rank_dow[num_id]
             rs  = rank_semana[num_id]
             rc6 = rank_c6[num_id]
-
-            # Generales (mismo peso en tarde y noche)
-            s1  = 22.0 * (1 - (rm - 1) / 70) if rm <= 70 else 0
-            s2g = 10.0 if num_id in gen_group_ids  else 0
-            s3g =  9.0 if num_id in gen_pinta_ids  else 0
-            s4  =  7.0 * (1 - (rs - 1) / N)
-            s5  =  5.0 * (1 - (rd - 1) / N)
             ni  = n['num_int']
-            # C7: bonus por dígitos de sorteos recientes ±1
-            # No aplica si el propio número acaba de salir (evita que C7 cancele a C8)
-            if ni not in recent_nums:
-                s7 = 12.0 * ((1 if ni // 10 in digit_set else 0) + (1 if ni % 10 in digit_set else 0)) / 2
-            else:
-                s7 = 0.0
-            # C8: penalización por recencia — baja calientes, hunde fríos
-            # El sorteo más reciente recibe penalización reforzada para garantizar que
-            # un número que acaba de salir no quede en la lista caliente del siguiente turno
-            if ni == most_recent_num:
-                s8 = -30.0
-            elif ni in recent_nums:
-                s8 = -12.0
-            elif ni in adjacent_nums:
-                s8 = -6.0
-            else:
-                s8 = 0.0
 
-            # Por turno (solo suma al turno correspondiente)
-            s2t = 14.0 if num_id in turn_group_ids else 0
-            s3t = 11.0 if num_id in turn_pinta_ids else 0
-            s6  = 10.0 * (1 - (rc6 - 1) / N)
+            ni_linea    = ni // 10   # decena (0-9)
+            ni_terminal = ni % 10   # unidad  (0-9)
+
+            # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+            # TABLA DE PESOS  (todos los criterios en rango 7–15 pts, ratio ≤ 2×)
+            # ─────────────────────────────────────────────────────────────────
+            #  C1  15 pts  Top 70 salidores del mes                (continuo)
+            #  C2  13 pts  Líneas consecutivas                     (continuo)
+            #  C3  11 pts  Terminales consecutivos                 (continuo)
+            #              +4 pts bonus si coinciden C2 y C3
+            #  C4  10 pts  Líneas pendientes                       (continuo)
+            #  C5   9 pts  Terminales pendientes                   (continuo)
+            #  C6  10 pts  Grupos demorados — GENERAL              (binario)
+            #  C7   9 pts  Pintas demoradas — GENERAL              (binario)
+            #  C8   8 pts  Semana del mes (freq 40 % + atraso 60 %)(continuo)
+            #  C9   7 pts  Día de la semana (freq 40 % + atr. 60 %)(continuo)
+            #  C10 12 pts  Grupos demorados — TURNO                (binario)
+            #  C11 10 pts  Pintas demoradas — TURNO                (binario)
+            #  C12  9 pts  Salidor mes × atraso turno              (continuo)
+            #  C13 10 pts  Dígitos últimos 3 sorteos ±1            (semibinario)
+            #  C14 -20 pts Penalización recencia (-20/-10/-5/0)    (escalonado)
+            #  C15  8 pts  Líneas fin de semana (solo sáb/dom)     (continuo)
+            #  C16  7 pts  Terminales fin de semana (solo sáb/dom) (continuo)
+            #              +3 pts bonus si coinciden C15 y C16
+            # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+            # ── C1: Top 70 salidores del mes ─────────────────────────────────
+            s1 = 15.0 * (1 - (rm - 1) / 70) if rm <= 70 else 0
+
+            # ── C2: Líneas consecutivas ───────────────────────────────────────
+            # Decaimiento lineal: rank 1 → 13 pts, rank 5 → 2.6 pts
+            if ni_linea in top_lineas:
+                linea_rank = list(top_lineas.keys()).index(ni_linea) + 1
+                s2 = 13.0 * (1 - (linea_rank - 1) / 5)
+            else:
+                s2 = 0.0
+
+            # ── C3: Terminales consecutivos + bonus coincidencia ─────────────
+            # +4 pts si también cumple C2 (línea Y terminal coinciden → doble señal).
+            # El bonus es moderado: aporta indicación extra sin dominar el score.
+            if ni_terminal in top_terminals:
+                term_rank = list(top_terminals.keys()).index(ni_terminal) + 1
+                s3 = 11.0 * (1 - (term_rank - 1) / 5)
+                if s2 > 0:
+                    s3 += 4.0   # coincidencia línea + terminal
+            else:
+                s3 = 0.0
+
+            # ── C4: Líneas pendientes (no cumplidas en últimos 4 ciclos) ─────
+            # pending_ratio = 1.0 → nunca cumplido | 0.0 → siempre cumplido
+            if ni_linea in top_lineas:
+                fulfilled_linea = top_lineas[ni_linea]['count_fulfilled']
+                pending_ratio   = (4 - min(fulfilled_linea, 4)) / 4
+                s4_new = 10.0 * pending_ratio
+            else:
+                s4_new = 0.0
+
+            # ── C5: Terminales pendientes (no cumplidos en últimos 4 ciclos) ─
+            if ni_terminal in top_terminals:
+                fulfilled_term = top_terminals[ni_terminal]['count_fulfilled']
+                pending_ratio  = (4 - min(fulfilled_term, 4)) / 4
+                s5_new = 9.0 * pending_ratio
+            else:
+                s5_new = 0.0
+
+            # ── C6: Grupos demorados — GENERAL ───────────────────────────────
+            s6 = 10.0 if num_id in gen_group_ids else 0
+
+            # ── C7: Pintas demoradas — GENERAL ───────────────────────────────
+            s7 = 9.0 if num_id in gen_pinta_ids else 0
+
+            # ── C8: Semana del mes — frecuencia + atraso combinados ──────────
+            # 40 % frecuencia relativa en la semana del mes actual,
+            # 60 % atraso normalizado desde la última aparición en esa semana.
+            freq_factor_semana  = 1 - (rs - 1) / N
+            delay_factor_semana = atraso_semana_num.get(num_id, 0) / max_atraso_semana
+            s8 = 8.0 * (0.4 * freq_factor_semana + 0.6 * delay_factor_semana)
+
+            # ── C9: Día de la semana — frecuencia + atraso combinados ────────
+            # Mismo esquema 40/60 que C8 pero para el día de la semana (pg_dow).
+            freq_factor_dow  = 1 - (rd - 1) / N
+            delay_factor_dow = atraso_dow_num.get(num_id, 0) / max_atraso_dow
+            s9 = 7.0 * (0.4 * freq_factor_dow + 0.6 * delay_factor_dow)
+
+            # ── C10: Grupos demorados — TURNO ────────────────────────────────
+            s10 = 12.0 if num_id in turn_group_ids else 0
+
+            # ── C11: Pintas demoradas — TURNO ────────────────────────────────
+            s11 = 10.0 if num_id in turn_pinta_ids else 0
+
+            # ── C12: Salidor mes × atraso turno ──────────────────────────────
+            s12 = 9.0 * (1 - (rc6 - 1) / N)
+
+            # ── C13: Dígitos de últimos 3 sorteos ±1 ─────────────────────────
+            # 0 pts si salió exacto recientemente, hasta 10 si ambos dígitos coinciden.
+            if ni not in recent_nums:
+                s13 = 10.0 * (
+                    (1 if ni_linea    in digit_set else 0) +
+                    (1 if ni_terminal in digit_set else 0)
+                ) / 2
+            else:
+                s13 = 0.0
+
+            # ── C14: Penalización por recencia ───────────────────────────────
+            # Escalonado: −20 si salió exacto, −10 si salió reciente, −5 si adyacente.
+            # Se moderó respecto al valor anterior (−30/−12/−6) para no distorsionar
+            # el ranking cuando varios criterios positivos empujan el mismo número.
+            if ni == most_recent_num:
+                s14 = -20.0
+            elif ni in recent_nums:
+                s14 = -10.0
+            elif ni in adjacent_nums:
+                s14 = -5.0
+            else:
+                s14 = 0.0
+
+            # ── C15: Líneas de fin de semana (solo sáb/dom) ───────────────────
+            # 40 % frecuencia + 60 % atraso entre las 5 líneas más salidas en fin de semana.
+            if is_weekend and ni_linea in weekend_top_lineas:
+                wd_l       = weekend_top_lineas[ni_linea]
+                freq_wd_l  = 1 - (wd_l['freq_rank'] - 1) / 5
+                delay_wd_l = wd_l['atraso_weekend'] / max_wd_linea_delay
+                s15 = 8.0 * (0.4 * freq_wd_l + 0.6 * delay_wd_l)
+            else:
+                s15 = 0.0
+
+            # ── C16: Terminales de fin de semana (solo sáb/dom) + coincidencia ─
+            # +3 pts bonus si coincide con C15 (moderado, no domina el score).
+            if is_weekend and ni_terminal in weekend_top_terminals:
+                wd_t       = weekend_top_terminals[ni_terminal]
+                freq_wd_t  = 1 - (wd_t['freq_rank'] - 1) / 5
+                delay_wd_t = wd_t['atraso_weekend'] / max_wd_terminal_delay
+                s16 = 7.0 * (0.4 * freq_wd_t + 0.6 * delay_wd_t)
+                if s15 > 0:
+                    s16 += 3.0  # coincidencia línea + terminal de fin de semana
+            else:
+                s16 = 0.0
+
+            # ── C17: Presión de números fríos ────────────────────────────────
+            # Solo aplica al bottom-30 (rm > 70): los menos salidores del mes.
+            # El bonus sube a medida que los últimos 6 sorteos fueron del top-70,
+            # reflejando la presión para que el próximo salga de ese grupo olvidado.
+            # Máx 5 pts (deliberadamente menor que el resto para no elevar en exceso
+            # a números que ya tienen poca señal en los demás criterios).
+            if rm > 70:
+                s17 = 5.0 * cold_pressure
+            else:
+                s17 = 0.0
 
             scores.append({
                 'name': n['name'],
-                'score': round(s1 + s2g + s3g + s4 + s5 + s7 + s8 + s2t + s3t + s6, 1),
+                'score': round(
+                    s1 + s2 + s3 + s4_new + s5_new
+                    + s6 + s7 + s8 + s9
+                    + s10 + s11 + s12
+                    + s13 + s14
+                    + s15 + s16
+                    + s17,
+                    1
+                ),
             })
 
         scores.sort(key=lambda x: x['score'], reverse=True)
         return scores
 
-    def _get_calientes_cebs(self, turn_day, pg_dow, week_seg, turn_mv, gen_mv, freq_field_type):
+    # ─── Números Fríos ───────────────────────────────────────────────────────
+
+    @api.model
+    @tools.ormcache('turn_day', 'today_str')
+    def get_numeros_frios(self, turn_day, today_str):
         """
-        Algoritmo compartido para centenas y bola extra calientes.
-        Combina atraso (turno + general) con frecuencia (día semana + semana del mes).
+        Espejo invertido de get_numeros_calientes.
+        Parte de los 50 menos salidores del mes y aplica cada criterio al revés:
+        - menos salidor reemplaza a más salidor
+        - grupos/pintas MÁS recientes (menos demorados) en lugar de más demorados
+        - recencia se convierte en BONUS en lugar de penalización
+        - líneas/terminales que MENOS siguen en lugar de las que más siguen
+        - fin de semana: líneas/terminales que MENOS aparecen
+
+        Todos los pesos son iguales a los de calientes para mantener la simetría.
+
+        GENERALES:
+          C1f  15 pts  Bottom 50 menos salidores del mes
+          C2f  13 pts  Top 5 líneas que MENOS siguen a la última sorteada
+          C3f  11 pts  Top 5 terminales que MENOS siguen al último sorteado
+                       +4 pts bonus si coinciden C2f y C3f
+          C4f  10 pts  Líneas consistentemente NO cumplidas en últimos 4 ciclos
+          C5f   9 pts  Terminales consistentemente NO cumplidas
+          C6f  10 pts  Top 5 grupos MENOS atrasados (más recientes) — GENERAL
+          C7f   9 pts  Top 3 pintas MENOS atrasadas (más recientes) — GENERAL
+          C8f   8 pts  Semana del mes: 40 % menos frecuente + 60 % más reciente
+          C9f   7 pts  Día de semana:  40 % menos frecuente + 60 % más reciente
+          C13f 10 pts  Dígitos presentes en últimos 3 sorteos (apareció = frío)
+          C14f 20 pts  Bonus por recencia (+20 exacto / +10 en últimos 5 sorteos)
+          C15f  8 pts  Top 5 líneas que MENOS salen en fin de semana (solo sáb/dom)
+          C16f  7 pts  Top 5 terminales que MENOS salen en fin de semana (solo sáb/dom)
+                       +3 pts bonus si coinciden C15f y C16f
+          C17f  5 pts  Presión calientes: números del top-50 que salieron reciente
+        POR TURNO:
+          C10f 12 pts  Top 5 grupos MENOS atrasados — TURNO
+          C11f 10 pts  Top 3 pintas MENOS atrasadas — TURNO
+          C12f  9 pts  Menos salidor mes × menos demorado turno
+        """
+        from datetime import date as _date
+        today = _date.fromisoformat(today_str)
+        month    = today.month
+        pg_dow   = (today.weekday() + 1) % 7
+        day      = today.day
+        is_weekend   = pg_dow in (0, 6)
+        week_seg_num = (1 if day <= 7  else 2 if day <= 14 else
+                        3 if day <= 21 else 4 if day <= 28 else 5)
+
+        if turn_day not in ('afternoon', 'evening'):
+            turn_day = 'afternoon'
+
+        month_field = MONTH_FIELD_MAP[month]
+        dow_field = {
+            0: 'total_domingo', 1: 'total_lunes',   2: 'total_martes',
+            3: 'total_miercoles', 4: 'total_jueves', 5: 'total_viernes',
+            6: 'total_sabado',
+        }[pg_dow]
+        week_field = (
+            'total_semana_1' if day <= 7  else
+            'total_semana_2' if day <= 14 else
+            'total_semana_3' if day <= 21 else
+            'total_semana_4' if day <= 28 else
+            'total_semana_5'
+        )
+        turn_atraso_field = 'total_atrasadas_dia' if turn_day == 'afternoon' else 'total_atrasadas_noche'
+        turn_mv_field     = 'afternoon'           if turn_day == 'afternoon' else 'evening'
+
+        # ── 1. Todos los números ─────────────────────────────────────────────
+        self.env.cr.execute(f"""
+            SELECT id,
+                   LPAD(name::text, 2, '0') AS name,
+                   name::int                AS num_int,
+                   {month_field}            AS salidas_mes,
+                   {dow_field}              AS salidas_dow,
+                   {week_field}             AS salidas_semana,
+                   {turn_atraso_field}      AS atraso_turno
+            FROM lottery_number
+        """)
+        numbers = {r['id']: r for r in self.env.cr.dictfetchall()}
+        N = max(len(numbers), 1)
+
+        # ── Rankings INVERTIDOS (menos salidor = rank 1) ─────────────────────
+        sorted_mes_inv    = sorted(numbers.values(), key=lambda x: x['salidas_mes']    or 0)
+        sorted_dow_inv    = sorted(numbers.values(), key=lambda x: x['salidas_dow']    or 0)
+        sorted_semana_inv = sorted(numbers.values(), key=lambda x: x['salidas_semana'] or 0)
+        # C12f: menos salidor × menos demorado turno → producto ASC
+        sorted_c12f = sorted(numbers.values(),
+                             key=lambda x: (x['salidas_mes'] or 0) * (x['atraso_turno'] or 0))
+
+        rank_mes_inv    = {r['id']: i + 1 for i, r in enumerate(sorted_mes_inv)}
+        rank_dow_inv    = {r['id']: i + 1 for i, r in enumerate(sorted_dow_inv)}
+        rank_semana_inv = {r['id']: i + 1 for i, r in enumerate(sorted_semana_inv)}
+        rank_c12f       = {r['id']: i + 1 for i, r in enumerate(sorted_c12f)}
+
+        # ── C6f/C7f. Grupos y pintas MENOS atrasados (más recientes) ─────────
+        def _fetch_recent_group_ids(extra_where='', limit_gen=5, limit_turn=5):
+            self.env.cr.execute(f"""
+                SELECT group_code,
+                       MIN(general)         AS atraso_gen,
+                       MIN({turn_mv_field}) AS atraso_turn
+                FROM lottery_number_groups_atrasos_mv
+                {extra_where}
+                GROUP BY group_code
+            """)
+            rows = self.env.cr.dictfetchall()
+            # ASC = menos demorado (más reciente)
+            rows_gen  = sorted(rows, key=lambda r: r['atraso_gen']  or 0)[:limit_gen]
+            rows_turn = sorted(rows, key=lambda r: r['atraso_turn'] or 0)[:limit_turn]
+
+            def _number_ids(codes):
+                if not codes:
+                    return set()
+                self.env.cr.execute("""
+                    SELECT DISTINCT rel.number_id
+                    FROM lottery_group lg
+                    JOIN lottery_group_number_rel rel ON rel.group_id = lg.id
+                    WHERE lg.code = ANY(%s)
+                """, ([r['group_code'] for r in codes],))
+                return {r['number_id'] for r in self.env.cr.dictfetchall()}
+
+            return _number_ids(rows_gen), _number_ids(rows_turn)
+
+        gen_group_ids_f, turn_group_ids_f = _fetch_recent_group_ids(limit_gen=5, limit_turn=5)
+        gen_pinta_ids_f, turn_pinta_ids_f = _fetch_recent_group_ids(
+            "WHERE group_code LIKE 'pinta_%%'", limit_gen=3, limit_turn=3)
+
+        # ── C13f/C14f. Recencia ──────────────────────────────────────────────
+        self.env.cr.execute("""
+            SELECT ln.name::int AS num_val
+            FROM lottery_output lo
+            JOIN lottery_number ln ON ln.id = lo.number_id
+            ORDER BY lo.date DESC, lo.id DESC
+            LIMIT 3
+        """)
+        digit_set = set()
+        for draw in self.env.cr.dictfetchall():
+            for delta in (-1, 0, 1):
+                nv = draw['num_val'] + delta
+                if 0 <= nv <= 99:
+                    digit_set.add(nv // 10)
+                    digit_set.add(nv % 10)
+
+        self.env.cr.execute("""
+            SELECT ln.name::int AS num_val
+            FROM lottery_output lo
+            JOIN lottery_number ln ON ln.id = lo.number_id
+            ORDER BY lo.date DESC, lo.id DESC
+            LIMIT 5
+        """)
+        recent_rows     = self.env.cr.dictfetchall()
+        most_recent_num = recent_rows[0]['num_val'] if recent_rows else None
+        recent_nums     = {r['num_val'] for r in recent_rows}
+
+        # ── C2f + C4f. Líneas que MENOS siguen a la última (bottom-5) ────────
+        # Se incluyen todas las líneas (0-9) con LEFT JOIN para capturar las que
+        # nunca siguieron (freq = 0). Se ordena ASC para elegir las más frías.
+        self.env.cr.execute("""
+            WITH ordered AS (
+                SELECT (ln.name::int / 10)                         AS linea,
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                FROM lottery_output lo
+                JOIN lottery_number ln ON ln.id = lo.number_id
+            ),
+            last_linea    AS (SELECT linea FROM ordered ORDER BY rn DESC LIMIT 1),
+            all_lineas    AS (SELECT generate_series(0, 9) AS linea),
+            consec_freq   AS (
+                SELECT nxt.linea AS next_linea, COUNT(*) AS freq
+                FROM ordered cur
+                JOIN ordered nxt ON nxt.rn = cur.rn + 1
+                WHERE cur.linea = (SELECT linea FROM last_linea)
+                GROUP BY nxt.linea
+            ),
+            bottom_consec AS (
+                SELECT al.linea AS next_linea, COALESCE(cf.freq, 0) AS freq
+                FROM all_lineas al
+                LEFT JOIN consec_freq cf ON cf.next_linea = al.linea
+                ORDER BY freq ASC
+                LIMIT 5
+            ),
+            last_4_occ AS (
+                SELECT rn FROM ordered
+                WHERE linea = (SELECT linea FROM last_linea)
+                ORDER BY rn DESC OFFSET 1 LIMIT 4
+            ),
+            fulfilled AS (
+                SELECT o.linea AS fulfilled_linea, COUNT(*) AS cnt
+                FROM ordered o
+                JOIN last_4_occ l4 ON o.rn = l4.rn + 1
+                WHERE o.linea IN (SELECT next_linea FROM bottom_consec)
+                GROUP BY o.linea
+            )
+            SELECT t.next_linea,
+                   t.freq,
+                   (SELECT linea FROM last_linea) AS last_linea_val,
+                   COALESCE(f.cnt, 0)             AS count_fulfilled
+            FROM bottom_consec t
+            LEFT JOIN fulfilled f ON f.fulfilled_linea = t.next_linea
+        """)
+        cold_lineas = {r['next_linea']: r for r in self.env.cr.dictfetchall()}
+
+        # ── C3f + C5f. Terminales que MENOS siguen a la última (bottom-5) ─────
+        self.env.cr.execute("""
+            WITH ordered AS (
+                SELECT (ln.name::int % 10)                         AS terminal,
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                FROM lottery_output lo
+                JOIN lottery_number ln ON ln.id = lo.number_id
+            ),
+            last_terminal AS (SELECT terminal FROM ordered ORDER BY rn DESC LIMIT 1),
+            all_terminals AS (SELECT generate_series(0, 9) AS terminal),
+            consec_freq   AS (
+                SELECT nxt.terminal AS next_terminal, COUNT(*) AS freq
+                FROM ordered cur
+                JOIN ordered nxt ON nxt.rn = cur.rn + 1
+                WHERE cur.terminal = (SELECT terminal FROM last_terminal)
+                GROUP BY nxt.terminal
+            ),
+            bottom_consec AS (
+                SELECT at.terminal AS next_terminal, COALESCE(cf.freq, 0) AS freq
+                FROM all_terminals at
+                LEFT JOIN consec_freq cf ON cf.next_terminal = at.terminal
+                ORDER BY freq ASC
+                LIMIT 5
+            ),
+            last_4_occ AS (
+                SELECT rn FROM ordered
+                WHERE terminal = (SELECT terminal FROM last_terminal)
+                ORDER BY rn DESC OFFSET 1 LIMIT 4
+            ),
+            fulfilled AS (
+                SELECT o.terminal AS fulfilled_terminal, COUNT(*) AS cnt
+                FROM ordered o
+                JOIN last_4_occ l4 ON o.rn = l4.rn + 1
+                WHERE o.terminal IN (SELECT next_terminal FROM bottom_consec)
+                GROUP BY o.terminal
+            )
+            SELECT t.next_terminal,
+                   t.freq,
+                   (SELECT terminal FROM last_terminal) AS last_terminal_val,
+                   COALESCE(f.cnt, 0)                   AS count_fulfilled
+            FROM bottom_consec t
+            LEFT JOIN fulfilled f ON f.fulfilled_terminal = t.next_terminal
+        """)
+        cold_terminals = {r['next_terminal']: r for r in self.env.cr.dictfetchall()}
+
+        # ── C9f delay. Aparición RECIENTE en día de semana actual ─────────────
+        self.env.cr.execute("""
+            WITH dow_draws AS (
+                SELECT lo.number_id,
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS dow_rn
+                FROM lottery_output lo
+                WHERE EXTRACT(DOW FROM lo.date) = %s
+            ),
+            max_rn   AS (SELECT COALESCE(MAX(dow_rn), 1) AS val FROM dow_draws),
+            last_app AS (SELECT number_id, MAX(dow_rn) AS last_rn FROM dow_draws GROUP BY number_id)
+            SELECT ln.id                                               AS number_id,
+                   (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0)  AS atraso_dow
+            FROM lottery_number ln
+            LEFT JOIN last_app l ON l.number_id = ln.id
+        """, (pg_dow,))
+        atraso_dow_num_f = {r['number_id']: r['atraso_dow'] for r in self.env.cr.dictfetchall()}
+        max_atraso_dow_f = max(atraso_dow_num_f.values(), default=1) or 1
+
+        # ── C8f delay. Aparición RECIENTE en semana del mes actual ────────────
+        self.env.cr.execute("""
+            WITH seg_draws AS (
+                SELECT lo.number_id,
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS seg_rn
+                FROM lottery_output lo
+                WHERE (CASE
+                           WHEN EXTRACT(DAY FROM lo.date) <= 7  THEN 1
+                           WHEN EXTRACT(DAY FROM lo.date) <= 14 THEN 2
+                           WHEN EXTRACT(DAY FROM lo.date) <= 21 THEN 3
+                           WHEN EXTRACT(DAY FROM lo.date) <= 28 THEN 4
+                           ELSE 5 END) = %s
+            ),
+            max_rn   AS (SELECT COALESCE(MAX(seg_rn), 1) AS val FROM seg_draws),
+            last_app AS (SELECT number_id, MAX(seg_rn) AS last_rn FROM seg_draws GROUP BY number_id)
+            SELECT ln.id                                               AS number_id,
+                   (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0)  AS atraso_semana
+            FROM lottery_number ln
+            LEFT JOIN last_app l ON l.number_id = ln.id
+        """, (week_seg_num,))
+        atraso_semana_num_f = {r['number_id']: r['atraso_semana'] for r in self.env.cr.dictfetchall()}
+        max_atraso_semana_f = max(atraso_semana_num_f.values(), default=1) or 1
+
+        # ── C15f/C16f. Fin de semana: líneas/terminales que MENOS aparecen ────
+        cold_wd_lineas    = {}
+        cold_wd_terminals = {}
+        max_wd_linea_delay_f    = 1
+        max_wd_terminal_delay_f = 1
+
+        if is_weekend:
+            # Líneas con MENOR frecuencia en fines de semana (ASC + LEFT JOIN con all)
+            self.env.cr.execute("""
+                WITH wd AS (
+                    SELECT (ln.name::int / 10)                         AS linea,
+                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE EXTRACT(DOW FROM lo.date) IN (0, 6)
+                ),
+                all_lineas AS (SELECT generate_series(0, 9) AS linea),
+                freq   AS (SELECT linea, COUNT(*) AS freq FROM wd GROUP BY linea),
+                ranked AS (
+                    SELECT al.linea, COALESCE(f.freq, 0) AS freq,
+                           ROW_NUMBER() OVER (ORDER BY COALESCE(f.freq, 0) ASC) AS freq_rank
+                    FROM all_lineas al LEFT JOIN freq f ON f.linea = al.linea
+                ),
+                top5    AS (SELECT * FROM ranked WHERE freq_rank <= 5),
+                max_rn  AS (SELECT COALESCE(MAX(rn), 1) AS val FROM wd),
+                last_app AS (SELECT linea, MAX(rn) AS last_rn FROM wd GROUP BY linea)
+                SELECT t.linea, t.freq, t.freq_rank,
+                       (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0) AS atraso_weekend
+                FROM top5 t LEFT JOIN last_app l ON l.linea = t.linea
+            """)
+            cold_wd_lineas       = {r['linea']: r for r in self.env.cr.dictfetchall()}
+            max_wd_linea_delay_f = max((v['atraso_weekend'] for v in cold_wd_lineas.values()), default=1) or 1
+
+            # Terminales con MENOR frecuencia en fines de semana
+            self.env.cr.execute("""
+                WITH wd AS (
+                    SELECT (ln.name::int % 10)                          AS terminal,
+                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE EXTRACT(DOW FROM lo.date) IN (0, 6)
+                ),
+                all_terms AS (SELECT generate_series(0, 9) AS terminal),
+                freq   AS (SELECT terminal, COUNT(*) AS freq FROM wd GROUP BY terminal),
+                ranked AS (
+                    SELECT at.terminal, COALESCE(f.freq, 0) AS freq,
+                           ROW_NUMBER() OVER (ORDER BY COALESCE(f.freq, 0) ASC) AS freq_rank
+                    FROM all_terms at LEFT JOIN freq f ON f.terminal = at.terminal
+                ),
+                top5    AS (SELECT * FROM ranked WHERE freq_rank <= 5),
+                max_rn  AS (SELECT COALESCE(MAX(rn), 1) AS val FROM wd),
+                last_app AS (SELECT terminal, MAX(rn) AS last_rn FROM wd GROUP BY terminal)
+                SELECT t.terminal, t.freq, t.freq_rank,
+                       (SELECT val FROM max_rn) - COALESCE(l.last_rn, 0) AS atraso_weekend
+                FROM top5 t LEFT JOIN last_app l ON l.terminal = t.terminal
+            """)
+            cold_wd_terminals       = {r['terminal']: r for r in self.env.cr.dictfetchall()}
+            max_wd_terminal_delay_f = max((v['atraso_weekend'] for v in cold_wd_terminals.values()), default=1) or 1
+
+        # ── C17f. Presión calientes ───────────────────────────────────────────
+        # Si los últimos 6 sorteos vinieron mayoritariamente del top-50 (salidores),
+        # hay presión para que el siguiente venga de ese mismo grupo → cold signal
+        # para los propios números del top-50 (rm_inv > 50).
+        bottom50_ids = {nid for nid, rk in rank_mes_inv.items() if rk <= 50}
+        self.env.cr.execute("""
+            SELECT lo.number_id
+            FROM lottery_output lo
+            ORDER BY lo.date DESC, lo.id DESC
+            LIMIT 6
+        """)
+        recent_6_ids   = [r['number_id'] for r in self.env.cr.dictfetchall()]
+        cold_in_recent = sum(1 for nid in recent_6_ids if nid in bottom50_ids)
+        # proporción de recientes que NO eran del pool frío → presión sobre los calientes
+        hot_pressure   = (len(recent_6_ids) - cold_in_recent) / max(len(recent_6_ids), 1)
+
+        # ── Ponderación ──────────────────────────────────────────────────────
+        scores = []
+        for num_id, n in numbers.items():
+            rm_inv  = rank_mes_inv[num_id]
+            rd_inv  = rank_dow_inv[num_id]
+            rs_inv  = rank_semana_inv[num_id]
+            rc12f   = rank_c12f[num_id]
+            ni      = n['num_int']
+            ni_linea    = ni // 10
+            ni_terminal = ni % 10
+
+            # ── C1f: Bottom 50 menos salidores del mes ────────────────────────
+            s1f = 15.0 * (1 - (rm_inv - 1) / 50) if rm_inv <= 50 else 0
+
+            # ── C2f: Líneas que MENOS siguen (rank 1 = la que menos sigue) ────
+            if ni_linea in cold_lineas:
+                linea_rank_f = list(cold_lineas.keys()).index(ni_linea) + 1
+                s2f = 13.0 * (1 - (linea_rank_f - 1) / 5)
+            else:
+                s2f = 0.0
+
+            # ── C3f: Terminales que MENOS siguen + bonus coincidencia ──────────
+            if ni_terminal in cold_terminals:
+                term_rank_f = list(cold_terminals.keys()).index(ni_terminal) + 1
+                s3f = 11.0 * (1 - (term_rank_f - 1) / 5)
+                if s2f > 0:
+                    s3f += 4.0   # coincidencia: línea Y terminal son fríos consecutivos
+            else:
+                s3f = 0.0
+
+            # ── C4f: Líneas consistentemente NO cumplidas ──────────────────────
+            # Alta puntuación si el patrón frío se mantuvo (no siguió en ciclos recientes).
+            if ni_linea in cold_lineas:
+                fulfilled_linea_f = cold_lineas[ni_linea]['count_fulfilled']
+                s4f = 10.0 * (4 - min(fulfilled_linea_f, 4)) / 4
+            else:
+                s4f = 0.0
+
+            # ── C5f: Terminales consistentemente NO cumplidas ──────────────────
+            if ni_terminal in cold_terminals:
+                fulfilled_term_f = cold_terminals[ni_terminal]['count_fulfilled']
+                s5f = 9.0 * (4 - min(fulfilled_term_f, 4)) / 4
+            else:
+                s5f = 0.0
+
+            # ── C6f: Grupos MENOS atrasados — GENERAL ─────────────────────────
+            s6f = 10.0 if num_id in gen_group_ids_f else 0
+
+            # ── C7f: Pintas MENOS atrasadas — GENERAL (top 3) ─────────────────
+            s7f = 9.0 if num_id in gen_pinta_ids_f else 0
+
+            # ── C8f: Semana del mes — menos frecuente + más reciente ───────────
+            # Para fríos, el factor de recencia se invierte: low atraso = appeared recently = cold.
+            freq_factor_semana_f  = 1 - (rs_inv - 1) / N
+            recency_factor_semana = 1 - (atraso_semana_num_f.get(num_id, 0) / max_atraso_semana_f)
+            s8f = 8.0 * (0.4 * freq_factor_semana_f + 0.6 * recency_factor_semana)
+
+            # ── C9f: Día de semana — menos frecuente + más reciente ────────────
+            freq_factor_dow_f  = 1 - (rd_inv - 1) / N
+            recency_factor_dow = 1 - (atraso_dow_num_f.get(num_id, 0) / max_atraso_dow_f)
+            s9f = 7.0 * (0.4 * freq_factor_dow_f + 0.6 * recency_factor_dow)
+
+            # ── C10f: Grupos MENOS atrasados — TURNO ──────────────────────────
+            s10f = 12.0 if num_id in turn_group_ids_f else 0
+
+            # ── C11f: Pintas MENOS atrasadas — TURNO (top 3) ──────────────────
+            s11f = 10.0 if num_id in turn_pinta_ids_f else 0
+
+            # ── C12f: Menos salidor mes × menos demorado turno ────────────────
+            s12f = 9.0 * (1 - (rc12f - 1) / N)
+
+            # ── C13f: Dígitos presentes en últimos 3 sorteos ──────────────────
+            # Inverso de C13 calientes: si la línea/terminal apareció recientemente,
+            # es señal de que el número está "quemado" (cold candidate).
+            s13f = 10.0 * (
+                (1 if ni_linea    in digit_set else 0) +
+                (1 if ni_terminal in digit_set else 0)
+            ) / 2
+
+            # ── C14f: Recencia como BONUS ──────────────────────────────────────
+            # Un número que acaba de salir es el mejor candidato a estar frío.
+            # Aplica a TODOS los números (incluidos top-50 salidores) para que
+            # un número "caliente" que acaba de salir suba en el ranking de fríos.
+            if ni == most_recent_num:
+                s14f = 20.0
+            elif ni in recent_nums:
+                s14f = 10.0
+            else:
+                s14f = 0.0
+
+            # ── C15f: Líneas que MENOS salen en fin de semana (solo sáb/dom) ──
+            if is_weekend and ni_linea in cold_wd_lineas:
+                wd_l_f    = cold_wd_lineas[ni_linea]
+                freq_wdlf = 1 - (wd_l_f['freq_rank'] - 1) / 5
+                rec_wdlf  = 1 - (wd_l_f['atraso_weekend'] / max_wd_linea_delay_f)
+                s15f = 8.0 * (0.4 * freq_wdlf + 0.6 * rec_wdlf)
+            else:
+                s15f = 0.0
+
+            # ── C16f: Terminales que MENOS salen en fin de semana + coincidencia
+            if is_weekend and ni_terminal in cold_wd_terminals:
+                wd_t_f    = cold_wd_terminals[ni_terminal]
+                freq_wdtf = 1 - (wd_t_f['freq_rank'] - 1) / 5
+                rec_wdtf  = 1 - (wd_t_f['atraso_weekend'] / max_wd_terminal_delay_f)
+                s16f = 7.0 * (0.4 * freq_wdtf + 0.6 * rec_wdtf)
+                if s15f > 0:
+                    s16f += 3.0
+            else:
+                s16f = 0.0
+
+            # ── C17f: Presión calientes ────────────────────────────────────────
+            # Si los últimos 6 sorteos fueron predominantemente del top-50 salidores,
+            # hay presión para que el siguiente también venga de ahí → esos números
+            # top-50 reciben un pequeño puntaje frío.
+            if rm_inv > 50:   # es del top-50 (caliente por frecuencia del mes)
+                s17f = 5.0 * hot_pressure
+            else:
+                s17f = 0.0
+
+            scores.append({
+                'name': n['name'],
+                'score': round(
+                    s1f + s2f + s3f + s4f + s5f
+                    + s6f + s7f + s8f + s9f
+                    + s10f + s11f + s12f
+                    + s13f + s14f
+                    + s15f + s16f
+                    + s17f,
+                    1
+                ),
+            })
+
+        scores.sort(key=lambda x: x['score'], reverse=True)
+        return scores
+
+    def _query_ceb_stats(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field):
+        """
+        Consulta unificada para centenas y bola extra (0-9).
+        Devuelve una lista de 10 dicts, uno por valor posible, con:
+          val, atraso_gen, atraso_turn, consec_freq, month_freq, dow_freq, week_freq
+        Se usa tanto para calientes (maximizar) como para frios (invertir).
+        """
+        field = output_id_field
+        self.env.cr.execute(f"""
+            WITH all_draws AS (
+                SELECT
+                    n.name::int                                                          AS val,
+                    lo.turn_day,
+                    lo.date                                                              AS draw_date,
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id)                         AS rn_gen,
+                    ROW_NUMBER() OVER (PARTITION BY lo.turn_day ORDER BY lo.date, lo.id) AS rn_turn
+                FROM lottery_output lo
+                JOIN lottery_number n ON n.id = lo.{field}
+                WHERE lo.{field} IS NOT NULL
+            ),
+            last_val      AS (SELECT val FROM all_draws ORDER BY rn_gen DESC LIMIT 1),
+            max_rn_gen    AS (SELECT COALESCE(MAX(rn_gen),  1) AS v FROM all_draws),
+            max_rn_turn   AS (SELECT COALESCE(MAX(rn_turn), 1) AS v FROM all_draws WHERE turn_day = %s),
+            last_gen_app  AS (SELECT val, MAX(rn_gen)  AS last_rn FROM all_draws GROUP BY val),
+            last_turn_app AS (SELECT val, MAX(rn_turn) AS last_rn FROM all_draws WHERE turn_day = %s GROUP BY val),
+            consec AS (
+                SELECT nxt.val AS next_val, COUNT(*) AS freq
+                FROM all_draws cur
+                JOIN all_draws nxt ON nxt.rn_gen = cur.rn_gen + 1
+                WHERE cur.val = (SELECT val FROM last_val)
+                GROUP BY nxt.val
+            ),
+            month_f AS (
+                SELECT val, COUNT(*) AS freq FROM all_draws
+                WHERE EXTRACT(MONTH FROM draw_date) = %s
+                  AND EXTRACT(YEAR  FROM draw_date) = %s
+                GROUP BY val
+            ),
+            dow_f AS (
+                SELECT val, COUNT(*) AS freq FROM all_draws
+                WHERE EXTRACT(DOW FROM draw_date) = %s
+                GROUP BY val
+            ),
+            week_f AS (
+                SELECT val, COUNT(*) AS freq FROM all_draws
+                WHERE (CASE
+                           WHEN EXTRACT(DAY FROM draw_date) <= 7  THEN 1
+                           WHEN EXTRACT(DAY FROM draw_date) <= 14 THEN 2
+                           WHEN EXTRACT(DAY FROM draw_date) <= 21 THEN 3
+                           WHEN EXTRACT(DAY FROM draw_date) <= 28 THEN 4
+                           ELSE 5 END) = %s
+                GROUP BY val
+            )
+            SELECT
+                av.val,
+                (SELECT v FROM max_rn_gen)  - COALESCE(lg.last_rn, 0)  AS atraso_gen,
+                (SELECT v FROM max_rn_turn) - COALESCE(lt.last_rn, 0)  AS atraso_turn,
+                COALESCE(c.freq,  0)                                    AS consec_freq,
+                COALESCE(mf.freq, 0)                                    AS month_freq,
+                COALESCE(df.freq, 0)                                    AS dow_freq,
+                COALESCE(wf.freq, 0)                                    AS week_freq
+            FROM generate_series(0, 9) av(val)
+            LEFT JOIN last_gen_app  lg ON lg.val      = av.val
+            LEFT JOIN last_turn_app lt ON lt.val      = av.val
+            LEFT JOIN consec        c  ON c.next_val  = av.val
+            LEFT JOIN month_f       mf ON mf.val      = av.val
+            LEFT JOIN dow_f         df ON df.val      = av.val
+            LEFT JOIN week_f        wf ON wf.val      = av.val
+        """, (turn_day, turn_day, month, year, pg_dow, week_seg_num))
+        return self.env.cr.dictfetchall()
+
+    def _get_calientes_cebs(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field):
+        """
+        Centenas / bola extra calientes.
+        Evalúa los 10 valores posibles (0-9) con 6 criterios ponderados:
+          35 % atraso turno   — cuánto lleva sin salir en este turno
+          25 % atraso general — cuánto lleva sin salir en cualquier turno
+          20 % consecutivo    — con qué frecuencia sigue al último valor sorteado
+          10 % frecuencia mes — salidores del mes actual
+           7 % frecuencia DOW — salidores en este día de la semana
+           3 % frecuencia sem — salidores en esta semana del mes
         Retorna los 4 mejores.
         """
-        PG_DOW_CODE = {0: 'do', 1: 'lu', 2: 'ma', 3: 'mi', 4: 'ju', 5: 'vi', 6: 'sa'}
-        week_day_code = PG_DOW_CODE[pg_dow]
-
-        # Candidatos: top delayed del turno + top delayed general
-        self.env.cr.execute(f"""
-            SELECT centena, atraso AS atraso_turn, NULL::int AS atraso_gen FROM {turn_mv}
-            UNION
-            SELECT centena, NULL::int, atraso FROM {gen_mv}
-        """)
-        cands = {}
-        for r in self.env.cr.dictfetchall():
-            name = r['centena']
-            if name not in cands:
-                cands[name] = {'name': name, 'atraso_turn': 0, 'atraso_gen': 0, 'freq_dow': 0, 'freq_week': 0}
-            if r['atraso_turn'] is not None:
-                cands[name]['atraso_turn'] = r['atraso_turn'] or 0
-            if r['atraso_gen'] is not None:
-                cands[name]['atraso_gen'] = r['atraso_gen'] or 0
-
-        if not cands:
+        rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field)
+        if not rows:
             return []
 
-        cand_names = list(cands.keys())
+        mx_turn   = max(r['atraso_turn']  for r in rows) or 1
+        mx_gen    = max(r['atraso_gen']   for r in rows) or 1
+        mx_consec = max(r['consec_freq']  for r in rows) or 1
+        mx_month  = max(r['month_freq']   for r in rows) or 1
+        mx_dow    = max(r['dow_freq']     for r in rows) or 1
+        mx_week   = max(r['week_freq']    for r in rows) or 1
 
-        self.env.cr.execute("""
-            SELECT centena, total_salidas FROM lottery_centena_weekday_mv
-            WHERE week_day = %s AND field_type = %s AND centena = ANY(%s)
-        """, (week_day_code, freq_field_type, cand_names))
-        for r in self.env.cr.dictfetchall():
-            if r['centena'] in cands:
-                cands[r['centena']]['freq_dow'] = r['total_salidas'] or 0
-
-        self.env.cr.execute("""
-            SELECT centena, total_salidas FROM lottery_centena_week_mv
-            WHERE week_segment = %s AND field_type = %s AND centena = ANY(%s)
-        """, (week_seg, freq_field_type, cand_names))
-        for r in self.env.cr.dictfetchall():
-            if r['centena'] in cands:
-                cands[r['centena']]['freq_week'] = r['total_salidas'] or 0
-
-        vals = list(cands.values())
-        mx_turn = max((v['atraso_turn'] for v in vals), default=1) or 1
-        mx_gen  = max((v['atraso_gen']  for v in vals), default=1) or 1
-        mx_dow  = max((v['freq_dow']    for v in vals), default=1) or 1
-        mx_week = max((v['freq_week']   for v in vals), default=1) or 1
-
-        for v in vals:
-            v['score'] = round(
-                50.0 * v['atraso_turn'] / mx_turn +
-                30.0 * v['atraso_gen']  / mx_gen  +
-                15.0 * v['freq_dow']    / mx_dow  +
-                 5.0 * v['freq_week']   / mx_week, 1
+        for r in rows:
+            r['score'] = round(
+                35.0 * r['atraso_turn'] / mx_turn   +
+                25.0 * r['atraso_gen']  / mx_gen    +
+                20.0 * r['consec_freq'] / mx_consec +
+                10.0 * r['month_freq']  / mx_month  +
+                 7.0 * r['dow_freq']    / mx_dow    +
+                 3.0 * r['week_freq']   / mx_week,
+                1
             )
 
-        vals.sort(key=lambda x: x['score'], reverse=True)
-        return [{'name': v['name']} for v in vals[:4]]
+        rows.sort(key=lambda x: x['score'], reverse=True)
+        return [{'name': str(r['val'])} for r in rows[:4]]
 
-    def _get_frios_cebs(self, turn_day, output_id_field):
-        """Devuelve las 4 centenas/bola extra que salieron más recientemente en el turno dado."""
-        self.env.cr.execute(f"""
-            SELECT n.name AS name
-            FROM lottery_output lo
-            JOIN lottery_number n ON n.id = lo.{output_id_field}
-            WHERE lo.turn_day = %s AND lo.{output_id_field} IS NOT NULL
-            GROUP BY lo.{output_id_field}, n.name
-            ORDER BY MAX(lo.date) DESC
-            LIMIT 4
-        """, (turn_day,))
-        return [{'name': r['name']} for r in self.env.cr.dictfetchall()]
+    def _get_frios_cebs(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field):
+        """
+        Centenas / bola extra frías.
+        Mismos 6 criterios que calientes pero INVERTIDOS:
+          35 % recencia turno   — cuánto POCO lleva sin salir (apareció recientemente)
+          25 % recencia general — ídem en cualquier turno
+          20 % menos seguidor  — el que MENOS sigue al último valor sorteado
+          10 % menos salidor mes
+           7 % menos salidor DOW
+           3 % menos salidor sem
+        Retorna los 4 más fríos.
+        """
+        rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field)
+        if not rows:
+            return []
+
+        mx_turn   = max(r['atraso_turn']  for r in rows) or 1
+        mx_gen    = max(r['atraso_gen']   for r in rows) or 1
+        mx_consec = max(r['consec_freq']  for r in rows) or 1
+        mx_month  = max(r['month_freq']   for r in rows) or 1
+        mx_dow    = max(r['dow_freq']     for r in rows) or 1
+        mx_week   = max(r['week_freq']    for r in rows) or 1
+
+        for r in rows:
+            # Invertir: bajo atraso = reciente = más frío; baja frecuencia = menos salidor = más frío
+            r['score'] = round(
+                35.0 * (1 - r['atraso_turn'] / mx_turn)   +
+                25.0 * (1 - r['atraso_gen']  / mx_gen)    +
+                20.0 * (1 - r['consec_freq'] / mx_consec) +
+                10.0 * (1 - r['month_freq']  / mx_month)  +
+                 7.0 * (1 - r['dow_freq']    / mx_dow)    +
+                 3.0 * (1 - r['week_freq']   / mx_week),
+                1
+            )
+
+        rows.sort(key=lambda x: x['score'], reverse=True)
+        return [{'name': str(r['val'])} for r in rows[:4]]
 
     @api.model
     @tools.ormcache('today_str')
@@ -1522,15 +2467,12 @@ class LotteryStatsService(models.Model):
         """Endpoint unificado: números, centenas y bola extra calientes para ambos turnos."""
         from datetime import date as _date
         today = _date.fromisoformat(today_str)
-        pg_dow   = (today.weekday() + 1) % 7
-        day      = today.day
-        week_seg = (
-            'sem_1' if day <= 7  else
-            'sem_2' if day <= 14 else
-            'sem_3' if day <= 21 else
-            'sem_4' if day <= 28 else
-            'sem_5'
-        )
+        pg_dow       = (today.weekday() + 1) % 7
+        day          = today.day
+        month        = today.month
+        year         = today.year
+        week_seg_num = (1 if day <= 7  else 2 if day <= 14 else
+                        3 if day <= 21 else 4 if day <= 28 else 5)
 
         # Fecha del próximo sorteo = última salida del turno + 1 día
         DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -1555,26 +2497,18 @@ class LotteryStatsService(models.Model):
             boundary = scores_desc[n - 1]['score']
             return [s for s in scores_desc if s['score'] >= boundary]
 
-        def _cut_cold_with_ties(scores_desc, n):
-            """Bottom-n fríos expandido: incluye empates en el límite."""
-            if len(scores_desc) <= n:
-                return list(reversed(scores_desc))
-            boundary = scores_desc[len(scores_desc) - n]['score']
-            return list(reversed([s for s in scores_desc if s['score'] <= boundary]))
-
         result = {}
         for turn in ('afternoon', 'evening'):
-            turn_cen_mv = 'lottery_top5_centena_dia_mv'    if turn == 'afternoon' else 'lottery_top5_centena_noche_mv'
-            turn_be_mv  = 'lottery_top5_bola_extra_dia_mv' if turn == 'afternoon' else 'lottery_top5_bola_extra_noche_mv'
             next_date   = row.get('next_' + turn)
             all_scores  = self.get_numeros_calientes(turn, today_str)
+            cold_scores = self.get_numeros_frios(turn, today_str)
             result[turn] = {
                 'numbers':         _cut_with_ties(all_scores, 30),
-                'numbers_cold':    _cut_cold_with_ties(all_scores, 30),
-                'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg, turn_cen_mv, 'lottery_top5_centena_general_mv',    'hundreds_id'),
-                'centenas_cold':   self._get_frios_cebs(turn, 'hundreds_id'),
-                'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg, turn_be_mv,  'lottery_top5_bola_extra_general_mv', 'fireball_id'),
-                'bola_extra_cold': self._get_frios_cebs(turn, 'fireball_id'),
+                'numbers_cold':    _cut_with_ties(cold_scores, 30),
+                'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
+                'centenas_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
+                'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
+                'bola_extra_cold': self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
                 'next_draw':       _fmt_date(next_date),
             }
         result['last_turn'] = row.get('last_turn') or 'afternoon'
