@@ -18,6 +18,8 @@
         "views/estadisticas_numeros.xml",
         "views/estadisticas_pintas.xml",
         "views/homepage_template.xml",
+        "views/news_template.xml",
+        "views/news_admin.xml",
         "views/faq_template.xml",
         "views/faq_views.xml",
         "views/politica_privacidad.xml",
@@ -30,6 +32,7 @@
     ],
     'assets': {
         'web.assets_frontend': [
+            'lottery_portal/static/src/css/news.css',
             'lottery_portal/static/src/css/homepage.css',
             'lottery_portal/static/src/css/dashboard_numbers.css',
             'lottery_portal/static/src/css/dashboard_groups.css',

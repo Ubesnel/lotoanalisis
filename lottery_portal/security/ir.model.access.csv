@@ -1,3 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_website_faq_category_group_lottery_manager,website_faq_category_group_lottery_manager,model_website_faq_category,lottery_base.group_lottery_manager,1,1,1,1
 access_website_faq_group_lottery_manager,website_faq_group_lottery_manager,model_website_faq,lottery_base.group_lottery_manager,1,1,1,1
+access_news_category_manager,news_category_manager,model_news_category,lottery_base.group_lottery_manager,1,1,1,1
+access_news_article_manager,news_article_manager,model_news_article,lottery_base.group_lottery_manager,1,1,1,1
+access_news_comment_manager,news_comment_manager,model_news_comment,lottery_base.group_lottery_manager,1,1,1,1
+access_news_category_public,news_category_public,model_news_category,,1,0,0,0
+access_news_article_public,news_article_public,model_news_article,,1,0,0,0
+access_news_comment_public,news_comment_public,model_news_comment,,1,0,1,0
