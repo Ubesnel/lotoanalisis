@@ -7,18 +7,16 @@ from odoo.addons.lottery_base.models.utils import MONTHS_DICT
 
 class LotteryPortal(http.Controller):
 
-    @http.route('/', type='http', auth='public', website=True)
-    def home(self, **kwargs):
+    @http.route('/estadisticas-generales', type='http', auth='public', website=True)
+    def estadisticas_generales(self, **kwargs):
         stats = request.env['lottery.stats.service'].sudo()
-        response = request.render('website.homepage')
         month = request.env.company.portal_calendar_month
         year = request.env.company.portal_calendar_year
-        response.qcontext.update({
+        return request.render('lottery_portal.estadisticas_generales', {
             'lottery_data': stats.get_last_results_full(),
             'month_year': stats.get_month_year(month, year),
             'hero_stats': stats.get_hero_stats(),
         })
-        return response
 
     @http.route(['/faq'], type='http', auth="public", website=True)
     def faq_page(self, **kwargs):

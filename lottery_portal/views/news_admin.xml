@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ==================== CATEGORÍAS ==================== -->
+    <record id="view_news_category_tree" model="ir.ui.view">
+        <field name="name">news.category.tree</field>
+        <field name="model">news.category</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="slug"/>
+                <field name="color" widget="color"/>
+                <field name="icon"/>
+                <field name="article_count" string="Artículos pub."/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_news_category_form" model="ir.ui.view">
+        <field name="name">news.category.form</field>
+        <field name="model">news.category</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Categoría"/>
+                        <h1><field name="name" placeholder="Nombre de la categoría"/></h1>
+                    </div>
+                    <group>
+                        <group string="Configuración">
+                            <field name="slug" placeholder="url-amigable"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Apariencia">
+                            <field name="icon" placeholder="fa-tag"/>
+                            <field name="color" widget="color"/>
+                        </group>
+                    </group>
+                    <group string="Descripción">
+                        <field name="description" nolabel="1" placeholder="Descripción breve de la categoría..."/>
+                    </group>
+                    <group string="Estadísticas">
+                        <field name="article_count" readonly="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_news_category" model="ir.actions.act_window">
+        <field name="name">Categorías</field>
+        <field name="res_model">news.category</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+
+    <!-- ==================== ARTÍCULOS ==================== -->
+    <record id="view_news_article_tree" model="ir.ui.view">
+        <field name="name">news.article.tree</field>
+        <field name="model">news.article</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="not is_published" decoration-success="is_featured and is_published">
+                <field name="title"/>
+                <field name="category_id"/>
+                <field name="author_id" optional="show"/>
+                <field name="publish_date"/>
+                <field name="is_featured" string="Destacado" widget="boolean_toggle"/>
+                <field name="is_published" string="Publicado" widget="boolean_toggle"/>
+                <field name="views_count" string="Visitas"/>
+                <field name="comment_count" string="Comentarios"/>
+                <button name="action_publish" type="object" string="Publicar"
+                        icon="fa-check" invisible="is_published"
+                        class="btn-primary"/>
+                <button name="action_unpublish" type="object" string="Ocultar"
+                        icon="fa-eye-slash" invisible="not is_published"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_news_article_form" model="ir.ui.view">
+        <field name="name">news.article.form</field>
+        <field name="model">news.article</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_publish" type="object" string="Publicar"
+                            class="btn-primary" invisible="is_published"/>
+                    <button name="action_unpublish" type="object" string="Despublicar"
+                            invisible="not is_published"/>
+                    <field name="is_published" widget="boolean_toggle"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_publish" class="oe_stat_button"
+                                icon="fa-eye" invisible="is_published">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">Borrador</span>
+                                <span class="o_stat_text">Estado</span>
+                            </div>
+                        </button>
+                        <button type="object" name="action_unpublish" class="oe_stat_button"
+                                icon="fa-eye-slash" invisible="not is_published">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">Publicado</span>
+                                <span class="o_stat_text">Estado</span>
+                            </div>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-comments" type="object"
+                                name="action_view_comments">
+                            <field name="comment_count" widget="statinfo" string="Comentarios"/>
+                        </button>
+                        <div class="oe_stat_button" style="cursor:default">
+                            <div class="o_stat_info">
+                                <field name="views_count" class="o_stat_value"/>
+                                <span class="o_stat_text">Visitas</span>
+                            </div>
+                        </div>
+                    </div>
+                    <field name="cover_image" widget="image" class="oe_avatar"
+                           options="{'preview_image': 'cover_image'}"/>
+                    <div class="oe_title">
+                        <label for="title" string="Artículo"/>
+                        <h1><field name="title" placeholder="Título del artículo..."/></h1>
+                    </div>
+                    <group>
+                        <group string="Publicación">
+                            <field name="slug" placeholder="url-amigable-del-articulo"/>
+                            <field name="category_id"/>
+                            <field name="author_id"/>
+                            <field name="author_name" placeholder="Nombre visible (opcional)"/>
+                            <field name="publish_date"/>
+                            <field name="is_featured" string="Artículo destacado"/>
+                            <field name="allow_comments"/>
+                        </group>
+                        <group string="SEO">
+                            <field name="meta_title" placeholder="Título SEO (opcional)"/>
+                            <field name="tags" placeholder="etiqueta1, etiqueta2, etiqueta3"/>
+                            <field name="cover_image_alt" placeholder="Texto alt de la imagen"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Resumen">
+                            <field name="summary" placeholder="Resumen corto que aparece en la tarjeta del artículo (máx. 300 caracteres)..."/>
+                        </page>
+                        <page string="Código HTML">
+                            <field name="raw_html"/>
+                        </page>
+                        <page string="Contenido">
+                            <field name="content" readonly="1" widget="html" style="min-height:400px"/>
+                        </page>
+                        <page string="SEO - Meta descripción">
+                            <field name="meta_description" placeholder="Descripción para motores de búsqueda..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_news_article_kanban" model="ir.ui.view">
+        <field name="name">news.article.kanban</field>
+        <field name="model">news.article</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="is_published" quick_create="false"
+                    class="o_kanban_small_column">
+                <field name="title"/>
+                <field name="category_id"/>
+                <field name="is_published"/>
+                <field name="is_featured"/>
+                <field name="publish_date"/>
+                <field name="cover_image"/>
+                <field name="views_count"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-if="record.cover_image.raw_value"
+                                     t-att-src="'/web/image/news.article/' + record.id + '/cover_image/128x80'"
+                                     alt="portada" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0"/>
+                                <div t-else="" style="height:80px;background:#ece9f2;border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;color:#9b72bb">
+                                    <i class="fa fa-newspaper-o fa-2x"/>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_details p-2">
+                                <strong class="o_kanban_record_title">
+                                    <field name="title"/>
+                                </strong>
+                                <div class="text-muted" style="font-size:11px;margin-top:4px">
+                                    <t t-if="record.category_id.value">
+                                        <span class="badge" style="background:#6f4a8e;color:#fff">
+                                            <field name="category_id"/>
+                                        </span>
+                                    </t>
+                                    <t t-if="record.is_featured.raw_value">
+                                        <span class="badge" style="background:#f59e0b;color:#fff">Destacado</span>
+                                    </t>
+                                </div>
+                                <div style="font-size:11px;color:#7c6f8e;margin-top:4px">
+                                    <i class="fa fa-eye"/> <field name="views_count"/> visitas
+                                    · <field name="publish_date" widget="date"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_news_articles" model="ir.actions.act_window">
+        <field name="name">Artículos</field>
+        <field name="res_model">news.article</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="context">{'search_default_is_published': 0}</field>
+    </record>
+
+
+    <!-- ==================== COMENTARIOS ==================== -->
+    <record id="view_news_comment_tree" model="ir.ui.view">
+        <field name="name">news.comment.tree</field>
+        <field name="model">news.comment</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="not is_approved">
+                <field name="create_date" string="Fecha"/>
+                <field name="article_id" string="Artículo"/>
+                <field name="author_name" string="Autor"/>
+                <field name="author_email" string="Correo"/>
+                <field name="content" string="Comentario"/>
+                <field name="parent_id" string="Respuesta a" optional="show"/>
+                <field name="is_approved" string="Aprobado" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_news_comment_form" model="ir.ui.view">
+        <field name="name">news.comment.form</field>
+        <field name="model">news.comment</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Datos del comentario">
+                            <field name="article_id"/>
+                            <field name="parent_id"/>
+                            <field name="is_approved"/>
+                            <field name="create_date" readonly="1"/>
+                            <field name="ip_address" readonly="1"/>
+                        </group>
+                        <group string="Autor">
+                            <field name="author_name"/>
+                            <field name="author_email"/>
+                        </group>
+                    </group>
+                    <group string="Contenido">
+                        <field name="content" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_news_comments" model="ir.actions.act_window">
+        <field name="name">Comentarios</field>
+        <field name="res_model">news.comment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    <record id="view_news_comment_search" model="ir.ui.view">
+        <field name="name">news.comment.search</field>
+        <field name="model">news.comment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="author_name"/>
+                <field name="article_id"/>
+                <filter name="pending" string="Pendientes" domain="[('is_approved','=',False)]"/>
+                <filter name="approved" string="Aprobados" domain="[('is_approved','=',True)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_article" string="Artículo" context="{'group_by': 'article_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+
+    <!-- ==================== MENÚ BACKEND ==================== -->
+    <menuitem id="menu_news_root" name="Noticias" parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_manager" sequence="90"/>
+
+    <menuitem id="menu_news_articles" name="Artículos" parent="menu_news_root"
+              action="action_news_articles"
+              groups="lottery_base.group_lottery_manager" sequence="5"/>
+
+    <menuitem id="menu_news_categories" name="Categorías" parent="menu_news_root"
+              action="action_news_category"
+              groups="lottery_base.group_lottery_manager" sequence="10"/>
+
+    <menuitem id="menu_news_comments" name="Comentarios" parent="menu_news_root"
+              action="action_news_comments"
+              groups="lottery_base.group_lottery_manager" sequence="15"/>
+
+</odoo>

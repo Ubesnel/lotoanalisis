@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="menu_lottery_noticias" model="website.menu">
+        <field name="name">Noticias</field>
+        <field name="url">/</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="menu_lottery_estadisticas_generales" model="website.menu">
+        <field name="name">Estadísticas Generales</field>
+        <field name="url">/estadisticas-generales</field>
+        <field name="parent_id" ref="website.main_menu"/>
+        <field name="sequence">15</field>
+    </record>
+
     <record id="menu_lottery_estadisticas" model="website.menu">
         <field name="name">Grupos</field>
         <field name="url">/estadisticas</field>
@@ -46,9 +60,11 @@
     <menuitem id="menu_faq_root" name="Sitio Web" parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_manager" sequence="100"/>
 
-    <menuitem id="menu_faq_category" name="Categorías" parent="menu_faq_root" action="action_faq_category"
+    <menuitem id="menu_faq_category" name="Categorías FAQ" parent="menu_faq_root"
+              action="action_faq_category"
               groups="lottery_base.group_lottery_manager" sequence="5"/>
 
-    <menuitem id="menu_faq" name="Preguntas" parent="menu_faq_root" action="action_faq"
+    <menuitem id="menu_faq" name="Preguntas FAQ" parent="menu_faq_root"
+              action="action_faq"
               groups="lottery_base.group_lottery_manager" sequence="25"/>
 </odoo>
