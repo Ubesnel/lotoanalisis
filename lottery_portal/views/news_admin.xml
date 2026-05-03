@@ -145,8 +145,11 @@
                         <page string="Resumen">
                             <field name="summary" placeholder="Resumen corto que aparece en la tarjeta del artículo (máx. 300 caracteres)..."/>
                         </page>
+                        <page string="Código HTML">
+                            <field name="raw_html"/>
+                        </page>
                         <page string="Contenido">
-                            <field name="content" widget="html" style="min-height:400px"/>
+                            <field name="content" readonly="1" widget="html" style="min-height:400px"/>
                         </page>
                         <page string="SEO - Meta descripción">
                             <field name="meta_description" placeholder="Descripción para motores de búsqueda..."/>

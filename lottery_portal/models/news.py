@@ -62,7 +62,8 @@ class NewsArticle(models.Model):
     title = fields.Char(string='Título', required=True)
     slug = fields.Char(string='URL amigable', required=True, copy=False)
     summary = fields.Text(string='Resumen', help='Texto corto que aparece en la tarjeta del artículo')
-    content = fields.Html(string='Contenido', sanitize=True)
+    raw_html = fields.Text(string="HTML crudo")
+    content = fields.Html(string='Contenido', sanitize=False, compute="_compute_content_html")
     cover_image = fields.Binary(string='Imagen de portada', attachment=True)
     cover_image_filename = fields.Char(string='Nombre imagen')
     cover_image_alt = fields.Char(string='Texto alternativo imagen')
@@ -130,6 +131,11 @@ class NewsArticle(models.Model):
             'domain': [('article_id', '=', self.id)],
             'context': {'default_article_id': self.id},
         }
+
+    @api.depends('raw_html')
+    def _compute_content_html(self):
+        for rec in self:
+            rec.content = rec.raw_html or ''
 
 
 class NewsComment(models.Model):

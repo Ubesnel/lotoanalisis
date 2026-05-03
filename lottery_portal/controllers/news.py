@@ -76,6 +76,7 @@ class NewsController(http.Controller):
             'comment_count': len(comments),
             'comment_submitted': kwargs.get('comment_submitted', False),
             'comment_error': kwargs.get('comment_error', ''),
+            'my_comments': request.session.get('my_comments', []),
         })
 
     @http.route('/noticias/<string:slug>/comentar', type='http', auth='public', website=True,
@@ -117,8 +118,40 @@ class NewsController(http.Controller):
             if parent:
                 vals['parent_id'] = parent.id
 
-        request.env['news.comment'].sudo().create(vals)
+        comment = request.env['news.comment'].sudo().create(vals)
+        owned = list(request.session.get('my_comments', []))
+        owned.append(comment.id)
+        request.session['my_comments'] = owned
         return request.redirect(f'/noticias/{slug}?comment_submitted=1#comentarios')
+
+    @http.route('/noticias/<string:slug>/comentario/<int:cid>/editar',
+                type='http', auth='public', website=True, methods=['POST'], csrf=True)
+    def news_edit_comment(self, slug, cid, **post):
+        owned = request.session.get('my_comments', [])
+        if cid not in owned:
+            return request.redirect(f'/noticias/{slug}#comentarios')
+        comment = request.env['news.comment'].sudo().search(
+            [('id', '=', cid)], limit=1)
+        if not comment:
+            return request.redirect(f'/noticias/{slug}#comentarios')
+        content = (post.get('content') or '').strip()
+        if content and 5 <= len(content) <= 2000:
+            comment.write({'content': content, 'is_approved': False})
+        return request.redirect(f'/noticias/{slug}?comment_submitted=1#comentarios')
+
+    @http.route('/noticias/<string:slug>/comentario/<int:cid>/eliminar',
+                type='http', auth='public', website=True, methods=['POST'], csrf=True)
+    def news_delete_comment(self, slug, cid, **post):
+        owned = list(request.session.get('my_comments', []))
+        if cid not in owned:
+            return request.redirect(f'/noticias/{slug}#comentarios')
+        comment = request.env['news.comment'].sudo().search(
+            [('id', '=', cid)], limit=1)
+        if comment:
+            comment.unlink()
+            owned = [x for x in owned if x != cid]
+            request.session['my_comments'] = owned
+        return request.redirect(f'/noticias/{slug}#comentarios')
 
     @http.route('/noticias/categoria/<string:slug>', type='http', auth='public', website=True)
     def news_by_category(self, slug, page=1, **kwargs):

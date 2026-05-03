@@ -272,13 +272,14 @@
 /* Cuerpo compacto */
 .np-card-body { padding: 10px 13px 13px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
 
-/* Categoría como texto coloreado (estilo MARCA: "FÚTBOL" en rojo) */
+/* Etiqueta de categoría en card — color fijo violeta, sin depender del campo color */
 .np-card-cat-label {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: .8px;
   text-transform: uppercase;
   line-height: 1;
+  color: var(--np-violet);
 }
 
 .np-card-title {
@@ -335,15 +336,70 @@
 .nap-wrap { padding: 28px 0 60px; background: var(--np-bg); }
 .nap-row { gap: 0; }
 
+/* ---- Hoja de libro: contenedor del cuerpo del artículo ---- */
+.nap-page-sheet {
+  background: #ffffff;
+  border-radius: var(--np-r);
+  border: 1px solid var(--np-border);
+  box-shadow: 0 2px 16px rgba(26,16,53,.07), 0 1px 3px rgba(26,16,53,.04);
+  padding: 28px 32px 32px;
+}
+
 /* ---- Breadcrumb ---- */
 .nap-breadcrumb {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   font-size: 11px; color: var(--np-muted); margin-bottom: 20px;
+  padding-top: 4px;
 }
 .nap-breadcrumb a { color: var(--np-muted); text-decoration: none; }
 .nap-breadcrumb a:hover { color: var(--np-violet); }
 .nap-breadcrumb i { font-size: 9px; opacity: .5; }
 .nap-breadcrumb span { color: var(--np-text); font-weight: 500; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- Panel izquierdo: imagen + cards ---- */
+.nap-left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 20px;
+  padding-right: 20px;
+}
+
+.nap-panel-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--np-r);
+  overflow: hidden;
+  background: #e8e0f5;
+  box-shadow: var(--np-shadow);
+}
+.nap-panel-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.nap-panel-badge {
+  position: absolute; bottom: 10px; left: 10px;
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--np-amber); color: var(--np-indigo);
+  font-size: 10px; font-weight: 800; letter-spacing: .3px;
+  padding: 4px 10px; border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(245,158,11,.4);
+}
+
+/* Info list dentro del scard de información */
+.nap-info-list { display: flex; flex-direction: column; gap: 10px; }
+.nap-info-item {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 12px; color: var(--np-muted);
+}
+.nap-info-item i { color: var(--np-violet-lt); width: 14px; text-align: center; font-size: 11px; flex-shrink: 0; }
+.nap-info-item span, .nap-info-item a { color: var(--np-text); }
+.nap-info-cat { font-weight: 700; text-decoration: none; }
+.nap-info-cat:hover { text-decoration: underline; }
 
 /* ---- Cabecera del artículo ---- */
 .nap-header { margin-bottom: 20px; }
@@ -351,10 +407,10 @@
 .nap-category {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;
-  color: var(--cat-color, var(--np-violet));
+  color: var(--np-violet);
   text-decoration: none; margin-bottom: 12px;
   padding-bottom: 2px;
-  border-bottom: 2px solid var(--cat-color, var(--np-violet));
+  border-bottom: 2px solid var(--np-violet);
 }
 .nap-category:hover { opacity: .8; text-decoration: none; }
 .nap-category i { font-size: 10px; }
@@ -376,6 +432,7 @@
   font-weight: 400;
   border-left: 3px solid var(--np-violet);
   padding-left: 14px;
+  text-align:justify;
 }
 
 .nap-meta {
@@ -476,8 +533,15 @@
 .nap-cmeta strong { font-size: 13px; color: var(--np-text); }
 .nap-cmeta span { font-size: 10px; color: var(--np-muted); }
 .nap-ctext { font-size: 13px; color: var(--np-text); line-height: 1.65; margin: 0 0 7px; }
+.nap-comment-actions { display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
 .nap-reply-btn { background: none; border: none; color: var(--np-violet); font-size: 11px; font-weight: 700; cursor: pointer; padding: 0; }
 .nap-reply-btn:hover { color: var(--np-violet-dk); }
+.nap-edit-btn { background: none; border: none; color: var(--np-muted); font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; transition: var(--np-ease); }
+.nap-edit-btn:hover { color: var(--np-text); }
+.nap-delete-form { margin: 0; padding: 0; display: inline; }
+.nap-delete-btn { background: none; border: none; color: #dc2626; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; transition: var(--np-ease); }
+.nap-delete-btn:hover { color: #991b1b; }
+.nap-edit-wrap { margin-top: 10px; }
 .nap-replies { margin-top: 8px; }
 .nap-reply-wrap { margin-top: 10px; }
 .nap-no-comments { text-align: center; padding: 24px; color: var(--np-muted); border: 2px dashed var(--np-border); border-radius: var(--np-r-sm); margin-bottom: 22px; font-size: 13px; }
@@ -519,8 +583,8 @@
 }
 .nap-btn-ghost:hover { border-color: var(--np-muted); color: var(--np-text); }
 
-/* ---- Sidebar ---- */
-.nap-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 56px; padding-left: 20px; }
+/* ---- Sidebar (artículo — ya no se usa, reemplazado por nap-left-panel) ---- */
+.nap-sidebar { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; padding-left: 20px; }
 .nap-scard { background: var(--np-bg-card); border-radius: var(--np-r); box-shadow: var(--np-shadow); border: 1px solid var(--np-border); overflow: hidden; }
 .nap-scard-head {
   background: var(--np-indigo);
@@ -603,13 +667,22 @@
   .np-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 }
 
+@media (max-width: 767px) {
+  .nap-left-panel {
+    position: static;
+    padding-right: 0;
+    margin-bottom: 20px;
+  }
+  .nap-panel-img-wrap { aspect-ratio: 16 / 9; }
+  .nap-page-sheet { padding: 18px 16px 24px; }
+}
+
 @media (max-width: 680px) {
   .np-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .nap-sidebar { position: static; padding-left: 0; margin-top: 24px; }
   .nap-form-row { grid-template-columns: 1fr; }
   .nap-title { font-size: 22px; }
   .nap-summary { font-size: 15px; }
-  .nap-cover-img { max-height: 280px; }
 }
 
 @media (max-width: 420px) {

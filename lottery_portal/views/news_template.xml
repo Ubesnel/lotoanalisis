@@ -2,10 +2,9 @@
 <odoo>
 
     <!-- ==================== HOMEPAGE DE NOTICIAS ==================== -->
-    <template id="news_homepage" name="Inicio - Noticias">
+    <template id="news_homepage" name="Inicio">
         <t t-call="website.layout">
             <div id="news-portal">
-
                 <div class="container np-main">
                     <div class="row np-layout-row">
 
@@ -46,31 +45,6 @@
                         <!-- ===== CONTENIDO PRINCIPAL ===== -->
                         <div class="col-lg-9 col-md-12">
 
-                            <!-- SECCIÓN HEADER -->
-                            <div class="np-section-hd">
-                                <t t-if="active_category">
-                                    <div class="np-section-hd-inner">
-                                        <span class="np-section-dot"
-                                              t-att-style="'background:' + (active_category.color or '#7c3aed')"/>
-                                        <h2 class="np-section-title">
-                                            <t t-esc="active_category.name"/>
-                                        </h2>
-                                        <span class="np-section-count">
-                                            <t t-esc="total"/> artículo<t t-if="total != 1">s</t>
-                                        </span>
-                                    </div>
-                                </t>
-                                <t t-else="">
-                                    <div class="np-section-hd-inner">
-                                        <span class="np-section-line"/>
-                                        <h2 class="np-section-title">Últimas publicaciones</h2>
-                                        <span class="np-section-count">
-                                            <t t-esc="total"/> artículo<t t-if="total != 1">s</t>
-                                        </span>
-                                    </div>
-                                </t>
-                            </div>
-
                             <!-- GRID DE ARTÍCULOS -->
                             <t t-if="articles">
                                 <div class="np-grid">
@@ -88,8 +62,7 @@
                                             </a>
                                             <div class="np-card-body">
                                                 <t t-if="article.category_id">
-                                                    <span class="np-card-cat-label"
-                                                          t-att-style="'color:' + (article.category_id.color or '#7c3aed')">
+                                                    <span class="np-card-cat-label">
                                                         <t t-esc="article.category_id.name.upper()"/>
                                                     </span>
                                                 </t>
@@ -160,33 +133,138 @@
     <template id="news_article_page" name="Artículo de Noticias">
         <t t-call="website.layout">
             <div id="news-article-portal">
-
                 <div class="nap-wrap">
                     <div class="container">
+
+                        <!-- BREADCRUMB -->
+                        <div class="nap-breadcrumb">
+                            <a href="/"><i class="fa fa-home"/> Inicio</a>
+                            <i class="fa fa-angle-right"/>
+                            <t t-if="article.category_id">
+                                <a t-attf-href="/?category=#{ article.category_id.slug }">
+                                    <t t-esc="article.category_id.name"/>
+                                </a>
+                                <i class="fa fa-angle-right"/>
+                            </t>
+                            <span><t t-esc="article.title"/></span>
+                        </div>
+
                         <div class="row nap-row">
 
-                            <!-- ===== COLUMNA PRINCIPAL ===== -->
-                            <div class="col-lg-8">
+                            <!-- ===== PANEL IZQUIERDO: imagen + info ===== -->
+                            <div class="col-lg-4 col-md-5">
+                                <div class="nap-left-panel">
 
-                                <!-- BREADCRUMB -->
-                                <div class="nap-breadcrumb">
-                                    <a href="/"><i class="fa fa-home"/> Inicio</a>
-                                    <i class="fa fa-angle-right"/>
-                                    <t t-if="article.category_id">
-                                        <a t-attf-href="/?category=#{ article.category_id.slug }">
-                                            <t t-esc="article.category_id.name"/>
-                                        </a>
-                                        <i class="fa fa-angle-right"/>
+                                    <!-- Imagen del artículo -->
+                                    <div class="nap-panel-img-wrap">
+                                        <img t-att-src="article.get_cover_url()"
+                                             t-att-alt="article.cover_image_alt or article.title or ''"
+                                             class="nap-panel-img"/>
+                                        <t t-if="article.is_featured">
+                                            <span class="nap-panel-badge">
+                                                <i class="fa fa-star"/> Destacado
+                                            </span>
+                                        </t>
+                                    </div>
+
+                                    <!-- Autor -->
+                                    <div class="nap-scard">
+                                        <div class="nap-scard-head"><i class="fa fa-user"/> Autor</div>
+                                        <div class="nap-scard-body nap-author-block">
+                                            <div class="nap-s-avatar">
+                                                <t t-esc="article.get_author_display()[0].upper()"/>
+                                            </div>
+                                            <div>
+                                                <strong><t t-esc="article.get_author_display()"/></strong>
+                                                <span>Redacción Pick 3 Florida</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Info del artículo -->
+                                    <div class="nap-scard">
+                                        <div class="nap-scard-head"><i class="fa fa-info-circle"/> Información</div>
+                                        <div class="nap-scard-body">
+                                            <div class="nap-info-list">
+                                                <div class="nap-info-item">
+                                                    <i class="fa fa-calendar-o"/>
+                                                    <span>
+                                                        <t t-esc="article.publish_date" t-options='{"widget":"date", "format":"d MMMM yyyy"}'/>
+                                                    </span>
+                                                </div>
+                                                <div class="nap-info-item">
+                                                    <i class="fa fa-eye"/>
+                                                    <span><t t-esc="article.views_count"/> visitas</span>
+                                                </div>
+                                                <t t-if="article.allow_comments">
+                                                    <div class="nap-info-item">
+                                                        <i class="fa fa-comment-o"/>
+                                                        <a href="#comentarios" class="nap-meta-link">
+                                                            <t t-esc="comment_count"/> comentario<t t-if="comment_count != 1">s</t>
+                                                        </a>
+                                                    </div>
+                                                </t>
+                                                <t t-if="article.category_id">
+                                                    <div class="nap-info-item">
+                                                        <i t-attf-class="fa #{ article.category_id.icon or 'fa-tag' }"/>
+                                                        <a t-attf-href="/?category=#{ article.category_id.slug }"
+                                                           class="nap-info-cat"
+                                                           t-att-style="'color:' + (article.category_id.color or '#7c3aed')">
+                                                            <t t-esc="article.category_id.name"/>
+                                                        </a>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Artículos relacionados -->
+                                    <t t-if="related">
+                                        <div class="nap-scard">
+                                            <div class="nap-scard-head"><i class="fa fa-newspaper-o"/> Relacionados</div>
+                                            <div class="nap-scard-body p-0">
+                                                <t t-foreach="related" t-as="rel">
+                                                    <a t-attf-href="/noticias/#{ rel.slug }" class="nap-related">
+                                                        <div class="nap-related-img">
+                                                            <img t-att-src="rel.get_cover_url()" t-att-alt="rel.title or ''"/>
+                                                        </div>
+                                                        <div class="nap-related-info">
+                                                            <span class="nap-related-title"><t t-esc="rel.title"/></span>
+                                                            <span class="nap-related-date">
+                                                                <t t-esc="rel.publish_date" t-options='{"widget":"date", "format":"d MMM yyyy"}'/>
+                                                            </span>
+                                                        </div>
+                                                    </a>
+                                                </t>
+                                            </div>
+                                        </div>
                                     </t>
-                                    <span><t t-esc="article.title"/></span>
-                                </div>
 
-                                <!-- CABECERA -->
+                                    <!-- Acceso rápido -->
+                                    <div class="nap-scard">
+                                        <div class="nap-scard-head"><i class="fa fa-compass"/> Acceso rápido</div>
+                                        <div class="nap-scard-body">
+                                            <a href="/estadisticas-generales" class="nap-qlink"><i class="fa fa-th-large"/> Estadísticas Generales</a>
+                                            <a href="/estadisticas" class="nap-qlink"><i class="fa fa-th"/> Grupos</a>
+                                            <a href="/estadisticas-numeros" class="nap-qlink"><i class="fa fa-sort-numeric-asc"/> Números</a>
+                                            <a href="/estadisticas-pintas" class="nap-qlink"><i class="fa fa-paint-brush"/> Pintas</a>
+                                            <a href="/faq" class="nap-qlink"><i class="fa fa-question-circle"/> FAQ</a>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- fin panel izquierdo -->
+
+                            <!-- ===== CONTENIDO DERECHO ===== -->
+                            <div class="col-lg-8 col-md-7">
+                                <div class="nap-page-sheet">
+
+                                <!-- Categoría + título + resumen -->
                                 <div class="nap-header">
                                     <t t-if="article.category_id">
                                         <a t-attf-href="/?category=#{ article.category_id.slug }"
-                                           class="nap-category"
-                                           t-att-style="'--cat-color:' + (article.category_id.color or '#7c3aed')">
+                                           class="nap-category">
                                             <i t-attf-class="fa #{ article.category_id.icon or 'fa-tag' }"/>
                                             <t t-esc="article.category_id.name"/>
                                         </a>
@@ -195,41 +273,14 @@
                                     <t t-if="article.summary">
                                         <p class="nap-summary"><t t-esc="article.summary"/></p>
                                     </t>
-                                    <div class="nap-meta">
-                                        <span class="nap-author-chip">
-                                            <span class="nap-avatar"><t t-esc="article.get_author_display()[0].upper()"/></span>
-                                            <strong><t t-esc="article.get_author_display()"/></strong>
-                                        </span>
-                                        <span class="nap-meta-dot"/>
-                                        <span>
-                                            <i class="fa fa-calendar-o"/>
-                                            <t t-esc="article.publish_date" t-options='{"widget":"date", "format":"d MMMM yyyy"}'/>
-                                        </span>
-                                        <span class="nap-meta-dot"/>
-                                        <span><i class="fa fa-eye"/> <t t-esc="article.views_count"/></span>
-                                        <t t-if="article.allow_comments">
-                                            <span class="nap-meta-dot"/>
-                                            <a href="#comentarios" class="nap-meta-link">
-                                                <i class="fa fa-comment-o"/>
-                                                <t t-esc="comment_count"/> comentario<t t-if="comment_count != 1">s</t>
-                                            </a>
-                                        </t>
-                                    </div>
                                 </div>
 
-                                <!-- IMAGEN PRINCIPAL -->
-                                <div class="nap-cover">
-                                    <img t-att-src="article.get_cover_url()"
-                                         t-att-alt="article.title or ''"
-                                         class="nap-cover-img"/>
-                                </div>
-
-                                <!-- CONTENIDO -->
+                                <!-- Contenido -->
                                 <div class="nap-content">
                                     <t t-out="article.content"/>
                                 </div>
 
-                                <!-- TAGS -->
+                                <!-- Tags -->
                                 <t t-if="article.tags">
                                     <div class="nap-tags">
                                         <i class="fa fa-tags"/>
@@ -239,7 +290,7 @@
                                     </div>
                                 </t>
 
-                                <!-- COMENTARIOS -->
+                                <!-- Comentarios (solo lectura y formulario, sin eliminar) -->
                                 <t t-if="article.allow_comments">
                                     <div class="nap-comments" id="comentarios">
                                         <h3 class="nap-comments-title">
@@ -272,10 +323,45 @@
                                                                 </span>
                                                             </div>
                                                             <p class="nap-ctext"><t t-esc="comment.content"/></p>
-                                                            <button class="nap-reply-btn" t-att-data-id="comment.id"
-                                                                    onclick="toggleReplyForm(this)">
-                                                                <i class="fa fa-reply"/> Responder
-                                                            </button>
+                                                            <div class="nap-comment-actions">
+                                                                <button class="nap-reply-btn" t-att-data-id="comment.id"
+                                                                        onclick="toggleReplyForm(this)">
+                                                                    <i class="fa fa-reply"/> Responder
+                                                                </button>
+                                                                <t t-if="comment.id in my_comments">
+                                                                    <button class="nap-edit-btn" t-att-data-id="comment.id"
+                                                                            onclick="toggleEditForm(this)">
+                                                                        <i class="fa fa-pencil"/> Editar
+                                                                    </button>
+                                                                    <form t-attf-action="/noticias/#{ article.slug }/comentario/#{ comment.id }/eliminar"
+                                                                          method="POST" class="nap-delete-form"
+                                                                          onsubmit="return confirm('¿Eliminar este comentario?')">
+                                                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                                        <button type="submit" class="nap-delete-btn">
+                                                                            <i class="fa fa-trash"/> Eliminar
+                                                                        </button>
+                                                                    </form>
+                                                                </t>
+                                                            </div>
+                                                            <t t-if="comment.id in my_comments">
+                                                                <div class="nap-edit-wrap"
+                                                                     t-att-id="'edit-form-' + str(comment.id)" style="display:none">
+                                                                    <form t-attf-action="/noticias/#{ article.slug }/comentario/#{ comment.id }/editar"
+                                                                          method="POST" class="nap-form">
+                                                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                                        <div class="nap-field">
+                                                                            <textarea name="content" class="nap-textarea" rows="3"
+                                                                                      required="required" maxlength="2000">
+                                                                                <t t-esc="comment.content"/>
+                                                                            </textarea>
+                                                                        </div>
+                                                                        <div class="nap-form-actions">
+                                                                            <button type="submit" class="nap-btn-primary"><i class="fa fa-save"/> Guardar</button>
+                                                                            <button type="button" class="nap-btn-ghost" onclick="cancelEdit(this)">Cancelar</button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </t>
                                                             <t t-if="comment.reply_ids.filtered('is_approved')">
                                                                 <div class="nap-replies">
                                                                     <t t-foreach="comment.reply_ids.filtered('is_approved')" t-as="reply">
@@ -348,62 +434,9 @@
                                     </div>
                                 </t>
 
+                                </div><!-- fin nap-page-sheet -->
                             </div>
-                            <!-- fin col-8 -->
-
-                            <!-- ===== SIDEBAR ===== -->
-                            <div class="col-lg-4">
-                                <div class="nap-sidebar">
-
-                                    <!-- Autor -->
-                                    <div class="nap-scard">
-                                        <div class="nap-scard-head"><i class="fa fa-user"/> Autor</div>
-                                        <div class="nap-scard-body nap-author-block">
-                                            <div class="nap-s-avatar"><t t-esc="article.get_author_display()[0].upper()"/></div>
-                                            <div>
-                                                <strong><t t-esc="article.get_author_display()"/></strong>
-                                                <span>Redacción Pick 3 Florida</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Relacionados -->
-                                    <t t-if="related">
-                                        <div class="nap-scard">
-                                            <div class="nap-scard-head"><i class="fa fa-newspaper-o"/> Artículos relacionados</div>
-                                            <div class="nap-scard-body p-0">
-                                                <t t-foreach="related" t-as="rel">
-                                                    <a t-attf-href="/noticias/#{ rel.slug }" class="nap-related">
-                                                        <div class="nap-related-img">
-                                                            <img t-att-src="rel.get_cover_url()" t-att-alt="rel.title or ''" />
-                                                        </div>
-                                                        <div class="nap-related-info">
-                                                            <span class="nap-related-title"><t t-esc="rel.title"/></span>
-                                                            <span class="nap-related-date">
-                                                                <t t-esc="rel.publish_date" t-options='{"widget":"date", "format":"d MMM yyyy"}'/>
-                                                            </span>
-                                                        </div>
-                                                    </a>
-                                                </t>
-                                            </div>
-                                        </div>
-                                    </t>
-
-                                    <!-- Acceso rápido -->
-                                    <div class="nap-scard">
-                                        <div class="nap-scard-head"><i class="fa fa-compass"/> Acceso rápido</div>
-                                        <div class="nap-scard-body">
-                                            <a href="/estadisticas-generales" class="nap-qlink"><i class="fa fa-th-large"/> Estadísticas Generales</a>
-                                            <a href="/estadisticas" class="nap-qlink"><i class="fa fa-th"/> Grupos</a>
-                                            <a href="/estadisticas-numeros" class="nap-qlink"><i class="fa fa-sort-numeric-asc"/> Números</a>
-                                            <a href="/estadisticas-pintas" class="nap-qlink"><i class="fa fa-paint-brush"/> Pintas</a>
-                                            <a href="/faq" class="nap-qlink"><i class="fa fa-question-circle"/> FAQ</a>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <!-- fin sidebar -->
+                            <!-- fin contenido derecho -->
 
                         </div>
                     </div>
@@ -418,6 +451,15 @@
                 }
                 function cancelReply(btn) {
                     var form = btn.closest('.nap-reply-wrap');
+                    if (form) form.style.display = 'none';
+                }
+                function toggleEditForm(btn) {
+                    var id = btn.getAttribute('data-id');
+                    var form = document.getElementById('edit-form-' + id);
+                    if (form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+                }
+                function cancelEdit(btn) {
+                    var form = btn.closest('.nap-edit-wrap');
                     if (form) form.style.display = 'none';
                 }
             </script>
