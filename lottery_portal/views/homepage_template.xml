@@ -1,5 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ===== WIDGET REUTILIZABLE: sorteos del día + buscador ===== -->
+    <template id="lottery_sidebar_widgets" name="Lottery Sidebar Widgets">
+        <div class="card shadow border-0 mb-3 overflow-hidden">
+            <t t-if="lottery_data and lottery_data.get('afternoon')">
+                <div class="lottery-block">
+                    <div class="lottery-turn-header lottery-turn-dia">
+                        <i class="fa fa-sun-o"/> Tarde
+                        <span class="lottery-turn-date">
+                            <t t-esc="lottery_data['afternoon']['date']"/>
+                        </span>
+                    </div>
+                    <div class="lottery-row">
+                        <div class="lottery-numbers">
+                            <div class="box-centena-dia">
+                                <t t-esc="lottery_data['afternoon']['centena']"/>
+                            </div>
+                            <div class="box-numero-dia">
+                                <t t-esc="lottery_data['afternoon']['numero']"/>
+                            </div>
+                        </div>
+                        <div class="lottery-extra-wrap">
+                            <span class="lottery-extra-label">Extra</span>
+                            <div class="box-extra">
+                                <t t-esc="lottery_data['afternoon']['extra']"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-if="lottery_data and lottery_data.get('evening')">
+                <div class="lottery-block lottery-block-noche">
+                    <div class="lottery-turn-header lottery-turn-noche">
+                        <i class="fa fa-moon-o"/> Noche
+                        <span class="lottery-turn-date">
+                            <t t-esc="lottery_data['evening']['date']"/>
+                        </span>
+                    </div>
+                    <div class="lottery-row">
+                        <div class="lottery-numbers">
+                            <div class="box-centena-noche">
+                                <t t-esc="lottery_data['evening']['centena']"/>
+                            </div>
+                            <div class="box-numero-noche">
+                                <t t-esc="lottery_data['evening']['numero']"/>
+                            </div>
+                        </div>
+                        <div class="lottery-extra-wrap">
+                            <span class="lottery-extra-label">Extra</span>
+                            <div class="box-extra">
+                                <t t-esc="lottery_data['evening']['extra']"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+        <div class="card shadow border-0 overflow-hidden">
+            <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
+                <i class="fa fa-search me-2"/>
+                Buscar salida histórica
+            </div>
+            <div class="card-body p-3">
+                <owl-component name="lottery_portal.SalidasBuscador"/>
+            </div>
+        </div>
+    </template>
+
     <template id="estadisticas_generales" name="Estadísticas Generales">
         <t t-call="website.layout">
             <section class="hero-analitico">
@@ -52,69 +120,7 @@
             <div class="container mt-2 mb-2">
                 <div class="row mb-1">
                     <div class="col-md-3 mb-2">
-                        <div class="card shadow border-0 mb-4 overflow-hidden">
-                            <t t-if="lottery_data.get('afternoon')">
-                                <div class="lottery-block">
-                                    <div class="lottery-turn-header lottery-turn-dia">
-                                        <i class="fa fa-sun-o"/> Tarde
-                                        <span class="lottery-turn-date">
-                                            <t t-esc="lottery_data['afternoon']['date']"/>
-                                        </span>
-                                    </div>
-                                    <div class="lottery-row">
-                                        <div class="lottery-numbers">
-                                            <div class="box-centena-dia">
-                                                <t t-esc="lottery_data['afternoon']['centena']"/>
-                                            </div>
-                                            <div class="box-numero-dia">
-                                                <t t-esc="lottery_data['afternoon']['numero']"/>
-                                            </div>
-                                        </div>
-                                        <div class="lottery-extra-wrap">
-                                            <span class="lottery-extra-label">Extra</span>
-                                            <div class="box-extra">
-                                                <t t-esc="lottery_data['afternoon']['extra']"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </t>
-                            <t t-if="lottery_data.get('evening')">
-                                <div class="lottery-block lottery-block-noche">
-                                    <div class="lottery-turn-header lottery-turn-noche">
-                                        <i class="fa fa-moon-o"/> Noche
-                                        <span class="lottery-turn-date">
-                                            <t t-esc="lottery_data['evening']['date']"/>
-                                        </span>
-                                    </div>
-                                    <div class="lottery-row">
-                                        <div class="lottery-numbers">
-                                            <div class="box-centena-noche">
-                                                <t t-esc="lottery_data['evening']['centena']"/>
-                                            </div>
-                                            <div class="box-numero-noche">
-                                                <t t-esc="lottery_data['evening']['numero']"/>
-                                            </div>
-                                        </div>
-                                        <div class="lottery-extra-wrap">
-                                            <span class="lottery-extra-label">Extra</span>
-                                            <div class="box-extra">
-                                                <t t-esc="lottery_data['evening']['extra']"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </t>
-                        </div>
-                        <div class="card shadow border-0 mb-4 overflow-hidden">
-                            <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
-                                <i class="fa fa-search me-2"/>
-                                Buscar salida histórica
-                            </div>
-                            <div class="card-body p-3">
-                                <owl-component name="lottery_portal.SalidasBuscador"/>
-                            </div>
-                        </div>
+                        <t t-call="lottery_portal.lottery_sidebar_widgets"/>
                     </div>
                     <div class="col-md-3 mb-2">
                         <owl-component name="lottery_portal.TopAtrasos"/>

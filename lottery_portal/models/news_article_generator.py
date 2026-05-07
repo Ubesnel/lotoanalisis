@@ -2,7 +2,9 @@
 
 from odoo import models, api
 from odoo.addons.lottery_base.models.utils import MONTHS_DICT
+import base64
 import calendar
+import os
 from datetime import date
 
 WEEKDAYS = [
@@ -26,6 +28,16 @@ WEEKS = [
 
 class NewsArticleGenerator(models.Model):
     _inherit = 'news.article'
+
+    def _load_cover_image(self, filename):
+        img_path = os.path.join(
+            os.path.dirname(__file__), '..', 'static', 'src', 'img', filename
+        )
+        img_path = os.path.normpath(img_path)
+        if not os.path.exists(img_path):
+            return False
+        with open(img_path, 'rb') as f:
+            return base64.b64encode(f.read())
 
     @api.model
     def cron_generate_monthly_analysis(self, ref_date=None):
@@ -108,12 +120,14 @@ class NewsArticleGenerator(models.Model):
         )
 
         category = self.env.ref('lottery_portal.news_category_numeros_salidores_mes')
+        cover = self._load_cover_image('numeros salidores mes.png')
 
         self.env['news.article'].sudo().create({
             'title': title,
             'category_id': category.id,
             'raw_html': raw_html,
-            'is_published': True,
+            'is_published': False,
+            'cover_image': cover or False,
         })
 
     # ─────────────────────────── HTML builder ───────────────────────────
@@ -445,12 +459,14 @@ class NewsArticleGenerator(models.Model):
         )
 
         category = self.env.ref('lottery_portal.news_category_numeros_salidores_mes')
+        cover = self._load_cover_image('numeros menos salidores mes.png')
 
         self.env['news.article'].sudo().create({
             'title': title,
             'category_id': category.id,
             'raw_html': raw_html,
-            'is_published': True,
+            'is_published': False,
+            'cover_image': cover or False,
         })
 
     # ─────────────────────── Bottom HTML builder ────────────────────────

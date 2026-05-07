@@ -6,44 +6,35 @@
         <t t-call="website.layout">
             <div id="news-portal">
                 <div class="container np-main">
-                    <div class="row np-layout-row">
+                    <div class="row">
 
-                        <!-- ===== SIDEBAR DE CATEGORÍAS ===== -->
-                        <div class="col-lg-3 col-md-12">
-                            <div class="np-cat-sidebar">
-                                <div class="np-cat-sidebar-hd">
-                                    <i class="fa fa-list"/> Categorías
-                                </div>
-                                <ul class="np-cat-list">
-                                    <li>
-                                        <a t-attf-href="/?category="
-                                           t-attf-class="np-cat-item #{ not active_category and 'is-active' or '' }">
-                                            <span class="np-cat-icon-wrap" style="background:#7c3aed">
-                                                <i class="fa fa-th-large"/>
-                                            </span>
-                                            <span class="np-cat-name">Todas</span>
-                                        </a>
-                                    </li>
-                                    <t t-foreach="categories" t-as="cat">
-                                        <li>
-                                            <a t-attf-href="/?category=#{ cat.slug }"
-                                               t-attf-class="np-cat-item #{ active_category and active_category.id == cat.id and 'is-active' or '' }"
-                                               t-att-style="'--cc:' + (cat.color or '#7c3aed')">
-                                                <span class="np-cat-icon-wrap"
-                                                      t-att-style="'background:' + (cat.color or '#7c3aed')">
-                                                    <i t-attf-class="fa #{ cat.icon or 'fa-tag' }"/>
-                                                </span>
-                                                <span class="np-cat-name"><t t-esc="cat.name"/></span>
-                                                <span class="np-cat-badge"><t t-esc="cat.article_count"/></span>
-                                            </a>
-                                        </li>
-                                    </t>
-                                </ul>
-                            </div>
+                        <!-- ===== SIDEBAR IZQUIERDO: widgets ===== -->
+                        <div class="col-lg-3 col-md-12 mb-3">
+                            <t t-call="lottery_portal.lottery_sidebar_widgets"/>
                         </div>
 
                         <!-- ===== CONTENIDO PRINCIPAL ===== -->
                         <div class="col-lg-9 col-md-12">
+
+                        <!-- Chips de categorías -->
+                        <div class="np-cat-chips">
+                            <a t-attf-href="/?category="
+                               t-attf-class="np-cat-chip #{ not active_category and 'is-active' or '' }">
+                                <i class="fa fa-th-large"/>
+                                <span>Todas</span>
+                            </a>
+                            <t t-foreach="categories" t-as="cat">
+                                <a t-attf-href="/?category=#{ cat.slug }"
+                                   t-attf-class="np-cat-chip #{ active_category and active_category.id == cat.id and 'is-active' or '' }"
+                                   t-att-style="active_category and active_category.id == cat.id and ('background:' + (cat.color or '#7c3aed') + ';border-color:' + (cat.color or '#7c3aed')) or ''">
+                                    <i t-attf-class="fa #{ cat.icon or 'fa-tag' }"/>
+                                    <span><t t-esc="cat.name"/></span>
+                                    <span class="np-cat-chip-count"><t t-esc="cat.article_count"/></span>
+                                </a>
+                            </t>
+                        </div>
+
+                        <div>
 
                             <!-- GRID DE ARTÍCULOS -->
                             <t t-if="articles">
@@ -120,9 +111,9 @@
                             </t>
 
                         </div>
-                        <!-- fin col-9 -->
 
-                    </div>
+                        </div><!-- fin col-lg-9 -->
+                    </div><!-- fin row -->
                 </div>
             </div>
         </t>
@@ -151,35 +142,12 @@
 
                         <div class="row nap-row">
 
-                            <!-- ===== PANEL IZQUIERDO: imagen + info ===== -->
+                            <!-- ===== PANEL IZQUIERDO: info + widgets ===== -->
                             <div class="col-lg-4 col-md-5">
                                 <div class="nap-left-panel">
 
-                                    <!-- Imagen del artículo -->
-                                    <div class="nap-panel-img-wrap">
-                                        <img t-att-src="article.get_cover_url()"
-                                             t-att-alt="article.cover_image_alt or article.title or ''"
-                                             class="nap-panel-img"/>
-                                        <t t-if="article.is_featured">
-                                            <span class="nap-panel-badge">
-                                                <i class="fa fa-star"/> Destacado
-                                            </span>
-                                        </t>
-                                    </div>
-
-                                    <!-- Autor -->
-                                    <div class="nap-scard">
-                                        <div class="nap-scard-head"><i class="fa fa-user"/> Autor</div>
-                                        <div class="nap-scard-body nap-author-block">
-                                            <div class="nap-s-avatar">
-                                                <t t-esc="article.get_author_display()[0].upper()"/>
-                                            </div>
-                                            <div>
-                                                <strong><t t-esc="article.get_author_display()"/></strong>
-                                                <span>Redacción Pick 3 Florida</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <!-- Sorteos del día + Buscador -->
+                                    <t t-call="lottery_portal.lottery_sidebar_widgets"/>
 
                                     <!-- Info del artículo -->
                                     <div class="nap-scard">
@@ -244,11 +212,11 @@
                                     <div class="nap-scard">
                                         <div class="nap-scard-head"><i class="fa fa-compass"/> Acceso rápido</div>
                                         <div class="nap-scard-body">
-                                            <a href="/estadisticas-generales" class="nap-qlink"><i class="fa fa-th-large"/> Estadísticas Generales</a>
-                                            <a href="/estadisticas" class="nap-qlink"><i class="fa fa-th"/> Grupos</a>
-                                            <a href="/estadisticas-numeros" class="nap-qlink"><i class="fa fa-sort-numeric-asc"/> Números</a>
-                                            <a href="/estadisticas-pintas" class="nap-qlink"><i class="fa fa-paint-brush"/> Pintas</a>
-                                            <a href="/faq" class="nap-qlink"><i class="fa fa-question-circle"/> FAQ</a>
+                                            <a href="/" class="nap-qlink"><i class="fa fa-home"/> Inicio</a>
+                                            <a href="/faq" class="nap-qlink"><i class="fa fa-question-circle"/> Preguntas Frecuentes</a>
+                                            <a href="/terminos-condiciones" class="nap-qlink"><i class="fa fa-file-text-o"/> Términos y Condiciones</a>
+                                            <a href="/politica-privacidad" class="nap-qlink"><i class="fa fa-shield"/> Política de Privacidad</a>
+                                            <a href="/contactus" class="nap-qlink"><i class="fa fa-envelope-o"/> Contáctenos</a>
                                         </div>
                                     </div>
 
@@ -260,19 +228,30 @@
                             <div class="col-lg-8 col-md-7">
                                 <div class="nap-page-sheet">
 
-                                <!-- Categoría + título + resumen -->
-                                <div class="nap-header">
-                                    <t t-if="article.category_id">
-                                        <a t-attf-href="/?category=#{ article.category_id.slug }"
-                                           class="nap-category">
-                                            <i t-attf-class="fa #{ article.category_id.icon or 'fa-tag' }"/>
-                                            <t t-esc="article.category_id.name"/>
-                                        </a>
-                                    </t>
-                                    <h1 class="nap-title"><t t-esc="article.title"/></h1>
-                                    <t t-if="article.summary">
-                                        <p class="nap-summary"><t t-esc="article.summary"/></p>
-                                    </t>
+                                <!-- Imagen pequeña + categoría + título + resumen -->
+                                <div class="nap-intro-row">
+                                    <div class="nap-intro-img">
+                                        <img t-att-src="article.get_cover_url()"
+                                             t-att-alt="article.cover_image_alt or article.title or ''"/>
+                                        <t t-if="article.is_featured">
+                                            <span class="nap-panel-badge">
+                                                <i class="fa fa-star"/> Destacado
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="nap-intro-text">
+                                        <t t-if="article.category_id">
+                                            <a t-attf-href="/?category=#{ article.category_id.slug }"
+                                               class="nap-category">
+                                                <i t-attf-class="fa #{ article.category_id.icon or 'fa-tag' }"/>
+                                                <t t-esc="article.category_id.name"/>
+                                            </a>
+                                        </t>
+                                        <h1 class="nap-title"><t t-esc="article.title"/></h1>
+                                        <t t-if="article.summary">
+                                            <p class="nap-summary"><t t-esc="article.summary"/></p>
+                                        </t>
+                                    </div>
                                 </div>
 
                                 <!-- Contenido -->

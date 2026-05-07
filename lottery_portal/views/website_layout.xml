@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="portal_hide_stats_menus" inherit_id="website.layout">
+        <xpath expr="//head" position="inside">
+            <t t-if="not request.env.user.has_group('lottery_base.group_lottery_manager')">
+                <style>
+                    li:has(> a[href="/estadisticas-generales"]),
+                    li:has(> a[href="/estadisticas"]),
+                    li:has(> a[href="/estadisticas-pintas"]),
+                    li:has(> a[href="/estadisticas-numeros"]) { display: none !important; }
+                </style>
+            </t>
+        </xpath>
+    </template>
+
     <template id="portal_website_layout_adsense_script" inherit_id="website.layout">
         <xpath expr="//head" position="inside">
             <script async="async"

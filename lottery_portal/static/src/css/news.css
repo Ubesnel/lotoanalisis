@@ -92,12 +92,62 @@
 }
 
 /* ============================================================
-   LAYOUT HOMEPAGE — sidebar izquierdo + grid derecho
+   CATEGORÍAS — chips horizontales
+   ============================================================ */
+.np-cat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--np-border);
+}
+.np-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid var(--np-border);
+  background: var(--np-bg-card);
+  color: var(--np-muted);
+  text-decoration: none;
+  transition: var(--np-ease);
+}
+.np-cat-chip i { font-size: 11px; }
+.np-cat-chip:hover {
+  border-color: var(--np-violet);
+  color: var(--np-violet);
+  background: #f5f1ff;
+  text-decoration: none;
+}
+.np-cat-chip.is-active {
+  background: var(--np-violet);
+  color: #fff;
+  border-color: var(--np-violet);
+  box-shadow: 0 2px 10px rgba(124,58,237,.25);
+}
+.np-cat-chip-count {
+  background: rgba(255,255,255,.25);
+  padding: 1px 7px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.np-cat-chip:not(.is-active) .np-cat-chip-count {
+  background: var(--np-border);
+  color: var(--np-muted);
+}
+
+/* ============================================================
+   LAYOUT HOMEPAGE
    ============================================================ */
 .np-layout-row { --bs-gutter-x: 0; }
 
 /* ============================================================
-   SIDEBAR DE CATEGORÍAS
+   SIDEBAR DE CATEGORÍAS (legacy — mantenido por compatibilidad)
    ============================================================ */
 .np-cat-sidebar {
   position: sticky;
@@ -209,7 +259,7 @@
 }
 
 /* ============================================================
-   GRID — 3 columnas compactas dentro del col-lg-9
+   GRID — 3 columnas dentro del col-lg-9
    ============================================================ */
 .np-grid {
   display: grid;
@@ -356,6 +406,38 @@
 .nap-breadcrumb i { font-size: 9px; opacity: .5; }
 .nap-breadcrumb span { color: var(--np-text); font-weight: 500; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* ---- Intro del artículo: imagen pequeña + texto al lado ---- */
+.nap-intro-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+.nap-intro-img {
+  width: 180px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: var(--np-r);
+  overflow: hidden;
+  background: #e8e0f5;
+  box-shadow: var(--np-shadow);
+}
+.nap-intro-img img {
+  width: 100%;
+  display: block;
+  border-radius: var(--np-r);
+}
+.nap-intro-text {
+  flex: 1;
+  min-width: 0;
+}
+.nap-intro-text .nap-title { font-size: clamp(18px, 2.5vw, 28px); }
+
+@media (max-width: 576px) {
+  .nap-intro-row { flex-direction: column; }
+  .nap-intro-img { width: 100%; max-width: 220px; }
+}
+
 /* ---- Panel izquierdo: imagen + cards ---- */
 .nap-left-panel {
   display: flex;
@@ -481,6 +563,13 @@
   line-height: 1.9;
   color: var(--np-text);
   margin-bottom: 28px;
+  text-align: justify;
+  overflow-x: hidden;
+}
+.nap-content .card { overflow: hidden; }
+.nap-content .card-body {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .nap-content h2 { font-size: 20px; font-weight: 800; color: var(--np-text); margin: 30px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--np-border); }
 .nap-content h3 { font-size: 16px; font-weight: 700; color: var(--np-text); margin: 22px 0 8px; }
@@ -665,6 +754,7 @@
   .np-cat-icon-wrap { width: 22px; height: 22px; border-radius: 5px; }
   .np-cat-badge { display: none; }
   .np-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .np-cat-chips { gap: 6px; }
 }
 
 @media (max-width: 767px) {
@@ -687,4 +777,5 @@
 
 @media (max-width: 420px) {
   .np-grid { grid-template-columns: 1fr; }
+  .nap-page-sheet { padding: 12px 8px 16px; }
 }
