@@ -13,6 +13,7 @@ class NewsController(http.Controller):
     def news_homepage(self, page=1, category=None, **kwargs):
         Article = request.env['news.article'].sudo()
         Category = request.env['news.category'].sudo()
+        stats = request.env['lottery.stats.service'].sudo()
 
         categories = Category.search([('active', '=', True)])
         domain = [('is_published', '=', True)]
@@ -49,6 +50,7 @@ class NewsController(http.Controller):
             'page_range': page_range,
             'total': total,
             'category_slug': category or '',
+            'lottery_data': stats.get_last_results_full(),
         })
 
     @http.route('/noticias/<string:slug>', type='http', auth='public', website=True)
@@ -68,6 +70,7 @@ class NewsController(http.Controller):
 
         comments = article.comment_ids.filtered('is_approved').sorted('create_date')
         top_comments = comments.filtered(lambda c: not c.parent_id)
+        stats = request.env['lottery.stats.service'].sudo()
 
         return request.render('lottery_portal.news_article_page', {
             'article': article,
@@ -77,6 +80,7 @@ class NewsController(http.Controller):
             'comment_submitted': kwargs.get('comment_submitted', False),
             'comment_error': kwargs.get('comment_error', ''),
             'my_comments': request.session.get('my_comments', []),
+            'lottery_data': stats.get_last_results_full(),
         })
 
     @http.route('/noticias/<string:slug>/comentar', type='http', auth='public', website=True,

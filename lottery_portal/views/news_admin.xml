@@ -182,7 +182,7 @@
                                      t-att-src="'/web/image/news.article/' + record.id + '/cover_image/128x80'"
                                      alt="portada" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0"/>
                                 <div t-else="" style="height:80px;background:#ece9f2;border-radius:4px 4px 0 0;display:flex;align-items:center;justify-content:center;color:#9b72bb">
-                                    <i class="fa fa-newspaper-o fa-2x"/>
+                                    <i class="fa fa-newspaper-o fa-2x" title="Sin portada"/>
                                 </div>
                             </div>
                             <div class="oe_kanban_details p-2">
