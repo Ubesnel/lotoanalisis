@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="news_category_numeros_salidores_mes" model="news.category">
+            <field name="name">Análisis por Mes</field>
+            <field name="slug">analisis-por-mes</field>
+            <field name="icon">fa-bar-chart</field>
+            <field name="color">#6f4a8e</field>
+            <field name="sequence">10</field>
+        </record>
+    </data>
+</odoo>

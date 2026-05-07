@@ -14,6 +14,8 @@
         'security/ir.model.access.csv',
         "data/faq_data.xml",
         "data/lottery_matviews.sql",
+        "data/news_category_data.xml",
+        "data/ir_cron.xml",
         "views/estadisticas_grupos.xml",
         "views/estadisticas_numeros.xml",
         "views/estadisticas_pintas.xml",
