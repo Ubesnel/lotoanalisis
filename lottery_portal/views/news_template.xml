@@ -8,7 +8,7 @@
                 <div class="container np-main">
                     <div class="row">
 
-                        <!-- ===== COLUMNA 1: sorteos del día ===== -->
+                        <!-- ===== COLUMNA 1: sorteos del día + últimas salidas ===== -->
                         <div class="col-lg-3 col-md-12 mb-3">
                             <t t-if="lottery_data">
                                 <div class="card shadow border-0 mb-3 overflow-hidden">
@@ -66,6 +66,8 @@
                                     </t>
                                 </div>
                             </t>
+                            <!-- Últimas 10 salidas (excluye el día actual) -->
+                            <owl-component name="lottery_portal.UltimasSalidasCol1"/>
                         </div>
 
                         <!-- ===== COLUMNA 2: chips + artículos + paginación ===== -->
@@ -165,7 +167,7 @@
 
                         </div><!-- fin col-lg-6 -->
 
-                        <!-- ===== COLUMNA 3: buscador + últimas salidas ===== -->
+                        <!-- ===== COLUMNA 3: buscador + últimas salidas por día ===== -->
                         <div class="col-lg-3 col-md-12 mb-3">
 
                             <!-- Buscar salida histórica -->
@@ -178,9 +180,6 @@
                                     <owl-component name="lottery_portal.SalidasBuscador"/>
                                 </div>
                             </div>
-
-                            <!-- Últimas 10 salidas consecutivas -->
-                            <owl-component name="lottery_portal.UltimasSalidasConsecutivas"/>
 
                             <!-- Últimas 10 salidas del día actual -->
                             <owl-component name="lottery_portal.UltimasSalidasDay"/>
@@ -560,8 +559,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Últimas 10 salidas consecutivas -->
-                                <owl-component name="lottery_portal.UltimasSalidasConsecutivas"/>
+                                <!-- Últimas 10 salidas (excluye el día actual) -->
+                                <owl-component name="lottery_portal.UltimasSalidasCol1"/>
 
                                 <!-- Últimas 10 salidas del día actual -->
                                 <owl-component name="lottery_portal.UltimasSalidasDay"/>

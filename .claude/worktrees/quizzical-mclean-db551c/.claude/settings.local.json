@@ -5,7 +5,9 @@
       "Bash(xargs grep *)",
       "Bash(grep -n \"numeros_frios\\\\|get_frios\\\\|frios\" E:/Trabajo/Odoo/Odoo17/lottery/lottery_portal/controllers/portal.py)",
       "Bash(grep -rn \"numeros_frios\\\\|get_numeros_frios\\\\|frios\" E:/Trabajo/Odoo/Odoo17/lottery/lottery_portal/static/src/js/numeros_calientes.js | head -20)",
-      "Bash(grep -n \"calientes_all\\\\|get_calientes_all\\\\|frios\\\\|restantes\" E:/Trabajo/Odoo/Odoo17/lottery/lottery_portal/models/stats_service.py | head -20)"
+      "Bash(grep -n \"calientes_all\\\\|get_calientes_all\\\\|frios\\\\|restantes\" E:/Trabajo/Odoo/Odoo17/lottery/lottery_portal/models/stats_service.py | head -20)",
+      "Bash(grep -n \"top_10\\\\|top10\\\\|get_top_10\" \"E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\lottery\\\\lottery_portal\\\\views\\\\homepage_template.xml\" 2>/dev/null | head -20)",
+      "Bash(grep -rn \"get_top_10_general\\\\|top10_mv\\\\|top_10_general\" \"E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\lottery\" --include=\"*.py\" --include=\"*.xml\" | head -20)"
     ]
   }
 }
