@@ -7,10 +7,10 @@ from datetime import datetime
 
 class NewsController(http.Controller):
 
-    ARTICLES_PER_PAGE = 9
+    ARTICLES_PER_PAGE = 10
 
     @http.route('/', type='http', auth='public', website=True)
-    def news_homepage(self, page=1, category=None, **kwargs):
+    def news_homepage(self, page=1, category=None, q=None, **kwargs):
         Article = request.env['news.article'].sudo()
         Category = request.env['news.category'].sudo()
         stats = request.env['lottery.stats.service'].sudo()
@@ -18,6 +18,7 @@ class NewsController(http.Controller):
         categories = Category.search([('active', '=', True)])
         domain = [('is_published', '=', True)]
         active_category = None
+        search_query = (q or '').strip()
 
         if category:
             cat = Category.search([('slug', '=', category)], limit=1)
@@ -25,33 +26,61 @@ class NewsController(http.Controller):
                 domain.append(('category_id', '=', cat.id))
                 active_category = cat
 
+        if search_query:
+            domain += ['|', '|', '|',
+                ('title',    'ilike', search_query),
+                ('summary',  'ilike', search_query),
+                ('tags',     'ilike', search_query),
+                ('raw_html', 'ilike', search_query),
+            ]
+
         total = Article.search_count(domain)
         page = max(1, int(page))
         offset = (page - 1) * self.ARTICLES_PER_PAGE
 
         articles = Article.search(domain, limit=self.ARTICLES_PER_PAGE, offset=offset,
-                                  order='is_featured desc, publish_date desc')
-
-        featured = Article.search([('is_published', '=', True), ('is_featured', '=', True)],
-                                  limit=1, order='publish_date desc')
-        if not featured and articles:
-            featured = articles[0]
+                                  order='publish_date desc, id desc')
 
         total_pages = max(1, (total + self.ARTICLES_PER_PAGE - 1) // self.ARTICLES_PER_PAGE)
         page_range = list(range(max(1, page - 2), min(total_pages + 1, page + 3)))
 
         return request.render('lottery_portal.news_homepage', {
-            'articles': articles,
-            'categories': categories,
+            'articles':        articles,
+            'categories':      categories,
             'active_category': active_category,
-            'featured': featured,
-            'page': page,
-            'total_pages': total_pages,
-            'page_range': page_range,
-            'total': total,
-            'category_slug': category or '',
-            'lottery_data': stats.get_last_results_full(),
+            'page':            page,
+            'total_pages':     total_pages,
+            'page_range':      page_range,
+            'total':           total,
+            'category_slug':   category or '',
+            'search_query':    search_query,
+            'lottery_data':    stats.get_last_results_full(),
         })
+
+    @http.route('/noticias/buscar', type='json', auth='public', website=True)
+    def news_search_ajax(self, q='', **kwargs):
+        """Live-search: returns up to 6 article suggestions for the autocomplete."""
+        q = (q or '').strip()
+        if len(q) < 2:
+            return []
+        Article = request.env['news.article'].sudo()
+        domain = [
+            ('is_published', '=', True),
+            '|', '|',
+            ('title',   'ilike', q),
+            ('summary', 'ilike', q),
+            ('tags',    'ilike', q),
+        ]
+        results = Article.search(domain, limit=6, order='publish_date desc')
+        return [
+            {
+                'title': a.title,
+                'slug':  a.slug,
+                'cat':   a.category_id.name if a.category_id else '',
+                'date':  a.publish_date.strftime('%d/%m/%Y') if a.publish_date else '',
+            }
+            for a in results
+        ]
 
     @http.route('/noticias/<string:slug>', type='http', auth='public', website=True)
     def news_article(self, slug, **kwargs):

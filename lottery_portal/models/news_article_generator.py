@@ -790,12 +790,12 @@ class NewsArticleGenerator(models.Model):
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'name':         title_ctx,
+            'title':        title_ctx,
             'slug':         slug,
-            'intro':        f'Análisis de los 5 grupos más atrasados ({label}) al {date_str}.',
-            'body':         html_body,
+            'summary':      f'Análisis de los 5 grupos más atrasados ({label}) al {date_str}.',
+            'raw_html':     html_body,
             'is_published': True,
-            'category_ids': [(4, category.id)] if category else [],
+            'category_id':  category.id if category else False,
         }
         if existing:
             existing.write(vals)
@@ -869,12 +869,12 @@ class NewsArticleGenerator(models.Model):
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'name':         title_ctx,
+            'title':        title_ctx,
             'slug':         slug,
-            'intro':        f'Análisis de las 3 pintas más atrasadas ({label}) al {date_str}.',
-            'body':         html_body,
+            'summary':      f'Análisis de las 3 pintas más atrasadas ({label}) al {date_str}.',
+            'raw_html':     html_body,
             'is_published': True,
-            'category_ids': [(4, category.id)] if category else [],
+            'category_id':  category.id if category else False,
         }
         if existing:
             existing.write(vals)
@@ -1122,12 +1122,12 @@ class NewsArticleGenerator(models.Model):
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'name':         title,
+            'title':        title,
             'slug':         slug,
-            'intro':        intro,
-            'body':         html_body,
+            'summary':      intro,
+            'raw_html':     html_body,
             'is_published': True,
-            'category_ids': [(4, category.id)] if category else [],
+            'category_id':  category.id if category else False,
         }
         if existing:
             existing.write(vals)
@@ -1281,12 +1281,12 @@ class NewsArticleGenerator(models.Model):
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'name':         title,
+            'title':        title,
             'slug':         slug,
-            'intro':        intro,
-            'body':         html_body,
+            'summary':      intro,
+            'raw_html':     html_body,
             'is_published': True,
-            'category_ids': [(4, category.id)] if category else [],
+            'category_id':  category.id if category else False,
         }
         if existing:
             existing.write(vals)
@@ -1452,12 +1452,12 @@ class NewsArticleGenerator(models.Model):
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'name':         title,
+            'title':        title,
             'slug':         slug,
-            'intro':        intro,
-            'body':         html_body,
+            'summary':      intro,
+            'raw_html':     html_body,
             'is_published': True,
-            'category_ids': [(4, category.id)] if category else [],
+            'category_id':  category.id if category else False,
         }
         if existing:
             existing.write(vals)
@@ -1616,12 +1616,12 @@ class NewsArticleGenerator(models.Model):
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'name':         title,
+            'title':        title,
             'slug':         slug,
-            'intro':        intro,
-            'body':         html_body,
+            'summary':      intro,
+            'raw_html':     html_body,
             'is_published': True,
-            'category_ids': [(4, category.id)] if category else [],
+            'category_id':  category.id if category else False,
         }
         if existing:
             existing.write(vals)
