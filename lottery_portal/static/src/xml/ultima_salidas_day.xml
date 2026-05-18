@@ -2,22 +2,10 @@
 <templates xml:space="preserve">
     <t t-name="lottery_portal.UltimasSalidasDay" owl="1">
         <div class="card shadow border-0 overflow-hidden mb-4">
-            <div class="card-header text-white text-center fw-bold">
+            <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
                 <div class="d-flex align-items-center justify-content-center gap-2">
                     <i class="fa fa-history"/>
-                    Últimas 8 salidas
-                    <i class="fa fa-arrow-right"/>
-                    <select t-model="state.day_us" class="form-select form-select-sm w-auto"
-                            t-on-change="onChangeUltimasSalidas"
-                            title="Últimas 8 salidas del día seleccionado">
-                        <option value="lu">Lunes</option>
-                        <option value="ma">Martes</option>
-                        <option value="mi">Miércoles</option>
-                        <option value="ju">Jueves</option>
-                        <option value="vi">Viernes</option>
-                        <option value="sa">Sábado</option>
-                        <option value="do">Domingo</option>
-                    </select>
+                    Últimas 10 salidas · <t t-esc="state.day_label"/>
                 </div>
             </div>
             <div class="card-body p-2">

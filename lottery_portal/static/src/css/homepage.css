@@ -1904,4 +1904,27 @@ html, #wrapwrap { scroll-behavior: smooth; }
     transition: max-height 0.4s ease;
 }
 .nc-collapsible--cold { background: #f0f6ff; }
+.nc-collapsible--remaining { background: #f5f5f5; }
+
+/* ── Restantes header ─────────────────────────────────────────── */
+.nc-hdr--remaining {
+    background: linear-gradient(120deg, #374151 0%, #6b7280 50%, #4b5563 100%) !important;
+    margin-top: 2px;
+}
+.nc-hdr--remaining::before { background: linear-gradient(180deg, #9ca3af, #6b7280); }
+.nc-hdr--remaining .nc-hdr-icon {
+    background: radial-gradient(circle, rgba(156,163,175,0.4) 0%, rgba(107,114,128,0.2) 100%);
+    box-shadow: 0 0 14px rgba(156,163,175,0.4);
+}
+
+/* ── Restantes section & balls ────────────────────────────────── */
+.nc-section--remaining { background: #f5f5f5; }
+.nc-section-title--remaining { color: #4b5563; }
+.nc-section-title--remaining .fa { color: #9ca3af; }
+
+.nc-ball-remaining {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    color: white;
+}
+.nc-pip--remaining { background: linear-gradient(135deg, #9ca3af, #6b7280); }
 

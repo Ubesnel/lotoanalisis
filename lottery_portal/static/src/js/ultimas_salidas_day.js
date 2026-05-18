@@ -8,11 +8,16 @@ export class UltimasSalidasDay extends Component {
 
     setup() {
         const todayIndex = new Date().getDay();
-        const daysMap = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
+        const daysMap   = {0: "do", 1: "lu", 2: "ma", 3: "mi", 4: "ju", 5: "vi", 6: "sa"};
+        const labelsMap = {
+            0: "Domingo", 1: "Lunes", 2: "Martes", 3: "Miércoles",
+            4: "Jueves",  5: "Viernes", 6: "Sábado",
+        };
 
-        this._cache = {};
+        this.todayKey = daysMap[todayIndex];
+
         this.state = useState({
-            day_us: daysMap[todayIndex],
+            day_label:      labelsMap[todayIndex],
             ultimas_salidas: [],
         });
 
@@ -20,14 +25,8 @@ export class UltimasSalidasDay extends Component {
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/ultimas_salidas_by_day_all", {});
-        this._cache = result;
-        this.state.ultimas_salidas = result[this.state.day_us] || [];
-    }
-
-    onChangeUltimasSalidas(ev) {
-        this.state.day_us = ev.target.value;
-        this.state.ultimas_salidas = this._cache[ev.target.value] || [];
+        const result = await jsonrpc("/lottery/ultimas_salidas_by_day", { day: this.todayKey });
+        this.state.ultimas_salidas = result || [];
     }
 }
 

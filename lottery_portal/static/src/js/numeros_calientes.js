@@ -11,8 +11,9 @@ export class NumerosCalientes extends Component {
             data: { afternoon: { numbers: [], centenas: [], bola_extra: [] },
                     evening:   { numbers: [], centenas: [], bola_extra: [] } },
             loading: true,
-            showHot:  false,   // sección calientes colapsada por defecto
-            showCold: false,   // sección fríos colapsada por defecto
+            showHot:       false,   // sección calientes colapsada por defecto
+            showCold:      false,   // sección fríos colapsada por defecto
+            showRemaining: false,   // sección restantes colapsada por defecto
         });
 
         onWillStart(async () => {
@@ -23,18 +24,20 @@ export class NumerosCalientes extends Component {
         });
     }
 
-    get current()        { return this.state.data[this.state.turn]; }
-    get numbers()        { return this.current.numbers         || []; }
-    get centenas()       { return this.current.centenas        || []; }
-    get bolaExtra()      { return this.current.bola_extra      || []; }
-    get numbersCold()    { return this.current.numbers_cold    || []; }
-    get centenasCold()   { return this.current.centenas_cold   || []; }
-    get bolaExtraCold()  { return this.current.bola_extra_cold || []; }
-    get nextDraw()       { return this.current.next_draw       || ''; }
+    get current()           { return this.state.data[this.state.turn]; }
+    get numbers()           { return this.current.numbers           || []; }
+    get centenas()          { return this.current.centenas          || []; }
+    get bolaExtra()         { return this.current.bola_extra        || []; }
+    get numbersCold()       { return this.current.numbers_cold      || []; }
+    get centenasCold()      { return this.current.centenas_cold     || []; }
+    get bolaExtraCold()     { return this.current.bola_extra_cold   || []; }
+    get numbersRemaining()  { return this.current.numbers_remaining || []; }
+    get nextDraw()          { return this.current.next_draw         || ''; }
 
-    onChangeTurn(ev) { this.state.turn = ev.target.value; }
-    toggleHot()      { this.state.showHot  = !this.state.showHot;  }
-    toggleCold()     { this.state.showCold = !this.state.showCold; }
+    onChangeTurn(ev)  { this.state.turn = ev.target.value; }
+    toggleHot()       { this.state.showHot       = !this.state.showHot;       }
+    toggleCold()      { this.state.showCold      = !this.state.showCold;      }
+    toggleRemaining() { this.state.showRemaining = !this.state.showRemaining; }
 }
 
 NumerosCalientes.template = "lottery_portal.NumerosCalientes";

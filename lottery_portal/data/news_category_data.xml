@@ -2,11 +2,43 @@
 <odoo>
     <data noupdate="1">
         <record id="news_category_numeros_salidores_mes" model="news.category">
-            <field name="name">Análisis por Mes</field>
+            <field name="name">Números por Mes</field>
             <field name="slug">analisis-por-mes</field>
             <field name="icon">fa-bar-chart</field>
             <field name="color">#6f4a8e</field>
             <field name="sequence">10</field>
+        </record>
+
+        <record id="news_category_grupos_atrasados" model="news.category">
+            <field name="name">Grupos más atrasados</field>
+            <field name="slug">grupos-mas-atrasados</field>
+            <field name="icon">fa-th</field>
+            <field name="color">#9b3a10</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="news_category_pintas_atrasadas" model="news.category">
+            <field name="name">Pintas más atrasadas</field>
+            <field name="slug">pintas-mas-atrasadas</field>
+            <field name="icon">fa-paint-brush</field>
+            <field name="color">#0e7490</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="news_category_atrasos_numeros" model="news.category">
+            <field name="name">Atrasos de números</field>
+            <field name="slug">atrasos-de-numeros</field>
+            <field name="icon">fa-clock-o</field>
+            <field name="color">#b45309</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <record id="news_category_generales" model="news.category">
+            <field name="name">Generales</field>
+            <field name="slug">generales</field>
+            <field name="icon">fa-globe</field>
+            <field name="color">#0f5132</field>
+            <field name="sequence">50</field>
         </record>
     </data>
 </odoo>
