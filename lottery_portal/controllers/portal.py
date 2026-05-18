@@ -334,6 +334,14 @@ class LotteryController(http.Controller):
         days = ['lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do']
         return {day: stats.get_ultimas_salidas_por_dia(day) for day in days}
 
+    @http.route('/lottery/ultimas_salidas_consecutivas', type='json', auth='public', website=True)
+    def ultimas_salidas_consecutivas(self):
+        return request.env['lottery.stats.service'].sudo().get_ultimas_salidas_consecutivas()
+
+    @http.route('/lottery/ultimas_salidas_col1', type='json', auth='public', website=True)
+    def ultimas_salidas_col1(self):
+        return request.env['lottery.stats.service'].sudo().get_ultimas_salidas_col1()
+
     @http.route('/salidas/buscar', type='json', auth='public')
     def buscar_salidas(self, fecha):
         if not fecha:

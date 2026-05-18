@@ -133,14 +133,40 @@ class LotteryStatsService(models.Model):
     @tools.ormcache('day')
     def get_ultimas_salidas_por_dia(self, day):
         self.env.cr.execute("""
-            SELECT * FROM (
-                SELECT * FROM lottery_ultima_salida_dia_semana_mv
-                WHERE week_day = %s
-                ORDER BY date DESC
-                LIMIT 8
-            ) sub
-            ORDER BY date ASC
+            SELECT * FROM lottery_ultima_salida_dia_semana_mv
+            WHERE week_day = %s
+            ORDER BY date DESC
+            LIMIT 10
         """, (day,))
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    @tools.ormcache()
+    def get_ultimas_salidas_consecutivas(self):
+        """Últimas 10 fechas de sorteo consecutivas (sin filtro de día), orden DESC."""
+        self.env.cr.execute("""
+            SELECT date, fecha,
+                   centena_dia, numero_dia, bola_extra_dia,
+                   centena_noche, numero_noche, bola_extra_noche
+            FROM lottery_ultima_salida_dia_semana_mv
+            ORDER BY date DESC
+            LIMIT 10
+        """)
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    @tools.ormcache()
+    def get_ultimas_salidas_col1(self):
+        """Últimas 10 fechas de sorteo, excluyendo hoy, orden DESC (más reciente primero)."""
+        self.env.cr.execute("""
+            SELECT date, fecha,
+                   centena_dia, numero_dia, bola_extra_dia,
+                   centena_noche, numero_noche, bola_extra_noche
+            FROM lottery_ultima_salida_dia_semana_mv
+            WHERE date < CURRENT_DATE
+            ORDER BY date DESC
+            LIMIT 10
+        """)
         return self.env.cr.dictfetchall()
 
     @tools.ormcache('month', 'year')
@@ -292,27 +318,24 @@ class LotteryStatsService(models.Model):
                     """)
         return self.env.cr.dictfetchall()
 
-    @api.model
-    @tools.ormcache('month', 'current_year')
-    def get_top_numbers_month(self, month=None, current_year=None):
-        field = MONTH_FIELD_MAP.get(month)
+    def _month_numbers_cte(self, field):
+        """CTE base compartida para las 3 tablas de números por mes.
 
-        if not field:
-            return []
-        query = f"""
+        - total = total_historico - salidas_mes_anio  (congelado: excluye año actual)
+        - global_rank: partición única 1-100, sin solapamiento entre tablas
+        """
+        return f"""
+            WITH base AS (
                 SELECT
                     ln.id,
                     LPAD(ln.name::text, 2, '0') AS name,
-                    {field} AS total,
-                    ROW_NUMBER() OVER (
-                        ORDER BY {field} DESC, ln.id DESC
-                    ) AS rank,
-                    (
+                    {field} AS total_historico,
+                    COALESCE((
                         SELECT COUNT(*) FROM lottery_output lo
                         WHERE lo.number_id = ln.id
                           AND lo.month = %(month)s::text
                           AND lo.year = %(year)s
-                    ) AS salidas_mes_anio,
+                    ), 0) AS salidas_mes_anio,
                     last_info.last_month_date,
                     last_info.last_month_turn,
                     last_info.last_month_week_day
@@ -337,9 +360,34 @@ class LotteryStatsService(models.Model):
                     ORDER BY lo2.date DESC
                     LIMIT 1
                 ) last_info ON true
-                ORDER BY {field} DESC, ln.id DESC
-                LIMIT 30;
-            """
+            ),
+            ranked AS (
+                SELECT
+                    id, name, total_historico, salidas_mes_anio,
+                    last_month_date, last_month_turn, last_month_week_day,
+                    (total_historico - salidas_mes_anio) AS total,
+                    ROW_NUMBER() OVER (
+                        ORDER BY (total_historico - salidas_mes_anio) DESC, id DESC
+                    ) AS global_rank
+                FROM base
+            )
+        """
+
+    @api.model
+    @tools.ormcache('month', 'current_year')
+    def get_top_numbers_month(self, month=None, current_year=None):
+        field = MONTH_FIELD_MAP.get(month)
+        if not field:
+            return []
+        query = self._month_numbers_cte(field) + """
+            SELECT
+                id, name, total, salidas_mes_anio,
+                last_month_date, last_month_turn, last_month_week_day,
+                global_rank AS rank
+            FROM ranked
+            WHERE global_rank <= 30
+            ORDER BY global_rank;
+        """
         self.env.cr.execute(query, {'month': month, 'year': current_year})
         return self.env.cr.dictfetchall()
 
@@ -349,47 +397,15 @@ class LotteryStatsService(models.Model):
         field = MONTH_FIELD_MAP.get(month)
         if not field:
             return []
-        query = f"""
-                SELECT
-                    ln.id,
-                    LPAD(ln.name::text, 2, '0') AS name,
-                    {field} AS total,
-                    ROW_NUMBER() OVER (
-                        ORDER BY {field} DESC, ln.id DESC
-                    ) + 30 AS rank,
-                    (
-                        SELECT COUNT(*) FROM lottery_output lo
-                        WHERE lo.number_id = ln.id
-                          AND lo.month = %(month)s::text
-                          AND lo.year = %(year)s
-                    ) AS salidas_mes_anio,
-                    last_info.last_month_date,
-                    last_info.last_month_turn,
-                    last_info.last_month_week_day
-                FROM lottery_number ln
-                LEFT JOIN LATERAL (
-                    SELECT
-                        TO_CHAR(lo2.date, 'DD/MM/YYYY') AS last_month_date,
-                        lo2.turn_day AS last_month_turn,
-                        CASE lo2.week_day
-                            WHEN 'lu' THEN 'Lun'
-                            WHEN 'ma' THEN 'Mar'
-                            WHEN 'mi' THEN 'Mié'
-                            WHEN 'ju' THEN 'Jue'
-                            WHEN 'vi' THEN 'Vie'
-                            WHEN 'sa' THEN 'Sáb'
-                            WHEN 'do' THEN 'Dom'
-                            ELSE lo2.week_day
-                        END AS last_month_week_day
-                    FROM lottery_output lo2
-                    WHERE lo2.number_id = ln.id
-                      AND lo2.month = %(month)s::text
-                    ORDER BY lo2.date DESC
-                    LIMIT 1
-                ) last_info ON true
-                ORDER BY {field} DESC, ln.id DESC
-                OFFSET 30 LIMIT 40;
-            """
+        query = self._month_numbers_cte(field) + """
+            SELECT
+                id, name, total, salidas_mes_anio,
+                last_month_date, last_month_turn, last_month_week_day,
+                global_rank AS rank
+            FROM ranked
+            WHERE global_rank > 30 AND global_rank <= 70
+            ORDER BY global_rank;
+        """
         self.env.cr.execute(query, {'month': month, 'year': current_year})
         return self.env.cr.dictfetchall()
 
@@ -429,50 +445,18 @@ class LotteryStatsService(models.Model):
     @tools.ormcache('month', 'current_year')
     def get_bottom_numbers_month(self, month=None, current_year=None):
         field = MONTH_FIELD_MAP.get(month)
-
         if not field:
             return []
-        query = f"""
-                    SELECT
-                        ln.id,
-                        LPAD(ln.name::text, 2, '0') AS name,
-                        {field} AS total,
-                        ROW_NUMBER() OVER (
-                            ORDER BY {field}, ln.id DESC
-                        ) AS rank,
-                        (
-                            SELECT COUNT(*) FROM lottery_output lo
-                            WHERE lo.number_id = ln.id
-                              AND lo.month = %(month)s::text
-                              AND lo.year = %(year)s
-                        ) AS salidas_mes_anio,
-                        last_info.last_month_date,
-                        last_info.last_month_turn,
-                        last_info.last_month_week_day
-                    FROM lottery_number ln
-                    LEFT JOIN LATERAL (
-                        SELECT
-                            TO_CHAR(lo2.date, 'DD/MM/YYYY') AS last_month_date,
-                            lo2.turn_day AS last_month_turn,
-                            CASE lo2.week_day
-                                WHEN 'lu' THEN 'Lun'
-                                WHEN 'ma' THEN 'Mar'
-                                WHEN 'mi' THEN 'Mié'
-                                WHEN 'ju' THEN 'Jue'
-                                WHEN 'vi' THEN 'Vie'
-                                WHEN 'sa' THEN 'Sáb'
-                                WHEN 'do' THEN 'Dom'
-                                ELSE lo2.week_day
-                            END AS last_month_week_day
-                        FROM lottery_output lo2
-                        WHERE lo2.number_id = ln.id
-                          AND lo2.month = %(month)s::text
-                        ORDER BY lo2.date DESC
-                        LIMIT 1
-                    ) last_info ON true
-                    ORDER BY {field}, ln.id DESC
-                    LIMIT 30;
-                """
+        # rank local 1-30 donde 1 = menos frecuente (compatible con getBallFriosClass)
+        query = self._month_numbers_cte(field) + """
+            SELECT
+                id, name, total, salidas_mes_anio,
+                last_month_date, last_month_turn, last_month_week_day,
+                ROW_NUMBER() OVER (ORDER BY total ASC, id DESC) AS rank
+            FROM ranked
+            WHERE global_rank > 70
+            ORDER BY total ASC, id DESC;
+        """
         self.env.cr.execute(query, {'month': month, 'year': current_year})
         return self.env.cr.dictfetchall()
 
@@ -2502,14 +2486,29 @@ class LotteryStatsService(models.Model):
             next_date   = row.get('next_' + turn)
             all_scores  = self.get_numeros_calientes(turn, today_str)
             cold_scores = self.get_numeros_frios(turn, today_str)
+
+            # ── Hot top-30 (with tie expansion) ──────────────────────────────
+            hot_top   = _cut_with_ties(all_scores, 30)
+            hot_names = {s['name'] for s in hot_top}
+
+            # ── Cold top-30 excluding any number already in hot ───────────────
+            cold_filtered = [s for s in cold_scores if s['name'] not in hot_names]
+            cold_top      = _cut_with_ties(cold_filtered, 30)
+            cold_names    = {s['name'] for s in cold_top}
+
+            # ── Remaining: neither hot nor cold ───────────────────────────────
+            remaining = [s for s in all_scores if s['name'] not in hot_names
+                                                and s['name'] not in cold_names]
+
             result[turn] = {
-                'numbers':         _cut_with_ties(all_scores, 30),
-                'numbers_cold':    _cut_with_ties(cold_scores, 30),
-                'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
-                'centenas_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
-                'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
-                'bola_extra_cold': self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
-                'next_draw':       _fmt_date(next_date),
+                'numbers':           hot_top,
+                'numbers_cold':      cold_top,
+                'numbers_remaining': remaining,
+                'centenas':          self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
+                'centenas_cold':     self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
+                'bola_extra':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
+                'bola_extra_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
+                'next_draw':         _fmt_date(next_date),
             }
         result['last_turn'] = row.get('last_turn') or 'afternoon'
         return result

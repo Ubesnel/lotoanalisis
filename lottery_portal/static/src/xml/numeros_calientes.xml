@@ -236,6 +236,68 @@
 
                 </div><!-- /nc-collapsible fríos -->
 
+                <!-- ══ Header Restantes ══ -->
+                <div class="nc-hdr nc-hdr--remaining"
+                     t-on-click="toggleRemaining"
+                     role="button"
+                     t-att-aria-expanded="state.showRemaining ? 'true' : 'false'">
+                    <div class="nc-hdr-main">
+
+                        <!-- izquierda -->
+                        <div class="nc-hdr-left">
+                            <div class="nc-hdr-icon">
+                                <i class="fa fa-circle-o"/>
+                            </div>
+                            <div class="nc-hdr-titles">
+                                <span class="nc-hdr-title">Restantes</span>
+                                <span class="nc-hdr-tagline">Ni calientes ni fríos</span>
+                            </div>
+                            <div t-att-class="'nc-hdr-chevron ' + (state.showRemaining ? 'nc-hdr-chevron--open' : '')">
+                                <i class="fa fa-chevron-down"/>
+                            </div>
+                        </div>
+
+                        <!-- derecha: fecha + turno activo -->
+                        <div class="nc-hdr-right">
+                            <t t-if="nextDraw">
+                                <span class="nc-hdr-date">
+                                    <i class="fa fa-calendar-o"/>
+                                    <t t-esc="nextDraw"/>
+                                </span>
+                            </t>
+                            <span class="nc-hdr-badge">
+                                <t t-if="state.turn === 'afternoon'">☀ Tarde</t>
+                                <t t-else="">🌙 Noche</t>
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ── Contenido Restantes (colapsable) ── -->
+                <div t-att-class="'nc-collapsible nc-collapsible--remaining ' + (state.showRemaining ? 'nc-collapsible--open' : '')">
+                    <div class="nc-section nc-section--remaining">
+                        <div class="nc-section-head">
+                            <span class="nc-section-title nc-section-title--remaining">
+                                <i class="fa fa-circle-o"/> Números Restantes
+                            </span>
+                            <div class="nc-legend-inline">
+                                <span class="nc-pip nc-pip--remaining"/><span>Neutros</span>
+                            </div>
+                        </div>
+                        <div class="nc-numbers-grid">
+                            <t t-foreach="numbersRemaining" t-as="num" t-key="'rem_' + num.name">
+                                <div class="nc-cell">
+                                    <span t-att-class="'nc-ball nc-ball-remaining'"
+                                          t-att-title="'Score: ' + num.score">
+                                        <t t-esc="num.name"/>
+                                    </span>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div><!-- /nc-collapsible restantes -->
+
             </t>
         </div>
     </t>
