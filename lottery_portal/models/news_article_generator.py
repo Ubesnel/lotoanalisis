@@ -17,6 +17,11 @@ WEEKDAYS = [
     ('do', 'Domingo'),
 ]
 
+WEEKDAY_SHORT = {
+    'lu': 'Lun', 'ma': 'Mar', 'mi': 'Mié',
+    'ju': 'Jue', 'vi': 'Vie', 'sa': 'Sáb', 'do': 'Dom',
+}
+
 WEEKS = [
     ('sem_1', 'Primera Semana (días 1–7)'),
     ('sem_2', 'Segunda Semana (días 8–14)'),
@@ -177,13 +182,20 @@ class NewsArticleGenerator(models.Model):
         .ma-section-desc  { color:#6c6c6c; margin-bottom:14px; font-size:.93rem; }
         .ma-grid-3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
         .ma-grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+        .ma-balls-grid { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:8px; }
+        .ma-wd-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+        .ma-wd-card { border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.09); }
+        .ma-wd-hdr { background:linear-gradient(135deg,#6f4a8e,#9b59b6); color:#fff; text-align:center; padding:8px 2px 6px; font-weight:700; font-size:.78rem; letter-spacing:.4px; text-transform:uppercase; }
+        .ma-wd-balls { padding:8px 4px 6px; display:flex; flex-wrap:wrap; gap:5px; justify-content:center; background:#faf8ff; min-height:44px; }
+        @media(max-width:767px){ .ma-wd-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
+        @media(min-width:768px) and (max-width:1100px){ .ma-wd-grid { grid-template-columns:repeat(4,1fr); } }
         </style>
         """
         parts.append(css)
 
         # ── Intro ─────────────────────────────────────────────────────────
         parts.append(
-            f'<div class="ma-intro">'            
+            f'<div class="ma-intro">'
             f'<p>Se analizaron un total de <strong>{total_sorteos:,}</strong> sorteos registrados '
             f'en el mes de <strong>{month_name}</strong> durante <strong>{total_anios}</strong> años, '
             f'con el objetivo de identificar cuáles fueron los números con mayor cantidad de salidas. '
@@ -199,7 +211,7 @@ class NewsArticleGenerator(models.Model):
             f'<span>&#128293; Números que más salen en {month_name}</span>'
             f'</div>'
             f'<div class="card-body p-2 balls-no-zoom">'
-            f'<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px;justify-items:center;">'
+            f'<div class="ma-balls-grid">'
         )
         for n in top30:
             num_name = n['name']
@@ -208,7 +220,7 @@ class NewsArticleGenerator(models.Model):
             parts.append(
                 f'<span class="ball {bc}" title="Salidas históricas en {month_name}: {num_total}">{num_name}</span>'
             )
-        parts.append('</div>')  # grid
+        parts.append('</div>')  # ma-balls-grid
         parts.append('</div>')  # card-body
         parts.append('</div>')  # card
 
@@ -256,38 +268,28 @@ class NewsArticleGenerator(models.Model):
 
         parts.append('</div>')  # ma-section
 
-        # ── Por Día de la Semana ──────────────────────────────────────────
+        # ── Por Día de la Semana (tarjetas) ──────────────────────────────
         parts.append('<div class="ma-section">')
         parts.append(
             '<p class="ma-section-title">Top 8 por Día de la Semana</p>'
             '<p class="ma-section-desc">Los 8 números que más han salido en cada día de la semana a lo largo de toda la historia registrada.</p>'
         )
-        parts.append(
-            '<div class="card border-0 shadow-sm">'
-            '<div class="card-body p-2" style="overflow-x:auto;">'
-            '<table class="table table-sm mb-0" style="text-align:center;min-width:520px;">'
-            '<thead><tr>'
-            '<th style="color:#8c6ca8;font-weight:700;width:28px;">#</th>'
-        )
-        for _, label in WEEKDAYS:
-            parts.append(f'<th style="color:#8c6ca8;font-weight:700;">{label}</th>')
-        parts.append('</tr></thead><tbody>')
-
-        for pos in range(1, 9):
-            parts.append('<tr>')
-            parts.append(f'<td class="stat-rank-pos">#{pos}</td>')
-            for code, _ in WEEKDAYS:
-                nums = weekday_data.get(code, [])
-                if pos <= len(nums):
-                    num_name = nums[pos - 1]['name']
-                    bc = ball_color_week(pos)
-                    parts.append(f'<td><span class="ball {bc}">{num_name}</span></td>')
-                else:
-                    parts.append('<td>—</td>')
-            parts.append('</tr>')
-
-        parts.append('</tbody></table>')
-        parts.append('</div></div>')
+        parts.append('<div class="ma-wd-grid">')
+        for code, label in WEEKDAYS:
+            nums = weekday_data.get(code, [])
+            short = WEEKDAY_SHORT.get(code, label[:3])
+            parts.append(
+                f'<div class="ma-wd-card">'
+                f'<div class="ma-wd-hdr">{short}</div>'
+                f'<div class="ma-wd-balls">'
+            )
+            for pos, n in enumerate(nums, 1):
+                bc = ball_color_week(pos)
+                parts.append(f'<span class="ball {bc}">{n["name"]}</span>')
+            if not nums:
+                parts.append('<span class="text-muted small">&#8212;</span>')
+            parts.append('</div></div>')
+        parts.append('</div>')
         parts.append('</div>')
 
         # ── Tarde y Noche ────────────────────────────────────────────────
@@ -509,6 +511,13 @@ class NewsArticleGenerator(models.Model):
         .ma-section-desc  { color:#6c6c6c; margin-bottom:14px; font-size:.93rem; }
         .ma-grid-3 { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
         .ma-grid-2 { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+        .ma-balls-grid { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; padding:8px; }
+        .ma-wd-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+        .ma-wd-card { border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.09); }
+        .ma-wd-hdr { background:linear-gradient(135deg,#6f4a8e,#9b59b6); color:#fff; text-align:center; padding:8px 2px 6px; font-weight:700; font-size:.78rem; letter-spacing:.4px; text-transform:uppercase; }
+        .ma-wd-balls { padding:8px 4px 6px; display:flex; flex-wrap:wrap; gap:5px; justify-content:center; background:#faf8ff; min-height:44px; }
+        @media(max-width:767px){ .ma-wd-grid { grid-template-columns:repeat(2,1fr); gap:10px; } }
+        @media(min-width:768px) and (max-width:1100px){ .ma-wd-grid { grid-template-columns:repeat(4,1fr); } }
         </style>
         """
         parts.append(css)
@@ -532,7 +541,7 @@ class NewsArticleGenerator(models.Model):
             f'<span>&#128269; Números que menos salen en {month_name}</span>'
             f'</div>'
             f'<div class="card-body p-2 balls-no-zoom">'
-            f'<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px;justify-items:center;">'
+            f'<div class="ma-balls-grid">'
         )
         for n in bottom30:
             num_name = n['name']
@@ -541,7 +550,7 @@ class NewsArticleGenerator(models.Model):
             parts.append(
                 f'<span class="ball {bc}" title="Salidas históricas en {month_name}: {num_total}">{num_name}</span>'
             )
-        parts.append('</div>')  # grid
+        parts.append('</div>')  # ma-balls-grid
         parts.append('</div>')  # card-body
         parts.append('</div>')  # card
 
@@ -609,38 +618,28 @@ class NewsArticleGenerator(models.Model):
 
         parts.append('</div>')  # ma-section
 
-        # ── Por Día de la Semana ──────────────────────────────────────────
+        # ── Por Día de la Semana (tarjetas) ──────────────────────────────
         parts.append('<div class="ma-section">')
         parts.append(
             '<p class="ma-section-title">Menos Salidores por Día de la Semana</p>'
             '<p class="ma-section-desc">Los 8 números que menos han salido en cada día de la semana a lo largo de toda la historia registrada.</p>'
         )
-        parts.append(
-            '<div class="card border-0 shadow-sm">'
-            '<div class="card-body p-2" style="overflow-x:auto;">'
-            '<table class="table table-sm mb-0" style="text-align:center;min-width:520px;">'
-            '<thead><tr>'
-            '<th style="color:#8c6ca8;font-weight:700;width:28px;">#</th>'
-        )
-        for _, label in WEEKDAYS:
-            parts.append(f'<th style="color:#8c6ca8;font-weight:700;">{label}</th>')
-        parts.append('</tr></thead><tbody>')
-
-        for pos in range(1, 9):
-            parts.append('<tr>')
-            parts.append(f'<td class="stat-rank-pos">#{pos}</td>')
-            for code, _ in WEEKDAYS:
-                nums = weekday_data.get(code, [])
-                if pos <= len(nums):
-                    num_name = nums[pos - 1]['name']
-                    bc = ball_color_week(pos)
-                    parts.append(f'<td><span class="ball {bc}">{num_name}</span></td>')
-                else:
-                    parts.append('<td>—</td>')
-            parts.append('</tr>')
-
-        parts.append('</tbody></table>')
-        parts.append('</div></div>')
+        parts.append('<div class="ma-wd-grid">')
+        for code, label in WEEKDAYS:
+            nums = weekday_data.get(code, [])
+            short = WEEKDAY_SHORT.get(code, label[:3])
+            parts.append(
+                f'<div class="ma-wd-card">'
+                f'<div class="ma-wd-hdr">{short}</div>'
+                f'<div class="ma-wd-balls">'
+            )
+            for pos, n in enumerate(nums, 1):
+                bc = ball_color_week(pos)
+                parts.append(f'<span class="ball {bc}">{n["name"]}</span>')
+            if not nums:
+                parts.append('<span class="text-muted small">&#8212;</span>')
+            parts.append('</div></div>')
+        parts.append('</div>')
         parts.append('</div>')
 
         # ── Tarde y Noche ────────────────────────────────────────────────
