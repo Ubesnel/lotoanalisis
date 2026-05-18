@@ -361,6 +361,63 @@
 .np-empty h3 { font-size: 16px; color: var(--np-text); margin-bottom: 5px; }
 
 /* ============================================================
+   BUSCADOR DE ARTÍCULOS
+   ============================================================ */
+.np-search-wrap { margin-bottom: 14px; }
+
+.np-search-form { width: 100%; }
+
+.np-search-inner {
+  display: flex; align-items: center; gap: 0;
+  background: var(--np-bg-card); border: 2px solid var(--np-border);
+  border-radius: 10px; overflow: hidden;
+  transition: border-color .2s;
+}
+.np-search-inner:focus-within { border-color: var(--np-violet); }
+
+.np-search-icon {
+  padding: 0 10px 0 14px; color: var(--np-violet); font-size: 13px; flex-shrink: 0;
+}
+.np-search-input {
+  flex: 1; border: none; outline: none; background: transparent;
+  font-size: .9rem; color: var(--np-text); padding: 9px 6px;
+  min-width: 0;
+}
+.np-search-input::placeholder { color: var(--np-muted); }
+
+.np-search-clear {
+  padding: 0 10px; color: var(--np-muted); font-size: 12px;
+  display: flex; align-items: center; text-decoration: none;
+  transition: color .2s; flex-shrink: 0;
+}
+.np-search-clear:hover { color: #dc2626; }
+
+.np-search-btn {
+  background: var(--np-violet); color: #fff; border: none; cursor: pointer;
+  padding: 9px 16px; font-size: .82rem; font-weight: 700;
+  transition: background .2s; white-space: nowrap; flex-shrink: 0;
+  text-decoration: none; display: inline-flex; align-items: center;
+}
+.np-search-btn:hover { background: #5b21b6; color: #fff; text-decoration: none; }
+
+.np-search-info {
+  margin-top: 8px; font-size: .82rem; color: var(--np-muted);
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+}
+.np-search-info strong { color: var(--np-text); }
+.np-search-reset { color: var(--np-violet); font-size: .8rem; text-decoration: none; white-space: nowrap; }
+.np-search-reset:hover { color: #dc2626; text-decoration: underline; }
+
+/* ============================================================
+   INFO DE PAGINACIÓN
+   ============================================================ */
+.np-pag-info {
+  text-align: center; font-size: .8rem; color: var(--np-muted);
+  margin-bottom: 4px;
+}
+.np-pag-info strong { color: var(--np-text); }
+
+/* ============================================================
    PAGINACIÓN
    ============================================================ */
 .np-pagination { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 12px 0; }
