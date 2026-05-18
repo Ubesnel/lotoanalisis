@@ -66,7 +66,7 @@
                                     </t>
                                 </div>
                             </t>
-                            <!-- Últimas 10 salidas (excluye el día actual) -->
+                            <!-- Últimas 10 salidas (últimos 10 días con datos, incluye hoy) -->
                             <owl-component name="lottery_portal.UltimasSalidasCol1"/>
                         </div>
 
@@ -604,10 +604,10 @@
                                     </div>
                                 </div>
 
-                                <!-- Últimas 10 salidas (excluye el día actual) -->
+                                <!-- Últimas 10 salidas (últimos 10 días con datos, incluye hoy) -->
                                 <owl-component name="lottery_portal.UltimasSalidasCol1"/>
 
-                                <!-- Últimas 10 salidas del día actual -->
+                                <!-- Últimas 10 salidas por día de semana -->
                                 <owl-component name="lottery_portal.UltimasSalidasDay"/>
 
                             </div>
