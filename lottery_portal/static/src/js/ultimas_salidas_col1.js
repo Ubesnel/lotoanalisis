@@ -4,14 +4,6 @@ import { Component, useState, onWillStart } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
 
-function todayStr() {
-    const d = new Date();
-    const dd = String(d.getDate()).padStart(2, '0');
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-}
-
 export class UltimasSalidasCol1 extends Component {
 
     setup() {
@@ -22,8 +14,7 @@ export class UltimasSalidasCol1 extends Component {
 
         onWillStart(async () => {
             const data = await jsonrpc("/lottery/ultimas_salidas_col1", {});
-            const hoy = todayStr();
-            this.state.salidas = (data || []).filter(s => s.fecha !== hoy);
+            this.state.salidas = data || [];
             this.state.loading = false;
         });
     }

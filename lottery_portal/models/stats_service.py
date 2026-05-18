@@ -157,14 +157,14 @@ class LotteryStatsService(models.Model):
 
     @api.model
     def get_ultimas_salidas_col1(self):
-        """Últimas 10 fechas de sorteo, excluyendo hoy, orden DESC (más reciente primero).
+        """Últimas 10 fechas de sorteo, incluyendo hoy si hay datos registrados, orden DESC.
         Sin ormcache porque usa CURRENT_DATE y debe reflejar el día actual en cada petición."""
         self.env.cr.execute("""
             SELECT date, fecha,
                    centena_dia, numero_dia, bola_extra_dia,
                    centena_noche, numero_noche, bola_extra_noche
             FROM lottery_ultima_salida_dia_semana_mv
-            WHERE date < CURRENT_DATE
+            WHERE date <= CURRENT_DATE
             ORDER BY date DESC
             LIMIT 10
         """)
