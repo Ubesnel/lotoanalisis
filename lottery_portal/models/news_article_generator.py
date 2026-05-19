@@ -749,7 +749,7 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc = self.env['stats.service']
+        svc = self.env['lottery.stats.service'].sudo()
         date_str  = today.strftime('%d/%m/%Y')
         day_code  = today.strftime('%A').lower()[:3]
         month_num = today.month
@@ -828,7 +828,7 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc = self.env['stats.service']
+        svc = self.env['lottery.stats.service'].sudo()
         date_str  = today.strftime('%d/%m/%Y')
         day_code  = today.strftime('%A').lower()[:3]
         month_num = today.month
@@ -889,7 +889,7 @@ class NewsArticleGenerator(models.Model):
         self, title_ctx, date_str, today, option, day_es,
         month_num, week_num, groups_data, int_cfg,
     ):
-        svc = self.env['stats.service']
+        svc = self.env['lottery.stats.service'].sudo()
         parts = []
 
         # ── Inline CSS ────────────────────────────────────────────────────
@@ -1103,7 +1103,7 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['stats.service']
+        svc      = self.env['lottery.stats.service'].sudo()
         date_str = today.strftime('%d/%m/%Y')
         slug     = f'numeros-atrasados-{today.strftime("%Y-%m-%d")}'[:100]
 
@@ -1238,7 +1238,7 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['stats.service']
+        svc      = self.env['lottery.stats.service'].sudo()
         date_str = today.strftime('%d/%m/%Y')
         wday     = today.weekday()                              # 0=Mon…6=Sun
         wcode    = self._WEEKDAY_CODE[wday]
@@ -1431,7 +1431,7 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['stats.service']
+        svc      = self.env['lottery.stats.service'].sudo()
         date_str = today.strftime('%d/%m/%Y')
         month_str = today.strftime('%Y-%m')
         slug      = f'secuencias-grupos-{month_str}'[:100]
@@ -1595,7 +1595,7 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['stats.service']
+        svc      = self.env['lottery.stats.service'].sudo()
         date_str = today.strftime('%d/%m/%Y')
         month_str = today.strftime('%Y-%m')
         slug      = f'grupos-fin-semana-{month_str}'[:100]
