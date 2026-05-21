@@ -1646,6 +1646,9 @@ class NewsArticleGenerator(models.Model):
         month_label = today.strftime('%B %Y').capitalize()
         title = f'Secuencias de {tipo_lbl} — {month_label}'
 
+        cover_file = 'secuencias lineas.png' if grp_type == 'line' else 'secuencias terminales.png'
+        cover = self._load_cover_image(cover_file)
+
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
             'title':        title,
@@ -1654,6 +1657,7 @@ class NewsArticleGenerator(models.Model):
             'raw_html':     html_body,
             'is_published': True,
             'category_id':  category.id if category else False,
+            'cover_image':  cover or False,
         }
         if existing:
             existing.write(vals)
@@ -1946,6 +1950,8 @@ class NewsArticleGenerator(models.Model):
             f'General, Tarde y Noche. Análisis al {date_str}.'
         )
 
+        cover = self._load_cover_image('grupos fin semana.png')
+
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
             'title':        title,
@@ -1954,6 +1960,7 @@ class NewsArticleGenerator(models.Model):
             'raw_html':     html_body,
             'is_published': True,
             'category_id':  category.id if category else False,
+            'cover_image':  cover or False,
         }
         if existing:
             existing.write(vals)

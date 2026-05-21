@@ -55,6 +55,7 @@ class NewsController(http.Controller):
             'category_slug':   category or '',
             'search_query':    search_query,
             'lottery_data':    stats.get_last_results_full(),
+            'hero_stats':      stats.get_hero_stats(),
         })
 
     @http.route('/noticias/buscar', type='json', auth='public', website=True)
