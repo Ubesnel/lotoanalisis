@@ -68,6 +68,34 @@ class NewsArticle(models.Model):
     cover_image_filename = fields.Char(string='Nombre imagen')
     cover_image_alt = fields.Char(string='Texto alternativo imagen')
     category_id = fields.Many2one('news.category', string='Categoría', ondelete='restrict')
+
+    # ── Calientes ─────────────────────────────────────────────────────────
+    is_calientes_article = fields.Boolean(
+        string='Es artículo de calientes', default=False,
+        help='Activa la ficha de selección manual y el botón Actualizar datos.')
+
+    hot_number_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_hot_num_tarde_rel', 'article_id', 'number_id',
+        string='Números calientes · Tarde')
+    hot_number_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_hot_num_noche_rel', 'article_id', 'number_id',
+        string='Números calientes · Noche')
+    hot_centena_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_hot_cen_tarde_rel', 'article_id', 'number_id',
+        string='Centenas calientes · Tarde',
+        domain=[('can_use_hundreds', '=', True)])
+    hot_centena_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_hot_cen_noche_rel', 'article_id', 'number_id',
+        string='Centenas calientes · Noche',
+        domain=[('can_use_hundreds', '=', True)])
+    hot_extra_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_hot_ext_tarde_rel', 'article_id', 'number_id',
+        string='Bola extra caliente · Tarde',
+        domain=[('can_use_hundreds', '=', True)])
+    hot_extra_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_hot_ext_noche_rel', 'article_id', 'number_id',
+        string='Bola extra caliente · Noche',
+        domain=[('can_use_hundreds', '=', True)])
     author_id = fields.Many2one('res.users', string='Autor', default=lambda self: self.env.user)
     author_name = fields.Char(string='Nombre autor visible', help='Si vacío, se usa el nombre del usuario')
     publish_date = fields.Datetime(string='Fecha de publicación', default=fields.Datetime.now)

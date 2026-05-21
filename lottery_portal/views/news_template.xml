@@ -4,6 +4,38 @@
     <!-- ==================== HOMEPAGE DE NOTICIAS ==================== -->
     <template id="news_homepage" name="Inicio">
         <t t-call="website.layout">
+
+            <!-- ===== HERO ===== -->
+            <section class="hero-analitico">
+                <div class="hero-deco-blob hero-deco-blob--1"/>
+                <div class="hero-deco-blob hero-deco-blob--2"/>
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <i class="fa fa-bar-chart"/> Pick 3 Florida · Desde 1988
+                    </div>
+                    <h1 class="hero-title">
+                        Analiza. <span>Comprende.</span> Decide mejor
+                    </h1>
+                    <p class="hero-subtitle">
+                        Estadísticas inteligentes en un solo lugar
+                    </p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-val"><t t-esc="hero_stats['anios']"/>+</span>
+                            <span class="hero-stat-lbl">años de datos</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-val"><t t-esc="hero_stats['total_sorteos']"/></span>
+                            <span class="hero-stat-lbl">sorteos históricos</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-val">2</span>
+                            <span class="hero-stat-lbl">sorteos diarios</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <div id="news-portal">
                 <div class="container np-main">
                     <div class="row">
@@ -225,6 +257,9 @@
                                     <owl-component name="lottery_portal.SalidasBuscador"/>
                                 </div>
                             </div>
+
+                            <!-- Consultar acompañantes -->
+                            <owl-component name="lottery_portal.ConsultarAcompanantes"/>
 
                             <!-- Últimas 10 salidas del día actual -->
                             <owl-component name="lottery_portal.UltimasSalidasDay"/>
@@ -603,6 +638,9 @@
                                         <owl-component name="lottery_portal.SalidasBuscador"/>
                                     </div>
                                 </div>
+
+                                <!-- Consultar acompañantes -->
+                                <owl-component name="lottery_portal.ConsultarAcompanantes"/>
 
                                 <!-- Últimas 10 salidas (últimos 10 días con datos, incluye hoy) -->
                                 <owl-component name="lottery_portal.UltimasSalidasCol1"/>

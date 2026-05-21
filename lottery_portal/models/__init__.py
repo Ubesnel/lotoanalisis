@@ -4,5 +4,6 @@ from . import res_config_settings
 from . import faq
 from . import news
 from . import news_article_generator
+from . import calientes_generator
 from . import materialized_views
 from . import lottery_output

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.ConsultarAcompanantes" owl="1">
+        <!-- overflow:visible is required so the dropdown is not clipped -->
+        <div class="card shadow border-0 mb-3" style="overflow:visible;">
+            <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;border-radius:.375rem .375rem 0 0;">
+                <i class="fa fa-users me-2"/>
+                Consultar acompañantes
+            </div>
+            <div class="card-body p-3" style="overflow:visible;">
+
+                <!-- Input + dropdown -->
+                <div class="position-relative mb-2">
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           placeholder="Escriba el número..."
+                           t-att-value="state.numero_text"
+                           t-on-input="onBuscarNumero"/>
+                    <div class="dropdown-menu show w-100"
+                         t-if="state.sugerencias.length"
+                         style="max-height:180px;overflow-y:auto;z-index:1055;position:absolute;top:100%;left:0;">
+                        <t t-foreach="state.sugerencias" t-as="n" t-key="n.id">
+                            <a class="dropdown-item"
+                               href="#"
+                               t-on-click="seleccionarNumero"
+                               t-att-data-id="n.id"
+                               t-att-data-name="n.name">
+                                <t t-esc="n.name"/>
+                            </a>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <t t-if="state.loading">
+                    <div class="text-center text-muted small py-2">
+                        <i class="fa fa-spinner fa-spin me-1"/> Cargando...
+                    </div>
+                </t>
+
+                <!-- Acompañantes posteriores -->
+                <t t-if="state.socios_posteriores.length">
+                    <div class="text-center fw-bold mb-1" style="color:#8c6ca8;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                        Acompañantes posteriores
+                    </div>
+                    <div class="ca-balls-wrap mb-3">
+                        <t t-foreach="state.socios_posteriores" t-as="sp" t-key="sp.name">
+                            <div class="ca-ball-item">
+                                <span t-att-class="'ball ' + getBallClass(sp_index)"
+                                      t-att-title="'Veces: ' + sp.cantidad_veces">
+                                    <t t-esc="sp.name"/>
+                                </span>
+                                <span class="ca-ball-count"><t t-esc="sp.cantidad_veces"/>x</span>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- Acompañantes anteriores -->
+                <t t-if="state.socios_anteriores.length">
+                    <div class="text-center fw-bold mb-1" style="color:#8c6ca8;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;">
+                        Acompañantes anteriores
+                    </div>
+                    <div class="ca-balls-wrap">
+                        <t t-foreach="state.socios_anteriores" t-as="sa" t-key="sa.name">
+                            <div class="ca-ball-item">
+                                <span t-att-class="'ball ' + getBallClass(sa_index)"
+                                      t-att-title="'Veces: ' + sa.cantidad_veces">
+                                    <t t-esc="sa.name"/>
+                                </span>
+                                <span class="ca-ball-count"><t t-esc="sa.cantidad_veces"/>x</span>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- Empty state -->
+                <t t-if="!state.loading and !state.socios_posteriores.length and !state.socios_anteriores.length and state.numero_text and !state.sugerencias.length">
+                    <div class="text-center text-muted small py-1">
+                        Sin resultados para "<t t-esc="state.numero_text"/>".
+                    </div>
+                </t>
+
+            </div>
+        </div>
+    </t>
+</templates>

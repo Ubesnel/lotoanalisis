@@ -1928,3 +1928,31 @@ html, #wrapwrap { scroll-behavior: smooth; }
 }
 .nc-pip--remaining { background: linear-gradient(135deg, #9ca3af, #6b7280); }
 
+
+/* ═══════════════════════════════════════════════════════════════
+   CONSULTAR ACOMPAÑANTES — sidebar widget
+═══════════════════════════════════════════════════════════════ */
+
+/* Ball grid: flex-wrap so it fits any sidebar width */
+.ca-balls-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 4px;
+    justify-content: center;
+}
+
+/* Each item: ball + small count stacked vertically */
+.ca-ball-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+/* Tiny count label below each ball */
+.ca-ball-count {
+    font-size: .65rem;
+    font-weight: 700;
+    color: #6b7280;
+    line-height: 1;
+}
