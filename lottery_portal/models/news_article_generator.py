@@ -53,7 +53,7 @@ class NewsArticleGenerator(models.Model):
             else:
                 today = ref_date
         else:
-            today = date.today()
+            today = self._parse_ref_date(None)
             last_day = calendar.monthrange(today.year, today.month)[1]
             if today.day != last_day:
                 return
@@ -124,7 +124,7 @@ class NewsArticleGenerator(models.Model):
             companions=companions,
         )
 
-        category = self.env.ref('lottery_portal.news_category_numeros_salidores_mes')
+        category = self.env.ref('lottery_portal.news_category_analisis_mensuales')
         cover = self._load_cover_image('numeros salidores mes.png')
 
         self.env['news.article'].sudo().create({
@@ -460,7 +460,7 @@ class NewsArticleGenerator(models.Model):
             week_data=week_data,
         )
 
-        category = self.env.ref('lottery_portal.news_category_numeros_salidores_mes')
+        category = self.env.ref('lottery_portal.news_category_analisis_mensuales')
         cover = self._load_cover_image('numeros menos salidores mes.png')
 
         self.env['news.article'].sudo().create({
@@ -721,8 +721,15 @@ class NewsArticleGenerator(models.Model):
                 return datetime.strptime(ref_date, '%Y-%m-%d').date()
             except ValueError:
                 pass
-        from datetime import date
-        return date.today()
+        import pytz
+        from datetime import datetime
+        tz_name = (
+            (self.env.company.partner_id.tz if self.env.company else None)
+            or (self.env.user.tz if self.env.user else None)
+            or 'America/New_York'
+        )
+        tz = pytz.timezone(tz_name)
+        return datetime.now(tz).date()
 
     # ─────────────────────────────────────────────────────────────────────────
     # Cron: Grupos más atrasados
@@ -750,51 +757,72 @@ class NewsArticleGenerator(models.Model):
         _logger = logging.getLogger(__name__)
 
         svc = self.env['lottery.stats.service'].sudo()
-        date_str  = today.strftime('%d/%m/%Y')
-        day_code  = today.strftime('%A').lower()[:3]
-        month_num = today.month
-        week_num  = today.isocalendar()[1]
+        date_str = today.strftime('%d/%m/%Y')
 
-        _DAY_MAP = {
-            'mon': 'lunes', 'tue': 'martes', 'wed': 'miercoles',
-            'thu': 'jueves', 'fri': 'viernes', 'sat': 'sabado', 'sun': 'domingo',
-        }
-        day_es = _DAY_MAP.get(day_code, '')
+        _WCODE  = {0: 'lu', 1: 'ma', 2: 'mi', 3: 'ju', 4: 'vi', 5: 'sa', 6: 'do'}
+        _WLABEL = {'lu': 'Lunes', 'ma': 'Martes', 'mi': 'Miércoles',
+                   'ju': 'Jueves', 'vi': 'Viernes', 'sa': 'Sábado', 'do': 'Domingo'}
+        wcode        = _WCODE[today.weekday()]
+        wlabel       = _WLABEL[wcode]
+        month_num    = today.month
+        month_name   = MONTHS_DICT[str(month_num)]
+        week_of_month = min((today.day - 1) // 7 + 1, 5)
 
-        raw = svc.get_top_6_groups(option, day_es)
-        groups_data = (raw or [])[:5]
+        api_option  = {'all': 'general', 'tarde': 'afternoon', 'noche': 'evening'}.get(option, 'general')
+        turn_param  = None if option == 'all' else api_option
 
-        int_cfg = {
-            'ranges': [
-                ('21-40', 'r_21_40'),
-                ('41-50', 'r_41_50'),
-                ('51-60', 'r_51_60'),
-                ('61-70', 'r_61_70'),
-                ('+70',   'r_70_plus'),
-            ],
-            'method': 'get_group_delay_intervals',
-        }
+        slug  = f'grupos-atrasados-{option}-{today.strftime("%Y-%m-%d")}'[:100]
+        title = f'Top 5 Grupos más atrasados — {label} — {date_str}'
+        intro = (f'Análisis detallado de los 5 grupos con mayor atraso acumulado '
+                 f'en el turno {label} al {date_str}.')
 
-        title_ctx = f'Top 5 Grupos más atrasados — {label}'
-        slug      = f'grupos-atrasados-{option}-{today.strftime("%Y-%m-%d")}'[:100]
+        groups_raw = svc.get_top_6_groups(api_option, wcode)[:5]
+        groups_data = []
+        for grp in groups_raw:
+            grp_id     = grp['id']
+            grp_record = self.env['lottery.group'].browse(grp_id)
+            nums = analysis = intervals = None
+            try:
+                nums = svc.get_info_groups_numbers(grp_record, 'total_atrasadas', wcode)
+            except Exception as e:
+                _logger.warning('get_info_groups_numbers [%s]: %s', grp_id, e)
+            try:
+                analysis = svc.get_info_group_numbers_analysis(
+                    grp_id, wcode, week_of_month, month_num, 5)
+            except Exception as e:
+                _logger.warning('get_info_group_numbers_analysis [%s]: %s', grp_id, e)
+            try:
+                intervals = svc.get_group_delay_intervals(grp_id, turn_param) or {}
+            except Exception as e:
+                _logger.warning('get_group_delay_intervals [%s]: %s', grp_id, e)
+            groups_data.append({
+                'grp': grp, 'nums': nums or [], 'analysis': analysis or {}, 'intervals': intervals or {},
+            })
 
-        html_body = self._build_group_article_html(
-            title_ctx, date_str, today, option, day_es,
-            month_num, week_num, groups_data, int_cfg,
+        int_ranges = [('21-40', 'r_21_40'), ('41-50', 'r_41_50'),
+                      ('51-60', 'r_51_60'), ('61-70', 'r_61_70'), ('>70', 'r_70_plus')]
+
+        html_body = self._build_group_prose_html(
+            date_str, option, label, wlabel, month_name, week_of_month,
+            groups_data, int_ranges, 'grupos',
         )
+
+        _cover_map = {
+            'all':   'grupos top general.png',
+            'tarde': 'grupos top tarde.png',
+            'noche': 'grupos top noche.png',
+        }
+        cover = self._load_cover_image(_cover_map.get(option, 'grupos top general.png'))
 
         category = self.env.ref(
-            'lottery_portal.news_category_grupos_atrasados', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_semanales', raise_if_not_found=False
         )
-
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'title':        title_ctx,
-            'slug':         slug,
-            'summary':      f'Análisis de los 5 grupos más atrasados ({label}) al {date_str}.',
-            'raw_html':     html_body,
-            'is_published': True,
-            'category_id':  category.id if category else False,
+            'title': title, 'slug': slug, 'summary': intro,
+            'raw_html': html_body, 'is_published': True,
+            'category_id': category.id if category else False,
+            'cover_image': cover or False,
         }
         if existing:
             existing.write(vals)
@@ -829,51 +857,72 @@ class NewsArticleGenerator(models.Model):
         _logger = logging.getLogger(__name__)
 
         svc = self.env['lottery.stats.service'].sudo()
-        date_str  = today.strftime('%d/%m/%Y')
-        day_code  = today.strftime('%A').lower()[:3]
-        month_num = today.month
-        week_num  = today.isocalendar()[1]
+        date_str = today.strftime('%d/%m/%Y')
 
-        _DAY_MAP = {
-            'mon': 'lunes', 'tue': 'martes', 'wed': 'miercoles',
-            'thu': 'jueves', 'fri': 'viernes', 'sat': 'sabado', 'sun': 'domingo',
-        }
-        day_es = _DAY_MAP.get(day_code, '')
+        _WCODE  = {0: 'lu', 1: 'ma', 2: 'mi', 3: 'ju', 4: 'vi', 5: 'sa', 6: 'do'}
+        _WLABEL = {'lu': 'Lunes', 'ma': 'Martes', 'mi': 'Miércoles',
+                   'ju': 'Jueves', 'vi': 'Viernes', 'sa': 'Sábado', 'do': 'Domingo'}
+        wcode        = _WCODE[today.weekday()]
+        wlabel       = _WLABEL[wcode]
+        month_num    = today.month
+        month_name   = MONTHS_DICT[str(month_num)]
+        week_of_month = min((today.day - 1) // 7 + 1, 5)
 
-        raw = svc.get_top_3_pintas(option, day_es)
-        groups_data = (raw or [])[:3]
+        api_option  = {'all': 'general', 'tarde': 'afternoon', 'noche': 'evening'}.get(option, 'general')
+        turn_param  = None if option == 'all' else api_option
 
-        int_cfg = {
-            'ranges': [
-                ('10-20', 'r_10_20'),
-                ('21-30', 'r_21_30'),
-                ('31-40', 'r_31_40'),
-                ('41-45', 'r_41_45'),
-                ('+45',   'r_45_plus'),
-            ],
-            'method': 'get_group_delay_intervals_pintas',
-        }
+        slug  = f'pintas-atrasadas-{option}-{today.strftime("%Y-%m-%d")}'[:100]
+        title = f'Top 3 Pintas más atrasadas — {label} — {date_str}'
+        intro = (f'Análisis detallado de las 3 pintas con mayor atraso acumulado '
+                 f'en el turno {label} al {date_str}.')
 
-        title_ctx = f'Top 3 Pintas más atrasadas — {label}'
-        slug      = f'pintas-atrasadas-{option}-{today.strftime("%Y-%m-%d")}'[:100]
+        pintas_raw = svc.get_top_3_pintas(api_option, wcode)[:3]
+        pintas_data = []
+        for grp in pintas_raw:
+            grp_id     = grp['id']
+            grp_record = self.env['lottery.group'].browse(grp_id)
+            nums = analysis = intervals = None
+            try:
+                nums = svc.get_info_groups_numbers(grp_record, 'total_atrasadas', wcode)
+            except Exception as e:
+                _logger.warning('get_info_groups_numbers pinta [%s]: %s', grp_id, e)
+            try:
+                analysis = svc.get_info_group_numbers_analysis(
+                    grp_id, wcode, week_of_month, month_num, 5)
+            except Exception as e:
+                _logger.warning('get_info_group_numbers_analysis pinta [%s]: %s', grp_id, e)
+            try:
+                intervals = svc.get_group_delay_intervals_pintas(grp_id, turn_param) or {}
+            except Exception as e:
+                _logger.warning('get_group_delay_intervals_pintas [%s]: %s', grp_id, e)
+            pintas_data.append({
+                'grp': grp, 'nums': nums or [], 'analysis': analysis or {}, 'intervals': intervals or {},
+            })
 
-        html_body = self._build_group_article_html(
-            title_ctx, date_str, today, option, day_es,
-            month_num, week_num, groups_data, int_cfg,
+        int_ranges = [('10-20', 'r_10_20'), ('21-30', 'r_21_30'),
+                      ('31-40', 'r_31_40'), ('41-45', 'r_41_45'), ('>45', 'r_45_plus')]
+
+        html_body = self._build_group_prose_html(
+            date_str, option, label, wlabel, month_name, week_of_month,
+            pintas_data, int_ranges, 'pintas',
         )
+
+        _cover_map = {
+            'all':   'pintas top general.png',
+            'tarde': 'pintas top tarde.png',
+            'noche': 'pintas top noche.png',
+        }
+        cover = self._load_cover_image(_cover_map.get(option, 'pintas top general.png'))
 
         category = self.env.ref(
-            'lottery_portal.news_category_pintas_atrasadas', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_semanales', raise_if_not_found=False
         )
-
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
-            'title':        title_ctx,
-            'slug':         slug,
-            'summary':      f'Análisis de las 3 pintas más atrasadas ({label}) al {date_str}.',
-            'raw_html':     html_body,
-            'is_published': True,
-            'category_id':  category.id if category else False,
+            'title': title, 'slug': slug, 'summary': intro,
+            'raw_html': html_body, 'is_published': True,
+            'category_id': category.id if category else False,
+            'cover_image': cover or False,
         }
         if existing:
             existing.write(vals)
@@ -883,207 +932,347 @@ class NewsArticleGenerator(models.Model):
             _logger.info('Created pintas article: %s', slug)
 
     # ─────────────────────────────────────────────────────────────────────────
-    # Shared HTML builder for grupos / pintas articles
+    # Shared prose HTML builder for grupos / pintas articles
     # ─────────────────────────────────────────────────────────────────────────
-    def _build_group_article_html(
-        self, title_ctx, date_str, today, option, day_es,
-        month_num, week_num, groups_data, int_cfg,
+    def _build_group_prose_html(
+        self, date_str, option, label, wlabel, month_name, week_of_month,
+        items_data, int_ranges, article_type,
     ):
-        svc = self.env['lottery.stats.service'].sudo()
         parts = []
 
         # ── Inline CSS ────────────────────────────────────────────────────
         parts.append('''<style>
-.ga-wrap{font-family:inherit;color:#333}
-.ga-header{background:linear-gradient(135deg,#2c3e50,#4a6fa5);color:#fff;
-  border-radius:10px;padding:18px 22px;margin-bottom:24px}
-.ga-header h1{margin:0 0 4px;font-size:1.4rem;font-weight:700}
-.ga-header .ga-meta{font-size:.85rem;opacity:.85}
-.ga-card{border:1px solid #dde3ec;border-radius:10px;margin-bottom:28px;
-  overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
-.ga-card-header{padding:12px 18px;display:flex;align-items:center;gap:10px}
-.ga-card-header .ga-rank{width:32px;height:32px;border-radius:50%;
-  background:#fff;font-weight:700;font-size:1rem;
+.gp-wrap{font-family:inherit;color:#333;line-height:1.6}
+.gp-intro{background:linear-gradient(135deg,#2c3e50,#4a6fa5);color:#fff;
+  border-radius:12px;padding:20px 24px;margin-bottom:28px}
+.gp-intro h2{margin:0 0 8px;font-size:1.25rem;font-weight:700;color:#fff}
+.gp-intro p{margin:0;font-size:.93rem;opacity:.92;line-height:1.65}
+.gp-card{border:1px solid #dde3ec;border-radius:12px;margin-bottom:32px;
+  overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.gp-card-hdr{padding:14px 20px;display:flex;align-items:center;gap:12px;color:#fff;flex-wrap:wrap}
+.gp-rank-circle{width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.2);font-weight:800;font-size:1.1rem;
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ga-card-header h2{margin:0;font-size:1.1rem;font-weight:600;color:#fff}
-.ga-card-body{padding:16px 18px;background:#fff}
-.ga-stats-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-.ga-stat{flex:1 1 120px;background:#f5f7fb;border-radius:8px;
-  padding:10px 14px;text-align:center}
-.ga-stat .ga-stat-val{font-size:1.5rem;font-weight:700;color:#2c3e50}
-.ga-stat .ga-stat-lbl{font-size:.75rem;color:#666;margin-top:2px}
-.ga-section-title{font-size:.85rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.6px;color:#555;margin:16px 0 8px;border-bottom:2px solid #eee;
-  padding-bottom:4px}
-.ga-histogram{display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:4px}
-.ga-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.ga-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px}
-.ga-bar-lbl{font-size:.7rem;color:#555;white-space:nowrap}
-.ga-bar-val{font-size:.7rem;font-weight:700;color:#2c3e50}
-.ga-nums-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.ga-ball{width:32px;height:32px;border-radius:50%;
-  display:inline-flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0}
-.ga-ball-delay{font-size:.65rem;color:#888;text-align:center;margin-top:1px}
-.ga-num-item{display:flex;flex-direction:column;align-items:center;width:40px}
-.ga-analysis{background:#f9fafb;border-radius:8px;padding:12px 14px;margin-top:10px}
-.ga-analysis h4{font-size:.85rem;font-weight:700;margin:0 0 10px;color:#2c3e50}
-.ga-analysis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.ga-analysis-item{background:#fff;border:1px solid #e8edf5;border-radius:6px;padding:8px 10px}
-.ga-analysis-item .ga-ai-label{font-size:.7rem;color:#888;margin-bottom:2px}
-.ga-analysis-item .ga-ai-val{font-size:.9rem;font-weight:700;color:#2c3e50}
+.gp-card-hdr h2{margin:0;font-size:1.1rem;font-weight:700;flex:1;color:#fff !important}
+.gp-delay-badges{display:flex;gap:6px;flex-wrap:wrap}
+.gp-badge{padding:3px 10px;border-radius:20px;font-size:.74rem;font-weight:700;
+  background:rgba(255,255,255,.2)}
+.gp-card-body{padding:18px 20px;background:#fff}
+.gp-prose{font-size:.92rem;color:#444;margin:0 0 14px;line-height:1.75}
+.gp-prose strong{color:#1e293b}
+.gp-nums-wrap{margin:14px 0;padding:12px 14px;background:#f8f9ff;border-radius:8px}
+.gp-nums-title{font-size:.78rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;color:#666;margin-bottom:10px}
+.gp-nums-row{display:flex;flex-wrap:wrap;gap:10px}
+.gp-num-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.gp-ball{width:36px;height:36px;border-radius:50%;font-weight:700;font-size:.82rem;
+  color:#fff;display:flex;align-items:center;justify-content:center}
+.gp-ball-delay{font-size:.68rem;color:#888;font-weight:600}
+.gp-info-block{margin-top:12px;padding:12px 16px;border-radius:0 8px 8px 0;border-left:3px solid}
+.gp-info-general{background:#f0f4ff;border-color:#6366f1}
+.gp-info-tarde{background:#fff7ed;border-color:#f97316}
+.gp-info-noche{background:#f0f4ff;border-color:#4f46e5}
+.gp-info-day{background:#f0fdf4;border-color:#22c55e}
+.gp-info-month{background:#fefce8;border-color:#eab308}
+.gp-info-week{background:#fdf4ff;border-color:#a855f7}
+.gp-info-intervals{background:#f8fafc;border-color:#94a3b8;border-left-width:3px;border-left-style:solid}
+.gp-info-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  color:#888;margin-bottom:5px}
+.gp-info-block p{margin:0;font-size:.88rem;color:#374151;line-height:1.7}
+.gp-int-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.gp-int-chip{background:#fff;border:1px solid #e2e8f0;border-radius:6px;
+  padding:6px 10px;text-align:center;min-width:70px}
+.gp-int-chip-val{font-size:1.1rem;font-weight:800;color:#1e293b;display:block}
+.gp-int-chip-lbl{font-size:.68rem;color:#94a3b8}
+.gp-stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.gp-stat{flex:1 1 100px;background:#f1f5f9;border-radius:8px;padding:10px 12px;text-align:center}
+.gp-stat-val{font-size:1.4rem;font-weight:800;color:#1e293b}
+.gp-stat-lbl{font-size:.72rem;color:#64748b;margin-top:2px}
 </style>''')
 
-        # ── Article header ─────────────────────────────────────────────────
-        turn_label = {'all': 'General', 'tarde': 'Tarde', 'noche': 'Noche'}.get(option, option)
+        # ─ helpers ────────────────────────────────────────────────────────
+        def _fmt(lst, limit=3):
+            """Return formatted number names from a list of dicts."""
+            return ', '.join(
+                str(x.get('name', x) if isinstance(x, dict) else x).zfill(2)
+                for x in (lst or [])[:limit]
+            )
+
+        PALETTES = [
+            ('#5b21b6', '#7c3aed'),
+            ('#1e3a5f', '#2563eb'),
+            ('#14532d', '#16a34a'),
+            ('#7f1d1d', '#dc2626'),
+            ('#78350f', '#d97706'),
+        ]
+        BALL_COLORS = [
+            '#e74c3c', '#e67e22', '#f59e0b', '#16a34a', '#0891b2',
+            '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16',
+        ]
+
+        is_pintas = (article_type == 'pintas')
+        entity_name = 'pinta' if is_pintas else 'grupo'
+        entity_count = len(items_data)
+        turn_desc = {'all': 'todos los turnos', 'tarde': 'el turno Tarde', 'noche': 'el turno Noche'}.get(option, label)
+
+        # ── Intro ─────────────────────────────────────────────────────────
+        parts.append('<div class="gp-wrap">')
         parts.append(
-            f'<div class="ga-wrap">'
-            f'<div class="ga-header">'
-            f'<h1>{title_ctx}</h1>'
-            f'<div class="ga-meta">Generado el {date_str} &nbsp;&middot;&nbsp; Turno: {turn_label}</div>'
+            f'<div class="gp-intro">'
+            f'<h2>Top {entity_count} {"Pintas" if is_pintas else "Grupos"} '
+            f'm&#225;s Atrasados &#8212; {label}</h2>'
+            f'<p>Al <strong>{date_str}</strong>, los siguientes {entity_count} '
+            f'{"pintas" if is_pintas else "grupos"} de n&#250;meros acumulan el mayor atraso en '
+            f'<strong>{turn_desc}</strong> del Pick 3 Florida. '
+            f'Hoy es <strong>{wlabel}</strong>, semana {week_of_month} de '
+            f'<strong>{month_name}</strong>. El an&#225;lisis incluye la composici&#243;n de cada '
+            f'{"pinta" if is_pintas else "grupo"}, el estado de atraso individual de sus n&#250;meros, '
+            f'y el comportamiento hist&#243;rico por d&#237;a de la semana, mes y semana del mes.</p>'
             f'</div>'
         )
 
-        PALETTES = [
-            ('#c0392b', '#e74c3c'),
-            ('#1a6b3a', '#27ae60'),
-            ('#154360', '#2980b9'),
-            ('#6c3483', '#8e44ad'),
-            ('#784212', '#d35400'),
-        ]
-        BALL_COLORS = ['#e74c3c', '#27ae60', '#2980b9', '#8e44ad', '#d35400',
-                       '#16a085', '#2c3e50', '#c0392b', '#7d6608', '#1a5276']
+        for rank, item in enumerate(items_data, 1):
+            grp      = item['grp']
+            nums     = item['nums']     or []
+            analysis = item['analysis'] or {}
+            ivs      = item['intervals'] or {}
 
-        int_method = int_cfg['method']
-        int_ranges = int_cfg['ranges']
-
-        for idx, grp in enumerate(groups_data):
-            grp_id   = grp.get('id')
-            grp_name = grp.get('name', f'Grupo {idx + 1}')
-            atraso   = grp.get('salidas_atrasadas', 0)
+            dark, light = PALETTES[(rank - 1) % len(PALETTES)]
+            grp_name = grp.get('name', f'{entity_name.capitalize()} {rank}')
+            atraso_g = grp.get('salidas_atrasadas', 0)
             atraso_t = grp.get('salidas_atrasadas_dia', 0)
             atraso_n = grp.get('salidas_atrasadas_noche', 0)
 
-            dark, light = PALETTES[idx % len(PALETTES)]
-
-            # Card header
+            # ── Card header ────────────────────────────────────────────────
             parts.append(
-                f'<div class="ga-card">'
-                f'<div class="ga-card-header" style="background:linear-gradient(135deg,{dark},{light})">'
-                f'<div class="ga-rank" style="color:{dark}">{idx + 1}</div>'
+                f'<div class="gp-card">'
+                f'<div class="gp-card-hdr" style="background:linear-gradient(135deg,{dark},{light})">'
+                f'<div class="gp-rank-circle">{rank}</div>'
                 f'<h2>{grp_name}</h2>'
+                f'<div class="gp-delay-badges">'
+                f'<span class="gp-badge">General&#160;{atraso_g}</span>'
+                f'<span class="gp-badge">&#9728;&#160;{atraso_t}</span>'
+                f'<span class="gp-badge">&#9790;&#160;{atraso_n}</span>'
                 f'</div>'
-                f'<div class="ga-card-body">'
+                f'</div>'
+                f'<div class="gp-card-body">'
             )
 
-            # Stats row
-            parts.append('<div class="ga-stats-row">')
-            for val, lbl in [
-                (atraso,   'Atraso General'),
-                (atraso_t, 'Atraso Tarde'),
-                (atraso_n, 'Atraso Noche'),
-            ]:
+            # ── Stat chips ────────────────────────────────────────────────
+            parts.append('<div class="gp-stats-row">')
+            for val, lbl in [(atraso_g, 'Atraso General'), (atraso_t, 'Atraso Tarde'), (atraso_n, 'Atraso Noche')]:
                 parts.append(
-                    f'<div class="ga-stat">'
-                    f'<div class="ga-stat-val">{val}</div>'
-                    f'<div class="ga-stat-lbl">{lbl}</div>'
+                    f'<div class="gp-stat">'
+                    f'<div class="gp-stat-val">{val}</div>'
+                    f'<div class="gp-stat-lbl">{lbl}</div>'
                     f'</div>'
                 )
             parts.append('</div>')
 
-            # Delay-intervals histogram
-            try:
-                intervals_fn = getattr(svc, int_method)
-                turn_param   = option if option != 'all' else 'general'
-                iv = intervals_fn(grp_id, turn_param)
-                max_val = max((iv.get(k, 0) for _, k in int_ranges), default=1) or 1
-                parts.append('<div class="ga-section-title">Intervalos de atraso</div>')
-                parts.append('<div class="ga-histogram">')
-                for range_lbl, key in int_ranges:
-                    cnt = iv.get(key, 0)
-                    pct = max(int(cnt / max_val * 70), 4) if cnt else 4
+            # ── Prose 1: overview ─────────────────────────────────────────
+            nums_sorted = sorted(nums, key=lambda x: x.get('total_atrasadas', 0), reverse=True)
+            num_names   = [n['numero'] for n in nums_sorted]
+            most_del    = nums_sorted[0]  if nums_sorted else None
+            least_del   = nums_sorted[-1] if nums_sorted else None
+
+            p1 = (
+                f'El {entity_name} <strong>{grp_name}</strong> acumula '
+                f'<strong>{atraso_g} sorteos consecutivos</strong> sin que ninguno de sus n&#250;meros '
+                f'haya aparecido en el combinado general. '
+            )
+            if num_names:
+                p1 += (f'Est&#225; conformado por {len(num_names)} n&#250;meros: '
+                       f'<strong>{", ".join(num_names)}</strong>. ')
+            if most_del and least_del and most_del['numero'] != least_del['numero']:
+                p1 += (
+                    f'El n&#250;mero con mayor atraso individual es el '
+                    f'<strong>{most_del["numero"]}</strong> '
+                    f'({most_del["total_atrasadas"]} sorteos sin salir), '
+                    f'mientras que el que apareci&#243; m&#225;s recientemente dentro del '
+                    f'{entity_name} fue el <strong>{least_del["numero"]}</strong> '
+                    f'(con {least_del["total_atrasadas"]} sorteos de atraso).'
+                )
+            parts.append(f'<p class="gp-prose">{p1}</p>')
+
+            # ── Prose 2: tarde / noche breakdown ──────────────────────────
+            nums_by_tarde = sorted(nums, key=lambda x: x.get('total_atrasadas_dia', 0), reverse=True)
+            nums_by_noche = sorted(nums, key=lambda x: x.get('total_atrasadas_noche', 0), reverse=True)
+            if nums_by_tarde and nums_by_noche:
+                mt = nums_by_tarde[0]
+                mn = nums_by_noche[0]
+                p2 = (
+                    f'En el turno de <strong>Tarde</strong> el {entity_name} lleva '
+                    f'<strong>{atraso_t} sorteos</strong> sin aparecer; el n&#250;mero m&#225;s '
+                    f'atrasado en ese turno es el <strong>{mt["numero"]}</strong> '
+                    f'({mt["total_atrasadas_dia"]} sorteos). '
+                    f'En <strong>Noche</strong> acumula <strong>{atraso_n} sorteos</strong> de atraso, '
+                    f'siendo el <strong>{mn["numero"]}</strong> el miembro m&#225;s rezagado '
+                    f'en ese horario ({mn["total_atrasadas_noche"]} sorteos).'
+                )
+                parts.append(
+                    f'<div class="gp-info-block gp-info-general">'
+                    f'<div class="gp-info-label">Atraso por turno</div>'
+                    f'<p>{p2}</p></div>'
+                )
+
+            # ── Numbers visual grid ───────────────────────────────────────
+            if nums_sorted:
+                parts.append(
+                    '<div class="gp-nums-wrap">'
+                    f'<div class="gp-nums-title">N&#250;meros del {entity_name} &#8212; ordenados por atraso</div>'
+                    '<div class="gp-nums-row">'
+                )
+                for ni, n in enumerate(nums_sorted):
+                    bc = BALL_COLORS[ni % len(BALL_COLORS)]
                     parts.append(
-                        f'<div class="ga-bar-wrap">'
-                        f'<div class="ga-bar-val">{cnt}</div>'
-                        f'<div class="ga-bar" style="height:{pct}px;background:{light}"></div>'
-                        f'<div class="ga-bar-lbl">{range_lbl}</div>'
+                        f'<div class="gp-num-item">'
+                        f'<div class="gp-ball" style="background:{bc}">{n["numero"]}</div>'
+                        f'<div class="gp-ball-delay">{n["total_atrasadas"]}</div>'
                         f'</div>'
                     )
-                parts.append('</div>')
-            except Exception:
-                pass
+                parts.append('</div></div>')
 
-            # Numbers grid
-            try:
-                grp_record = self.env['lottery.group'].browse(grp_id)
-                nums = svc.get_info_groups_numbers(grp_record, 'atraso', day_es or False)
-                if nums:
-                    parts.append('<div class="ga-section-title">Números del grupo (por atraso)</div>')
-                    parts.append('<div class="ga-nums-grid">')
-                    for ni, num in enumerate(nums):
-                        bc     = BALL_COLORS[ni % len(BALL_COLORS)]
-                        n_name = num.get('numero', '')
-                        delay  = num.get('total_atrasadas', 0)
+            # ── Analysis sections (prose) ─────────────────────────────────
+            if analysis:
+                # Current most delayed & last appeared
+                most_delayed_lst  = analysis.get('most_delayed', [])
+                most_delayed_t    = analysis.get('most_delayed_day', [])
+                most_delayed_n    = analysis.get('most_delayed_night', [])
+                last_gen  = analysis.get('last',       {})
+                last_day  = analysis.get('last_day',   {})
+                last_night= analysis.get('last_night', {})
+
+                if most_delayed_lst and last_gen:
+                    top_names  = _fmt(most_delayed_lst, 3)
+                    top_t_names = _fmt(most_delayed_t,  2)
+                    top_n_names = _fmt(most_delayed_n,  2)
+                    last_name  = str(last_gen.get('name', '')).zfill(2)
+                    last_d_name = str(last_day.get('name', '')).zfill(2)  if last_day   else '—'
+                    last_n_name = str(last_night.get('name', '')).zfill(2) if last_night else '—'
+                    parts.append(
+                        f'<div class="gp-info-block gp-info-tarde">'
+                        f'<div class="gp-info-label">Situaci&#243;n actual de atrasos</div>'
+                        f'<p>Los n&#250;meros con mayor atraso acumulado en el {entity_name} son '
+                        f'el <strong>{top_names}</strong>. '
+                        f'El &#250;ltimo en aparecer de forma general fue el '
+                        f'<strong>{last_name}</strong>. '
+                        f'En Tarde el m&#225;s rezagado es el <strong>{top_t_names}</strong> '
+                        f'y el que sali&#243; m&#225;s recientemente fue el <strong>{last_d_name}</strong>. '
+                        f'En Noche los m&#225;s atrasados son <strong>{top_n_names}</strong> '
+                        f'y el &#250;ltimo en salir fue el <strong>{last_n_name}</strong>.</p>'
+                        f'</div>'
+                    )
+
+                # By weekday
+                day_most  = analysis.get('day', {}).get('most',  [])
+                day_least = analysis.get('day', {}).get('least', [])
+                if day_most:
+                    most_d_names  = _fmt(day_most,  3)
+                    least_d_names = _fmt(day_least, 3)
+                    parts.append(
+                        f'<div class="gp-info-block gp-info-day">'
+                        f'<div class="gp-info-label">Comportamiento los {wlabel}</div>'
+                        f'<p>Hist&#243;ricamente los <strong>{wlabel}</strong>, los n&#250;meros '
+                        f'm&#225;s activos de este {entity_name} son el '
+                        f'<strong>{most_d_names}</strong>. '
+                        f'Los que menos aparecen en ese d&#237;a son el '
+                        f'<strong>{least_d_names}</strong>. '
+                        f'Esto puede ser una referencia &#250;til dado que hoy es {wlabel}.</p>'
+                        f'</div>'
+                    )
+
+                # By month
+                month_most  = analysis.get('month', {}).get('most',  [])
+                month_least = analysis.get('month', {}).get('least', [])
+                if month_most:
+                    most_m_names  = _fmt(month_most,  3)
+                    least_m_names = _fmt(month_least, 3)
+                    parts.append(
+                        f'<div class="gp-info-block gp-info-month">'
+                        f'<div class="gp-info-label">En el mes de {month_name}</div>'
+                        f'<p>Durante el mes de <strong>{month_name}</strong>, los n&#250;meros '
+                        f'del {entity_name} que hist&#243;ricamente m&#225;s han salido son '
+                        f'el <strong>{most_m_names}</strong>. '
+                        f'Los menos frecuentes en este mes son el <strong>{least_m_names}</strong>. '
+                        f'Considerando que estamos en {month_name}, estos datos son especialmente '
+                        f'relevantes para el an&#225;lisis actual.</p>'
+                        f'</div>'
+                    )
+
+                # By week of month
+                week_most  = analysis.get('week', {}).get('most',  [])
+                week_least = analysis.get('week', {}).get('least', [])
+                if week_most:
+                    most_w_names  = _fmt(week_most,  3)
+                    least_w_names = _fmt(week_least, 3)
+                    ordinals = {1: 'primera', 2: 'segunda', 3: 'tercera', 4: 'cuarta', 5: 'quinta'}
+                    wlabel_ord = ordinals.get(week_of_month, str(week_of_month))
+                    parts.append(
+                        f'<div class="gp-info-block gp-info-week">'
+                        f'<div class="gp-info-label">Semana {week_of_month} del mes</div>'
+                        f'<p>En la <strong>{wlabel_ord} semana del mes</strong> (la actual), '
+                        f'los n&#250;meros del {entity_name} que m&#225;s suelen salir son '
+                        f'el <strong>{most_w_names}</strong>, mientras que los menos frecuentes '
+                        f'en esta franja son el <strong>{least_w_names}</strong>.</p>'
+                        f'</div>'
+                    )
+
+            # ── Delay intervals (prose + chips) ───────────────────────────
+            if ivs:
+                total_ep = sum(ivs.get(k, 0) or 0 for _, k in int_ranges)
+                if total_ep > 0:
+                    # Find most common range
+                    max_rng_lbl, max_rng_cnt = int_ranges[0][0], 0
+                    for rng_lbl, rng_key in int_ranges:
+                        cnt = ivs.get(rng_key, 0) or 0
+                        if cnt > max_rng_cnt:
+                            max_rng_cnt = cnt
+                            max_rng_lbl = rng_lbl
+
+                    last_range_lbl, last_range_key = int_ranges[-1]
+                    r_extreme = ivs.get(last_range_key, 0) or 0
+
+                    interp = (
+                        f'La franja de atraso m&#225;s frecuente en el historial es de '
+                        f'<strong>{max_rng_lbl} sorteos</strong> '
+                        f'({max_rng_cnt} {"vez" if max_rng_cnt == 1 else "veces"}). '
+                    )
+                    if r_extreme > 0:
+                        interp += (
+                            f'El {entity_name} ha superado la barrera de {last_range_lbl} sorteos '
+                            f'consecutivos sin aparecer en <strong>{r_extreme} '
+                            f'ocasi&#243;{"n" if r_extreme == 1 else "nes"}</strong>, '
+                            f'lo que indica que este nivel de atraso es hist&#243;ricamente posible. '
+                        )
+
+                    range_texts = []
+                    for rng_lbl, rng_key in int_ranges:
+                        v = ivs.get(rng_key, 0) or 0
+                        range_texts.append(f'<strong>{v}</strong> veces entre {rng_lbl}')
+                    range_prose = ', '.join(range_texts[:-1]) + f' y {range_texts[-1]} sorteos.'
+
+                    parts.append(
+                        f'<div class="gp-info-block gp-info-intervals">'
+                        f'<div class="gp-info-label">Historial de intervalos de atraso</div>'
+                        f'<p>En toda la base de datos hist&#243;rica, este {entity_name} ha acumulado '
+                        f'<strong>{total_ep} episodios</strong> de atraso significativo. '
+                        f'{interp}La distribuci&#243;n completa: {range_prose}</p>'
+                        f'<div class="gp-int-row">'
+                    )
+                    for rng_lbl, rng_key in int_ranges:
+                        v = ivs.get(rng_key, 0) or 0
                         parts.append(
-                            f'<div class="ga-num-item">'
-                            f'<div class="ga-ball" style="background:{bc}">{n_name}</div>'
-                            f'<div class="ga-ball-delay">{delay}</div>'
+                            f'<div class="gp-int-chip">'
+                            f'<span class="gp-int-chip-val">{v}</span>'
+                            f'<span class="gp-int-chip-lbl">{rng_lbl} sorteos</span>'
                             f'</div>'
                         )
-                    parts.append('</div>')
-            except Exception:
-                pass
-
-            # Históricos Generales
-            try:
-                analysis = svc.get_info_group_numbers_analysis(
-                    grp_id, day_es or False, week_num, month_num, limit=5
-                )
-                if analysis:
-                    parts.append('<div class="ga-analysis"><h4>Históricos Generales</h4>')
-                    parts.append('<div class="ga-analysis-grid">')
-
-                    def _ai(lbl, val):
-                        v = val.get('name', '—') if isinstance(val, dict) else (val or '—')
-                        return (
-                            f'<div class="ga-analysis-item">'
-                            f'<div class="ga-ai-label">{lbl}</div>'
-                            f'<div class="ga-ai-val">{v}</div>'
-                            f'</div>'
-                        )
-
-                    parts.append(_ai('Última salida',        analysis.get('last')))
-                    parts.append(_ai('Última (Tarde)',        analysis.get('last_day')))
-                    parts.append(_ai('Última (Noche)',        analysis.get('last_night')))
-                    parts.append(_ai('Más atrasado',          analysis.get('most_delayed')))
-                    parts.append(_ai('Más atrasado Tarde',    analysis.get('most_delayed_day')))
-                    parts.append(_ai('Más atrasado Noche',    analysis.get('most_delayed_night')))
-
-                    day_d = analysis.get('day', {})
-                    if day_d:
-                        parts.append(_ai('Día más frecuente',   day_d.get('most')))
-                        parts.append(_ai('Día menos frecuente', day_d.get('least')))
-
-                    month_d = analysis.get('month', {})
-                    if month_d:
-                        parts.append(_ai('Mes más frecuente',   month_d.get('most')))
-                        parts.append(_ai('Mes menos frecuente', month_d.get('least')))
-
-                    week_d = analysis.get('week', {})
-                    if week_d:
-                        parts.append(_ai('Semana más frecuente',   week_d.get('most')))
-                        parts.append(_ai('Semana menos frecuente', week_d.get('least')))
-
                     parts.append('</div></div>')
-            except Exception:
-                pass
 
-            # close card-body + card
+            # close card
             parts.append('</div></div>')
 
-        # close ga-wrap
         parts.append('</div>')
-
         return ''.join(parts)
 
     # ═════════════════════════════════════════════════════════════════════════
@@ -1114,7 +1303,7 @@ class NewsArticleGenerator(models.Model):
         html_body = self._build_numeros_atrasados_html(date_str, general, tarde, noche)
 
         category = self.env.ref(
-            'lottery_portal.news_category_atrasos_numeros', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_semanales', raise_if_not_found=False
         )
         title = f'Top 10 Números más Atrasados — {date_str}'
         intro = f'Ranking de los 10 números con mayor atraso acumulado al {date_str}, en los tres turnos.'
@@ -1247,22 +1436,19 @@ class NewsArticleGenerator(models.Model):
 
         rows = svc.get_top_10_por_dia_semana(wcode)
 
-        # Enrich each row with companion data + day/night counts
+        # Enrich each row with day/night counts
         enriched = []
         for row in rows:
             num_name = row.get('name', '')
             num_rec  = self.env['lottery.number'].sudo().search(
                 [('name', '=', int(num_name))], limit=1
             )
-            companions = []
             dia_count = noche_count = 0
             if num_rec:
-                companions  = svc.get_salidas_numeros_despues_numero(num_rec.id)[:5]
                 dia_count   = num_rec.total_salidas_dia   or 0
                 noche_count = num_rec.total_salidas_noche or 0
             enriched.append({
                 **row,
-                'companions':  companions,
                 'dia_count':   dia_count,
                 'noche_count': noche_count,
             })
@@ -1272,11 +1458,22 @@ class NewsArticleGenerator(models.Model):
         )
 
         category = self.env.ref(
-            'lottery_portal.news_category_atrasos_numeros', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
         title = f'Números más atrasados los {wlabel} — {date_str}'
         intro = (f'Análisis de los 10 números con mayor atraso acumulado '
-                 f'los {wlabel}, con sus acompañantes y tendencia día/noche.')
+                 f'los {wlabel}, con tendencia día/noche.')
+
+        _cover_map = {
+            'lu': 'atraso numeros lunes.png',
+            'ma': 'atraso numeros martes.png',
+            'mi': 'atraso numeros miercoles.png',
+            'ju': 'atraso numeros jueves.png',
+            'vi': 'atraso numeros viernes.png',
+            'sa': 'atraso numeros sabado.png',
+            'do': 'atraso numeros domingo.png',
+        }
+        cover = self._load_cover_image(_cover_map.get(wcode, 'atraso numeros lunes.png'))
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
@@ -1286,6 +1483,7 @@ class NewsArticleGenerator(models.Model):
             'raw_html':     html_body,
             'is_published': True,
             'category_id':  category.id if category else False,
+            'cover_image':  cover or False,
         }
         if existing:
             existing.write(vals)
@@ -1306,9 +1504,9 @@ class NewsArticleGenerator(models.Model):
   overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.06)}
 .nd-card-hdr{padding:11px 16px;display:flex;align-items:center;gap:10px;
   background:linear-gradient(135deg,#1e3a5f,#2563eb)}
-.nd-card-hdr .nd-rank{width:28px;height:28px;border-radius:50%;background:#fff;
-  color:#1e3a5f;font-weight:700;font-size:.9rem;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nd-card-hdr .nd-rank{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+  border-radius:5px;padding:2px 7px;font-weight:700;font-size:.78rem;
+  color:rgba(255,255,255,.85);flex-shrink:0;letter-spacing:.4px}
 .nd-card-hdr .nd-ball{width:34px;height:34px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0}
@@ -1327,20 +1525,11 @@ class NewsArticleGenerator(models.Model):
   font-size:.7rem;font-weight:700;color:#fff}
 .nd-badge-day{background:#f97316}
 .nd-badge-night{background:#6366f1}
-.nd-companions-title{font-size:.8rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.5px;color:#555;margin-bottom:8px}
-.nd-companions{display:flex;flex-wrap:wrap;gap:8px}
-.nd-comp-item{display:flex;flex-direction:column;align-items:center;gap:2px}
-.nd-comp-ball{width:30px;height:30px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:.78rem;color:#fff}
-.nd-comp-cnt{font-size:.68rem;color:#888}
 .nd-last-row{font-size:.78rem;color:#777;margin-top:10px}
 </style>''')
 
         BALL_BG = ['#e74c3c','#e67e22','#f59e0b','#16a34a','#0891b2',
                    '#3b82f6','#8b5cf6','#ec4899','#14b8a6','#84cc16']
-        COMP_BG = ['#60a5fa','#34d399','#f472b6','#fb923c','#a78bfa']
 
         parts.append(
             f'<div class="nd-wrap">'
@@ -1359,7 +1548,6 @@ class NewsArticleGenerator(models.Model):
             turno      = row.get('ultimo_turno', '')
             dia_count  = row.get('dia_count', 0)
             noche_count= row.get('noche_count', 0)
-            companions = row.get('companions', [])
 
             tag_lbl = 'Tarde' if turno == 'afternoon' else ('Noche' if turno == 'evening' else '—')
             dominant = 'Más tarde' if dia_count >= noche_count else 'Más noche'
@@ -1368,7 +1556,7 @@ class NewsArticleGenerator(models.Model):
             parts.append(
                 f'<div class="nd-card">'
                 f'<div class="nd-card-hdr">'
-                f'<div class="nd-rank">{i + 1}</div>'
+                f'<div class="nd-rank">#{i + 1}</div>'
                 f'<div class="nd-ball" style="background:{bc}">{name}</div>'
                 f'<span class="nd-name">Número {name}</span>'
                 f'<span class="nd-atraso">Atraso: <strong>{atraso}</strong> &nbsp;·&nbsp; Últ: {ultima} ({tag_lbl})</span>'
@@ -1393,61 +1581,70 @@ class NewsArticleGenerator(models.Model):
                 f'</div>'
             )
 
-            # Companions (numbers that come after)
-            if companions:
-                parts.append('<div class="nd-companions-title">Acompañantes frecuentes (sale después)</div>')
-                parts.append('<div class="nd-companions">')
-                for j, comp in enumerate(companions):
-                    cbc  = COMP_BG[j % len(COMP_BG)]
-                    cname = str(comp.get('name', '?')).zfill(2)
-                    ccnt  = comp.get('cantidad_veces', 0)
-                    parts.append(
-                        f'<div class="nd-comp-item">'
-                        f'<div class="nd-comp-ball" style="background:{cbc}">{cname}</div>'
-                        f'<div class="nd-comp-cnt">{ccnt}×</div>'
-                        f'</div>'
-                    )
-                parts.append('</div>')
-
             parts.append('</div></div>')  # card-body + card
 
         parts.append('</div>')
         return ''.join(parts)
 
     # ═════════════════════════════════════════════════════════════════════════
-    # ARTÍCULO 3: Secuencias de Grupos  (mensual)
+    # ARTÍCULO 3a: Secuencias de Líneas  (mensual)
+    # ARTÍCULO 3b: Secuencias de Terminales  (mensual)
     # ═════════════════════════════════════════════════════════════════════════
-    def cron_generate_secuencias_grupos(self, ref_date=None):
-        """Generate one article per month with group-sequence analysis."""
+    def cron_generate_secuencias_lineas(self, ref_date=None):
+        """Monthly cron: article with line-sequence analysis (lines → next lines + terminals)."""
         import logging
         _logger = logging.getLogger(__name__)
         today = self._parse_ref_date(ref_date)
         try:
-            self._generate_secuencias_grupos_article(today)
+            self._generate_secuencias_tipo_article(today, 'line')
         except Exception as e:
-            _logger.error('cron_generate_secuencias_grupos: %s', e, exc_info=True)
+            _logger.error('cron_generate_secuencias_lineas: %s', e, exc_info=True)
 
-    def _generate_secuencias_grupos_article(self, today):
+    def cron_generate_secuencias_terminales(self, ref_date=None):
+        """Monthly cron: article with terminal-sequence analysis (terminals → next lines + terminals)."""
+        import logging
+        _logger = logging.getLogger(__name__)
+        today = self._parse_ref_date(ref_date)
+        try:
+            self._generate_secuencias_tipo_article(today, 'terminal')
+        except Exception as e:
+            _logger.error('cron_generate_secuencias_terminales: %s', e, exc_info=True)
+
+    def _generate_secuencias_tipo_article(self, today, grp_type):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['lottery.stats.service'].sudo()
-        date_str = today.strftime('%d/%m/%Y')
+        svc       = self.env['lottery.stats.service'].sudo()
+        date_str  = today.strftime('%d/%m/%Y')
         month_str = today.strftime('%Y-%m')
-        slug      = f'secuencias-grupos-{month_str}'[:100]
+        slug      = f'secuencias-{grp_type}s-{month_str}'[:100]
 
-        data = svc.get_all_group_sequences()
+        data       = svc.get_all_group_sequences()
+        cross_data = svc.get_group_sequences_cross()
 
-        html_body = self._build_secuencias_grupos_html(date_str, data)
+        html_body = self._build_secuencias_tipo_html(grp_type, date_str, data, cross_data)
 
         category = self.env.ref(
-            'lottery_portal.news_category_generales', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_mensuales', raise_if_not_found=False
         )
-        title = f'Secuencias de Grupos — {today.strftime("%B %Y").capitalize()}'
-        intro = (
-            f'Top 5 grupos que aparecen con mayor frecuencia a continuación de '
-            f'cada línea y terminal. Análisis al {date_str}.'
-        )
+
+        if grp_type == 'line':
+            tipo_lbl = 'Líneas'
+            intro = (
+                f'Para cada línea (00-09 a 90-99): top 5 líneas y terminales que aparecen '
+                f'con mayor frecuencia en el sorteo siguiente. '
+                f'General, Tarde y Noche. Análisis al {date_str}.'
+            )
+        else:
+            tipo_lbl = 'Terminales'
+            intro = (
+                f'Para cada terminal (0 al 9): top 5 líneas y terminales que aparecen '
+                f'con mayor frecuencia en el sorteo siguiente. '
+                f'General, Tarde y Noche. Análisis al {date_str}.'
+            )
+
+        month_label = today.strftime('%B %Y').capitalize()
+        title = f'Secuencias de {tipo_lbl} — {month_label}'
 
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
@@ -1460,129 +1657,264 @@ class NewsArticleGenerator(models.Model):
         }
         if existing:
             existing.write(vals)
-            _logger.info('Updated secuencias-grupos article: %s', slug)
+            _logger.info('Updated secuencias-%s article: %s', grp_type, slug)
         else:
             self.create(vals)
-            _logger.info('Created secuencias-grupos article: %s', slug)
+            _logger.info('Created secuencias-%s article: %s', grp_type, slug)
 
-    def _build_secuencias_grupos_html(self, date_str, data):
+    def _build_secuencias_tipo_html(self, grp_type, date_str, data, cross_data=None):
+        """Builder shared by both sequence articles (lines / terminals).
+
+        grp_type = 'line'  → renders the 10 líneas entries
+        grp_type = 'terminal' → renders the 10 terminales entries
+
+        Same-type sequences (line→line or terminal→terminal) come from
+        get_all_group_sequences() — identical source to the stats page.
+        Cross-type sequences come from get_group_sequences_cross().
+        """
+        cross_data = cross_data or {}
+
+        LINE_DARK,  LINE_LIGHT  = '#0d6e3b', '#198754'
+        TERM_DARK,  TERM_LIGHT  = '#1e3a5f', '#2563eb'
+        BALL_BG = ['#e74c3c', '#f59e0b', '#16a34a', '#2563eb', '#8b5cf6',
+                   '#ec4899', '#0891b2', '#d97706', '#15803d', '#7c3aed']
+
+        def _bc(num):
+            try:
+                return BALL_BG[int(num) % len(BALL_BG)]
+            except (ValueError, TypeError):
+                return BALL_BG[0]
+
+        TURNS = [
+            ('general',   'General', 'fa-globe'),
+            ('afternoon', 'Tarde',   'fa-sun-o'),
+            ('evening',   'Noche',   'fa-moon-o'),
+        ]
+
+        if grp_type == 'line':
+            HDR_DARK, HDR_LIGHT = LINE_DARK, LINE_LIGHT
+            tipo_lbl   = 'Líneas Consecutivas'
+            tipo_icon  = 'fa-th-list'
+            entry_pfx  = 'Línea'
+        else:
+            HDR_DARK, HDR_LIGHT = TERM_DARK, TERM_LIGHT
+            tipo_lbl  = 'Terminales Consecutivos'
+            tipo_icon = 'fa-hashtag'
+            entry_pfx = 'Terminal'
+
+        # ── inner helpers ────────────────────────────────────────────────────
+        def _items_html(top5):
+            if not top5:
+                return '<span style="font-size:.75rem;color:#aaa">Sin datos</span>'
+            html = ''
+            for item in top5:
+                n   = item.get('ball_num', '0')
+                lbl = item.get('label', '')
+                tot = item.get('total', 0)
+                html += (
+                    f'<div class="sgt-item">'
+                    f'<div class="sgt-item-ball" style="background:{_bc(n)}">{n}</div>'
+                    f'<span class="sgt-item-lbl">{lbl}</span>'
+                    f'<span class="sgt-item-cnt">&times;{tot}</span>'
+                    f'</div>'
+                )
+            return html
+
+        def _prose(from_label, next_label_pl, top5_general, top5_afternoon, top5_evening):
+            """Return a short prose paragraph for a block."""
+            def _fmt(lst, n=3):
+                return ', '.join(
+                    f'<strong>{x["label"]}</strong>&nbsp;({x["total"]})'
+                    for x in lst[:n]
+                ) if lst else '—'
+            lines = []
+            if top5_general:
+                lines.append(
+                    f'Cuando sale {from_label}, los {next_label_pl} que más '
+                    f'aparecen en el siguiente sorteo son: '
+                    f'{_fmt(top5_general)} (General), '
+                    f'{_fmt(top5_afternoon)} (Tarde), '
+                    f'{_fmt(top5_evening)} (Noche).'
+                )
+            return ' '.join(lines)
+
+        def _block_html(block_title, blk_dark, blk_light, entry_data, from_label, next_lbl_pl):
+            g = entry_data.get('general',   [])
+            a = entry_data.get('afternoon', [])
+            e = entry_data.get('evening',   [])
+            html = (
+                f'<div class="sgt-block">'
+                f'<span class="sgt-block-title" '
+                f'style="background:{blk_dark}22;color:{blk_dark}">'
+                f'{block_title}</span>'
+            )
+            for turn_key, turn_lbl, _ in TURNS:
+                top5 = entry_data.get(turn_key, [])
+                if not top5:
+                    continue
+                html += (
+                    f'<div class="sgt-turn-row">'
+                    f'<div class="sgt-turn-lbl">{turn_lbl}</div>'
+                    f'<div class="sgt-items">{_items_html(top5)}</div>'
+                    f'</div>'
+                )
+            prose = _prose(from_label, next_lbl_pl, g, a, e)
+            if prose:
+                html += f'<div class="sgt-prose">{prose}</div>'
+            html += '</div>'
+            return html
+
+        # ── CSS ──────────────────────────────────────────────────────────────
         parts = []
         parts.append('''<style>
-.sg-wrap{font-family:inherit;color:#333}
-.sg-header{background:linear-gradient(135deg,#0f5132,#198754);color:#fff;
-  border-radius:10px;padding:18px 22px;margin-bottom:24px}
-.sg-header h1{margin:0 0 4px;font-size:1.4rem;font-weight:700}
-.sg-header .sg-meta{font-size:.85rem;opacity:.85}
-.sg-type-title{font-size:1.1rem;font-weight:700;color:#fff;
-  padding:10px 18px;border-radius:8px;margin:0 0 16px}
-.sg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:28px}
-.sg-card{border:1px solid #dde3ec;border-radius:8px;overflow:hidden}
-.sg-card-hdr{padding:8px 12px;font-weight:700;font-size:.9rem;color:#fff}
-.sg-card-body{padding:10px 12px;background:#fff}
-.sg-turn-block{margin-bottom:10px}
-.sg-turn-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;
-  letter-spacing:.5px;color:#888;margin-bottom:4px}
-.sg-seq-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px}
-.sg-seq-item{display:flex;align-items:center;gap:4px;background:#f5f7fb;
-  border-radius:6px;padding:3px 7px;font-size:.8rem}
-.sg-seq-ball{width:22px;height:22px;border-radius:50%;font-size:.68rem;
+.sgt-wrap{font-family:inherit;color:#333}
+.sgt-header{border-radius:12px;padding:20px 24px;margin-bottom:24px;color:#fff}
+.sgt-header h1{margin:0 0 5px;font-size:1.45rem;font-weight:800;color:#fff}
+.sgt-header .sgt-meta{font-size:.85rem;opacity:.85}
+.sgt-section-hdr{border-radius:10px;padding:11px 18px;margin:0 0 18px;
+  display:flex;align-items:center;gap:10px}
+.sgt-section-hdr h2{margin:0;font-size:1.1rem;font-weight:700;color:#fff}
+.sgt-section-hdr i{color:#fff;font-size:1rem}
+.sgt-entries{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:16px;margin-bottom:24px}
+.sgt-card{border:1px solid #dde3ec;border-radius:10px;overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.sgt-card-hdr{padding:10px 16px;font-weight:700;font-size:.95rem;
+  color:#fff;display:flex;align-items:center;gap:9px}
+.sgt-card-hdr .sgt-src-ball{width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.4)}
+.sgt-card-body{padding:12px 14px;background:#fff}
+.sgt-block{margin-bottom:14px;padding-bottom:13px;
+  border-bottom:1px solid #edf0f5}
+.sgt-block:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.sgt-block-title{font-size:.75rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.6px;margin-bottom:9px;padding:3px 9px;border-radius:4px;
+  display:inline-block}
+.sgt-turn-row{margin-bottom:7px}
+.sgt-turn-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.4px;color:#94a3b8;margin-bottom:4px}
+.sgt-items{display:flex;flex-wrap:wrap;gap:5px}
+.sgt-item{display:flex;align-items:center;gap:5px;background:#f5f7fb;
+  border-radius:7px;padding:4px 8px;font-size:.78rem}
+.sgt-item-ball{width:22px;height:22px;border-radius:50%;font-size:.62rem;
   font-weight:700;color:#fff;
   display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.sg-seq-cnt{color:#555;font-size:.75rem}
-.sg-bar-bg{flex:1;background:#eee;border-radius:3px;height:5px;min-width:30px}
-.sg-bar-fill{height:5px;border-radius:3px}
+.sgt-item-lbl{color:#374151;font-weight:600}
+.sgt-item-cnt{color:#94a3b8;font-size:.7rem}
+.sgt-prose{background:#f0f4ff;border-left:3px solid #6366f1;
+  border-radius:0 6px 6px 0;padding:9px 13px;margin-top:9px;
+  font-size:.82rem;color:#1e293b;line-height:1.65}
+.sgt-prose strong{color:#4338ca}
+@media(max-width:600px){.sgt-entries{grid-template-columns:1fr}}
 </style>''')
 
-        TYPE_META = {
-            'line':     ('Líneas Consecutivas',  '#0d6e3b', '#198754'),
-            'terminal': ('Terminales Consecutivos', '#1e3a5f', '#2563eb'),
-        }
-        BALL_BG = ['#e74c3c','#f59e0b','#16a34a','#2563eb','#8b5cf6',
-                   '#ec4899','#0891b2','#d97706','#15803d','#7c3aed']
-
-        parts.append('<div class="sg-wrap">')
+        parts.append('<div class="sgt-wrap">')
         parts.append(
-            f'<div class="sg-header">'
-            f'<h1>Secuencias de Grupos</h1>'
-            f'<div class="sg-meta">Generado el {date_str} &nbsp;&middot;&nbsp; '
-            f'Top 5 siguientes para cada línea y terminal</div>'
+            f'<div class="sgt-header" '
+            f'style="background:linear-gradient(135deg,{HDR_DARK},{HDR_LIGHT})">'
+            f'<h1><i class="fa {tipo_icon} me-2"></i>Secuencias de {tipo_lbl}</h1>'
+            f'<div class="sgt-meta">Pick 3 Florida &nbsp;·&nbsp; '
+            f'Generado el {date_str} &nbsp;·&nbsp; '
+            f'Top 5 siguientes — General, Tarde y Noche</div>'
             f'</div>'
         )
 
-        for grp_type in ('line', 'terminal'):
-            type_lbl, dark, light = TYPE_META[grp_type]
-            entries = data.get(grp_type, [])
+        parts.append(
+            f'<div class="sgt-section-hdr" '
+            f'style="background:linear-gradient(135deg,{HDR_DARK},{HDR_LIGHT})">'
+            f'<i class="fa {tipo_icon}"></i>'
+            f'<h2>{tipo_lbl}</h2>'
+            f'</div>'
+        )
+        parts.append('<div class="sgt-entries">')
+
+        for entry in data.get(grp_type, []):
+            num      = entry.get('num', '?')
+            sublabel = entry.get('sublabel', '')
+            cross    = cross_data.get(f'{grp_type}_{num}', {})
+            from_label = f'la {entry_pfx.lower()} <strong>{sublabel}</strong>'
+
+            same_data = {
+                'general':   entry.get('general', []),
+                'afternoon': entry.get('afternoon', []),
+                'evening':   entry.get('evening', []),
+            }
 
             parts.append(
-                f'<div class="sg-type-title" '
-                f'style="background:linear-gradient(135deg,{dark},{light})">'
-                f'{type_lbl}</div>'
+                f'<div class="sgt-card">'
+                f'<div class="sgt-card-hdr" '
+                f'style="background:linear-gradient(135deg,{HDR_DARK},{HDR_LIGHT})">'
+                f'<div class="sgt-src-ball" style="background:rgba(255,255,255,.2)">'
+                f'{num}</div>'
+                f'{entry_pfx} {num} &nbsp;'
+                f'<span style="font-weight:400;font-size:.82rem;opacity:.85">'
+                f'({sublabel})</span>'
+                f'</div>'
+                f'<div class="sgt-card-body">'
             )
-            parts.append('<div class="sg-grid">')
 
-            for entry in entries:
-                num      = entry.get('num', '?')
-                sublabel = entry.get('sublabel', '')
-                bc       = BALL_BG[int(num) % len(BALL_BG)]
+            if grp_type == 'line':
+                # 1) Lines that follow (same-type — same as stats page)
+                parts.append(_block_html(
+                    'Líneas que siguen',
+                    LINE_DARK, LINE_LIGHT,
+                    same_data,
+                    from_label,
+                    'líneas',
+                ))
+                # 2) Terminals that follow (cross-type)
+                parts.append(_block_html(
+                    'Terminales que siguen',
+                    TERM_DARK, TERM_LIGHT,
+                    cross,
+                    from_label,
+                    'terminales',
+                ))
+            else:
+                # 1) Lines that follow (cross-type)
+                parts.append(_block_html(
+                    'Líneas que siguen',
+                    LINE_DARK, LINE_LIGHT,
+                    cross,
+                    from_label,
+                    'líneas',
+                ))
+                # 2) Terminals that follow (same-type — same as stats page)
+                parts.append(_block_html(
+                    'Terminales que siguen',
+                    TERM_DARK, TERM_LIGHT,
+                    same_data,
+                    from_label,
+                    'terminales',
+                ))
 
-                parts.append(
-                    f'<div class="sg-card">'
-                    f'<div class="sg-card-hdr" style="background:linear-gradient(135deg,{dark},{light})">'
-                    f'Grupo {num} &nbsp;<span style="font-weight:400;font-size:.8rem">({sublabel})</span>'
-                    f'</div>'
-                    f'<div class="sg-card-body">'
-                )
+            parts.append('</div></div>')  # sgt-card-body + sgt-card
 
-                for turn_key, turn_label in [
-                    ('general',   'General'),
-                    ('afternoon', 'Tarde'),
-                    ('evening',   'Noche'),
-                ]:
-                    top5 = entry.get(turn_key, [])
-                    if not top5:
-                        continue
-                    max_total = max((x.get('total', 0) for x in top5), default=1) or 1
-                    parts.append(
-                        f'<div class="sg-turn-block">'
-                        f'<div class="sg-turn-lbl">{turn_label}</div>'
-                        f'<div class="sg-seq-row">'
-                    )
-                    for item in top5:
-                        item_bc  = BALL_BG[int(item.get('ball_num', 0)) % len(BALL_BG)]
-                        itot     = item.get('total', 0)
-                        ipct     = round(100 * itot / max_total)
-                        parts.append(
-                            f'<div class="sg-seq-item">'
-                            f'<div class="sg-seq-ball" style="background:{item_bc}">'
-                            f'{item.get("label","")}</div>'
-                            f'<div class="sg-bar-bg"><div class="sg-bar-fill" '
-                            f'style="width:{ipct}%;background:{light}"></div></div>'
-                            f'<span class="sg-seq-cnt">{itot}</span>'
-                            f'</div>'
-                        )
-                    parts.append('</div></div>')
-
-                parts.append('</div></div>')  # card-body + card
-
-            parts.append('</div>')  # sg-grid
-
-        parts.append('</div>')
+        parts.append('</div>')  # sgt-entries
+        parts.append('</div>')  # sgt-wrap
         return ''.join(parts)
 
     # ═════════════════════════════════════════════════════════════════════════
-    # ARTÍCULO 4: Sábado + Domingo · Grupos más frecuentes  (1er viernes/mes)
+    # ARTÍCULO 4: Sábado + Domingo · Grupos más frecuentes  (mensual)
     # ═════════════════════════════════════════════════════════════════════════
-    def cron_generate_fin_de_semana_grupos(self, ref_date=None):
-        """Run weekly; executes only on the 1st Friday of the month."""
+    def cron_generate_fin_de_semana_grupos(self, ref_date=None, force=False):
+        """Monthly cron: article with the most frequent line/terminal groups
+        on Saturdays and Sundays.
+
+        Pass force=True to execute immediately regardless of the scheduled day,
+        e.g. from the cron UI: model.cron_generate_fin_de_semana_grupos(force=True)
+        """
         import logging
         _logger = logging.getLogger(__name__)
         today = self._parse_ref_date(ref_date)
 
-        # Only execute on the 1st Friday of the month (day 4 = Friday; day <= 7)
-        if today.weekday() != 4 or today.day > 7:
+        # Guard: only run on the 1st Friday of the month unless forced.
+        if not force and (today.weekday() != 4 or today.day > 7):
             _logger.info(
-                'cron_generate_fin_de_semana_grupos skipped — today (%s) '
-                'is not the first Friday of the month.', today
+                'cron_generate_fin_de_semana_grupos skipped — %s is not the '
+                'first Friday of the month. Use force=True to override.', today
             )
             return
 
@@ -1595,22 +1927,23 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['lottery.stats.service'].sudo()
-        date_str = today.strftime('%d/%m/%Y')
+        svc       = self.env['lottery.stats.service'].sudo()
+        date_str  = today.strftime('%d/%m/%Y')
         month_str = today.strftime('%Y-%m')
         slug      = f'grupos-fin-semana-{month_str}'[:100]
 
         data = svc.get_weekend_groups()
-
         html_body = self._build_fin_de_semana_grupos_html(date_str, data)
 
         category = self.env.ref(
-            'lottery_portal.news_category_generales', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_mensuales', raise_if_not_found=False
         )
-        title = f'Sábado + Domingo · Grupos más frecuentes — {today.strftime("%B %Y").capitalize()}'
+        month_label = today.strftime('%B %Y').capitalize()
+        title = f'Grupos más frecuentes los Sábados y Domingos — {month_label}'
         intro = (
-            f'Top 5 líneas y terminales con mayor frecuencia de salidas '
-            f'los sábados y domingos. Análisis al {date_str}.'
+            f'Top 5 grupos de líneas y terminales con mayor frecuencia histórica '
+            f'los sábados y domingos en el Pick 3 Florida. '
+            f'General, Tarde y Noche. Análisis al {date_str}.'
         )
 
         existing = self.search([('slug', '=', slug)], limit=1)
@@ -1630,94 +1963,404 @@ class NewsArticleGenerator(models.Model):
             _logger.info('Created fin-semana article: %s', slug)
 
     def _build_fin_de_semana_grupos_html(self, date_str, data):
+        """Build the weekend groups article with prose + bar layout."""
+
+        LINE_DARK,  LINE_LIGHT  = '#7c2d12', '#ea580c'
+        TERM_DARK,  TERM_LIGHT  = '#1e3a5f', '#2563eb'
+        BALL_BG = ['#e74c3c', '#f59e0b', '#16a34a', '#2563eb', '#8b5cf6',
+                   '#ec4899', '#0891b2', '#d97706', '#15803d', '#7c3aed']
+
+        def _bc(num):
+            try:
+                return BALL_BG[int(num) % len(BALL_BG)]
+            except (ValueError, TypeError):
+                return BALL_BG[0]
+
+        TURNS = [
+            ('general',   'General', '#374151', '#6b7280', 'fa-globe'),
+            ('afternoon', 'Tarde',   '#92400e', '#d97706', 'fa-sun-o'),
+            ('evening',   'Noche',   '#312e81', '#4f46e5', 'fa-moon-o'),
+        ]
+
+        TYPE_CFG = [
+            ('line',     'Líneas',     'línea',     LINE_DARK, LINE_LIGHT, 'fa-th-list'),
+            ('terminal', 'Terminales', 'terminal',  TERM_DARK, TERM_LIGHT, 'fa-hashtag'),
+        ]
+
         parts = []
         parts.append('''<style>
-.fw-wrap{font-family:inherit;color:#333}
-.fw-header{background:linear-gradient(135deg,#0f5132,#198754);color:#fff;
-  border-radius:10px;padding:18px 22px;margin-bottom:24px}
-.fw-header h1{margin:0 0 4px;font-size:1.4rem;font-weight:700}
-.fw-header .fw-meta{font-size:.85rem;opacity:.85}
-.fw-type-block{margin-bottom:32px}
-.fw-type-title{font-size:1rem;font-weight:700;color:#fff;
-  padding:10px 16px;border-radius:8px;margin-bottom:16px}
-.fw-turns{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-.fw-turn-card{border:1px solid #dde3ec;border-radius:8px;overflow:hidden}
-.fw-turn-hdr{padding:7px 12px;font-size:.82rem;font-weight:700;color:#fff;text-align:center}
-.fw-turn-body{padding:10px 12px;background:#fff}
-.fw-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.fw-bar-ball{width:28px;height:28px;border-radius:50%;font-size:.75rem;font-weight:700;
-  color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.fw-bar-label{font-size:.78rem;color:#555;width:48px;flex-shrink:0}
-.fw-bar-bg{flex:1;background:#eef0f5;border-radius:4px;height:8px}
-.fw-bar-fill{height:8px;border-radius:4px}
-.fw-bar-cnt{font-size:.75rem;font-weight:700;color:#2c3e50;width:28px;text-align:right}
+.fwg-wrap{font-family:inherit;color:#333}
+.fwg-header{background:linear-gradient(135deg,#78350f,#f59e0b);color:#fff;
+  border-radius:12px;padding:20px 24px;margin-bottom:24px}
+.fwg-header h1{margin:0 0 5px;font-size:1.45rem;font-weight:800;color:#fff}
+.fwg-header .fwg-meta{font-size:.85rem;opacity:.85}
+.fwg-type-section{margin-bottom:32px}
+.fwg-type-hdr{border-radius:10px;padding:11px 18px;margin-bottom:18px;
+  display:flex;align-items:center;gap:10px}
+.fwg-type-hdr h2{margin:0;font-size:1.1rem;font-weight:700;color:#fff}
+.fwg-type-hdr i{color:#fff;font-size:1rem}
+.fwg-turn-blocks{display:flex;flex-direction:column;gap:14px}
+.fwg-turn-block{border:1px solid #dde3ec;border-radius:10px;overflow:hidden;
+  box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.fwg-turn-hdr{padding:9px 16px;font-weight:700;font-size:.9rem;color:#fff;
+  display:flex;align-items:center;gap:8px}
+.fwg-turn-hdr i{opacity:.9}
+.fwg-turn-body{padding:14px 16px;background:#fff}
+.fwg-bars{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.fwg-bar-row{display:flex;align-items:center;gap:10px}
+.fwg-rank{background:rgba(0,0,0,.07);border:1px solid rgba(0,0,0,.1);
+  border-radius:5px;padding:2px 7px;font-weight:700;font-size:.72rem;
+  color:#666;flex-shrink:0}
+.fwg-ball{width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}
+.fwg-bar-wrap{flex:1;min-width:0}
+.fwg-bar-lbl{font-size:.78rem;color:#64748b;margin-bottom:3px}
+.fwg-bar-bg{background:#e2e8f0;border-radius:4px;height:8px}
+.fwg-bar-fill{height:8px;border-radius:4px}
+.fwg-cnt{font-weight:700;font-size:.9rem;color:#1e293b;width:44px;
+  text-align:right;flex-shrink:0}
+.fwg-prose{background:#fff7ed;border-left:4px solid #f59e0b;
+  border-radius:0 8px 8px 0;padding:11px 15px;
+  font-size:.88rem;color:#1e293b;line-height:1.65}
+.fwg-prose strong{color:#92400e}
+@media(max-width:600px){
+  .fwg-cnt{width:32px;font-size:.8rem}
+  .fwg-ball{width:26px;height:26px;font-size:.7rem}
+}
 </style>''')
 
-        TYPE_META = {
-            'line':     ('Líneas Consecutivas',    '#7c2d12', '#ea580c'),
-            'terminal': ('Terminales Consecutivos', '#1e3a5f', '#2563eb'),
-        }
-        TURN_META = [
-            ('general',   'General',  '#374151', '#6b7280'),
-            ('afternoon', 'Tarde',    '#92400e', '#d97706'),
-            ('evening',   'Noche',    '#312e81', '#4f46e5'),
-        ]
-        BALL_BG = ['#e74c3c','#f59e0b','#16a34a','#2563eb','#8b5cf6',
-                   '#ec4899','#0891b2','#d97706','#15803d','#7c3aed']
-
-        parts.append('<div class="fw-wrap">')
+        parts.append('<div class="fwg-wrap">')
         parts.append(
-            f'<div class="fw-header">'
-            f'<h1>Sábado + Domingo · Grupos más frecuentes</h1>'
-            f'<div class="fw-meta">Generado el {date_str} &nbsp;&middot;&nbsp; '
-            f'Líneas y Terminales</div>'
+            f'<div class="fwg-header">'
+            f'<h1><i class="fa fa-calendar-o me-2"></i>'
+            f'Grupos m&aacute;s frecuentes — S&aacute;bados y Domingos</h1>'
+            f'<div class="fwg-meta">Pick 3 Florida &nbsp;·&nbsp; '
+            f'Actualizado: {date_str} &nbsp;·&nbsp; '
+            f'Top 5 grupos · General, Tarde y Noche</div>'
             f'</div>'
         )
 
-        for grp_type in ('line', 'terminal'):
-            type_lbl, dark, light = TYPE_META[grp_type]
-            type_data = data.get(grp_type, {})
+        for grp_key, grp_lbl, grp_sing, dark, light, icon in TYPE_CFG:
+            type_data = data.get(grp_key, {})
 
             parts.append(
-                f'<div class="fw-type-block">'
-                f'<div class="fw-type-title" '
+                f'<div class="fwg-type-section">'
+                f'<div class="fwg-type-hdr" '
                 f'style="background:linear-gradient(135deg,{dark},{light})">'
-                f'{type_lbl}</div>'
-                f'<div class="fw-turns">'
+                f'<i class="fa {icon}"></i>'
+                f'<h2>{grp_lbl} m&aacute;s frecuentes en fin de semana</h2>'
+                f'</div>'
+                f'<div class="fwg-turn-blocks">'
             )
 
-            for turn_key, turn_lbl, t_dark, t_light in TURN_META:
+            for turn_key, turn_lbl, t_dark, t_light, t_icon in TURNS:
                 top5 = type_data.get(turn_key, [])
                 if not top5:
                     continue
-                max_val = max((x.get('total', 0) for x in top5), default=1) or 1
+                max_val = max((x.get('total', 0) or 0 for x in top5), default=1) or 1
 
                 parts.append(
-                    f'<div class="fw-turn-card">'
-                    f'<div class="fw-turn-hdr" '
+                    f'<div class="fwg-turn-block">'
+                    f'<div class="fwg-turn-hdr" '
                     f'style="background:linear-gradient(135deg,{t_dark},{t_light})">'
-                    f'{turn_lbl}</div>'
-                    f'<div class="fw-turn-body">'
+                    f'<i class="fa {t_icon}"></i>{turn_lbl}'
+                    f'</div>'
+                    f'<div class="fwg-turn-body">'
+                    f'<div class="fwg-bars">'
                 )
-                for item in top5:
+
+                for i, item in enumerate(top5):
                     num   = item.get('num', '?')
                     lbl   = item.get('label', num)
-                    total = item.get('total', 0)
+                    total = item.get('total', 0) or 0
                     pct   = round(100 * total / max_val)
-                    bc    = BALL_BG[int(num) % len(BALL_BG)]
+                    bc    = _bc(num)
+
                     parts.append(
-                        f'<div class="fw-bar-row">'
-                        f'<div class="fw-bar-ball" style="background:{bc}">{num}</div>'
-                        f'<span class="fw-bar-label">{lbl}</span>'
-                        f'<div class="fw-bar-bg">'
-                        f'<div class="fw-bar-fill" style="width:{pct}%;background:{light}"></div>'
+                        f'<div class="fwg-bar-row">'
+                        f'<span class="fwg-rank">#{i + 1}</span>'
+                        f'<div class="fwg-ball" style="background:{bc}">{num}</div>'
+                        f'<div class="fwg-bar-wrap">'
+                        f'<div class="fwg-bar-lbl">{grp_sing.capitalize()} {lbl}</div>'
+                        f'<div class="fwg-bar-bg">'
+                        f'<div class="fwg-bar-fill" '
+                        f'style="width:{pct}%;background:{light}"></div>'
                         f'</div>'
-                        f'<span class="fw-bar-cnt">{total}</span>'
+                        f'</div>'
+                        f'<span class="fwg-cnt">{total}&times;</span>'
                         f'</div>'
                     )
-                parts.append('</div></div>')  # turn-body + turn-card
 
-            parts.append('</div></div>')  # fw-turns + fw-type-block
+                parts.append('</div>')  # fwg-bars
 
-        parts.append('</div>')
+                # Prose for this turn
+                def _fmt(lst, n=5):
+                    return ', '.join(
+                        f'<strong>{x["label"]}</strong> ({x["total"]})'
+                        for x in lst[:n]
+                    )
+
+                prose = (
+                    f'Los grupos de {grp_lbl.lower()} que m&aacute;s salen '
+                    f'hist&oacute;ricamente los s&aacute;bados y domingos '
+                    f'({turn_lbl}) son: {_fmt(top5)}.'
+                )
+                parts.append(f'<div class="fwg-prose">{prose}</div>')
+                parts.append('</div></div>')  # fwg-turn-body + fwg-turn-block
+
+            parts.append('</div></div>')  # fwg-turn-blocks + fwg-type-section
+
+        parts.append('</div>')  # fwg-wrap
+        return ''.join(parts)
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # ARTÍCULO 7: Números más salidores por día de la semana (diario)
+    # ═════════════════════════════════════════════════════════════════════════
+    def cron_generate_numeros_salidores_dia(self, ref_date=None):
+        """Daily cron: generates/updates one article per weekday with the
+        top-10 most-frequent numbers for that weekday (general, tarde, noche)
+        plus their current delay stats."""
+        import logging
+        _logger = logging.getLogger(__name__)
+        today = self._parse_ref_date(ref_date)
+        try:
+            self._generate_numeros_salidores_dia_article(today)
+        except Exception as e:
+            _logger.error('cron_generate_numeros_salidores_dia: %s', e, exc_info=True)
+
+    def _generate_numeros_salidores_dia_article(self, today):
+        import logging
+        _logger = logging.getLogger(__name__)
+
+        _WCODE = {0: 'lu', 1: 'ma', 2: 'mi', 3: 'ju', 4: 'vi', 5: 'sa', 6: 'do'}
+        _WLABEL = {
+            'lu': 'Lunes', 'ma': 'Martes', 'mi': 'Miércoles',
+            'ju': 'Jueves', 'vi': 'Viernes', 'sa': 'Sábado', 'do': 'Domingo',
+        }
+        _cover_map = {
+            'lu': 'mas salidores lunes.png',
+            'ma': 'mas salidores martes.png',
+            'mi': 'mas salidores miercoles.png',
+            'ju': 'mas salidores jueves.png',
+            'vi': 'mas salidores viernes.png',
+            'sa': 'mas salidores sabado.png',
+            'do': 'mas salidores domingo.png',
+        }
+
+        wcode    = _WCODE[today.weekday()]
+        wlabel   = _WLABEL[wcode]
+        date_str = today.strftime('%d/%m/%Y')
+        slug     = f'numeros-salidores-{wcode}'
+
+        svc  = self.env['lottery.stats.service'].sudo()
+        data = svc.get_top_numeros_por_dia_completo(wcode)
+
+        html_body = self._build_numeros_salidores_dia_html(date_str, wlabel, wcode, data)
+        cover     = self._load_cover_image(_cover_map.get(wcode, 'atraso numeros lunes.png'))
+
+        category = self.env.ref(
+            'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
+        )
+        title = f'Números más salidores los {wlabel} — Pick 3 Florida'
+        intro = (
+            f'Top 10 números con mayor frecuencia histórica los {wlabel} en el '
+            f'Pick 3 Florida, con análisis por turno (Tarde y Noche) y sus '
+            f'atrasos actuales. Actualizado al {date_str}.'
+        )
+
+        existing = self.search([('slug', '=', slug)], limit=1)
+        vals = {
+            'title':        title,
+            'slug':         slug,
+            'summary':      intro,
+            'raw_html':     html_body,
+            'is_published': True,
+            'category_id':  category.id if category else False,
+            'cover_image':  cover or False,
+        }
+        if existing:
+            existing.write(vals)
+            _logger.info('Updated numeros-salidores article: %s', slug)
+        else:
+            self.create(vals)
+            _logger.info('Created numeros-salidores article: %s', slug)
+
+    def _build_numeros_salidores_dia_html(self, date_str, wlabel, wcode, data):
+        """HTML builder for the 'números más salidores por día' article."""
+
+        BALL_COLORS = [
+            '#e74c3c', '#f59e0b', '#16a34a', '#2563eb', '#8b5cf6',
+            '#ec4899', '#0891b2', '#d97706', '#15803d', '#7c3aed',
+        ]
+
+        def ball_color(name):
+            try:
+                return BALL_COLORS[int(name) % len(BALL_COLORS)]
+            except (ValueError, TypeError):
+                return BALL_COLORS[0]
+
+        def delay_color(val):
+            val = val or 0
+            if val <= 5:
+                return '#16a34a'
+            if val <= 15:
+                return '#d97706'
+            return '#dc2626'
+
+        def delay_label(val):
+            val = val or 0
+            if val == 0:
+                return 'Al día'
+            if val == 1:
+                return '1 sorteo'
+            return f'{val} sorteos'
+
+        SECTIONS = [
+            ('general', 'General', '#1e3a5f', '#2563eb', 'delay_general', 'fa-globe'),
+            ('tarde',   'Tarde',   '#92400e', '#d97706', 'delay_tarde',   'fa-sun-o'),
+            ('noche',   'Noche',   '#312e81', '#4f46e5', 'delay_noche',   'fa-moon-o'),
+        ]
+
+        parts = []
+        parts.append('''<style>
+.nsd-wrap{font-family:inherit;color:#333}
+.nsd-header{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;
+  border-radius:12px;padding:20px 24px;margin-bottom:24px}
+.nsd-header h1{margin:0 0 6px;font-size:1.5rem;font-weight:800;color:#fff}
+.nsd-header .nsd-meta{font-size:.85rem;opacity:.85}
+.nsd-section{margin-bottom:28px}
+.nsd-sec-hdr{display:flex;align-items:center;gap:10px;
+  border-radius:10px;padding:11px 18px;margin-bottom:14px}
+.nsd-sec-hdr i{font-size:1rem;opacity:.9;color:#fff}
+.nsd-sec-hdr h2{margin:0;font-size:1.1rem;font-weight:700;color:#fff}
+.nsd-bars{display:flex;flex-direction:column;gap:7px}
+.nsd-bar-row{display:flex;align-items:center;gap:10px;
+  background:#f8f9fb;border-radius:8px;padding:8px 12px}
+.nsd-rank{background:rgba(0,0,0,.07);border:1px solid rgba(0,0,0,.1);
+  border-radius:5px;padding:2px 7px;font-weight:700;font-size:.72rem;
+  color:#666;flex-shrink:0;letter-spacing:.3px}
+.nsd-ball{width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:.88rem;color:#fff;flex-shrink:0}
+.nsd-bar-wrap{flex:1;min-width:0}
+.nsd-bar-label{font-size:.78rem;color:#64748b;margin-bottom:3px}
+.nsd-bar-bg{background:#e2e8f0;border-radius:4px;height:8px}
+.nsd-bar-fill{height:8px;border-radius:4px}
+.nsd-freq{font-weight:700;font-size:.9rem;color:#1e293b;width:52px;
+  text-align:right;flex-shrink:0}
+.nsd-delay-badge{border-radius:6px;padding:3px 9px;font-size:.76rem;
+  font-weight:700;color:#fff;flex-shrink:0;white-space:nowrap}
+.nsd-date-small{font-size:.72rem;color:#94a3b8;flex-shrink:0;white-space:nowrap}
+.nsd-prose{background:#f0f4ff;border-left:4px solid #6366f1;
+  border-radius:0 8px 8px 0;padding:14px 18px;margin-top:10px;
+  font-size:.92rem;color:#1e293b;line-height:1.65}
+.nsd-prose strong{color:#4338ca}
+@media(max-width:600px){
+  .nsd-date-small{display:none}
+  .nsd-freq{width:38px;font-size:.8rem}
+  .nsd-ball{width:28px;height:28px;font-size:.75rem}
+  .nsd-delay-badge{font-size:.68rem;padding:2px 6px}
+}
+</style>''')
+
+        parts.append('<div class="nsd-wrap">')
+        parts.append(
+            f'<div class="nsd-header">'
+            f'<h1><i class="fa fa-star me-2"></i>Números más salidores los {wlabel}</h1>'
+            f'<div class="nsd-meta">Pick 3 Florida &nbsp;·&nbsp; '
+            f'Actualizado: {date_str} &nbsp;·&nbsp; '
+            f'Top 10 por turno con atrasos actuales</div>'
+            f'</div>'
+        )
+
+        for section_key, section_lbl, dark, light, delay_field, icon in SECTIONS:
+            rows = data.get(section_key, [])
+            if not rows:
+                continue
+
+            max_total = max((r.get('total', 0) or 0 for r in rows), default=1) or 1
+
+            parts.append(
+                f'<div class="nsd-section">'
+                f'<div class="nsd-sec-hdr" '
+                f'style="background:linear-gradient(135deg,{dark},{light})">'
+                f'<i class="fa {icon}"></i>'
+                f'<h2>{section_lbl}</h2>'
+                f'</div>'
+                f'<div class="nsd-bars">'
+            )
+
+            for i, row in enumerate(rows):
+                name   = row.get('name', '??')
+                total  = row.get('total', 0) or 0
+                delay  = row.get(delay_field, 0) or 0
+                ultima = row.get('ultima_fecha') or '—'
+                pct    = round(100 * total / max_total)
+                bc     = ball_color(name)
+                dc     = delay_color(delay)
+                dlbl   = delay_label(delay)
+
+                parts.append(
+                    f'<div class="nsd-bar-row">'
+                    f'<span class="nsd-rank">#{i + 1}</span>'
+                    f'<div class="nsd-ball" style="background:{bc}">{name}</div>'
+                    f'<div class="nsd-bar-wrap">'
+                    f'<div class="nsd-bar-label">Número {name}</div>'
+                    f'<div class="nsd-bar-bg">'
+                    f'<div class="nsd-bar-fill" '
+                    f'style="width:{pct}%;background:{light}"></div>'
+                    f'</div>'
+                    f'</div>'
+                    f'<span class="nsd-freq">{total}&times;</span>'
+                    f'<span class="nsd-delay-badge" style="background:{dc}" '
+                    f'title="Atraso actual">&#9201; {dlbl}</span>'
+                    f'<span class="nsd-date-small">'
+                    f'&Uacute;lt.&nbsp;{wlabel[:3]}: {ultima}</span>'
+                    f'</div>'
+                )
+
+            parts.append('</div>')  # nsd-bars
+
+            # Prose interpretation block
+            most_delayed  = max(rows, key=lambda r: r.get(delay_field, 0) or 0)
+            least_delayed = min(rows, key=lambda r: r.get(delay_field, 0) or 0)
+            top1 = rows[0]
+
+            md_name  = most_delayed.get('name', '??')
+            md_delay = most_delayed.get(delay_field, 0) or 0
+            ld_name  = least_delayed.get('name', '??')
+            ld_delay = least_delayed.get(delay_field, 0) or 0
+            t1_name  = top1.get('name', '??')
+            t1_total = top1.get('total', 0) or 0
+
+            section_ctx = {
+                'general': f'los {wlabel}',
+                'tarde':   f'en la Tarde de los {wlabel}',
+                'noche':   f'en la Noche de los {wlabel}',
+            }[section_key]
+            delay_ctx = {
+                'general': 'atraso general',
+                'tarde':   'atraso en Tarde',
+                'noche':   'atraso en Noche',
+            }[section_key]
+
+            prose = (
+                f'El número más frecuente {section_ctx} es el '
+                f'<strong>{t1_name}</strong>, con {t1_total} apariciones históricas. '
+                f'Entre los 10 más salidores, el de mayor {delay_ctx} actualmente '
+                f'es el <strong>{md_name}</strong> ({delay_label(md_delay)} sin salir)'
+            )
+            if md_name != ld_name:
+                prose += (
+                    f', mientras que el <strong>{ld_name}</strong> es el más reciente '
+                    f'({delay_label(ld_delay)}).'
+                )
+            else:
+                prose += '.'
+            parts.append(f'<div class="nsd-prose">{prose}</div>')
+
+            parts.append('</div>')  # nsd-section
+
+        parts.append('</div>')  # nsd-wrap
         return ''.join(parts)

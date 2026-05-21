@@ -226,6 +226,9 @@
                                 </div>
                             </div>
 
+                            <!-- Consultar acompañantes -->
+                            <owl-component name="lottery_portal.ConsultarAcompanantes"/>
+
                             <!-- Últimas 10 salidas del día actual -->
                             <owl-component name="lottery_portal.UltimasSalidasDay"/>
 
@@ -603,6 +606,9 @@
                                         <owl-component name="lottery_portal.SalidasBuscador"/>
                                     </div>
                                 </div>
+
+                                <!-- Consultar acompañantes -->
+                                <owl-component name="lottery_portal.ConsultarAcompanantes"/>
 
                                 <!-- Últimas 10 salidas (últimos 10 días con datos, incluye hoy) -->
                                 <owl-component name="lottery_portal.UltimasSalidasCol1"/>

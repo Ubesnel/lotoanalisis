@@ -705,6 +705,107 @@ class LotteryStatsService(models.Model):
 
     @api.model
     @tools.ormcache()
+    def get_group_sequences_cross(self):
+        """Cross-type sequences between consecutive draws:
+           line → next-draw terminal  and  terminal → next-draw line.
+           Top 5 per from_code, split by general / afternoon / evening."""
+        from collections import defaultdict
+
+        self.env.cr.execute("""
+            WITH draw_groups AS (
+                SELECT
+                    lo.date,
+                    lo.turn_day,
+                    lg_line.code  AS line_code,
+                    lg_term.code  AS term_code,
+                    ROW_NUMBER() OVER (
+                        ORDER BY lo.date,
+                        CASE lo.turn_day WHEN 'afternoon' THEN 0 ELSE 1 END,
+                        lo.id
+                    ) AS seq
+                FROM lottery_output lo
+                JOIN lottery_number ln ON ln.id = lo.number_id
+                JOIN lottery_group_number_rel rel_l ON rel_l.number_id = ln.id
+                JOIN lottery_group lg_line
+                    ON lg_line.id = rel_l.group_id AND lg_line.code LIKE 'line_%'
+                JOIN lottery_group_number_rel rel_t ON rel_t.number_id = ln.id
+                JOIN lottery_group lg_term
+                    ON lg_term.id = rel_t.group_id AND lg_term.code LIKE 'terminal_%'
+            ),
+            pairs AS (
+                SELECT
+                    c.line_code  AS line_from,
+                    c.term_code  AS term_from,
+                    c.turn_day,
+                    n.line_code  AS line_to,
+                    n.term_code  AS term_to
+                FROM draw_groups c
+                JOIN draw_groups n ON n.seq = c.seq + 1
+            )
+            SELECT 'line_to_term' AS cross_type,
+                   line_from      AS from_code,
+                   term_to        AS to_code,
+                   COUNT(*)                                        AS total_general,
+                   COUNT(*) FILTER (WHERE turn_day = 'afternoon') AS total_afternoon,
+                   COUNT(*) FILTER (WHERE turn_day = 'evening')   AS total_evening
+            FROM pairs
+            GROUP BY line_from, term_to
+
+            UNION ALL
+
+            SELECT 'term_to_line' AS cross_type,
+                   term_from      AS from_code,
+                   line_to        AS to_code,
+                   COUNT(*)                                        AS total_general,
+                   COUNT(*) FILTER (WHERE turn_day = 'afternoon') AS total_afternoon,
+                   COUNT(*) FILTER (WHERE turn_day = 'evening')   AS total_evening
+            FROM pairs
+            GROUP BY term_from, line_to
+        """)
+        rows = self.env.cr.dictfetchall()
+
+        data = defaultdict(lambda: defaultdict(list))
+        for r in rows:
+            data[r['cross_type']][r['from_code']].append(r)
+
+        def _label(code):
+            n = int(code.split('_')[1])
+            if code.startswith('line_'):
+                return f'{n * 10:02d}-{n * 10 + 9:02d}'
+            return f'{n:02d}→{90 + n:02d}'
+
+        def _top5(rows_list, field):
+            ordered = sorted(rows_list, key=lambda x: x[field] or 0, reverse=True)
+            top = [r for r in ordered[:5] if (r[field] or 0) > 0]
+            max_val = top[0][field] if top else 1
+            return [
+                {
+                    'label':    _label(r['to_code']),
+                    'ball_num': r['to_code'].split('_')[1],
+                    'total':    r[field] or 0,
+                    'pct':      round(100 * (r[field] or 0) / max(max_val, 1)),
+                }
+                for r in top
+            ]
+
+        result = {}
+        for i in range(10):
+            line_code = f'line_{i}'
+            term_code = f'terminal_{i}'
+            result[line_code] = {
+                'general':   _top5(data['line_to_term'].get(line_code, []), 'total_general'),
+                'afternoon': _top5(data['line_to_term'].get(line_code, []), 'total_afternoon'),
+                'evening':   _top5(data['line_to_term'].get(line_code, []), 'total_evening'),
+            }
+            result[term_code] = {
+                'general':   _top5(data['term_to_line'].get(term_code, []), 'total_general'),
+                'afternoon': _top5(data['term_to_line'].get(term_code, []), 'total_afternoon'),
+                'evening':   _top5(data['term_to_line'].get(term_code, []), 'total_evening'),
+            }
+        return result
+
+    @api.model
+    @tools.ormcache()
     def get_all_atrasos_parejas(self):
         self.env.cr.execute("""
             SELECT name, general, afternoon, evening, last_date, last_turn,
@@ -820,6 +921,88 @@ class LotteryStatsService(models.Model):
                         """
         self.env.cr.execute(query)
         return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_top_numeros_por_dia_completo(self, day):
+        """Top 10 numbers by frequency for a weekday, split by General / Tarde / Noche.
+        Includes current delays. No ormcache — delay fields change daily."""
+        field_map = {
+            'lu': 'total_lunes', 'ma': 'total_martes', 'mi': 'total_miercoles',
+            'ju': 'total_jueves', 'vi': 'total_viernes', 'sa': 'total_sabado', 'do': 'total_domingo',
+        }
+        delay_day_map = {
+            'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
+            'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves',
+            'vi': 'salidas_atrasadas_viernes', 'sa': 'salidas_atrasadas_sabado',
+            'do': 'salidas_atrasadas_domingo',
+        }
+        day_field = field_map.get(day)
+        delay_day_field = delay_day_map.get(day)
+        if not day_field:
+            return {}
+
+        # General — top 10 by historic frequency on this weekday
+        self.env.cr.execute(f"""
+            SELECT
+                LPAD(ln.name::text, 2, '0') AS name,
+                ln.id,
+                {day_field} AS total,
+                ln.total_atrasadas AS delay_general,
+                ln.total_atrasadas_dia AS delay_tarde,
+                ln.total_atrasadas_noche AS delay_noche,
+                {delay_day_field} AS delay_dia_semana,
+                TO_CHAR(lo.date, 'DD/MM/YYYY') AS ultima_fecha,
+                lo.turn_day AS ultimo_turno
+            FROM lottery_number ln
+            LEFT JOIN LATERAL (
+                SELECT date, turn_day FROM lottery_output
+                WHERE number_id = ln.id AND week_day = %s
+                ORDER BY date DESC LIMIT 1
+            ) lo ON true
+            ORDER BY {day_field} DESC, ln.id DESC
+            LIMIT 10
+        """, (day,))
+        general = self.env.cr.dictfetchall()
+
+        # Tarde — top 10 by frequency on this weekday + afternoon only
+        self.env.cr.execute(f"""
+            SELECT
+                LPAD(ln.name::text, 2, '0') AS name,
+                ln.id,
+                COUNT(lo.id) AS total,
+                ln.total_atrasadas_dia AS delay_tarde,
+                ln.total_atrasadas AS delay_general,
+                {delay_day_field} AS delay_dia_semana,
+                TO_CHAR(MAX(lo.date), 'DD/MM/YYYY') AS ultima_fecha
+            FROM lottery_number ln
+            JOIN lottery_output lo ON lo.number_id = ln.id
+            WHERE lo.week_day = %s AND lo.turn_day = 'afternoon'
+            GROUP BY ln.id, ln.name, ln.total_atrasadas_dia, ln.total_atrasadas, {delay_day_field}
+            ORDER BY total DESC, ln.id DESC
+            LIMIT 10
+        """, (day,))
+        tarde = self.env.cr.dictfetchall()
+
+        # Noche — top 10 by frequency on this weekday + evening only
+        self.env.cr.execute(f"""
+            SELECT
+                LPAD(ln.name::text, 2, '0') AS name,
+                ln.id,
+                COUNT(lo.id) AS total,
+                ln.total_atrasadas_noche AS delay_noche,
+                ln.total_atrasadas AS delay_general,
+                {delay_day_field} AS delay_dia_semana,
+                TO_CHAR(MAX(lo.date), 'DD/MM/YYYY') AS ultima_fecha
+            FROM lottery_number ln
+            JOIN lottery_output lo ON lo.number_id = ln.id
+            WHERE lo.week_day = %s AND lo.turn_day = 'evening'
+            GROUP BY ln.id, ln.name, ln.total_atrasadas_noche, ln.total_atrasadas, {delay_day_field}
+            ORDER BY total DESC, ln.id DESC
+            LIMIT 10
+        """, (day,))
+        noche = self.env.cr.dictfetchall()
+
+        return {'general': general, 'tarde': tarde, 'noche': noche}
 
     @api.model
     @tools.ormcache('number_id')

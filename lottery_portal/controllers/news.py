@@ -7,7 +7,7 @@ from datetime import datetime
 
 class NewsController(http.Controller):
 
-    ARTICLES_PER_PAGE = 10
+    ARTICLES_PER_PAGE = 12
 
     @http.route('/', type='http', auth='public', website=True)
     def news_homepage(self, page=1, category=None, q=None, **kwargs):

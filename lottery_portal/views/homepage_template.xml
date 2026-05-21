@@ -71,6 +71,7 @@
                 <owl-component name="lottery_portal.SalidasBuscador"/>
             </div>
         </div>
+        <owl-component name="lottery_portal.ConsultarAcompanantes"/>
         <owl-component name="lottery_portal.UltimasSalidasCol1"/>
         <owl-component name="lottery_portal.UltimasSalidasDay"/>
     </template>
