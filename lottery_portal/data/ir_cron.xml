@@ -108,6 +108,18 @@
             <field name="priority">5</field>
             <field name="active" eval="True"/>
         </record>
+        <record id="cron_generate_frios" model="ir.cron">
+            <field name="name">Generar Artículo diario — Números Fríos</field>
+            <field name="model_id" ref="lottery_portal.model_news_article"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_generate_frios()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">5</field>
+            <field name="active" eval="True"/>
+        </record>
+
         <record id="cron_generate_calientes" model="ir.cron">
             <field name="name">Generar Artículo diario — Números Calientes</field>
             <field name="model_id" ref="lottery_portal.model_news_article"/>
