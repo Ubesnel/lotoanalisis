@@ -40,5 +40,13 @@
             <field name="color">#dc2626</field>
             <field name="sequence">50</field>
         </record>
+
+        <record id="news_category_sorteos_diarios" model="news.category">
+            <field name="name">Sorteos diarios</field>
+            <field name="slug">sorteos</field>
+            <field name="icon">fa-ticket</field>
+            <field name="color">#006C67</field>
+            <field name="sequence">60</field>
+        </record>
     </data>
 </odoo>

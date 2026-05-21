@@ -68,7 +68,7 @@ class CalientesArticleGenerator(models.Model):
 
         # ── Category ─────────────────────────────────────────────────────
         category = self.env.ref(
-            'lottery_portal.news_category_calientes', raise_if_not_found=False
+            'lottery_portal.news_category_sorteos_diarios', raise_if_not_found=False
         )
 
         title = f'Números Calientes — Pick 3 Florida · {date_str}'
@@ -276,7 +276,7 @@ class CalientesArticleGenerator(models.Model):
         html_body = self._build_frios_html(date_str, data)
 
         category = self.env.ref(
-            'lottery_portal.news_category_calientes', raise_if_not_found=False
+            'lottery_portal.news_category_sorteos_diarios', raise_if_not_found=False
         )
         title = f'Números Fríos — Pick 3 Florida · {date_str}'
         intro = (
