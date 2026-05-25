@@ -5,7 +5,7 @@
             <div class="card-header text-white text-center fw-bold">
                 <div class="d-flex align-items-center justify-content-center gap-2">
                     <i class="fa fa-hashtag"/>
-                    Terminales más Atrasados
+                    Atrasos de los Terminales
                     <i class="fa fa-arrow-right"/>
                     <select t-model="state.type_terminal" class="form-select form-select-sm w-auto"
                             t-on-change="onChangeTypeTerminales"

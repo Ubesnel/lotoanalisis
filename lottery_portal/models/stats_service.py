@@ -2697,3 +2697,164 @@ class LotteryStatsService(models.Model):
         result['last_turn'] = row.get('last_turn') or 'afternoon'
         return result
 
+    @api.model
+    def get_lineas_terminales_dia_semana(self, wcode, top_n=3):
+        """
+        Top-N líneas y terminales más atrasadas para un día de semana específico.
+        Retorna general, afternoon y evening por separado.
+
+        Estructura de retorno:
+        {
+          'lineas':     {'general': [...], 'afternoon': [...], 'evening': [...]},
+          'terminales': {'general': [...], 'afternoon': [...], 'evening': [...]}
+        }
+        Cada ítem:
+        {
+          'name': '00-09', 'delay': 5,
+          'numbers': [{'name': '03', 'delay': 4}, ...],  # 10 nums, orden delay DESC
+          'max_delay_num': '03', 'max_delay_val': 4,
+          'last_num': '07', 'last_date': '20/05/26'
+        }
+        """
+        cr = self.env.cr
+
+        day_col_map = {
+            'lu': 'salidas_atrasadas_lunes',
+            'ma': 'salidas_atrasadas_martes',
+            'mi': 'salidas_atrasadas_miercoles',
+            'ju': 'salidas_atrasadas_jueves',
+            'vi': 'salidas_atrasadas_viernes',
+            'sa': 'salidas_atrasadas_sabado',
+            'do': 'salidas_atrasadas_domingo',
+        }
+        day_col = day_col_map.get(wcode, 'salidas_atrasadas_lunes')
+
+        LINE_NAMES = {i: f'{i*10:02d}-{i*10+9:02d}' for i in range(10)}
+        TERM_NAMES = {i: f'{i:02d}-{i+90:02d}' for i in range(10)}
+
+        out = {'lineas': {}, 'terminales': {}}
+
+        for grp_type in ('lineas', 'terminales'):
+            is_line  = grp_type == 'lineas'
+            name_map = LINE_NAMES if is_line else TERM_NAMES
+
+            # Expresiones SQL seguras (no vienen de input externo)
+            grp_expr = ('FLOOR(ln.name::numeric / 10)::int'
+                        if is_line else '(ln.name %% 10)::int')
+            num_grp  = ('FLOOR(ln.name::numeric / 10)::int'
+                        if is_line else '(ln.name %% 10)::int')
+
+            for turn in ('general', 'afternoon', 'evening'):
+                t_sql  = f"AND turn_day = '{turn}'"  if turn != 'general' else ''
+                tj_sql = f"AND lo.turn_day = '{turn}'" if turn != 'general' else ''
+
+                # ── Paso 1: ranking top-N grupos por atraso ───────────────────
+                if turn == 'general':
+                    cr.execute(f"""
+                        SELECT {grp_expr} AS grp_idx,
+                               SUM(ln.{day_col}) AS delay
+                        FROM lottery_number ln
+                        GROUP BY grp_idx
+                        ORDER BY delay DESC
+                        LIMIT %s
+                    """, [top_n])
+                else:
+                    cr.execute(f"""
+                        WITH all_groups AS (
+                            SELECT generate_series(0,9) AS grp_idx
+                        ),
+                        grp_last AS (
+                            SELECT {grp_expr} AS grp_idx, MAX(lo.date) AS last_date
+                            FROM lottery_output lo
+                            JOIN lottery_number ln ON ln.id = lo.number_id
+                            WHERE lo.week_day = %s {tj_sql}
+                            GROUP BY grp_idx
+                        )
+                        SELECT
+                            ag.grp_idx,
+                            CASE
+                                WHEN gl.last_date IS NULL THEN
+                                    (SELECT COUNT(DISTINCT date) FROM lottery_output
+                                     WHERE week_day = %s {t_sql})
+                                ELSE
+                                    (SELECT COUNT(DISTINCT lo2.date)
+                                     FROM lottery_output lo2
+                                     WHERE lo2.week_day = %s {t_sql}
+                                       AND lo2.date > gl.last_date)
+                            END AS delay
+                        FROM all_groups ag
+                        LEFT JOIN grp_last gl ON gl.grp_idx = ag.grp_idx
+                        ORDER BY delay DESC NULLS LAST
+                        LIMIT %s
+                    """, [wcode, wcode, wcode, top_n])
+
+                top_rows  = cr.dictfetchall()
+                turn_data = []
+
+                for row in top_rows:
+                    grp_idx   = row['grp_idx']
+                    grp_delay = row['delay'] or 0
+                    grp_name  = name_map.get(grp_idx, str(grp_idx))
+
+                    # ── Paso 2: números del grupo con atraso día+turno ────────
+                    if turn == 'general':
+                        cr.execute(f"""
+                            SELECT LPAD(ln.name::text, 2, '0') AS name,
+                                   ln.{day_col} AS delay
+                            FROM lottery_number ln
+                            WHERE {num_grp} = %s
+                            ORDER BY ln.{day_col} DESC
+                        """, [grp_idx])
+                        nums = [{'name': r['name'], 'delay': r['delay'] or 0}
+                                for r in cr.dictfetchall()]
+                    else:
+                        cr.execute(f"""
+                            WITH total AS (
+                                SELECT COUNT(DISTINCT date) AS cnt
+                                FROM lottery_output
+                                WHERE week_day = %s {t_sql}
+                            )
+                            SELECT
+                                LPAD(ln.name::text, 2, '0') AS name,
+                                (SELECT cnt FROM total) - COALESCE((
+                                    SELECT COUNT(DISTINCT lo.date)
+                                    FROM lottery_output lo
+                                    WHERE lo.number_id = ln.id
+                                      AND lo.week_day = %s {tj_sql}
+                                ), 0) AS delay
+                            FROM lottery_number ln
+                            WHERE {num_grp} = %s
+                            ORDER BY delay DESC
+                        """, [wcode, wcode, grp_idx])
+                        nums = [{'name': r['name'], 'delay': r['delay'] or 0}
+                                for r in cr.dictfetchall()]
+
+                    # ── Paso 3: último número del grupo ese día+turno ─────────
+                    cr.execute(f"""
+                        SELECT LPAD(ln.name::text, 2, '0') AS num,
+                               to_char(lo.date, 'DD/MM/YY') AS date
+                        FROM lottery_output lo
+                        JOIN lottery_number ln ON ln.id = lo.number_id
+                        WHERE lo.week_day = %s {tj_sql}
+                          AND {num_grp} = %s
+                        ORDER BY lo.date DESC, lo.id DESC
+                        LIMIT 1
+                    """, [wcode, grp_idx])
+                    last = cr.dictfetchone() or {}
+
+                    max_num = nums[0] if nums else {}
+                    turn_data.append({
+                        'name':          grp_name,
+                        'grp_idx':       grp_idx,
+                        'delay':         grp_delay,
+                        'numbers':       nums,
+                        'max_delay_num': max_num.get('name', '-'),
+                        'max_delay_val': max_num.get('delay', 0),
+                        'last_num':      last.get('num', '-'),
+                        'last_date':     last.get('date', '-'),
+                    })
+
+                out[grp_type][turn] = turn_data
+
+        return out
+

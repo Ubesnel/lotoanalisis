@@ -100,6 +100,8 @@
                             </t>
                             <!-- Últimas 10 salidas (últimos 10 días con datos, incluye hoy) -->
                             <owl-component name="lottery_portal.UltimasSalidasCol1"/>
+                            <!-- Atraso de Líneas -->
+                            <owl-component name="lottery_portal.TopAtrasosLineas"/>
                         </div>
 
                         <!-- ===== COLUMNA 2: buscador + chips + artículos + paginación ===== -->
@@ -242,6 +244,17 @@
                                 </nav>
                             </t>
 
+                            <!-- Atrasos de Parejas · Centenas · Bola Extra -->
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <owl-component name="lottery_portal.TopAtrasosParejas"/>
+                                </div>
+                                <div class="col-6">
+                                    <owl-component name="lottery_portal.Top5CentenasAtrasadas"/>
+                                    <owl-component name="lottery_portal.Top5BolaExtraAtrasadas"/>
+                                </div>
+                            </div>
+
                         </div><!-- fin col-lg-6 -->
 
                         <!-- ===== COLUMNA 3: buscador + últimas salidas por día ===== -->
@@ -263,6 +276,8 @@
 
                             <!-- Últimas 10 salidas del día actual -->
                             <owl-component name="lottery_portal.UltimasSalidasDay"/>
+                            <!-- Atrasos de los Terminales -->
+                            <owl-component name="lottery_portal.TopAtrasosTerminales"/>
 
                         </div><!-- fin col-lg-3 -->
 

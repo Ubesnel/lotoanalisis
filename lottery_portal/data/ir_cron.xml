@@ -108,11 +108,11 @@
             <field name="priority">5</field>
             <field name="active" eval="True"/>
         </record>
-        <record id="cron_generate_frios" model="ir.cron">
-            <field name="name">Generar Artículo diario — Números Fríos</field>
+        <record id="cron_generate_grupos_dia_semana" model="ir.cron">
+            <field name="name">Generar Artículo diario — Líneas y Terminales más atrasadas por día</field>
             <field name="model_id" ref="lottery_portal.model_news_article"/>
             <field name="state">code</field>
-            <field name="code">model.cron_generate_frios()</field>
+            <field name="code">model.cron_generate_grupos_dia_semana()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
@@ -120,15 +120,36 @@
             <field name="active" eval="True"/>
         </record>
 
+    </data>
+
+    <!-- noupdate="0" para que estos crons se actualicen en cada upgrade -->
+    <data noupdate="0">
+
+        <!-- Artículo combinado Tarde: calientes + fríos del sorteo de la tarde -->
         <record id="cron_generate_calientes" model="ir.cron">
-            <field name="name">Generar Artículo diario — Números Calientes</field>
+            <field name="name">Generar Artículo diario — Calientes y Fríos Tarde</field>
             <field name="model_id" ref="lottery_portal.model_news_article"/>
             <field name="state">code</field>
-            <field name="code">model.cron_generate_calientes()</field>
+            <field name="code">model.cron_generate_calientes_frios_tarde()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
             <field name="priority">5</field>
+            <field name="nextcall">2026-05-25 12:00:00</field>
+            <field name="active" eval="True"/>
+        </record>
+
+        <!-- Artículo combinado Noche: calientes + fríos del sorteo de la noche (después de las 15:00 hora local) -->
+        <record id="cron_generate_frios" model="ir.cron">
+            <field name="name">Generar Artículo diario — Calientes y Fríos Noche</field>
+            <field name="model_id" ref="lottery_portal.model_news_article"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_generate_calientes_frios_noche()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">5</field>
+            <field name="nextcall">2026-05-25 20:00:00</field>
             <field name="active" eval="True"/>
         </record>
 
