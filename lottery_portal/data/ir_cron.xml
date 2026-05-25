@@ -108,6 +108,18 @@
             <field name="priority">5</field>
             <field name="active" eval="True"/>
         </record>
+        <record id="cron_generate_grupos_dia_semana" model="ir.cron">
+            <field name="name">Generar Artículo diario — Líneas y Terminales más atrasadas por día</field>
+            <field name="model_id" ref="lottery_portal.model_news_article"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_generate_grupos_dia_semana()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">5</field>
+            <field name="active" eval="True"/>
+        </record>
+
     </data>
 
     <!-- noupdate="0" para que estos crons se actualicen en cada upgrade -->
