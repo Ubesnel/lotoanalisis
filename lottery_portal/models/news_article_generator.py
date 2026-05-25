@@ -1308,6 +1308,8 @@ class NewsArticleGenerator(models.Model):
         title = f'Top 10 Números más Atrasados — {date_str}'
         intro = f'Ranking de los 10 números con mayor atraso acumulado al {date_str}, en los tres turnos.'
 
+        cover = self._load_cover_image('top 10 numeros atrasados.png')
+
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
             'title':        title,
@@ -1316,6 +1318,7 @@ class NewsArticleGenerator(models.Model):
             'raw_html':     html_body,
             'is_published': True,
             'category_id':  category.id if category else False,
+            'cover_image':  cover or False,
         }
         if existing:
             existing.write(vals)
