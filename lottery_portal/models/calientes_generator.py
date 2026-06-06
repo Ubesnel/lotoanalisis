@@ -31,7 +31,14 @@ class CalientesArticleGenerator(models.Model):
         independientemente de si ya está cargado el turno de tarde de hoy.
         """
         if turno == 'noche':
-            return str(date.today())
+            import pytz
+            from datetime import datetime as _dt
+            tz_name = (
+                (self.env.company.partner_id.tz if self.env.company else None)
+                or (self.env.user.tz if self.env.user else None)
+                or 'America/New_York'
+            )
+            return str(_dt.now(pytz.timezone(tz_name)).date())
         # tarde: MAX global + 1 día
         self.env.cr.execute(
             "SELECT (MAX(date) + INTERVAL '1 day')::date AS nd FROM lottery_output"
@@ -123,11 +130,13 @@ class CalientesArticleGenerator(models.Model):
                 'rem_extra_noche_ids':   m2m(turn_data.get('bola_extra_remaining', [])),
             }
 
+        from odoo import fields as odoo_fields
         vals = {
             'title':                title,
             'slug':                 slug,
             'summary':              intro,
             'raw_html':             html_body,
+            'publish_date':         odoo_fields.Datetime.now(),
             'is_published':         False,
             'is_calientes_article': True,
             'category_id':          category.id if category else False,

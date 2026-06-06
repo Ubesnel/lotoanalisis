@@ -816,7 +816,7 @@ class NewsArticleGenerator(models.Model):
         cover = self._load_cover_image(_cover_map.get(option, 'grupos top general.png'))
 
         category = self.env.ref(
-            'lottery_portal.news_category_analisis_semanales', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
@@ -923,7 +923,7 @@ class NewsArticleGenerator(models.Model):
         cover = self._load_cover_image(_cover_map.get(option, 'pintas top general.png'))
 
         category = self.env.ref(
-            'lottery_portal.news_category_analisis_semanales', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
@@ -1318,7 +1318,7 @@ class NewsArticleGenerator(models.Model):
         html_body = self._build_numeros_atrasados_html(date_str, general, tarde, noche)
 
         category = self.env.ref(
-            'lottery_portal.news_category_analisis_semanales', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
         title = f'Top 10 Números más Atrasados — {date_str}'
         intro = f'Ranking de los 10 números con mayor atraso acumulado al {date_str}, en los tres turnos.'
@@ -1452,13 +1452,14 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc      = self.env['lottery.stats.service'].sudo()
-        date_str = today.strftime('%d/%m/%Y')
-        wday     = today.weekday()                              # 0=Mon…6=Sun
-        wcode    = self._WEEKDAY_CODE[wday]
-        wlabel   = self._WEEKDAY_ES[wcode]
+        svc           = self.env['lottery.stats.service'].sudo()
+        wday          = today.weekday()                         # 0=Mon…6=Sun
+        wcode         = self._WEEKDAY_CODE[wday]
+        wlabel        = self._WEEKDAY_ES[wcode]
+        # today = ayer del cron → today + 1 = fecha real de generación (timezone-aware)
+        generated_str = (today + timedelta(days=1)).strftime('%d/%m/%Y')
         # Un único artículo por día de semana — sin fecha en el slug
-        slug     = f'numeros-atrasados-{wcode}'
+        slug          = f'numeros-atrasados-{wcode}'
 
         rows = svc.get_top_10_por_dia_semana(wcode)
 
@@ -1480,13 +1481,13 @@ class NewsArticleGenerator(models.Model):
             })
 
         html_body = self._build_numeros_dia_semana_html(
-            date_str, wlabel, wcode, enriched
+            generated_str, wlabel, wcode, enriched
         )
 
         category = self.env.ref(
             'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
-        title = f'Números más atrasados los {wlabel} — {date_str}'
+        title = f'Números más atrasados los {wlabel} — {generated_str}'
         intro = (f'Análisis de los 10 números con mayor atraso acumulado '
                  f'los {wlabel}, con tendencia día/noche.')
 
@@ -1501,12 +1502,14 @@ class NewsArticleGenerator(models.Model):
         }
         cover = self._load_cover_image(_cover_map.get(wcode, 'atraso numeros lunes.png'))
 
+        from odoo import fields as odoo_fields
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
             'summary':      intro,
             'raw_html':     html_body,
+            'publish_date': odoo_fields.Datetime.now(),
             'is_published': True,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
@@ -1659,7 +1662,7 @@ class NewsArticleGenerator(models.Model):
         html_body = self._build_secuencias_tipo_html(grp_type, date_str, data, cross_data)
 
         category = self.env.ref(
-            'lottery_portal.news_category_analisis_mensuales', raise_if_not_found=False
+            'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
 
         if grp_type == 'line':
@@ -2201,15 +2204,16 @@ class NewsArticleGenerator(models.Model):
             'do': 'mas salidores domingo.png',
         }
 
-        wcode    = _WCODE[today.weekday()]
-        wlabel   = _WLABEL[wcode]
-        date_str = today.strftime('%d/%m/%Y')
-        slug     = f'numeros-salidores-{wcode}'
+        wcode         = _WCODE[today.weekday()]
+        wlabel        = _WLABEL[wcode]
+        # today = ayer del cron → today + 1 = fecha real de generación (timezone-aware)
+        generated_str = (today + timedelta(days=1)).strftime('%d/%m/%Y')
+        slug          = f'numeros-salidores-{wcode}'
 
         svc  = self.env['lottery.stats.service'].sudo()
         data = svc.get_top_numeros_por_dia_completo(wcode)
 
-        html_body = self._build_numeros_salidores_dia_html(date_str, wlabel, wcode, data)
+        html_body = self._build_numeros_salidores_dia_html(generated_str, wlabel, wcode, data)
         cover     = self._load_cover_image(_cover_map.get(wcode, 'atraso numeros lunes.png'))
 
         category = self.env.ref(
@@ -2219,15 +2223,17 @@ class NewsArticleGenerator(models.Model):
         intro = (
             f'Top 10 números con mayor frecuencia histórica los {wlabel} en el '
             f'Pick 3 Florida, con análisis por turno (Tarde y Noche) y sus '
-            f'atrasos actuales. Actualizado al {date_str}.'
+            f'atrasos actuales. Actualizado al {generated_str}.'
         )
 
+        from odoo import fields as odoo_fields
         existing = self.search([('slug', '=', slug)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
             'summary':      intro,
             'raw_html':     html_body,
+            'publish_date': odoo_fields.Datetime.now(),
             'is_published': True,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
