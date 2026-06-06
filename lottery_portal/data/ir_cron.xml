@@ -122,8 +122,8 @@
 
     </data>
 
-    <!-- noupdate="0" para que estos crons se actualicen en cada upgrade -->
-    <data noupdate="0">
+    <!-- noupdate="1": el upgrade no sobreescribe cambios manuales en la BD -->
+    <data noupdate="1">
 
         <!-- Artículo combinado Tarde: calientes + fríos del sorteo de la tarde -->
         <record id="cron_generate_calientes" model="ir.cron">

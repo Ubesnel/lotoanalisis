@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <!--Página Principal-->
-        <record id="website_faq_category_pagina_principal" model="website.faq.category">
-            <field name="name">Página Principal</field>
-            <field name="sequence">1</field>
-            <field name="icon">fa-home</field>
-        </record>
-
-
         <!--Grupos-->
         <record id="website_faq_category_grupos" model="website.faq.category">
             <field name="name">Grupos</field>
