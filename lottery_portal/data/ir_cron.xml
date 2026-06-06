@@ -62,31 +62,31 @@
         </record>
 
         <record id="cron_generate_secuencias_lineas" model="ir.cron">
-            <field name="name">Generar Artículo mensual — Secuencias de Líneas</field>
+            <field name="name">Generar Artículo diario — Secuencias de Líneas</field>
             <field name="model_id" ref="lottery_portal.model_news_article"/>
             <field name="state">code</field>
             <field name="code">model.cron_generate_secuencias_lineas()</field>
             <field name="interval_number">1</field>
-            <field name="interval_type">months</field>
+            <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
             <field name="priority">5</field>
             <field name="active" eval="True"/>
         </record>
 
         <record id="cron_generate_secuencias_terminales" model="ir.cron">
-            <field name="name">Generar Artículo mensual — Secuencias de Terminales</field>
+            <field name="name">Generar Artículo diario — Secuencias de Terminales</field>
             <field name="model_id" ref="lottery_portal.model_news_article"/>
             <field name="state">code</field>
             <field name="code">model.cron_generate_secuencias_terminales()</field>
             <field name="interval_number">1</field>
-            <field name="interval_type">months</field>
+            <field name="interval_type">days</field>
             <field name="numbercall">-1</field>
             <field name="priority">5</field>
             <field name="active" eval="True"/>
         </record>
 
         <record id="cron_generate_fin_de_semana_grupos" model="ir.cron">
-            <field name="name">Generar Artículo mensual — Grupos Sábado+Domingo</field>
+            <field name="name">Generar Artículo semanal — Grupos Sábado+Domingo</field>
             <field name="model_id" ref="lottery_portal.model_news_article"/>
             <field name="state">code</field>
             <field name="code">model.cron_generate_fin_de_semana_grupos()</field>

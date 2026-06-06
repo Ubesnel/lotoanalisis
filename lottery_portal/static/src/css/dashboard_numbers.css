@@ -636,6 +636,36 @@
     .srt-badge strong { font-size: 10px; }
 }
 
+/* ── Responsive stat-rank en móviles pequeños ─────────────── */
+@media (max-width: 420px) {
+    .stat-rank-item {
+        gap: 5px;
+        padding: 4px 5px;
+    }
+    .stat-rank-ball {
+        min-width: 26px !important;
+        height: 26px !important;
+        border-radius: 13px !important;
+        font-size: 10px !important;
+        padding: 0 5px !important;
+    }
+    .stat-rank-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1px;
+        justify-content: center;
+    }
+    .stat-rank-count {
+        font-size: 12px;
+        line-height: 1.2;
+    }
+    .stat-rank-date {
+        font-size: 10px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+}
+
 /* ── Etiquetas internas de Consultar acompañantes ─────────────── */
 .card-body .text-center.fw-bold[style*="color:#8c6ca8"]:not(.btn),
 .card-body .fw-bold[style*="color:#8c6ca8"]:not(.btn) {

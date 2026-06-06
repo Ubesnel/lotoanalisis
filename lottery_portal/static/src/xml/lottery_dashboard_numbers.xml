@@ -436,62 +436,7 @@
                     </div>
                 </div>
 
-                <!-- Acompañantes -->
-                <div class="col-md-3 mb-2">
-                    <div class="dn-col-header">
-                        <i class="fa fa-users me-1"/> Consultas
-                    </div>
-                    <div class="card shadow border-0 mb-2" style="overflow: visible !important;">
-                        <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
-                            <i class="fa fa-search me-2"/> Consultar acompañantes
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="position-relative mb-3">
-                                <input type="text"
-                                       class="form-control"
-                                       placeholder="Escriba el número..."
-                                       t-model="state.numero_text"
-                                       t-on-input="onBuscarNumero"/>
-                                <div class="dropdown-menu show w-100"
-                                     t-if="state.sugerencias.length"
-                                     style="max-height:200px; overflow:auto; z-index:1050;">
-                                    <t t-foreach="state.sugerencias" t-as="n" t-key="n.id">
-                                        <a class="dropdown-item" href="#"
-                                           t-on-click="seleccionarNumero"
-                                           t-att-data-id="n.id"
-                                           t-att-data-name="n.name">
-                                            <t t-esc="n.name"/>
-                                        </a>
-                                    </t>
-                                </div>
-                            </div>
-                            <t t-if="state.socios_posteriores.length">
-                                <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes posteriores</div>
-                                <div class="balls-container-343 mb-3">
-                                    <t t-foreach="state.socios_posteriores" t-as="sp" t-key="sp.name">
-                                        <span t-att-class="'ball ' + getBallIdx10(sp_index)"
-                                              t-att-title="'Veces: ' + sp.cantidad_veces">
-                                            <t t-esc="sp.name"/>
-                                        </span>
-                                    </t>
-                                </div>
-                            </t>
-                            <t t-if="state.socios_anteriores.length">
-                                <div class="text-center fw-bold mb-1" style="color:#8c6ca8;">Acompañantes anteriores</div>
-                                <div class="balls-container-343">
-                                    <t t-foreach="state.socios_anteriores" t-as="sa" t-key="sa.name">
-                                        <span t-att-class="'ball ' + getBallIdx10(sa_index)"
-                                              t-att-title="'Veces: ' + sa.cantidad_veces">
-                                            <t t-esc="sa.name"/>
-                                        </span>
-                                    </t>
-                                </div>
-                            </t>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Repeticiones + Pegadas -->
+                <!-- Más repeticiones consecutivas -->
                 <div class="col-md-3 mb-2">
                     <div class="dn-col-header">
                         <i class="fa fa-bar-chart me-1"/> Rankings
@@ -503,45 +448,26 @@
                         <div class="card-body p-2">
                             <div class="stat-rank-list">
                                 <t t-foreach="state.top_repeticiones" t-as="rep" t-key="rep.name">
-                                    <t t-if="rep_index &lt; 7">
-                                        <div class="stat-rank-item">
-                                            <span class="stat-rank-pos">#<t t-esc="rep_index + 1"/></span>
-                                            <span t-att-class="'ball stat-rank-ball ' + getBallHotIdx(rep_index)">
-                                                <t t-esc="rep.name"/>
-                                            </span>
-                                            <div class="stat-rank-info">
-                                                <span class="stat-rank-count">× <t t-esc="rep.repeticiones"/></span>
-                                                <span class="stat-rank-date"><i class="fa fa-calendar-o"/> <t t-esc="rep.ultima_repeticion"/></span>
-                                            </div>
+                                    <div class="stat-rank-item">
+                                        <span class="stat-rank-pos">#<t t-esc="rep_index + 1"/></span>
+                                        <span t-att-class="'ball stat-rank-ball ' + getBallHotIdx(rep_index)">
+                                            <t t-esc="rep.name"/>
+                                        </span>
+                                        <div class="stat-rank-info">
+                                            <span class="stat-rank-count">× <t t-esc="rep.repeticiones"/></span>
+                                            <span class="stat-rank-date"><i class="fa fa-calendar-o"/> <t t-esc="rep.ultima_repeticion"/></span>
                                         </div>
-                                    </t>
-                                </t>
-                                <div class="num-info-body" t-att-class="state.showAllRepeticiones ? 'open' : ''">
-                                    <t t-foreach="state.top_repeticiones" t-as="rep" t-key="rep.name">
-                                        <t t-if="rep_index &gt;= 7">
-                                            <div class="stat-rank-item">
-                                                <span class="stat-rank-pos">#<t t-esc="rep_index + 1"/></span>
-                                                <span t-att-class="'ball stat-rank-ball ' + getBallHotIdx(rep_index)">
-                                                    <t t-esc="rep.name"/>
-                                                </span>
-                                                <div class="stat-rank-info">
-                                                    <span class="stat-rank-count">× <t t-esc="rep.repeticiones"/></span>
-                                                    <span class="stat-rank-date"><i class="fa fa-calendar-o"/> <t t-esc="rep.ultima_repeticion"/></span>
-                                                </div>
-                                            </div>
-                                        </t>
-                                    </t>
-                                </div>
-                                <t t-if="state.top_repeticiones.length &gt; 7">
-                                    <div class="stat-rank-toggle" t-on-click="toggleRepeticiones">
-                                        <t t-if="!state.showAllRepeticiones">
-                                            <i class="fa fa-chevron-down me-1"/>Ver +<t t-esc="state.top_repeticiones.length - 7"/> más
-                                        </t>
-                                        <t t-else=""><i class="fa fa-chevron-up me-1"/>Ver menos</t>
                                     </div>
                                 </t>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Números con más pegadas -->
+                <div class="col-md-3 mb-2">
+                    <div class="dn-col-header">
+                        <i class="fa fa-bar-chart me-1"/> Rankings
                     </div>
                     <div class="card shadow border-0 mb-2">
                         <div class="card-header text-white text-center fw-bold" style="background-color:#8c6ca8;">
@@ -550,41 +476,15 @@
                         <div class="card-body p-2">
                             <div class="stat-rank-list">
                                 <t t-foreach="state.top_pegados" t-as="t_peg" t-key="t_peg.name">
-                                    <t t-if="t_peg_index &lt; 7">
-                                        <div class="stat-rank-item">
-                                            <span class="stat-rank-pos">#<t t-esc="t_peg_index + 1"/></span>
-                                            <span t-att-class="'ball stat-rank-ball ' + getBallHotIdx(t_peg_index)">
-                                                <t t-esc="t_peg.name"/>
-                                            </span>
-                                            <div class="stat-rank-info">
-                                                <span class="stat-rank-count">× <t t-esc="t_peg.pegadas"/></span>
-                                                <span class="stat-rank-date"><i class="fa fa-calendar-o"/> <t t-esc="t_peg.ultima_pegada"/></span>
-                                            </div>
+                                    <div class="stat-rank-item">
+                                        <span class="stat-rank-pos">#<t t-esc="t_peg_index + 1"/></span>
+                                        <span t-att-class="'ball stat-rank-ball ' + getBallHotIdx(t_peg_index)">
+                                            <t t-esc="t_peg.name"/>
+                                        </span>
+                                        <div class="stat-rank-info">
+                                            <span class="stat-rank-count">× <t t-esc="t_peg.pegadas"/></span>
+                                            <span class="stat-rank-date"><i class="fa fa-calendar-o"/> <t t-esc="t_peg.ultima_pegada"/></span>
                                         </div>
-                                    </t>
-                                </t>
-                                <div class="num-info-body" t-att-class="state.showAllPegados ? 'open' : ''">
-                                    <t t-foreach="state.top_pegados" t-as="t_peg" t-key="t_peg.name">
-                                        <t t-if="t_peg_index &gt;= 7">
-                                            <div class="stat-rank-item">
-                                                <span class="stat-rank-pos">#<t t-esc="t_peg_index + 1"/></span>
-                                                <span t-att-class="'ball stat-rank-ball ' + getBallHotIdx(t_peg_index)">
-                                                    <t t-esc="t_peg.name"/>
-                                                </span>
-                                                <div class="stat-rank-info">
-                                                    <span class="stat-rank-count">× <t t-esc="t_peg.pegadas"/></span>
-                                                    <span class="stat-rank-date"><i class="fa fa-calendar-o"/> <t t-esc="t_peg.ultima_pegada"/></span>
-                                                </div>
-                                            </div>
-                                        </t>
-                                    </t>
-                                </div>
-                                <t t-if="state.top_pegados.length &gt; 7">
-                                    <div class="stat-rank-toggle" t-on-click="togglePegados">
-                                        <t t-if="!state.showAllPegados">
-                                            <i class="fa fa-chevron-down me-1"/>Ver +<t t-esc="state.top_pegados.length - 7"/> más
-                                        </t>
-                                        <t t-else=""><i class="fa fa-chevron-up me-1"/>Ver menos</t>
                                     </div>
                                 </t>
                             </div>

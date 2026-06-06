@@ -11,9 +11,9 @@ export class NumerosCalientes extends Component {
             data: { afternoon: { numbers: [], centenas: [], bola_extra: [] },
                     evening:   { numbers: [], centenas: [], bola_extra: [] } },
             loading: true,
-            showHot:       false,   // sección calientes colapsada por defecto
-            showCold:      false,   // sección fríos colapsada por defecto
-            showRemaining: false,   // sección restantes colapsada por defecto
+            showHot:       true,
+            showCold:      true,
+            showRemaining: true,
         });
 
         onWillStart(async () => {
@@ -24,15 +24,17 @@ export class NumerosCalientes extends Component {
         });
     }
 
-    get current()           { return this.state.data[this.state.turn]; }
-    get numbers()           { return this.current.numbers           || []; }
-    get centenas()          { return this.current.centenas          || []; }
-    get bolaExtra()         { return this.current.bola_extra        || []; }
-    get numbersCold()       { return this.current.numbers_cold      || []; }
-    get centenasCold()      { return this.current.centenas_cold     || []; }
-    get bolaExtraCold()     { return this.current.bola_extra_cold   || []; }
-    get numbersRemaining()  { return this.current.numbers_remaining || []; }
-    get nextDraw()          { return this.current.next_draw         || ''; }
+    get current()                { return this.state.data[this.state.turn]; }
+    get numbers()                { return this.current.numbers              || []; }
+    get centenas()               { return this.current.centenas             || []; }
+    get bolaExtra()              { return this.current.bola_extra           || []; }
+    get numbersCold()            { return this.current.numbers_cold         || []; }
+    get centenasCold()           { return this.current.centenas_cold        || []; }
+    get bolaExtraCold()          { return this.current.bola_extra_cold      || []; }
+    get numbersRemaining()       { return this.current.numbers_remaining    || []; }
+    get centenasRemaining()      { return this.current.centenas_remaining   || []; }
+    get bolaExtraRemaining()     { return this.current.bola_extra_remaining || []; }
+    get nextDraw()               { return this.current.next_draw            || ''; }
 
     onChangeTurn(ev)  { this.state.turn = ev.target.value; }
     toggleHot()       { this.state.showHot       = !this.state.showHot;       }
