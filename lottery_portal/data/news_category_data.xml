@@ -2,31 +2,15 @@
 <odoo>
     <data noupdate="1">
         <record id="news_category_analisis_mensuales" model="news.category">
-            <field name="name">Análisis Mensuales</field>
+            <field name="name">Mensuales</field>
             <field name="slug">analisis-mensuales</field>
             <field name="icon">fa-calendar</field>
             <field name="color">#6f4a8e</field>
             <field name="sequence">10</field>
         </record>
 
-        <record id="news_category_analisis_quincenales" model="news.category">
-            <field name="name">Análisis Quincenales</field>
-            <field name="slug">analisis-quincenales</field>
-            <field name="icon">fa-calendar-o</field>
-            <field name="color">#0e7490</field>
-            <field name="sequence">20</field>
-        </record>
-
-        <record id="news_category_analisis_semanales" model="news.category">
-            <field name="name">Análisis Semanales</field>
-            <field name="slug">analisis-semanales</field>
-            <field name="icon">fa-bar-chart</field>
-            <field name="color">#9b3a10</field>
-            <field name="sequence">30</field>
-        </record>
-
         <record id="news_category_analisis_diarios" model="news.category">
-            <field name="name">Análisis Diarios</field>
+            <field name="name">Diarios</field>
             <field name="slug">analisis-diarios</field>
             <field name="icon">fa-clock-o</field>
             <field name="color">#b45309</field>
@@ -42,7 +26,7 @@
         </record>
 
         <record id="news_category_sorteos_diarios" model="news.category">
-            <field name="name">Sorteos diarios</field>
+            <field name="name">Pronósticos para Sorteos</field>
             <field name="slug">sorteos</field>
             <field name="icon">fa-ticket</field>
             <field name="color">#006C67</field>
