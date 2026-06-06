@@ -145,6 +145,7 @@
                             <field name="is_featured" string="Artículo destacado"/>
                             <field name="allow_comments"/>
                             <field name="is_calientes_article" string="🔥 Artículo de calientes"/>
+                            <field name="article_key" placeholder="ej: atraso_dia_vi" readonly="1"/>
                         </group>
                         <group string="SEO">
                             <field name="meta_title" placeholder="Título SEO (opcional)"/>
