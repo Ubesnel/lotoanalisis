@@ -90,11 +90,16 @@
                             class="btn-primary" invisible="is_published"/>
                     <button name="action_unpublish" type="object" string="Despublicar"
                             invisible="not is_published"/>
-                    <button name="action_refresh_calientes" type="object"
-                            string="🔥 Actualizar datos calientes"
+                    <button name="action_swap_numbers" type="object"
+                            string="🔀 Intercambiar números"
+                            class="btn-secondary"
+                            invisible="not is_calientes_article"
+                            confirm="¿Ejecutar el intercambio seleccionado?"/>
+                    <button name="action_update_content" type="object"
+                            string="🔄 Actualizar contenido"
                             class="btn-warning"
                             invisible="not is_calientes_article"
-                            confirm="¿Recalcular los datos calientes y actualizar el artículo?"/>
+                            confirm="¿Regenerar el HTML del artículo con los números actuales?"/>
                     <field name="is_published" widget="boolean_toggle"/>
                 </header>
                 <sheet>
@@ -163,7 +168,6 @@
                         <page string="🔥 Calientes" invisible="not is_calientes_article">
                             <group string="Tarde ☀">
                                 <field name="hot_number_tarde_ids" widget="many2many_tags"
-                                       options="{'color_field': 'name'}"
                                        string="Números calientes (30)"/>
                                 <field name="hot_centena_tarde_ids" widget="many2many_tags"
                                        string="Centenas calientes (top 4)"/>
@@ -178,10 +182,54 @@
                                 <field name="hot_extra_noche_ids" widget="many2many_tags"
                                        string="Bola extra caliente (top 4)"/>
                             </group>
+                        </page>
+                        <page string="🔁 Restantes" invisible="not is_calientes_article">
+                            <group string="Tarde ☀">
+                                <field name="rem_number_tarde_ids" widget="many2many_tags"
+                                       string="Números restantes (~40)"/>
+                                <field name="rem_centena_tarde_ids" widget="many2many_tags"
+                                       string="Centenas restantes"/>
+                                <field name="rem_extra_tarde_ids" widget="many2many_tags"
+                                       string="Bola extra restante"/>
+                            </group>
+                            <group string="Noche 🌙">
+                                <field name="rem_number_noche_ids" widget="many2many_tags"
+                                       string="Números restantes (~40)"/>
+                                <field name="rem_centena_noche_ids" widget="many2many_tags"
+                                       string="Centenas restantes"/>
+                                <field name="rem_extra_noche_ids" widget="many2many_tags"
+                                       string="Bola extra restante"/>
+                            </group>
+                        </page>
+                        <page string="❄️ Fríos" invisible="not is_calientes_article">
+                            <group string="Tarde ☀">
+                                <field name="cold_number_tarde_ids" widget="many2many_tags"
+                                       string="Números fríos (30)"/>
+                                <field name="cold_centena_tarde_ids" widget="many2many_tags"
+                                       string="Centenas frías (top 4)"/>
+                                <field name="cold_extra_tarde_ids" widget="many2many_tags"
+                                       string="Bola extra fría (top 4)"/>
+                            </group>
+                            <group string="Noche 🌙">
+                                <field name="cold_number_noche_ids" widget="many2many_tags"
+                                       string="Números fríos (30)"/>
+                                <field name="cold_centena_noche_ids" widget="many2many_tags"
+                                       string="Centenas frías (top 4)"/>
+                                <field name="cold_extra_noche_ids" widget="many2many_tags"
+                                       string="Bola extra fría (top 4)"/>
+                            </group>
+                        </page>
+                        <page string="🔀 Intercambio" invisible="not is_calientes_article">
+                            <group string="Seleccionar combinación">
+                                <field name="swap_selection" widget="radio"/>
+                            </group>
                             <div class="alert alert-info" role="alert">
-                                <i class="fa fa-info-circle"/> Modifica los registros arriba y luego pulsa
-                                <strong>🔥 Actualizar datos calientes</strong> para regenerar el HTML del artículo
-                                con la selección actual.
+                                <i class="fa fa-info-circle"/>
+                                <strong>Cómo usar:</strong><br/>
+                                1. Selecciona la combinación a intercambiar (solo se intercambian los <strong>números</strong>, no centenas ni bola extra).<br/>
+                                2. Pulsa <strong>🔀 Intercambiar números</strong> en la barra superior.<br/>
+                                3. Verifica los datos en las tabs Calientes / Restantes / Fríos.<br/>
+                                4. Pulsa <strong>🔄 Actualizar contenido</strong> para regenerar el HTML del artículo.
                             </div>
                         </page>
                     </notebook>

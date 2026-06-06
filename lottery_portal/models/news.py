@@ -96,6 +96,62 @@ class NewsArticle(models.Model):
         'lottery.number', 'news_article_hot_ext_noche_rel', 'article_id', 'number_id',
         string='Bola extra caliente · Noche',
         domain=[('can_use_hundreds', '=', True)])
+
+    # ── Fríos ──────────────────────────────────────────────────────────────
+    cold_number_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_cold_num_tarde_rel', 'article_id', 'number_id',
+        string='Números fríos · Tarde')
+    cold_number_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_cold_num_noche_rel', 'article_id', 'number_id',
+        string='Números fríos · Noche')
+    cold_centena_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_cold_cen_tarde_rel', 'article_id', 'number_id',
+        string='Centenas frías · Tarde',
+        domain=[('can_use_hundreds', '=', True)])
+    cold_centena_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_cold_cen_noche_rel', 'article_id', 'number_id',
+        string='Centenas frías · Noche',
+        domain=[('can_use_hundreds', '=', True)])
+    cold_extra_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_cold_ext_tarde_rel', 'article_id', 'number_id',
+        string='Bola extra fría · Tarde',
+        domain=[('can_use_hundreds', '=', True)])
+    cold_extra_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_cold_ext_noche_rel', 'article_id', 'number_id',
+        string='Bola extra fría · Noche',
+        domain=[('can_use_hundreds', '=', True)])
+
+    # ── Restantes ──────────────────────────────────────────────────────────
+    rem_number_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_rem_num_tarde_rel', 'article_id', 'number_id',
+        string='Números restantes · Tarde')
+    rem_number_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_rem_num_noche_rel', 'article_id', 'number_id',
+        string='Números restantes · Noche')
+    rem_centena_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_rem_cen_tarde_rel', 'article_id', 'number_id',
+        string='Centenas restantes · Tarde',
+        domain=[('can_use_hundreds', '=', True)])
+    rem_centena_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_rem_cen_noche_rel', 'article_id', 'number_id',
+        string='Centenas restantes · Noche',
+        domain=[('can_use_hundreds', '=', True)])
+    rem_extra_tarde_ids = fields.Many2many(
+        'lottery.number', 'news_article_rem_ext_tarde_rel', 'article_id', 'number_id',
+        string='Bola extra restante · Tarde',
+        domain=[('can_use_hundreds', '=', True)])
+    rem_extra_noche_ids = fields.Many2many(
+        'lottery.number', 'news_article_rem_ext_noche_rel', 'article_id', 'number_id',
+        string='Bola extra restante · Noche',
+        domain=[('can_use_hundreds', '=', True)])
+
+    # ── Intercambio ────────────────────────────────────────────────────────
+    swap_selection = fields.Selection([
+        ('hot_rem',  'Calientes ↔ Restantes'),
+        ('hot_cold', 'Calientes ↔ Fríos'),
+        ('rem_cold', 'Restantes ↔ Fríos'),
+    ], string='Intercambiar', help='Selecciona la combinación y pulsa "Intercambiar números"')
+
     author_id = fields.Many2one('res.users', string='Autor', default=lambda self: self.env.user)
     author_name = fields.Char(string='Nombre autor visible', help='Si vacío, se usa el nombre del usuario')
     publish_date = fields.Datetime(string='Fecha de publicación', default=fields.Datetime.now)

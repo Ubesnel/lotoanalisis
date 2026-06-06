@@ -7,83 +7,7 @@
             <field name="sequence">1</field>
             <field name="icon">fa-home</field>
         </record>
-        <record id="website_faq_pp_1" model="website.faq">
-            <field name="question">¿Qué información brinda Calientes · Próximo Sorteo?</field>
-            <field name="answer">R/ Muestra los 30 números, 4 centenas y 4 bolas extras que tienen mayor probabilidad de salir para el próximo sorteo ya sea Tarde o Noche. Esta información está basada en algoritmos de análisis sobre la información registrada en el sistema, pero no garantiza que haya acierto en los sorteos.</field>
-            <field name="sequence">1</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_2" model="website.faq">
-            <field name="question">¿Qué información brinda Menos Calientes · Próximo Sorteo?</field>
-            <field name="answer">R/ Muestra los 30 números, 4 centenas y 4 bolas extras que tienen menor probabilidad de salir para el próximo sorteo ya sea Tarde o Noche. Esta información está basada en algoritmos de análisis sobre la información registrada en el sistema, pero no garantiza que no salgan en los sorteos.</field>
-            <field name="sequence">2</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_3" model="website.faq">
-            <field name="question">¿Qué información brinda 10 Números más Atrasados por la General, Tarde y Noche?</field>
-            <field name="answer">R/ Muestra los 10 números que más tiempo llevan sin salir según la opción seleccionada. De ellos se muestra también la última fecha y turno en que salieron, para el caso de General el sol representa turno de Tarde y la luna de Noche.</field>
-            <field name="sequence">3</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_4" model="website.faq">
-            <field name="question">¿Qué información brinda 10 Números más Atrasados por Día de la semana?</field>
-            <field name="answer">R/ Muestra los 10 números que más tiempo llevan sin salir por el día de la semana seleccionado. De ellos se muestra también la última fecha y turno en que salieron, el sol representa turno de Tarde y la luna de Noche.</field>
-            <field name="sequence">4</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_5" model="website.faq">
-            <field name="question">¿Qué información brinda Últimas 8 Salidas por día de la semana?</field>
-            <field name="answer">R/ Muestra las últimas 8 salidas por cada día de la semana. Incluye centena, número y bola extra.</field>
-            <field name="sequence">5</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_6" model="website.faq">
-            <field name="question">¿En Buscar Salida Histórica, puedo obtener la información de cualquier sorteo de Pick3 Florida?</field>
-            <field name="answer">R/ Si, te muestra los resultados de sorteos para la fecha seleccionada en cada turno.</field>
-            <field name="sequence">6</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_7" model="website.faq">
-            <field name="question">¿Qué información brinda Líneas más Atrasadas por la General, Tarde y Noche?</field>
-            <field name="answer">R/ Muestra de forma ordenada las líneas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
-            <field name="sequence">7</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_8" model="website.faq">
-            <field name="question">¿Qué información brinda Terminales más Atrasados por la General, Tarde y Noche?</field>
-            <field name="answer">R/ Muestra de forma ordenada los terminales que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
-            <field name="sequence">8</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_9" model="website.faq">
-            <field name="question">¿Qué información brinda Parejas más Atrasadas por la General, Tarde y Noche?</field>
-            <field name="answer">R/ Muestra de forma ordenada las parejas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente. También muestra la fecha de la última vez que salió la pareja.</field>
-            <field name="sequence">9</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_10" model="website.faq">
-            <field name="question">¿Qué información brinda 4 Centenas más Atrasadas por la General, Tarde y Noche?</field>
-            <field name="answer">R/ Muestra de forma ordenada las centenas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
-            <field name="sequence">10</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
-        <record id="website_faq_pp_11" model="website.faq">
-            <field name="question">¿Qué información brinda 4 Bolas extras más Atrasadas por la General, Tarde y Noche?</field>
-            <field name="answer">R/ Muestra de forma ordenada las bolas extras que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
-            <field name="sequence">11</field>
-            <field name="active" eval="True"/>
-            <field name="category_id" ref="lottery_portal.website_faq_category_pagina_principal"/>
-        </record>
+
 
         <!--Grupos-->
         <record id="website_faq_category_grupos" model="website.faq.category">
@@ -1042,6 +966,83 @@
             <field name="question">¿Qué criterio se aplica para los grupos Suma?</field>
             <field name="answer">R/ La suma entre decena y unidad se corresponde al nombre del grupo, cuando la suma es mayor a nueve se quita el 1 delante del resultado de la suma.</field>
             <field name="sequence">100</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_1" model="website.faq">
+            <field name="question">¿Qué información brinda Calientes · Próximo Sorteo?</field>
+            <field name="answer">R/ Muestra los 30 números, 4 centenas y 4 bolas extras que tienen mayor probabilidad de salir para el próximo sorteo ya sea Tarde o Noche. Esta información está basada en algoritmos de análisis sobre la información registrada en el sistema, pero no garantiza que haya acierto en los sorteos.</field>
+            <field name="sequence">1</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_2" model="website.faq">
+            <field name="question">¿Qué información brinda Menos Calientes · Próximo Sorteo?</field>
+            <field name="answer">R/ Muestra los 30 números, 4 centenas y 4 bolas extras que tienen menor probabilidad de salir para el próximo sorteo ya sea Tarde o Noche. Esta información está basada en algoritmos de análisis sobre la información registrada en el sistema, pero no garantiza que no salgan en los sorteos.</field>
+            <field name="sequence">2</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_3" model="website.faq">
+            <field name="question">¿Qué información brinda 10 Números más Atrasados por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra los 10 números que más tiempo llevan sin salir según la opción seleccionada. De ellos se muestra también la última fecha y turno en que salieron, para el caso de General el sol representa turno de Tarde y la luna de Noche.</field>
+            <field name="sequence">3</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_4" model="website.faq">
+            <field name="question">¿Qué información brinda 10 Números más Atrasados por Día de la semana?</field>
+            <field name="answer">R/ Muestra los 10 números que más tiempo llevan sin salir por el día de la semana seleccionado. De ellos se muestra también la última fecha y turno en que salieron, el sol representa turno de Tarde y la luna de Noche.</field>
+            <field name="sequence">4</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_5" model="website.faq">
+            <field name="question">¿Qué información brinda Últimas 8 Salidas por día de la semana?</field>
+            <field name="answer">R/ Muestra las últimas 8 salidas por cada día de la semana. Incluye centena, número y bola extra.</field>
+            <field name="sequence">5</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_6" model="website.faq">
+            <field name="question">¿En Buscar Salida Histórica, puedo obtener la información de cualquier sorteo de Pick3 Florida?</field>
+            <field name="answer">R/ Si, te muestra los resultados de sorteos para la fecha seleccionada en cada turno.</field>
+            <field name="sequence">6</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_7" model="website.faq">
+            <field name="question">¿Qué información brinda Líneas más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las líneas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">7</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_8" model="website.faq">
+            <field name="question">¿Qué información brinda Terminales más Atrasados por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada los terminales que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">8</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_9" model="website.faq">
+            <field name="question">¿Qué información brinda Parejas más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las parejas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente. También muestra la fecha de la última vez que salió la pareja.</field>
+            <field name="sequence">9</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_10" model="website.faq">
+            <field name="question">¿Qué información brinda 4 Centenas más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las centenas que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">10</field>
+            <field name="active" eval="True"/>
+            <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
+        </record>
+        <record id="website_faq_pp_11" model="website.faq">
+            <field name="question">¿Qué información brinda 4 Bolas extras más Atrasadas por la General, Tarde y Noche?</field>
+            <field name="answer">R/ Muestra de forma ordenada las bolas extras que más tiempo llevan sin salir por la General, Tarde y Noche respectivamente.</field>
+            <field name="sequence">11</field>
             <field name="active" eval="True"/>
             <field name="category_id" ref="lottery_portal.website_faq_category_generales"/>
         </record>

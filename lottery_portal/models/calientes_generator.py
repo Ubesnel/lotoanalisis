@@ -86,15 +86,27 @@ class CalientesArticleGenerator(models.Model):
 
         if is_tarde:
             m2m_vals = {
-                'hot_number_tarde_ids':  m2m(turn_data.get('numbers',    [])),
-                'hot_centena_tarde_ids': m2m(turn_data.get('centenas',   [])),
-                'hot_extra_tarde_ids':   m2m(turn_data.get('bola_extra', [])),
+                'hot_number_tarde_ids':  m2m(turn_data.get('numbers',              [])),
+                'hot_centena_tarde_ids': m2m(turn_data.get('centenas',             [])),
+                'hot_extra_tarde_ids':   m2m(turn_data.get('bola_extra',           [])),
+                'cold_number_tarde_ids': m2m(turn_data.get('numbers_cold',         [])),
+                'cold_centena_tarde_ids':m2m(turn_data.get('centenas_cold',        [])),
+                'cold_extra_tarde_ids':  m2m(turn_data.get('bola_extra_cold',      [])),
+                'rem_number_tarde_ids':  m2m(turn_data.get('numbers_remaining',    [])),
+                'rem_centena_tarde_ids': m2m(turn_data.get('centenas_remaining',   [])),
+                'rem_extra_tarde_ids':   m2m(turn_data.get('bola_extra_remaining', [])),
             }
         else:
             m2m_vals = {
-                'hot_number_noche_ids':  m2m(turn_data.get('numbers',    [])),
-                'hot_centena_noche_ids': m2m(turn_data.get('centenas',   [])),
-                'hot_extra_noche_ids':   m2m(turn_data.get('bola_extra', [])),
+                'hot_number_noche_ids':  m2m(turn_data.get('numbers',              [])),
+                'hot_centena_noche_ids': m2m(turn_data.get('centenas',             [])),
+                'hot_extra_noche_ids':   m2m(turn_data.get('bola_extra',           [])),
+                'cold_number_noche_ids': m2m(turn_data.get('numbers_cold',         [])),
+                'cold_centena_noche_ids':m2m(turn_data.get('centenas_cold',        [])),
+                'cold_extra_noche_ids':  m2m(turn_data.get('bola_extra_cold',      [])),
+                'rem_number_noche_ids':  m2m(turn_data.get('numbers_remaining',    [])),
+                'rem_centena_noche_ids': m2m(turn_data.get('centenas_remaining',   [])),
+                'rem_extra_noche_ids':   m2m(turn_data.get('bola_extra_remaining', [])),
             }
 
         vals = {
@@ -118,60 +130,118 @@ class CalientesArticleGenerator(models.Model):
             _logger.info('Created calientes-frios-%s article', turno)
 
     # ─────────────────────────────────────────────────────────────────────
-    # "Actualizar datos" button — refreshes calientes section only
+    # Helpers para reconstruir turn_data desde campos M2M almacenados
     # ─────────────────────────────────────────────────────────────────────
 
-    def action_refresh_calientes(self):
+    def _m2m_to_num_list(self, records):
+        """Convierte registros lottery.number a lista [{name, score}] para números 00-99."""
+        return [{'name': str(r.name).zfill(2), 'score': ''} for r in records]
+
+    def _m2m_to_ceb_list(self, records):
+        """Convierte registros lottery.number a lista [{name}] para centenas/bola extra (0-9)."""
+        return [{'name': str(r.name)} for r in records]
+
+    def _turn_data_from_m2m(self, sfx, date_str):
+        """Construye turn_data a partir de los campos M2M del artículo."""
+        return {
+            'numbers':      self._m2m_to_num_list(self[f'hot_number_{sfx}_ids']),
+            'centenas':     self._m2m_to_ceb_list(self[f'hot_centena_{sfx}_ids']),
+            'bola_extra':   self._m2m_to_ceb_list(self[f'hot_extra_{sfx}_ids']),
+            'numbers_cold': self._m2m_to_num_list(self[f'cold_number_{sfx}_ids']),
+            'centenas_cold':self._m2m_to_ceb_list(self[f'cold_centena_{sfx}_ids']),
+            'bola_extra_cold': self._m2m_to_ceb_list(self[f'cold_extra_{sfx}_ids']),
+            'next_draw':    date_str,
+        }
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Intercambiar números
+    # ─────────────────────────────────────────────────────────────────────
+
+    def action_swap_numbers(self):
+        self.ensure_one()
+        swap = self.swap_selection
+        if not swap:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': 'Selecciona una combinación de intercambio primero.',
+                    'type': 'warning', 'sticky': False,
+                },
+            }
+
+        is_tarde = 'tarde' in (self.slug or '')
+        sfx = 'tarde' if is_tarde else 'noche'
+
+        _logger.info('action_swap_numbers: swap=%s slug=%s sfx=%s', swap, self.slug, sfx)
+
+        # Prefijos de los tres grupos
+        PAIRS = {
+            'hot_rem':  ('hot', 'rem'),
+            'hot_cold': ('hot', 'cold'),
+            'rem_cold': ('rem', 'cold'),
+        }
+        a_pfx, b_pfx = PAIRS[swap]
+
+        # Leer los seis campos actuales
+        a_num = self[f'{a_pfx}_number_{sfx}_ids']
+        b_num = self[f'{b_pfx}_number_{sfx}_ids']
+
+        _logger.info(
+            'action_swap_numbers: a_pfx=%s b_pfx=%s | a_num=%s b_num=%s',
+            a_pfx, b_pfx, a_num.ids, b_num.ids,
+        )
+
+        # Guardar IDs antes del write
+        a_num_ids = a_num.ids[:]
+        b_num_ids = b_num.ids[:]
+
+        # Intercambiar solo números
+        self.write({
+            f'{a_pfx}_number_{sfx}_ids': [(6, 0, b_num_ids)],
+            f'{b_pfx}_number_{sfx}_ids': [(6, 0, a_num_ids)],
+            'swap_selection': None,
+        })
+
+        label = dict(self._fields['swap_selection'].selection).get(swap, swap)
+        # Recargar el formulario para que los widgets M2M reflejen el cambio
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'news.article',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'current',
+            'context': {
+                'default_swap_notification': f'Intercambio "{label}" aplicado.',
+            },
+        }
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Actualizar contenido desde M2M actuales
+    # ─────────────────────────────────────────────────────────────────────
+
+    def action_update_content(self):
         self.ensure_one()
         today_str = self._calientes_today_str()
         date_str  = date.fromisoformat(today_str).strftime('%d/%m/%Y')
 
-        svc  = self.env['lottery.stats.service'].sudo()
-        data = svc.get_calientes_all(today_str)
+        is_tarde = 'tarde' in (self.slug or '')
+        sfx      = 'tarde' if is_tarde else 'noche'
+        label    = 'Tarde' if is_tarde else 'Noche'
+        icon     = '☀' if is_tarde else '🌙'
 
-        is_tarde  = 'tarde' in (self.slug or '')
-        data_key  = 'afternoon' if is_tarde else 'evening'
-        turn_data = data.get(data_key, {})
-        label     = 'Tarde' if is_tarde else 'Noche'
-        icon      = '☀' if is_tarde else '🌙'
-
-        def m2m(lst):
-            return [(6, 0, self._resolve_lottery_numbers(lst).ids)]
-
-        new_cal_html = self._build_calientes_turn_block(turn_data, label, icon, date_str)
-
-        html = self.raw_html or ''
-        html = re.sub(
-            r'<!-- HC_CAL_START -->.*?<!-- HC_CAL_END -->',
-            f'<!-- HC_CAL_START -->{new_cal_html}<!-- HC_CAL_END -->',
-            html, flags=re.DOTALL,
-        )
-        if '<!-- HC_CAL_START -->' not in html:
-            html = self._build_combined_article_html(date_str, turn_data, label, icon)
-
-        if is_tarde:
-            m2m_vals = {
-                'hot_number_tarde_ids':  m2m(turn_data.get('numbers',    [])),
-                'hot_centena_tarde_ids': m2m(turn_data.get('centenas',   [])),
-                'hot_extra_tarde_ids':   m2m(turn_data.get('bola_extra', [])),
-            }
-        else:
-            m2m_vals = {
-                'hot_number_noche_ids':  m2m(turn_data.get('numbers',    [])),
-                'hot_centena_noche_ids': m2m(turn_data.get('centenas',   [])),
-                'hot_extra_noche_ids':   m2m(turn_data.get('bola_extra', [])),
-            }
-
-        self.write({'raw_html': html, **m2m_vals})
+        turn_data = self._turn_data_from_m2m(sfx, date_str)
+        html = self._build_combined_article_html(date_str, turn_data, label, icon)
+        self.write({'raw_html': html})
 
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'message': f'Datos calientes {label} actualizados al {date_str}.',
-                'type': 'success',
-                'sticky': False,
-            },
+            'type': 'ir.actions.act_window',
+            'res_model': 'news.article',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'current',
         }
 
     # ─────────────────────────────────────────────────────────────────────
