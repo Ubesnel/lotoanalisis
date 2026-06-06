@@ -145,6 +145,13 @@ class NewsArticle(models.Model):
         string='Bola extra restante · Noche',
         domain=[('can_use_hundreds', '=', True)])
 
+    # ── Clave de artículo ──────────────────────────────────────────────────
+    article_key = fields.Char(
+        string='Clave de artículo',
+        index=True,
+        help='Identificador único del tipo de artículo. Usado por los crones para '
+             'localizar y limpiar versiones anteriores sin depender del slug.')
+
     # ── Intercambio ────────────────────────────────────────────────────────
     swap_selection = fields.Selection([
         ('hot_rem',  'Calientes ↔ Restantes'),

@@ -818,10 +818,12 @@ class NewsArticleGenerator(models.Model):
         category = self.env.ref(
             'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = f'grupos_atrasados_{option}'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title': title, 'slug': slug, 'summary': intro,
             'raw_html': html_body, 'is_published': True,
+            'article_key': akey,
             'category_id': category.id if category else False,
             'cover_image': cover or False,
         }
@@ -829,11 +831,11 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated grupos article: %s', slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created grupos article: %s', slug)
 
-        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM-DD)
-        old = self.search([('slug', 'like', f'grupos-atrasados-{option}-%')])
+        # Eliminar versiones anteriores por clave (evita conflictos de slug)
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old grupos-atrasados [%s] articles', len(old), option)
@@ -925,10 +927,12 @@ class NewsArticleGenerator(models.Model):
         category = self.env.ref(
             'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = f'pintas_atrasadas_{option}'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title': title, 'slug': slug, 'summary': intro,
             'raw_html': html_body, 'is_published': True,
+            'article_key': akey,
             'category_id': category.id if category else False,
             'cover_image': cover or False,
         }
@@ -936,11 +940,11 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated pintas article: %s', slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created pintas article: %s', slug)
 
-        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM-DD)
-        old = self.search([('slug', 'like', f'pintas-atrasadas-{option}-%')])
+        # Eliminar versiones anteriores por clave (evita conflictos de slug)
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old pintas-atrasadas [%s] articles', len(old), option)
@@ -1325,13 +1329,15 @@ class NewsArticleGenerator(models.Model):
 
         cover = self._load_cover_image('top 10 numeros atrasados.png')
 
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = 'top_atrasos_general'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
             'summary':      intro,
             'raw_html':     html_body,
             'is_published': True,
+            'article_key':  akey,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
         }
@@ -1339,11 +1345,11 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated numeros-atrasados article: %s', slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created numeros-atrasados article: %s', slug)
 
-        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM-DD)
-        old = self.search([('slug', 'like', 'numeros-atrasados-%')])
+        # Eliminar versiones anteriores por clave (evita conflictos de slug)
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old numeros-atrasados articles', len(old))
@@ -1503,7 +1509,8 @@ class NewsArticleGenerator(models.Model):
         cover = self._load_cover_image(_cover_map.get(wcode, 'atraso numeros lunes.png'))
 
         from odoo import fields as odoo_fields
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = f'atraso_dia_{wcode}'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
@@ -1511,6 +1518,7 @@ class NewsArticleGenerator(models.Model):
             'raw_html':     html_body,
             'publish_date': odoo_fields.Datetime.now(),
             'is_published': True,
+            'article_key':  akey,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
         }
@@ -1518,13 +1526,11 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated dia-semana article: %s', slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created dia-semana article: %s', slug)
 
-        # Eliminar artículos viejos del mismo día de semana con slug con fecha (formato anterior)
-        old = self.search([
-            ('slug', 'like', f'numeros-atrasados-{wcode}-%'),
-        ])
+        # Eliminar versiones anteriores por clave (evita conflictos de slug)
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old dia-semana articles for %s', len(old), wcode)
@@ -1685,13 +1691,15 @@ class NewsArticleGenerator(models.Model):
         cover_file = 'secuencias lineas.png' if grp_type == 'line' else 'secuencias terminales.png'
         cover = self._load_cover_image(cover_file)
 
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = f'secuencias_{grp_type}'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
             'summary':      intro,
             'raw_html':     html_body,
             'is_published': True,
+            'article_key':  akey,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
         }
@@ -1699,11 +1707,11 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated secuencias-%s article: %s', grp_type, slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created secuencias-%s article: %s', grp_type, slug)
 
-        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM)
-        old = self.search([('slug', 'like', f'secuencias-{grp_type}s-%')])
+        # Eliminar versiones anteriores por clave (evita conflictos de slug)
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old secuencias-%s articles', len(old), grp_type)
@@ -1994,13 +2002,15 @@ class NewsArticleGenerator(models.Model):
 
         cover = self._load_cover_image('grupos fin semana.png')
 
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = 'fin_semana_grupos'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
             'summary':      intro,
             'raw_html':     html_body,
             'is_published': True,
+            'article_key':  akey,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
         }
@@ -2008,11 +2018,11 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated fin-semana article: %s', slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created fin-semana article: %s', slug)
 
-        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM)
-        old = self.search([('slug', 'like', 'grupos-fin-semana-%')])
+        # Eliminar versiones anteriores por clave (evita conflictos de slug)
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old fin-semana articles', len(old))
@@ -2227,7 +2237,8 @@ class NewsArticleGenerator(models.Model):
         )
 
         from odoo import fields as odoo_fields
-        existing = self.search([('slug', '=', slug)], limit=1)
+        akey = f'salidores_dia_{wcode}'
+        existing = self.search([('article_key', '=', akey)], limit=1)
         vals = {
             'title':        title,
             'slug':         slug,
@@ -2235,6 +2246,7 @@ class NewsArticleGenerator(models.Model):
             'raw_html':     html_body,
             'publish_date': odoo_fields.Datetime.now(),
             'is_published': True,
+            'article_key':  akey,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
         }
@@ -2242,7 +2254,7 @@ class NewsArticleGenerator(models.Model):
             existing.write(vals)
             _logger.info('Updated numeros-salidores article: %s', slug)
         else:
-            self.create(vals)
+            existing = self.create(vals)
             _logger.info('Created numeros-salidores article: %s', slug)
 
     def _build_numeros_salidores_dia_html(self, date_str, wlabel, wcode, data):
