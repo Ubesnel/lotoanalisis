@@ -20,7 +20,19 @@ class CalientesArticleGenerator(models.Model):
     # Helpers
     # ─────────────────────────────────────────────────────────────────────
 
-    def _calientes_today_str(self):
+    def _calientes_today_str(self, turno='tarde'):
+        """
+        Tarde (23:45, después de la noche): el último sorteo registrado es el
+        de esta noche → MAX(date) + 1 día = mañana → correcto para el sorteo
+        de tarde del día siguiente.
+
+        Noche (15:10, antes de la noche): usamos date.today() directamente
+        para que el artículo y el algoritmo apunten al sorteo de noche de HOY,
+        independientemente de si ya está cargado el turno de tarde de hoy.
+        """
+        if turno == 'noche':
+            return str(date.today())
+        # tarde: MAX global + 1 día
         self.env.cr.execute(
             "SELECT (MAX(date) + INTERVAL '1 day')::date AS nd FROM lottery_output"
         )
@@ -56,12 +68,14 @@ class CalientesArticleGenerator(models.Model):
     @api.model
     def _generate_calientes_frios_article(self, turno):
         """Create/update the combined calientes+fríos article for the given turno."""
-        today_str  = self._calientes_today_str()
+        today_str  = self._calientes_today_str(turno)
         date_str   = date.fromisoformat(today_str).strftime('%d/%m/%Y')
         is_tarde   = turno == 'tarde'
         label      = 'Tarde' if is_tarde else 'Noche'
         icon       = '☀' if is_tarde else '🌙'
-        slug       = f'calientes-frios-{turno}'
+        # Slug con fecha: genera un artículo nuevo por día, conservando el histórico
+        slug_date  = date.fromisoformat(today_str).strftime('%Y-%m-%d')
+        slug       = f'calientes-frios-{turno}-{slug_date}'
         cover_file = f'sorteo {turno}.png'
         data_key   = 'afternoon' if is_tarde else 'evening'
 
