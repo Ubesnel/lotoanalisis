@@ -246,10 +246,10 @@
 
                             <!-- Atrasos de Parejas · Centenas · Bola Extra -->
                             <div class="row mt-3">
-                                <div class="col-6">
+                                <div class="col-12 col-sm-6">
                                     <owl-component name="lottery_portal.TopAtrasosParejas"/>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-12 col-sm-6">
                                     <owl-component name="lottery_portal.Top5CentenasAtrasadas"/>
                                     <owl-component name="lottery_portal.Top5BolaExtraAtrasadas"/>
                                 </div>

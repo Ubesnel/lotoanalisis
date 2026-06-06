@@ -2629,6 +2629,30 @@ class LotteryStatsService(models.Model):
         rows.sort(key=lambda x: x['score'], reverse=True)
         return [{'name': str(r['val'])} for r in rows[:4]]
 
+    def _get_all_cebs_scored(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field):
+        """Todos los valores (centenas o bola extra) con su score caliente, sin recortar."""
+        rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field)
+        if not rows:
+            return []
+        mx_turn   = max(r['atraso_turn']  for r in rows) or 1
+        mx_gen    = max(r['atraso_gen']   for r in rows) or 1
+        mx_consec = max(r['consec_freq']  for r in rows) or 1
+        mx_month  = max(r['month_freq']   for r in rows) or 1
+        mx_dow    = max(r['dow_freq']     for r in rows) or 1
+        mx_week   = max(r['week_freq']    for r in rows) or 1
+        for r in rows:
+            r['score'] = round(
+                35.0 * r['atraso_turn'] / mx_turn   +
+                25.0 * r['atraso_gen']  / mx_gen    +
+                20.0 * r['consec_freq'] / mx_consec +
+                10.0 * r['month_freq']  / mx_month  +
+                 7.0 * r['dow_freq']    / mx_dow    +
+                 3.0 * r['week_freq']   / mx_week,
+                1
+            )
+        rows.sort(key=lambda x: x['score'], reverse=True)
+        return [{'name': str(r['val'])} for r in rows]
+
     @api.model
     @tools.ormcache('today_str')
     def get_calientes_all(self, today_str):
@@ -2684,15 +2708,31 @@ class LotteryStatsService(models.Model):
             remaining = [s for s in all_scores if s['name'] not in hot_names
                                                 and s['name'] not in cold_names]
 
+            centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id')
+            centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id')
+            bola_extra      = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id')
+            bola_extra_cold = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id')
+
+            hot_cen_names  = {c['name'] for c in centenas}
+            cold_cen_names = {c['name'] for c in centenas_cold}
+            hot_be_names   = {c['name'] for c in bola_extra}
+            cold_be_names  = {c['name'] for c in bola_extra_cold}
+
+            # Centenas y bolas extra restantes: no clasificadas como calientes ni frías
+            all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id')
+            all_bola_extra = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'fireball_id')
+
             result[turn] = {
-                'numbers':           hot_top,
-                'numbers_cold':      cold_top,
-                'numbers_remaining': remaining,
-                'centenas':          self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
-                'centenas_cold':     self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id'),
-                'bola_extra':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
-                'bola_extra_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id'),
-                'next_draw':         _fmt_date(next_date),
+                'numbers':              hot_top,
+                'numbers_cold':         cold_top,
+                'numbers_remaining':    remaining,
+                'centenas':             centenas,
+                'centenas_cold':        centenas_cold,
+                'centenas_remaining':   [c for c in all_centenas   if c['name'] not in hot_cen_names and c['name'] not in cold_cen_names],
+                'bola_extra':           bola_extra,
+                'bola_extra_cold':      bola_extra_cold,
+                'bola_extra_remaining': [c for c in all_bola_extra if c['name'] not in hot_be_names  and c['name'] not in cold_be_names],
+                'next_draw':            _fmt_date(next_date),
             }
         result['last_turn'] = row.get('last_turn') or 'afternoon'
         return result

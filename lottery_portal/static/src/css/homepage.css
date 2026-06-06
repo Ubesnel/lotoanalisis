@@ -1101,6 +1101,30 @@ html, #wrapwrap { scroll-behavior: smooth; }
     .table thead tr td,
     .table thead tr th { font-size: 10px !important; letter-spacing: 0.4px; padding: 8px 6px !important; }
     .table tbody tr td  { font-size: 12px; padding: 7px 6px !important; }
+
+    /* ── Cabeceras con título + select en pantallas pequeñas ── */
+    .card > .card-header .d-flex {
+        flex-wrap: wrap;
+        gap: 4px !important;
+        row-gap: 4px !important;
+    }
+    .card > .card-header .d-flex .fa-arrow-right {
+        display: none !important;
+    }
+    .card > .card-header .form-select,
+    .card > .card-header select.form-select-sm {
+        font-size: 10px !important;
+        padding: 2px 22px 2px 6px !important;
+        min-width: 70px;
+        max-width: 90px;
+    }
+    .stat-rank-ball {
+        min-width: 28px !important;
+        height: 28px !important;
+        font-size: 10px !important;
+    }
+    .stat-rank-count { font-size: 12px; }
+    .stat-rank-date  { font-size: 10px; }
 }
 
 
@@ -1309,11 +1333,13 @@ html, #wrapwrap { scroll-behavior: smooth; }
 }
 
 .nc-badge-ceb--hot  { background: linear-gradient(135deg, #f87171, #b91c1c); color: #fff; }
-.nc-badge-ceb--warm { background: linear-gradient(135deg, #3b6fd4, #1e3a5f); color: #fff; }
+.nc-badge-ceb--warm { background: linear-gradient(135deg, #4da6ff, #0066cc); color: #fff; }
+.nc-badge-ceb--cool { background: linear-gradient(135deg, #2ecc71, #27ae60); color: #fff; }
 
 .nc-badge-ceb--extra { }
 .nc-badge-ceb--extra-hot  { background: linear-gradient(135deg, #fbbf24, #b45309); color: #fff; }
 .nc-badge-ceb--extra-warm { background: linear-gradient(135deg, #34d399, #065f46); color: #fff; }
+.nc-badge-ceb--extra-cool { background: linear-gradient(135deg, #10b981, #047857); color: #fff; }
 
 /* ── Sección Menos Calientes ─────────────────────────────────── */
 .nc-section--cold { background: #f0f6ff; }
@@ -1332,8 +1358,14 @@ html, #wrapwrap { scroll-behavior: smooth; }
 .nc-pip--cold3 { background: linear-gradient(135deg, #64748b, #2ecc71); }
 
 /* Badges centenas/bola extra fríos */
-.nc-badge-ceb--cold1 { background: linear-gradient(135deg, #2563eb, #1e40af); color: #fff; }
-.nc-badge-ceb--cold2 { background: linear-gradient(135deg, #64748b, #475569); color: #fff; }
+.nc-badge-ceb--cold1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+.nc-badge-ceb--cold2 { background: linear-gradient(135deg, #06b6d4, #0066cc); color: #fff; }
+.nc-badge-ceb--cold3 { background: linear-gradient(135deg, #64748b, #2ecc71); color: #fff; }
+
+/* Badges centenas/bola extra restantes */
+.nc-badge-ceb--remaining { background: linear-gradient(135deg, #9ca3af, #6b7280); color: #fff; }
+.nc-badge-ceb--rem1      { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }
+.nc-badge-ceb--rem2      { background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; }
 
 /* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -1955,4 +1987,115 @@ html, #wrapwrap { scroll-behavior: smooth; }
     font-weight: 700;
     color: #6b7280;
     line-height: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NUMEROS CALIENTES — layout 3 columnas (estadisticas-generales)
+═══════════════════════════════════════════════════════════════ */
+
+/* Barra de turno compartida */
+/* ── Barra de turno/predicción ──────────────────────────────── */
+.nc-turn-bar {
+    background: linear-gradient(135deg, #3d1f6e 0%, #6f4a8e 60%, #9b72bb 100%);
+    border-radius: 12px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 3px 12px rgba(111,74,142,.25);
+}
+.nc-turn-label {
+    font-size: .85rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.95);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+.nc-turn-label .fa { opacity: .8; }
+.nc-turn-date {
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+}
+.nc-turn-bar .form-select {
+    background-color: rgba(255,255,255,.15) !important;
+    border: 1px solid rgba(255,255,255,.4) !important;
+    color: #fff !important;
+    font-weight: 600;
+    font-size: .82rem;
+    border-radius: 8px;
+    padding: 4px 28px 4px 10px;
+    min-width: 100px;
+}
+.nc-turn-bar .form-select option { background: #4a2c6e; color: #fff; }
+
+/* ── Tarjeta de columna ─────────────────────────────────────── */
+.nc-col-card {
+    border-radius: 12px !important;
+    border: 1px solid #ece6f5 !important;
+}
+
+/* ── Encabezado de columna ──────────────────────────────────── */
+.nc-col-hdr {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    font-weight: 800;
+    font-size: .92rem;
+    color: #fff;
+    gap: 8px;
+    letter-spacing: .3px;
+}
+.nc-col-hdr--hot       { background: linear-gradient(135deg, #7f0000, #c0392b 50%, #e74c3c); }
+.nc-col-hdr--cold      { background: linear-gradient(135deg, #0d2f6e, #1565c0 50%, #1e88e5); }
+.nc-col-hdr--remaining { background: linear-gradient(135deg, #2d3748, #4a5568 50%, #718096); }
+
+/* ── Leyenda de colores en el header ───────────────────────── */
+.nc-col-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .72rem;
+    font-weight: 600;
+    color: rgba(255,255,255,.9);
+    background: rgba(0,0,0,.18);
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    flex-wrap: nowrap;
+}
+.nc-col-legend .nc-pip {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+
+/* ── Pip fríos ──────────────────────────────────────────────── */
+.nc-pip--cold1 { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.nc-pip--cold2 { background: linear-gradient(135deg, #06b6d4, #0066cc); }
+.nc-pip--cold3 { background: linear-gradient(135deg, #64748b, #475569); }
+
+/* ── Pip y bolas restantes (3 grupos de ~13) ────────────────── */
+.nc-pip--rem1  { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+.nc-pip--rem2  { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+.nc-pip--rem3  { background: linear-gradient(135deg, #d97706, #f59e0b); }
+
+.nc-ball-rem1  { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }
+.nc-ball-rem2  { background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; }
+.nc-ball-rem3  { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 767px) {
+    .nc-turn-bar  { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .nc-col-legend { display: none; }
 }

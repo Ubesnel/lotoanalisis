@@ -78,86 +78,36 @@
 
     <template id="estadisticas_generales" name="Estadísticas Generales">
         <t t-call="website.layout">
-            <section class="hero-analitico">
-                <div class="hero-deco-blob hero-deco-blob--1"/>
-                <div class="hero-deco-blob hero-deco-blob--2"/>
-                <div class="hero-content">
-                    <div class="hero-badge">
-                        <i class="fa fa-bar-chart"/> Pick 3 Florida · Desde 1988
-                    </div>
-                    <h1 class="hero-title">
-                        Analiza. <span>Comprende.</span> Decide mejor
-                    </h1>
-                    <p class="hero-subtitle">
-                        Estadísticas inteligentes en un solo lugar
-                    </p>
-                    <div class="hero-stats">
-                        <div class="hero-stat">
-                            <span class="hero-stat-val"><t t-esc="hero_stats['anios']"/>+</span>
-                            <span class="hero-stat-lbl">años de datos</span>
-                        </div>
-                        <div class="hero-stat">
-                            <span class="hero-stat-val"><t t-esc="hero_stats['total_sorteos']"/></span>
-                            <span class="hero-stat-lbl">sorteos históricos</span>
-                        </div>
-                        <div class="hero-stat">
-                            <span class="hero-stat-val">2</span>
-                            <span class="hero-stat-lbl">sorteos diarios</span>
-                        </div>
-                    </div>
-                    <div class="hero-actions">
-                        <a href="/estadisticas" class="hero-btn hero-btn--primary">
-                            <i class="fa fa-th"/> Explorar Grupos
-                        </a>
-                        <a href="/estadisticas-numeros" class="hero-btn hero-btn--secondary">
-                            <i class="fa fa-sort-numeric-asc"/> Ver Números
-                        </a>
-                        <a href="/estadisticas-pintas" class="hero-btn hero-btn--primary">
-                            <i class="fa fa-th"/> Ver Pintas
-                        </a>
-                    </div>
-                </div>
-            </section>
             <div class="container mt-3 mb-0">
-                <div class="row">
+
+                <!-- ── Fila 1: 3 columnas Calientes · Fríos · Restantes ── -->
+                <div class="row mb-3">
                     <div class="col-12">
                         <owl-component name="lottery_portal.NumerosCalientes"/>
                     </div>
                 </div>
-            </div>
-            <div class="container mt-2 mb-2">
-                <div class="row mb-1">
-                    <div class="col-md-3 mb-2">
-                        <t t-call="lottery_portal.lottery_sidebar_widgets"/>
-                    </div>
-                    <div class="col-md-3 mb-2">
+
+                <!-- ── Fila 2: Atrasados (col-4) + Por día (col-4) + Fin semana (col-4) ── -->
+                <div class="row mb-3">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
                         <owl-component name="lottery_portal.TopAtrasos"/>
                     </div>
-                    <div class="col-md-6 mb-2">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
                         <owl-component name="lottery_portal.Top10ByDay"/>
                     </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4 mb-1">
-                        <owl-component name="lottery_portal.TopAtrasosLineas"/>
-                    </div>
-                    <div class="col-md-4 mb-1">
-                        <owl-component name="lottery_portal.TopAtrasosTerminales"/>
-                    </div>
-                    <div class="col-md-4 mb-1">
-                        <owl-component name="lottery_portal.TopAtrasosParejas"/>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-4 mb-2">
-                        <owl-component name="lottery_portal.Top5CentenasAtrasadas"/>
-                        <owl-component name="lottery_portal.Top5BolaExtraAtrasadas"/>
+                    <div class="col-12 col-md-4">
                         <owl-component name="lottery_portal.LotteryWeekendGroups"/>
                     </div>
-                    <div class="col-md-8 mb-2">
+                </div>
+
+                <!-- ── Fila 3: Secuencias de grupos ancho completo ── -->
+                <div class="row mb-3">
+                    <div class="col-12">
                         <owl-component name="lottery_portal.LotteryGroupSequences"/>
                     </div>
                 </div>
+            </div>
+            <div class="container mt-0 mb-2">
                 <div class="row">
                     <div class="col-md-12">
                         <section class="quick-access">

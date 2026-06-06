@@ -5,7 +5,7 @@ from odoo.addons.lottery_base.models.utils import MONTHS_DICT
 import base64
 import calendar
 import os
-from datetime import date
+from datetime import date, timedelta
 
 WEEKDAYS = [
     ('lu', 'Lunes'),
@@ -771,7 +771,8 @@ class NewsArticleGenerator(models.Model):
         api_option  = {'all': 'general', 'tarde': 'afternoon', 'noche': 'evening'}.get(option, 'general')
         turn_param  = None if option == 'all' else api_option
 
-        slug  = f'grupos-atrasados-{option}-{today.strftime("%Y-%m-%d")}'[:100]
+        # Slug fijo por turno — un único artículo activo por opción, siempre actualizado
+        slug  = f'grupos-atrasados-{option}'
         title = f'Top 5 Grupos más atrasados — {label} — {date_str}'
         intro = (f'Análisis detallado de los 5 grupos con mayor atraso acumulado '
                  f'en el turno {label} al {date_str}.')
@@ -831,6 +832,12 @@ class NewsArticleGenerator(models.Model):
             self.create(vals)
             _logger.info('Created grupos article: %s', slug)
 
+        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM-DD)
+        old = self.search([('slug', 'like', f'grupos-atrasados-{option}-%')])
+        if old:
+            old.unlink()
+            _logger.info('Deleted %d old grupos-atrasados [%s] articles', len(old), option)
+
     # ─────────────────────────────────────────────────────────────────────────
     # Cron: Pintas más atrasadas
     # ─────────────────────────────────────────────────────────────────────────
@@ -871,7 +878,8 @@ class NewsArticleGenerator(models.Model):
         api_option  = {'all': 'general', 'tarde': 'afternoon', 'noche': 'evening'}.get(option, 'general')
         turn_param  = None if option == 'all' else api_option
 
-        slug  = f'pintas-atrasadas-{option}-{today.strftime("%Y-%m-%d")}'[:100]
+        # Slug fijo por turno — un único artículo activo por opción, siempre actualizado
+        slug  = f'pintas-atrasadas-{option}'
         title = f'Top 3 Pintas más atrasadas — {label} — {date_str}'
         intro = (f'Análisis detallado de las 3 pintas con mayor atraso acumulado '
                  f'en el turno {label} al {date_str}.')
@@ -930,6 +938,12 @@ class NewsArticleGenerator(models.Model):
         else:
             self.create(vals)
             _logger.info('Created pintas article: %s', slug)
+
+        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM-DD)
+        old = self.search([('slug', 'like', f'pintas-atrasadas-{option}-%')])
+        if old:
+            old.unlink()
+            _logger.info('Deleted %d old pintas-atrasadas [%s] articles', len(old), option)
 
     # ─────────────────────────────────────────────────────────────────────────
     # Shared prose HTML builder for grupos / pintas articles
@@ -1294,7 +1308,8 @@ class NewsArticleGenerator(models.Model):
 
         svc      = self.env['lottery.stats.service'].sudo()
         date_str = today.strftime('%d/%m/%Y')
-        slug     = f'numeros-atrasados-{today.strftime("%Y-%m-%d")}'[:100]
+        # Slug fijo — un único artículo activo, siempre actualizado
+        slug     = 'numeros-atrasados'
 
         general = svc.get_top_10_general()
         tarde   = svc.get_top_10_dia()
@@ -1326,6 +1341,12 @@ class NewsArticleGenerator(models.Model):
         else:
             self.create(vals)
             _logger.info('Created numeros-atrasados article: %s', slug)
+
+        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM-DD)
+        old = self.search([('slug', 'like', 'numeros-atrasados-%')])
+        if old:
+            old.unlink()
+            _logger.info('Deleted %d old numeros-atrasados articles', len(old))
 
     def _build_numeros_atrasados_html(self, date_str, general, tarde, noche):
         parts = []
@@ -1417,12 +1438,13 @@ class NewsArticleGenerator(models.Model):
     }
 
     def cron_generate_numeros_dia_semana(self, ref_date=None):
-        """Generate one article per run for today's weekday delayed numbers."""
+        """Generate one article per run for yesterday's weekday delayed numbers."""
         import logging
         _logger = logging.getLogger(__name__)
         today = self._parse_ref_date(ref_date)
+        yesterday = today - timedelta(days=1)
         try:
-            self._generate_numeros_dia_semana_article(today)
+            self._generate_numeros_dia_semana_article(yesterday)
         except Exception as e:
             _logger.error('cron_generate_numeros_dia_semana: %s', e, exc_info=True)
 
@@ -1435,7 +1457,8 @@ class NewsArticleGenerator(models.Model):
         wday     = today.weekday()                              # 0=Mon…6=Sun
         wcode    = self._WEEKDAY_CODE[wday]
         wlabel   = self._WEEKDAY_ES[wcode]
-        slug     = f'numeros-atrasados-{wcode}-{today.strftime("%Y-%m-%d")}'[:100]
+        # Un único artículo por día de semana — sin fecha en el slug
+        slug     = f'numeros-atrasados-{wcode}'
 
         rows = svc.get_top_10_por_dia_semana(wcode)
 
@@ -1494,6 +1517,14 @@ class NewsArticleGenerator(models.Model):
         else:
             self.create(vals)
             _logger.info('Created dia-semana article: %s', slug)
+
+        # Eliminar artículos viejos del mismo día de semana con slug con fecha (formato anterior)
+        old = self.search([
+            ('slug', 'like', f'numeros-atrasados-{wcode}-%'),
+        ])
+        if old:
+            old.unlink()
+            _logger.info('Deleted %d old dia-semana articles for %s', len(old), wcode)
 
     def _build_numeros_dia_semana_html(self, date_str, wlabel, wcode, rows):
         parts = []
@@ -1617,10 +1648,10 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc       = self.env['lottery.stats.service'].sudo()
-        date_str  = today.strftime('%d/%m/%Y')
-        month_str = today.strftime('%Y-%m')
-        slug      = f'secuencias-{grp_type}s-{month_str}'[:100]
+        svc      = self.env['lottery.stats.service'].sudo()
+        date_str = today.strftime('%d/%m/%Y')
+        # Slug fijo por tipo — un único artículo activo, siempre actualizado
+        slug     = f'secuencias-{grp_type}s'
 
         data       = svc.get_all_group_sequences()
         cross_data = svc.get_group_sequences_cross()
@@ -1646,8 +1677,7 @@ class NewsArticleGenerator(models.Model):
                 f'General, Tarde y Noche. Análisis al {date_str}.'
             )
 
-        month_label = today.strftime('%B %Y').capitalize()
-        title = f'Secuencias de {tipo_lbl} — {month_label}'
+        title = f'Secuencias de {tipo_lbl} — Pick 3 Florida'
 
         cover_file = 'secuencias lineas.png' if grp_type == 'line' else 'secuencias terminales.png'
         cover = self._load_cover_image(cover_file)
@@ -1668,6 +1698,12 @@ class NewsArticleGenerator(models.Model):
         else:
             self.create(vals)
             _logger.info('Created secuencias-%s article: %s', grp_type, slug)
+
+        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM)
+        old = self.search([('slug', 'like', f'secuencias-{grp_type}s-%')])
+        if old:
+            old.unlink()
+            _logger.info('Deleted %d old secuencias-%s articles', len(old), grp_type)
 
     def _build_secuencias_tipo_html(self, grp_type, date_str, data, cross_data=None):
         """Builder shared by both sequence articles (lines / terminals).
@@ -1907,8 +1943,9 @@ class NewsArticleGenerator(models.Model):
     # ARTÍCULO 4: Sábado + Domingo · Grupos más frecuentes  (mensual)
     # ═════════════════════════════════════════════════════════════════════════
     def cron_generate_fin_de_semana_grupos(self, ref_date=None, force=False):
-        """Monthly cron: article with the most frequent line/terminal groups
-        on Saturdays and Sundays.
+        """Weekly cron (Saturday): article with the most frequent line/terminal groups
+        on Saturdays and Sundays. Runs in the early hours of Saturday so it includes
+        Friday's draws and is ready for the coming weekend.
 
         Pass force=True to execute immediately regardless of the scheduled day,
         e.g. from the cron UI: model.cron_generate_fin_de_semana_grupos(force=True)
@@ -1917,11 +1954,11 @@ class NewsArticleGenerator(models.Model):
         _logger = logging.getLogger(__name__)
         today = self._parse_ref_date(ref_date)
 
-        # Guard: only run on the 1st Friday of the month unless forced.
-        if not force and (today.weekday() != 4 or today.day > 7):
+        # Guard: only run on Saturdays unless forced.
+        if not force and today.weekday() != 5:
             _logger.info(
-                'cron_generate_fin_de_semana_grupos skipped — %s is not the '
-                'first Friday of the month. Use force=True to override.', today
+                'cron_generate_fin_de_semana_grupos skipped — %s is not Saturday. '
+                'Use force=True to override.', today
             )
             return
 
@@ -1934,10 +1971,10 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
 
-        svc       = self.env['lottery.stats.service'].sudo()
-        date_str  = today.strftime('%d/%m/%Y')
-        month_str = today.strftime('%Y-%m')
-        slug      = f'grupos-fin-semana-{month_str}'[:100]
+        svc      = self.env['lottery.stats.service'].sudo()
+        date_str = today.strftime('%d/%m/%Y')
+        # Slug fijo — un único artículo activo, siempre actualizado
+        slug     = 'grupos-fin-semana'
 
         data = svc.get_weekend_groups()
         html_body = self._build_fin_de_semana_grupos_html(date_str, data)
@@ -1945,8 +1982,7 @@ class NewsArticleGenerator(models.Model):
         category = self.env.ref(
             'lottery_portal.news_category_analisis_mensuales', raise_if_not_found=False
         )
-        month_label = today.strftime('%B %Y').capitalize()
-        title = f'Grupos más frecuentes los Sábados y Domingos — {month_label}'
+        title = 'Grupos más frecuentes los Sábados y Domingos — Pick 3 Florida'
         intro = (
             f'Top 5 grupos de líneas y terminales con mayor frecuencia histórica '
             f'los sábados y domingos en el Pick 3 Florida. '
@@ -1971,6 +2007,12 @@ class NewsArticleGenerator(models.Model):
         else:
             self.create(vals)
             _logger.info('Created fin-semana article: %s', slug)
+
+        # Eliminar artículos viejos con slug con fecha (formato anterior YYYY-MM)
+        old = self.search([('slug', 'like', 'grupos-fin-semana-%')])
+        if old:
+            old.unlink()
+            _logger.info('Deleted %d old fin-semana articles', len(old))
 
     def _build_fin_de_semana_grupos_html(self, date_str, data):
         """Build the weekend groups article with prose + bar layout."""
@@ -2134,8 +2176,9 @@ class NewsArticleGenerator(models.Model):
         import logging
         _logger = logging.getLogger(__name__)
         today = self._parse_ref_date(ref_date)
+        yesterday = today - timedelta(days=1)
         try:
-            self._generate_numeros_salidores_dia_article(today)
+            self._generate_numeros_salidores_dia_article(yesterday)
         except Exception as e:
             _logger.error('cron_generate_numeros_salidores_dia: %s', e, exc_info=True)
 
