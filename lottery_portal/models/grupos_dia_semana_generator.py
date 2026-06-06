@@ -49,14 +49,14 @@ class GruposDiaSemanagenerator(models.Model):
     @api.model
     def cron_generate_grupos_dia_semana(self, ref_date=None):
         """Genera diariamente dos artículos: líneas atrasadas y terminales atrasadas."""
-        today = self._parse_ref_date(ref_date)
-        yesterday = today - timedelta(days=1)
+        today     = self._parse_ref_date(ref_date)   # fecha real de generación (timezone-aware)
+        yesterday = today - timedelta(days=1)         # día de semana a analizar
         try:
-            self._generate_lineas_dia_semana_article(yesterday)
+            self._generate_lineas_dia_semana_article(yesterday, today)
         except Exception as e:
             _logger.error('cron_generate_lineas_dia_semana: %s', e, exc_info=True)
         try:
-            self._generate_terminales_dia_semana_article(yesterday)
+            self._generate_terminales_dia_semana_article(yesterday, today)
         except Exception as e:
             _logger.error('cron_generate_terminales_dia_semana: %s', e, exc_info=True)
 
@@ -85,21 +85,23 @@ class GruposDiaSemanagenerator(models.Model):
     }
 
     @api.model
-    def _generate_lineas_dia_semana_article(self, today):
-        wcode, wlabel, date_str = self._wday_info(today)
-        # Un único artículo por día de semana — sin fecha en el slug
-        slug = f'lineas-atrasadas-{wcode}'
+    def _generate_lineas_dia_semana_article(self, today, generated_date=None):
+        # today = día analizado (ayer); generated_date = fecha real de generación
+        wcode, wlabel = self._wday_info(today)
+        generated_str = (generated_date or today).strftime('%d/%m/%Y')
+        slug  = f'lineas-atrasadas-{wcode}'
+        akey  = f'lineas_dia_{wcode}'
 
         svc  = self.env['lottery.stats.service'].sudo()
         data = svc.get_lineas_terminales_dia_semana(wcode, top_n=3)
 
         html_body = self._build_grupos_dia_semana_html(
-            date_str, wlabel, 'lineas', data, only='lineas'
+            generated_str, wlabel, 'lineas', data, only='lineas'
         )
         category = self.env.ref(
             'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
-        title = f'Atraso de Líneas los {wlabel} — {date_str}'
+        title = f'Atraso de Líneas los {wlabel} — {generated_str}'
         intro = (
             f'Top 3 líneas con mayor atraso acumulado los {wlabel}, '
             f'desglosado por turno General, Tarde y Noche. '
@@ -107,11 +109,10 @@ class GruposDiaSemanagenerator(models.Model):
         )
         cover = self._load_cover_image(self._COVER_LINEAS.get(wcode, 'linea atrasada lunes.png'))
 
-        self._upsert_article(slug, title, intro, html_body, category, cover)
+        existing = self._upsert_article(slug, akey, title, intro, html_body, category, cover)
         _logger.info('Upserted lineas-atrasadas article: %s', slug)
 
-        # Eliminar artículos viejos del mismo día con slug con fecha (formato anterior)
-        old = self.search([('slug', 'like', f'lineas-atrasadas-{wcode}-%')])
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old lineas-atrasadas articles for %s', len(old), wcode)
@@ -121,21 +122,22 @@ class GruposDiaSemanagenerator(models.Model):
     # ─────────────────────────────────────────────────────────────────────
 
     @api.model
-    def _generate_terminales_dia_semana_article(self, today):
-        wcode, wlabel, date_str = self._wday_info(today)
-        # Un único artículo por día de semana — sin fecha en el slug
-        slug = f'terminales-atrasados-{wcode}'
+    def _generate_terminales_dia_semana_article(self, today, generated_date=None):
+        wcode, wlabel = self._wday_info(today)
+        generated_str = (generated_date or today).strftime('%d/%m/%Y')
+        slug  = f'terminales-atrasados-{wcode}'
+        akey  = f'terminales_dia_{wcode}'
 
         svc  = self.env['lottery.stats.service'].sudo()
         data = svc.get_lineas_terminales_dia_semana(wcode, top_n=3)
 
         html_body = self._build_grupos_dia_semana_html(
-            date_str, wlabel, 'terminales', data, only='terminales'
+            generated_str, wlabel, 'terminales', data, only='terminales'
         )
         category = self.env.ref(
             'lottery_portal.news_category_analisis_diarios', raise_if_not_found=False
         )
-        title = f'Atrasos de los Terminales los {wlabel} — {date_str}'
+        title = f'Atrasos de los Terminales los {wlabel} — {generated_str}'
         intro = (
             f'Top 3 terminales con mayor atraso acumulado los {wlabel}, '
             f'desglosado por turno General, Tarde y Noche. '
@@ -143,11 +145,10 @@ class GruposDiaSemanagenerator(models.Model):
         )
         cover = self._load_cover_image(self._COVER_TERMINALES.get(wcode, 'terminales atrasado lunes.png'))
 
-        self._upsert_article(slug, title, intro, html_body, category, cover)
+        existing = self._upsert_article(slug, akey, title, intro, html_body, category, cover)
         _logger.info('Upserted terminales-atrasados article: %s', slug)
 
-        # Eliminar artículos viejos del mismo día con slug con fecha (formato anterior)
-        old = self.search([('slug', 'like', f'terminales-atrasados-{wcode}-%')])
+        old = self.search([('article_key', '=', akey), ('id', '!=', existing.id)])
         if old:
             old.unlink()
             _logger.info('Deleted %d old terminales-atrasados articles for %s', len(old), wcode)
@@ -157,25 +158,30 @@ class GruposDiaSemanagenerator(models.Model):
     # ─────────────────────────────────────────────────────────────────────
 
     def _wday_info(self, today):
+        """Devuelve (wcode, wlabel) para el día analizado. La fecha de display se calcula aparte."""
         wcode  = self._WEEKDAY_CODE[today.weekday()]
         wlabel = self._WEEKDAY_ES[wcode]
-        return wcode, wlabel, today.strftime('%d/%m/%Y')
+        return wcode, wlabel
 
-    def _upsert_article(self, slug, title, intro, html_body, category, cover):
+    def _upsert_article(self, slug, article_key, title, intro, html_body, category, cover):
+        from odoo import fields as odoo_fields
         vals = {
             'title':        title,
             'slug':         slug,
             'summary':      intro,
             'raw_html':     html_body,
+            'publish_date': odoo_fields.Datetime.now(),
             'is_published': True,
+            'article_key':  article_key,
             'category_id':  category.id if category else False,
             'cover_image':  cover or False,
         }
-        existing = self.search([('slug', '=', slug)], limit=1)
+        existing = self.search([('article_key', '=', article_key)], limit=1)
         if existing:
             existing.write(vals)
         else:
-            self.create(vals)
+            existing = self.create(vals)
+        return existing
 
     # ─────────────────────────────────────────────────────────────────────
     # HTML
