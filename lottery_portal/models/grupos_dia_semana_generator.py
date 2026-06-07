@@ -49,14 +49,21 @@ class GruposDiaSemanagenerator(models.Model):
     @api.model
     def cron_generate_grupos_dia_semana(self, ref_date=None):
         """Genera diariamente dos artículos: líneas atrasadas y terminales atrasadas."""
-        today     = self._parse_ref_date(ref_date)   # fecha real de generación (timezone-aware)
-        yesterday = today - timedelta(days=1)         # día de semana a analizar
+        from datetime import date as _date
+        if ref_date:
+            target_day = self._parse_ref_date(ref_date)
+            generated_date = target_day + timedelta(days=1)
+        else:
+            self.env.cr.execute("SELECT MAX(date) AS d FROM lottery_output")
+            row = self.env.cr.dictfetchone()
+            target_day = row['d'] if row and row.get('d') else self._parse_ref_date(None) - timedelta(days=1)
+            generated_date = _date.today()
         try:
-            self._generate_lineas_dia_semana_article(yesterday, today)
+            self._generate_lineas_dia_semana_article(target_day, generated_date)
         except Exception as e:
             _logger.error('cron_generate_lineas_dia_semana: %s', e, exc_info=True)
         try:
-            self._generate_terminales_dia_semana_article(yesterday, today)
+            self._generate_terminales_dia_semana_article(target_day, generated_date)
         except Exception as e:
             _logger.error('cron_generate_terminales_dia_semana: %s', e, exc_info=True)
 
