@@ -1444,13 +1444,17 @@ class NewsArticleGenerator(models.Model):
     }
 
     def cron_generate_numeros_dia_semana(self, ref_date=None):
-        """Generate one article per run for yesterday's weekday delayed numbers."""
+        """Generate one article per run for the last imported draw's weekday."""
         import logging
         _logger = logging.getLogger(__name__)
-        today = self._parse_ref_date(ref_date)
-        yesterday = today - timedelta(days=1)
+        if ref_date:
+            target_day = self._parse_ref_date(ref_date)
+        else:
+            self.env.cr.execute("SELECT MAX(date) AS d FROM lottery_output")
+            row = self.env.cr.dictfetchone()
+            target_day = row['d'] if row and row.get('d') else self._parse_ref_date(None) - timedelta(days=1)
         try:
-            self._generate_numeros_dia_semana_article(yesterday)
+            self._generate_numeros_dia_semana_article(target_day)
         except Exception as e:
             _logger.error('cron_generate_numeros_dia_semana: %s', e, exc_info=True)
 
@@ -2188,10 +2192,14 @@ class NewsArticleGenerator(models.Model):
         plus their current delay stats."""
         import logging
         _logger = logging.getLogger(__name__)
-        today = self._parse_ref_date(ref_date)
-        yesterday = today - timedelta(days=1)
+        if ref_date:
+            target_day = self._parse_ref_date(ref_date)
+        else:
+            self.env.cr.execute("SELECT MAX(date) AS d FROM lottery_output")
+            row = self.env.cr.dictfetchone()
+            target_day = row['d'] if row and row.get('d') else self._parse_ref_date(None) - timedelta(days=1)
         try:
-            self._generate_numeros_salidores_dia_article(yesterday)
+            self._generate_numeros_salidores_dia_article(target_day)
         except Exception as e:
             _logger.error('cron_generate_numeros_salidores_dia: %s', e, exc_info=True)
 
