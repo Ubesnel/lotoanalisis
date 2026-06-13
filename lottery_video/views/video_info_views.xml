@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── List ────────────────────────────────────────────────────────────── -->
+    <record id="view_lottery_video_info_list" model="ir.ui.view">
+        <field name="name">lottery.video.info.list</field>
+        <field name="model">lottery.video.info</field>
+        <field name="arch" type="xml">
+            <tree string="Videos de Lotería" decoration-success="state == 'video_ok'"
+                  decoration-info="state == 'ready'" decoration-muted="state == 'draft'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="turno"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'video_ok'"
+                       decoration-info="state == 'ready'"
+                       decoration-muted="state == 'draft'"/>
+                <field name="video_filename"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form ────────────────────────────────────────────────────────────── -->
+    <record id="view_lottery_video_info_form" model="ir.ui.view">
+        <field name="name">lottery.video.info.form</field>
+        <field name="model">lottery.video.info</field>
+        <field name="arch" type="xml">
+            <form string="Info para Video">
+                <header>
+                    <button name="action_get_info" string="Obtener información para video"
+                            type="object" class="btn-primary"
+                            icon="fa-download"/>
+                    <button name="action_generate_script" string="Generar Guión"
+                            type="object" class="btn-secondary"
+                            invisible="state == 'draft'"
+                            icon="fa-pencil"/>
+                    <button name="action_generate_video" string="Generar Video"
+                            type="object" class="btn-success"
+                            invisible="state == 'draft'"
+                            icon="fa-film"/>
+                    <button name="action_download_video" string="Descargar Video"
+                            type="object" class="btn-primary"
+                            invisible="state != 'video_ok'"
+                            icon="fa-download"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,ready,video_ok"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Título del video"/></h1>
+                    </div>
+                    <group>
+                        <field name="date"/>
+                        <field name="turno"/>
+                    </group>
+
+                    <!-- Video generado -->
+                    <group string="Video generado"
+                           invisible="state != 'video_ok'">
+                        <field name="video_file" widget="binary"
+                               filename="video_filename"
+                               string="Descargar video"/>
+                        <field name="video_filename"/>
+                    </group>
+
+                    <notebook>
+
+                        <!-- ── Más salidores ── -->
+                        <page string="Más Salidores">
+                            <group>
+                                <group string="General">
+                                    <field name="salidores_general_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Tarde">
+                                    <field name="salidores_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Noche">
+                                    <field name="salidores_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Terminales atrasados ── -->
+                        <page string="Terminales Atrasados">
+                            <group>
+                                <field name="terminal_general" string="General"/>
+                                <field name="terminal_tarde"   string="Tarde"/>
+                                <field name="terminal_noche"   string="Noche"/>
+                            </group>
+                        </page>
+
+                        <!-- ── Líneas atrasadas ── -->
+                        <page string="Líneas Atrasadas">
+                            <group>
+                                <field name="linea_general" string="General"/>
+                                <field name="linea_tarde"   string="Tarde"/>
+                                <field name="linea_noche"   string="Noche"/>
+                            </group>
+                        </page>
+
+                        <!-- ── Números atrasados ── -->
+                        <page string="Números Atrasados">
+                            <group>
+                                <group string="General">
+                                    <field name="atrasado_general_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Tarde">
+                                    <field name="atrasado_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Noche">
+                                    <field name="atrasado_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Centenas y Bola Extra ── -->
+                        <page string="Centenas y Bola Extra">
+                            <group string="Centenas Más Atrasadas">
+                                <group string="General">
+                                    <field name="centena_general_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Tarde">
+                                    <field name="centena_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Noche">
+                                    <field name="centena_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <separator string="Bola Extra Más Atrasada"/>
+                            <group>
+                                <group string="General">
+                                    <field name="bola_extra_general_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Tarde">
+                                    <field name="bola_extra_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Noche">
+                                    <field name="bola_extra_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Grupos y Pintas ── -->
+                        <page string="Grupos y Pintas">
+                            <group string="Top 3 Grupos Más Atrasados">
+                                <group string="General">
+                                    <field name="grupo_general_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Tarde">
+                                    <field name="grupo_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Noche">
+                                    <field name="grupo_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <separator string="Top 3 Pintas Más Atrasadas"/>
+                            <group>
+                                <group string="General">
+                                    <field name="pinta_general_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Tarde">
+                                    <field name="pinta_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Noche">
+                                    <field name="pinta_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ── Guión ── -->
+                        <page string="Guión del Video">
+                            <field name="script_line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="character"/>
+                                    <field name="text"/>
+                                </tree>
+                            </field>
+                        </page>
+
+                        <!-- ── Calientes ── -->
+                        <page string="Números Calientes (30)">
+                            <group>
+                                <group string="Tarde">
+                                    <field name="caliente_tarde_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                                <group string="Noche">
+                                    <field name="caliente_noche_ids"
+                                           widget="many2many_tags" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Action ──────────────────────────────────────────────────────────── -->
+    <record id="action_lottery_video_info" model="ir.actions.act_window">
+        <field name="name">Videos de Lotería</field>
+        <field name="res_model">lottery.video.info</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

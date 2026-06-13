@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lottery_video_info_user,lottery.video.info user,model_lottery_video_info,,1,1,1,1
+access_lottery_video_config_user,lottery.video.config user,model_lottery_video_config,,1,1,1,1
+access_lottery_video_script_line_user,lottery.video.script.line user,model_lottery_video_script_line,,1,1,1,1

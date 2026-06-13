@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_lottery_video_root"
+              name="Videos Lotería"
+              sequence="90"/>
+
+    <menuitem id="menu_lottery_video_info"
+              name="Videos"
+              parent="menu_lottery_video_root"
+              action="action_lottery_video_info"
+              sequence="10"/>
+
+    <menuitem id="menu_lottery_video_config"
+              name="Configuración"
+              parent="menu_lottery_video_root"
+              action="action_lottery_video_config"
+              sequence="20"/>
+</odoo>
