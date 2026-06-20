@@ -4,9 +4,9 @@ from odoo import models, fields, api
 from .guion_comentario import PERSONAJE
 
 
-class LotteryGuionLine(models.Model):
-    _name = 'lottery.guion.line'
-    _description = 'Línea de guión de lotería'
+class LotteryGuionFinalLine(models.Model):
+    _name = 'lottery.guion.final.line'
+    _description = 'Línea final de guión de lotería'
     _order = 'guion_id, sequence'
 
     guion_id = fields.Many2one(
@@ -15,7 +15,7 @@ class LotteryGuionLine(models.Model):
     personaje = fields.Selection(
         PERSONAJE, string='Personaje', required=True, default='valeria')
     comentario_id = fields.Many2one(
-        'lottery.guion.comentario', string='Comentario')
+        'lottery.guion.comentario.final', string='Comentario')
     texto_final = fields.Text(string='Texto Final')
 
     @api.onchange('comentario_id')

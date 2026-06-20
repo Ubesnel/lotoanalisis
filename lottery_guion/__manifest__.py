@@ -6,6 +6,7 @@
     'depends': ['lottery_base'],
     'data': [
         'security/ir.model.access.csv',
+        'data/comentarios.xml',
         'views/guion_comentario_views.xml',
         'views/guion_views.xml',
         'views/menus.xml',

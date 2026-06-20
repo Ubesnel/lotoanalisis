@@ -26,15 +26,39 @@
                         <field name="tipo_guion"/>
                         <field name="fecha"/>
                     </group>
-                    <field name="line_ids">
-                        <tree editable="bottom">
-                            <field name="sequence" widget="handle"/>
-                            <field name="personaje"/>
-                            <field name="comentario_id"
-                                   domain="[('tipo_guion', '=', parent.tipo_guion)]"/>
-                            <field name="texto_final"/>
-                        </tree>
-                    </field>
+                    <notebook>
+                        <page string="Introducción">
+                            <field name="intro_line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="personaje"/>
+                                    <field name="comentario_id"/>
+                                    <field name="texto_final"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Desarrollo">
+                            <field name="line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="personaje"/>
+                                    <field name="comentario_id"
+                                           domain="[('tipo_guion', '=', parent.tipo_guion)]"/>
+                                    <field name="texto_final"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Final">
+                            <field name="final_line_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="personaje"/>
+                                    <field name="comentario_id"/>
+                                    <field name="texto_final"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

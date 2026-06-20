@@ -1,4 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_lottery_guion_user,lottery.guion user,model_lottery_guion,,1,1,1,1
 access_lottery_guion_line_user,lottery.guion.line user,model_lottery_guion_line,,1,1,1,1
+access_lottery_guion_intro_line_user,lottery.guion.intro.line user,model_lottery_guion_intro_line,,1,1,1,1
+access_lottery_guion_final_line_user,lottery.guion.final.line user,model_lottery_guion_final_line,,1,1,1,1
 access_lottery_guion_comentario_user,lottery.guion.comentario user,model_lottery_guion_comentario,,1,1,1,1
+access_lottery_guion_comentario_intro_user,lottery.guion.comentario.intro user,model_lottery_guion_comentario_intro,,1,1,1,1
+access_lottery_guion_comentario_final_user,lottery.guion.comentario.final user,model_lottery_guion_comentario_final,,1,1,1,1

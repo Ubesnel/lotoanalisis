@@ -10,9 +10,26 @@
               action="action_lottery_guion"
               sequence="10"/>
 
-    <menuitem id="menu_lottery_guion_comentario"
+    <menuitem id="menu_lottery_guion_comentario_root"
               name="Comentarios"
               parent="menu_lottery_guion_root"
+              sequence="20"/>
+
+    <menuitem id="menu_lottery_guion_comentario_intro"
+              name="Introducción"
+              parent="menu_lottery_guion_comentario_root"
+              action="action_lottery_guion_comentario_intro"
+              sequence="10"/>
+
+    <menuitem id="menu_lottery_guion_comentario"
+              name="Desarrollo"
+              parent="menu_lottery_guion_comentario_root"
               action="action_lottery_guion_comentario"
               sequence="20"/>
+
+    <menuitem id="menu_lottery_guion_comentario_final"
+              name="Final"
+              parent="menu_lottery_guion_comentario_root"
+              action="action_lottery_guion_comentario_final"
+              sequence="30"/>
 </odoo>

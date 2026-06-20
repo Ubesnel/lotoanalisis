@@ -1,0 +1,734 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--Introducción-->
+        <record id="lottery_guion_comentario_intro_1" model="lottery.guion.comentario.intro">
+            <field name="sequence">1</field>
+            <field name="personaje">valeria</field>
+            <field name="comentario">¡Muy buenas a todos! Bienvenidos a LotoAnálisis, el espacio donde analizamos los resultados del Pick 3 de Florida para descubrir tendencias, patrones y curiosidades que muchos pasan por alto.</field>
+        </record>
+        <record id="lottery_guion_comentario_intro_2" model="lottery.guion.comentario.intro">
+            <field name="sequence">2</field>
+            <field name="personaje">mateo</field>
+            <field name="comentario">Así es, Valeria. Yo soy Mateo, el encargado de revisar estadísticas, frecuencias, números calientes, números fríos y todo lo que los datos nos permiten observar.</field>
+        </record>
+        <record id="lottery_guion_comentario_intro_3" model="lottery.guion.comentario.intro">
+            <field name="sequence">3</field>
+            <field name="personaje">valeria</field>
+            <field name="comentario">En otras palabras, mientras yo hago las preguntas que todos nos hacemos</field>
+        </record>
+        <record id="lottery_guion_comentario_intro_4" model="lottery.guion.comentario.intro">
+            <field name="sequence">4</field>
+            <field name="personaje">mateo</field>
+            <field name="comentario">yo intento responderlas con números en lugar de con corazonadas.</field>
+        </record>
+        <record id="lottery_guion_comentario_intro_5" model="lottery.guion.comentario.intro">
+            <field name="sequence">5</field>
+            <field name="personaje">valeria</field>
+            <field name="comentario">¡Exactamente! Aquí vamos a revisar los sorteos con una mirada objetiva, entretenida y basada en datos.</field>
+        </record>
+        <record id="lottery_guion_comentario_intro_6" model="lottery.guion.comentario.intro">
+            <field name="sequence">6</field>
+            <field name="personaje">mateo</field>
+            <field name="comentario">Importante recordar que ninguna estrategia garantiza resultados y que las loterías son juegos de azar. Nosotros analizamos información histórica para encontrar tendencias y comportamientos interesantes.</field>
+        </record>
+        <record id="lottery_guion_comentario_intro_7" model="lottery.guion.comentario.intro">
+            <field name="sequence">7</field>
+            <field name="personaje">valeria</field>
+            <field name="comentario">Así que si te gustan los números, las estadísticas y quieres entender mejor lo que ocurre en el Pick 3, suscríbete y acompáñanos en cada análisis.</field>
+        </record>
+        <!--Desarrollo Estadísticas Generales-->
+        <!--Desarrollo Estadísticas Tarde-->
+        <!--Desarrollo Estadísticas Noche-->
+
+        <!--Desarrollo Grupos Atrasados General-->
+        <record id="lottery_guion_comentario_grupo_general_1" model="lottery.guion.comentario">
+            <field name="sequence">1</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Analicemos los 5 grupos más atrasados por la general. Empecemos con el primer grupo de nuestra lista.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_2" model="lottery.guion.comentario">
+            <field name="sequence">2</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Claro, Valeria. El grupo [] está compuesto por los números []. El último que salió fue el número [] en el turno de la [], y en la [] el último fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_3" model="lottery.guion.comentario">
+            <field name="sequence">3</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Cuáles son los números más atrasados dentro de este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_4" model="lottery.guion.comentario">
+            <field name="sequence">4</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Los tres más atrasados actualmente por la general son: []. Para el turno de la tarde [] y en la noche: [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_5" model="lottery.guion.comentario">
+            <field name="sequence">5</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Y qué nos muestran las estadísticas recientes?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_6" model="lottery.guion.comentario">
+            <field name="sequence">6</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Los tres números que más han salido los [] son: [], mientras que los tres con menos salidas este día son []. En la semana actual destacan [] como los más salidores y [] como los menos salidores. En el mes actual observamos que [] lideran las salidas y [] son los menos salidores en este mes.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_7" model="lottery.guion.comentario">
+            <field name="sequence">7</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Qué sucede específicamente en los sorteos de tarde y noche?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_8" model="lottery.guion.comentario">
+            <field name="sequence">8</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">En la tarde, los números más salidores son [] y los menos salidores son []. Para la noche, los más salidores son [] y los menos salidores son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_9" model="lottery.guion.comentario">
+            <field name="sequence">9</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Interesante análisis. Veamos ahora el segundo grupo más atrasado por la general.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_10" model="lottery.guion.comentario">
+            <field name="sequence">10</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">El grupo [] está compuesto por los números []. El último que salió fue el número [] en el turno de la [], y en la [] el último fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_11" model="lottery.guion.comentario">
+            <field name="sequence">11</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Cuáles son los tres números más atrasados de este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_12" model="lottery.guion.comentario">
+            <field name="sequence">12</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Actualmente son [] por la general, para el turno de la tarde los más atrasados son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_13" model="lottery.guion.comentario">
+            <field name="sequence">13</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Y cómo se comporta este grupo en las estadísticas recientes?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_14" model="lottery.guion.comentario">
+            <field name="sequence">14</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Hoy [] los números más salidores son [] y los menos salidores son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_15" model="lottery.guion.comentario">
+            <field name="sequence">15</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Y en los sorteos de tarde y noche?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_16" model="lottery.guion.comentario">
+            <field name="sequence">16</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">En la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_17" model="lottery.guion.comentario">
+            <field name="sequence">17</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Perfecto. Vamos ahora con el tercer grupo más atrasado de la general.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_18" model="lottery.guion.comentario">
+            <field name="sequence">18</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">En esta posición se encuentra el grupo [], formado por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_19" model="lottery.guion.comentario">
+            <field name="sequence">19</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">El último que salió del grupo fue el [] en el turno de la [], y en la [] la última salida le corresponde a [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_20" model="lottery.guion.comentario">
+            <field name="sequence">20</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Los tres más atrasados son [] por la general, para el turno de la tarde los más atrasados son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_21" model="lottery.guion.comentario">
+            <field name="sequence">21</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Los más frecuentes los [] son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], y en el mes actual encontramos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_22" model="lottery.guion.comentario">
+            <field name="sequence">22</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Y qué sucede en los sorteos de tarde y noche para este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_23" model="lottery.guion.comentario">
+            <field name="sequence">23</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">En la tarde los más frecuentes son [] y los menos frecuentes son []. En la noche destacan [] y presentan menor frecuencia [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_24" model="lottery.guion.comentario">
+            <field name="sequence">24</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Continuamos con los próximos dos grupos más atrasados.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_25" model="lottery.guion.comentario">
+            <field name="sequence">25</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">De acuerdo, el siguiente grupo a analizar es [] y está compuesto por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_26" model="lottery.guion.comentario">
+            <field name="sequence">26</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">La última salida registrada fue por el número [] en el turno de la [], y en el turno de la [] el último en salir fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_27" model="lottery.guion.comentario">
+            <field name="sequence">27</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Actualmente los números más atrasados por la general son [], para el turno de la tarde son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_28" model="lottery.guion.comentario">
+            <field name="sequence">28</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Hoy [] los números más frecuentes son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_29" model="lottery.guion.comentario">
+            <field name="sequence">29</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Y en los sorteos de tarde y noche, cómo se comportan?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_30" model="lottery.guion.comentario">
+            <field name="sequence">30</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Te comento que en la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_31" model="lottery.guion.comentario">
+            <field name="sequence">31</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Y ahora sí nos vamos con el último grupo.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_32" model="lottery.guion.comentario">
+            <field name="sequence">32</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Este grupo es [] y está formado por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_33" model="lottery.guion.comentario">
+            <field name="sequence">33</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">La última salida registrada fue por el número [] en el turno de la [], y en el turno de la [] el último en salir fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_34" model="lottery.guion.comentario">
+            <field name="sequence">34</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Actualmente los números más atrasados por la general son [], para el turno de la tarde son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_35" model="lottery.guion.comentario">
+            <field name="sequence">35</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Hoy [] los números más frecuentes son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_36" model="lottery.guion.comentario">
+            <field name="sequence">36</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">¿Cómo es el comportamiento de las salidas históricas por turno?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_general_37" model="lottery.guion.comentario">
+            <field name="sequence">37</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_general</field>
+            <field name="comentario">Te comento que en la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+
+        <!--Desarrollo Grupos Atrasados Tarde-->
+        <record id="lottery_guion_comentario_grupo_tarde_1" model="lottery.guion.comentario">
+            <field name="sequence">1</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Analicemos los 5 grupos más atrasados por la tarde. Empecemos con el primer grupo de nuestra lista.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_2" model="lottery.guion.comentario">
+            <field name="sequence">2</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Claro, Valeria. El grupo [] está compuesto por los números []. El último que salió fue el número [] en el turno de la [], y en la [] el último fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_3" model="lottery.guion.comentario">
+            <field name="sequence">3</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Cuáles son los números más atrasados dentro de este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_4" model="lottery.guion.comentario">
+            <field name="sequence">4</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Los tres más atrasados actualmente por la general son: []. Para el turno de la tarde [] y en la noche: [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_5" model="lottery.guion.comentario">
+            <field name="sequence">5</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Y qué nos muestran las estadísticas recientes?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_6" model="lottery.guion.comentario">
+            <field name="sequence">6</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Los tres números que más han salido los [] son: [], mientras que los tres con menos salidas este día son []. En la semana actual destacan [] como los más salidores y [] como los menos salidores. En el mes actual observamos que [] lideran las salidas y [] son los menos salidores en este mes.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_7" model="lottery.guion.comentario">
+            <field name="sequence">7</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Qué sucede específicamente en los sorteos de tarde y noche?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_8" model="lottery.guion.comentario">
+            <field name="sequence">8</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">En la tarde, los números más salidores son [] y los menos salidores son []. Para la noche, los más salidores son [] y los menos salidores son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_9" model="lottery.guion.comentario">
+            <field name="sequence">9</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Interesante análisis. Veamos ahora el segundo grupo más atrasado por la tarde.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_10" model="lottery.guion.comentario">
+            <field name="sequence">10</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">El grupo [] está compuesto por los números []. El último que salió fue el número [] en el turno de la [], y en la [] el último fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_11" model="lottery.guion.comentario">
+            <field name="sequence">11</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Cuáles son los tres números más atrasados de este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_12" model="lottery.guion.comentario">
+            <field name="sequence">12</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Actualmente son [] por la general, para el turno de la tarde los más atrasados son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_13" model="lottery.guion.comentario">
+            <field name="sequence">13</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Y cómo se comporta este grupo en las estadísticas recientes?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_14" model="lottery.guion.comentario">
+            <field name="sequence">14</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Hoy [] los números más salidores son [] y los menos salidores son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_15" model="lottery.guion.comentario">
+            <field name="sequence">15</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Y en los sorteos de tarde y noche?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_16" model="lottery.guion.comentario">
+            <field name="sequence">16</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">En la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_17" model="lottery.guion.comentario">
+            <field name="sequence">17</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Perfecto. Vamos ahora con el tercer grupo más atrasado por la tarde.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_18" model="lottery.guion.comentario">
+            <field name="sequence">18</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">En esta posición se encuentra el grupo [], formado por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_19" model="lottery.guion.comentario">
+            <field name="sequence">19</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">El último que salió del grupo fue el [] en el turno de la [], y en la [] la última salida le corresponde a [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_20" model="lottery.guion.comentario">
+            <field name="sequence">20</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Los tres más atrasados son [] por la general, para el turno de la tarde los más atrasados son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_21" model="lottery.guion.comentario">
+            <field name="sequence">21</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Los más frecuentes los [] son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], y en el mes actual encontramos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_22" model="lottery.guion.comentario">
+            <field name="sequence">22</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Y qué sucede en los sorteos de tarde y noche para este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_23" model="lottery.guion.comentario">
+            <field name="sequence">23</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">En la tarde los más frecuentes son [] y los menos frecuentes son []. En la noche destacan [] y presentan menor frecuencia [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_24" model="lottery.guion.comentario">
+            <field name="sequence">24</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Continuamos con los próximos dos grupos más atrasados.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_25" model="lottery.guion.comentario">
+            <field name="sequence">25</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">De acuerdo, el siguiente grupo a analizar es [] y está compuesto por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_26" model="lottery.guion.comentario">
+            <field name="sequence">26</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">La última salida registrada fue por el número [] en el turno de la [], y en el turno de la [] el último en salir fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_27" model="lottery.guion.comentario">
+            <field name="sequence">27</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Actualmente los números más atrasados por la general son [], para el turno de la tarde son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_28" model="lottery.guion.comentario">
+            <field name="sequence">28</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Hoy [] los números más frecuentes son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_29" model="lottery.guion.comentario">
+            <field name="sequence">29</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Y en los sorteos de tarde y noche, cómo se comportan?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_30" model="lottery.guion.comentario">
+            <field name="sequence">30</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Te comento que en la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_31" model="lottery.guion.comentario">
+            <field name="sequence">31</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Y ahora sí nos vamos con el último grupo.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_32" model="lottery.guion.comentario">
+            <field name="sequence">32</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Este grupo es [] y está formado por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_33" model="lottery.guion.comentario">
+            <field name="sequence">33</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">La última salida registrada fue por el número [] en el turno de la [], y en el turno de la [] el último en salir fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_34" model="lottery.guion.comentario">
+            <field name="sequence">34</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Actualmente los números más atrasados por la general son [], para el turno de la tarde son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_35" model="lottery.guion.comentario">
+            <field name="sequence">35</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Hoy [] los números más frecuentes son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_36" model="lottery.guion.comentario">
+            <field name="sequence">36</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">¿Cómo es el comportamiento de las salidas históricas por turno?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_tarde_37" model="lottery.guion.comentario">
+            <field name="sequence">37</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_tarde</field>
+            <field name="comentario">Te comento que en la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+
+        <!--Desarrollo Grupos Atrasados Noche-->
+        <record id="lottery_guion_comentario_grupo_noche_1" model="lottery.guion.comentario">
+            <field name="sequence">1</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Analicemos los 5 grupos más atrasados por la noche. Empecemos con el primer grupo de nuestra lista.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_2" model="lottery.guion.comentario">
+            <field name="sequence">2</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Claro, Valeria. El grupo [] está compuesto por los números []. El último que salió fue el número [] en el turno de la [], y en la [] el último fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_3" model="lottery.guion.comentario">
+            <field name="sequence">3</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Cuáles son los números más atrasados dentro de este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_4" model="lottery.guion.comentario">
+            <field name="sequence">4</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Los tres más atrasados actualmente por la general son: []. Para el turno de la tarde [] y en la noche: [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_5" model="lottery.guion.comentario">
+            <field name="sequence">5</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Y qué nos muestran las estadísticas recientes?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_6" model="lottery.guion.comentario">
+            <field name="sequence">6</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Los tres números que más han salido los [] son: [], mientras que los tres con menos salidas este día son []. En la semana actual destacan [] como los más salidores y [] como los menos salidores. En el mes actual observamos que [] lideran las salidas y [] son los menos salidores en este mes.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_7" model="lottery.guion.comentario">
+            <field name="sequence">7</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Qué sucede específicamente en los sorteos de tarde y noche?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_8" model="lottery.guion.comentario">
+            <field name="sequence">8</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">En la tarde, los números más salidores son [] y los menos salidores son []. Para la noche, los más salidores son [] y los menos salidores son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_9" model="lottery.guion.comentario">
+            <field name="sequence">9</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Interesante análisis. Veamos ahora el segundo grupo más atrasado por la noche.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_10" model="lottery.guion.comentario">
+            <field name="sequence">10</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">El grupo [] está compuesto por los números []. El último que salió fue el número [] en el turno de la [], y en la [] el último fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_11" model="lottery.guion.comentario">
+            <field name="sequence">11</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Cuáles son los tres números más atrasados de este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_12" model="lottery.guion.comentario">
+            <field name="sequence">12</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Actualmente son [] por la general, para el turno de la tarde los más atrasados son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_13" model="lottery.guion.comentario">
+            <field name="sequence">13</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Y cómo se comporta este grupo en las estadísticas recientes?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_14" model="lottery.guion.comentario">
+            <field name="sequence">14</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Hoy [] los números más salidores son [] y los menos salidores son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_15" model="lottery.guion.comentario">
+            <field name="sequence">15</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Y en los sorteos de tarde y noche?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_16" model="lottery.guion.comentario">
+            <field name="sequence">16</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">En la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_17" model="lottery.guion.comentario">
+            <field name="sequence">17</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Perfecto. Vamos ahora con el tercer grupo más atrasado por la noche.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_18" model="lottery.guion.comentario">
+            <field name="sequence">18</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">En esta posición se encuentra el grupo [], formado por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_19" model="lottery.guion.comentario">
+            <field name="sequence">19</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">El último que salió del grupo fue el [] en el turno de la [], y en la [] la última salida le corresponde a [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_20" model="lottery.guion.comentario">
+            <field name="sequence">20</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Los tres más atrasados son [] por la general, para el turno de la tarde los más atrasados son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_21" model="lottery.guion.comentario">
+            <field name="sequence">21</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Los más frecuentes los [] son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], y en el mes actual encontramos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_22" model="lottery.guion.comentario">
+            <field name="sequence">22</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Y qué sucede en los sorteos de tarde y noche para este grupo?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_23" model="lottery.guion.comentario">
+            <field name="sequence">23</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">En la tarde los más frecuentes son [] y los menos frecuentes son []. En la noche destacan [] y presentan menor frecuencia [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_24" model="lottery.guion.comentario">
+            <field name="sequence">24</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Continuamos con los próximos dos grupos más atrasados.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_25" model="lottery.guion.comentario">
+            <field name="sequence">25</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">De acuerdo, el siguiente grupo a analizar es [] y está compuesto por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_26" model="lottery.guion.comentario">
+            <field name="sequence">26</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">La última salida registrada fue por el número [] en el turno de la [], y en el turno de la [] el último en salir fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_27" model="lottery.guion.comentario">
+            <field name="sequence">27</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Actualmente los números más atrasados por la general son [], para el turno de la tarde son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_28" model="lottery.guion.comentario">
+            <field name="sequence">28</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Hoy [] los números más frecuentes son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_29" model="lottery.guion.comentario">
+            <field name="sequence">29</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Y en los sorteos de tarde y noche, cómo se comportan?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_30" model="lottery.guion.comentario">
+            <field name="sequence">30</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Te comento que en la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_31" model="lottery.guion.comentario">
+            <field name="sequence">31</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Y ahora sí nos vamos con el último grupo.</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_32" model="lottery.guion.comentario">
+            <field name="sequence">32</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Este grupo es [] y está formado por los números [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_33" model="lottery.guion.comentario">
+            <field name="sequence">33</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">La última salida registrada fue por el número [] en el turno de la [], y en el turno de la [] el último en salir fue el [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_34" model="lottery.guion.comentario">
+            <field name="sequence">34</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Actualmente los números más atrasados por la general son [], para el turno de la tarde son [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_35" model="lottery.guion.comentario">
+            <field name="sequence">35</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Hoy [] los números más frecuentes son [] y los menos frecuentes son []. En la semana actual destacan [] frente a [], mientras que en el mes actual observamos mayor presencia de [] y menor presencia de [].</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_36" model="lottery.guion.comentario">
+            <field name="sequence">36</field>
+            <field name="personaje">valeria</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">¿Cómo es el comportamiento de las salidas históricas por turno?</field>
+        </record>
+        <record id="lottery_guion_comentario_grupo_noche_37" model="lottery.guion.comentario">
+            <field name="sequence">37</field>
+            <field name="personaje">mateo</field>
+            <field name="tipo_guion">grupos_atrasados_noche</field>
+            <field name="comentario">Te comento que en la tarde sobresalen [] y presentan menor frecuencia []. Durante la noche los más frecuentes son [] y los menos frecuentes son [].</field>
+        </record>
+
+        <!--Desarrollo Información Caliente-->
+        <!--Final-->
+        <record id="lottery_guion_comentario_final_1" model="lottery.guion.comentario.final">
+            <field name="sequence">1</field>
+            <field name="personaje">valeria</field>
+            <field name="comentario">Y hasta aquí llega nuestro análisis de hoy. Muchas gracias Mateo, por compartir una vez más toda esta información y ayudarnos a entender mejor el comportamiento de los números.</field>
+        </record>
+        <record id="lottery_guion_comentario_final_2" model="lottery.guion.comentario.final">
+            <field name="sequence">2</field>
+            <field name="personaje">mateo</field>
+            <field name="comentario">Gracias a ti, y a todos por acompañarnos.</field>
+        </record>
+        <record id="lottery_guion_comentario_final_3" model="lottery.guion.comentario.final">
+            <field name="sequence">3</field>
+            <field name="personaje">valeria</field>
+            <field name="comentario">Si les gustó este análisis, no olviden seguir el canal, dejar su comentario y compartir el video con otros apasionados del Pick 3 de Florida y las estadísticas. Y recuerden que en nuestro próximo video seguiremos explorando tendencias, frecuencias y datos que podrían ayudarnos a entender mejor cada sorteo. Porque detrás de cada sorteo hay una historia, y detrás de cada historia hay números por analizar. Hasta la próxima y mucha suerte para todos!</field>
+        </record>
+    </data>
+</odoo>
