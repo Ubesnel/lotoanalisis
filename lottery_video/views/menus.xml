@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_lottery_video_root"
-              name="Videos Lotería"
+              name="Generación de Videos"
               sequence="90"/>
 
     <menuitem id="menu_lottery_video_info"

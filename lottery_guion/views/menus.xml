@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_lottery_guion_root"
+              name="Generación de Guiones"
+              sequence="95"/>
+
+    <menuitem id="menu_lottery_guion"
+              name="Guiones"
+              parent="menu_lottery_guion_root"
+              action="action_lottery_guion"
+              sequence="10"/>
+
+    <menuitem id="menu_lottery_guion_comentario"
+              name="Comentarios"
+              parent="menu_lottery_guion_root"
+              action="action_lottery_guion_comentario"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lottery_guion_user,lottery.guion user,model_lottery_guion,,1,1,1,1
+access_lottery_guion_line_user,lottery.guion.line user,model_lottery_guion_line,,1,1,1,1
+access_lottery_guion_comentario_user,lottery.guion.comentario user,model_lottery_guion_comentario,,1,1,1,1

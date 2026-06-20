@@ -59,8 +59,8 @@
                            invisible="state != 'video_ok'">
                         <field name="video_file" widget="binary"
                                filename="video_filename"
-                               string="Descargar video"/>
-                        <field name="video_filename"/>
+                               string="Descargar video" invisible="1"/>
+                        <field name="video_filename" invisible="1"/>
                     </group>
 
                     <notebook>
@@ -230,7 +230,7 @@
 
     <!-- ── Action ──────────────────────────────────────────────────────────── -->
     <record id="action_lottery_video_info" model="ir.actions.act_window">
-        <field name="name">Videos de Lotería</field>
+        <field name="name">Videos</field>
         <field name="res_model">lottery.video.info</field>
         <field name="view_mode">list,form</field>
     </record>

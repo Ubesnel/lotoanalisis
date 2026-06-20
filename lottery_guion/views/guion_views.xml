@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lottery_guion_list" model="ir.ui.view">
+        <field name="name">lottery.guion.list</field>
+        <field name="model">lottery.guion</field>
+        <field name="arch" type="xml">
+            <tree string="Guiones">
+                <field name="fecha"/>
+                <field name="tipo_guion"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_guion_form" model="ir.ui.view">
+        <field name="name">lottery.guion.form</field>
+        <field name="model">lottery.guion</field>
+        <field name="arch" type="xml">
+            <form string="Guión">
+                <header>
+                    <button name="action_download_guion" string="Descargar Guión"
+                            type="object" class="btn-primary" icon="fa-download"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="tipo_guion"/>
+                        <field name="fecha"/>
+                    </group>
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="personaje"/>
+                            <field name="comentario_id"
+                                   domain="[('tipo_guion', '=', parent.tipo_guion)]"/>
+                            <field name="texto_final"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_guion" model="ir.actions.act_window">
+        <field name="name">Guiones</field>
+        <field name="res_model">lottery.guion</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>
