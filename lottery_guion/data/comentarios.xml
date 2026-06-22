@@ -5,12 +5,12 @@
         <record id="lottery_guion_comentario_intro_1" model="lottery.guion.comentario.intro">
             <field name="sequence">1</field>
             <field name="personaje">valeria</field>
-            <field name="comentario">¡Muy buenas a todos! Bienvenidos a LotoAnálisis, el espacio donde analizamos los resultados del Pick 3 de Florida para descubrir tendencias, patrones y curiosidades que muchos pasan por alto.</field>
+            <field name="comentario">¡Muy buenas a todos! Bienvenidos a LotoAnálisis, yo soy Valeria, y este es el espacio donde analizamos los resultados del Pick 3 de Florida para descubrir tendencias, patrones y curiosidades que muchos pasan por alto.</field>
         </record>
         <record id="lottery_guion_comentario_intro_2" model="lottery.guion.comentario.intro">
             <field name="sequence">2</field>
             <field name="personaje">mateo</field>
-            <field name="comentario">Así es, Valeria. Yo soy Mateo, el encargado de revisar estadísticas, frecuencias, números calientes, números fríos y todo lo que los datos nos permiten observar.</field>
+            <field name="comentario">Y yo soy Mateo, encargado del análisis de datos, estadísticas y comportamiento histórico de los números.</field>
         </record>
         <record id="lottery_guion_comentario_intro_3" model="lottery.guion.comentario.intro">
             <field name="sequence">3</field>
@@ -38,6 +38,216 @@
             <field name="comentario">Así que si te gustan los números, las estadísticas y quieres entender mejor lo que ocurre en el Pick 3, suscríbete y acompáñanos en cada análisis.</field>
         </record>
         <!--Desarrollo Estadísticas Generales-->
+         <record id="lottery_guion_comentario_general_1" model="lottery.guion.comentario">
+            <field name="sequence">1</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Profesor cuáles serían los diez números más atrasados los [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_2" model="lottery.guion.comentario">
+            <field name="sequence">2</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">En este momento los diez números con mayor atraso los [] son: [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_3" model="lottery.guion.comentario">
+            <field name="sequence">3</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Y cuáles de ellos llaman más la atención?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_4" model="lottery.guion.comentario">
+            <field name="sequence">4</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Actualmente los tres más atrasados por la general son [], por la tarde son [] y por la noche son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_5" model="lottery.guion.comentario">
+            <field name="sequence">5</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Y cuáles han sido los más recientes en aparecer?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_6" model="lottery.guion.comentario">
+            <field name="sequence">6</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">En la general los últimos que salieron fueron [], en la tarde [] y en la noche [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_7" model="lottery.guion.comentario">
+            <field name="sequence">7</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Qué nos dicen las estadísticas de esta semana y este mes para estos números?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_8" model="lottery.guion.comentario">
+            <field name="sequence">8</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">En [] destacan [] como los más salidores históricamente y [] como los menos salidores. Mientras que en la semana actual los que más tienden a salir son [] y los menos salidores de esta semana son [XXX].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_9" model="lottery.guion.comentario">
+            <field name="sequence">9</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Ahora veamos el análisis de los diez números que históricamente más suelen salir los [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_10" model="lottery.guion.comentario">
+            <field name="sequence">10</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Estos son los diez números con mayor cantidad de salidas para el día: [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_11" model="lottery.guion.comentario">
+            <field name="sequence">11</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Podemos analizar cuáles están mas atrasados?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_12" model="lottery.guion.comentario">
+            <field name="sequence">12</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Sí. Los tres más atrasados dentro de este grupo por la general son [], por la tarde son [] y por la noche son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_13" model="lottery.guion.comentario">
+            <field name="sequence">13</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Y cuáles son los más recientes que han salidos?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_14" model="lottery.guion.comentario">
+            <field name="sequence">14</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Por la general los últimos que salieron fueron [], por la tarde [] y por la noche []</field>
+        </record>
+        <record id="lottery_guion_comentario_general_15" model="lottery.guion.comentario">
+            <field name="sequence">15</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Qué nos dicen las estadísticas de esta semana y este mes para estos números?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_16" model="lottery.guion.comentario">
+            <field name="sequence">16</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">En el mes actual históricamente los más salidores son [] y [] como los menos salidores. Mientras que en la semana actual lideran [] y los menos vistos son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_17" model="lottery.guion.comentario">
+            <field name="sequence">17</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Continuamos con las líneas más atrasadas para los [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_18" model="lottery.guion.comentario">
+            <field name="sequence">18</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Las tres líneas con mayor atraso actualmente para este día son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_19" model="lottery.guion.comentario">
+            <field name="sequence">19</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Qué números destacan dentro de ellas?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_20" model="lottery.guion.comentario">
+            <field name="sequence">20</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Para la línea [] los números más atrasados para este dia [] son [] y los últimos en salir de la línea fueron [] en este dia, Actualmente los más atrasados de la línea son [] y los más recientes en salir [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_21" model="lottery.guion.comentario">
+            <field name="sequence">21</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Para la línea [] los números más atrasados para este dia [] son [] y los últimos en salir de la línea fueron [] en este dia, Actualmente los más atrasados de la línea son [] y los más recientes en salir [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_22" model="lottery.guion.comentario">
+            <field name="sequence">22</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Y para la línea [] los números más atrasados para este dia [] son [] y los últimos en salir de la línea fueron [] en este dia, Actualmente los más atrasados de la línea son [] y los más recientes en salir [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_23" model="lottery.guion.comentario">
+            <field name="sequence">23</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Sin duda líneas que merecen seguimiento en los próximos sorteos de los []. ¿Y que me dices de los terminales?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_24" model="lottery.guion.comentario">
+            <field name="sequence">24</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Los tres terminales con mayor atraso actualmente para este día son [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_25" model="lottery.guion.comentario">
+            <field name="sequence">25</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">¿Nos comentas, qué números destacan dentro de ellos?</field>
+        </record>
+        <record id="lottery_guion_comentario_general_26" model="lottery.guion.comentario">
+            <field name="sequence">26</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Para el terminal [] los números más atrasados para este dia [] son [] y los últimos en salir del terminal fueron [] en este dia, Actualmente los más atrasados del terminal son [] y los más recientes en salir [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_27" model="lottery.guion.comentario">
+            <field name="sequence">27</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Para el terminal [] los números más atrasados para este dia [] son [] y los últimos en salir del terminal fueron [] en este dia, Actualmente los más atrasados del terminal son [] y los más recientes en salir [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_28" model="lottery.guion.comentario">
+            <field name="sequence">28</field>
+            <field name="personaje">mateo</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Y para el terminal [] los números más atrasados para este dia [] son [] y los últimos en salir del terminal fueron [] en este dia, Actualmente los más atrasados del terminal son [] y los más recientes en salir [].</field>
+        </record>
+        <record id="lottery_guion_comentario_general_29" model="lottery.guion.comentario">
+            <field name="sequence">29</field>
+            <field name="personaje">valeria</field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario">Veamos ahora los números que más tiempo llevan sin aparecer.</field>
+        </record>
+        <record id="lottery_guion_comentario_general_30" model="lottery.guion.comentario">
+            <field name="sequence">30</field>
+            <field name="personaje"></field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario"></field>
+        </record>
+        <record id="lottery_guion_comentario_general_31" model="lottery.guion.comentario">
+            <field name="sequence">31</field>
+            <field name="personaje"></field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario"></field>
+        </record>
+        <record id="lottery_guion_comentario_general_32" model="lottery.guion.comentario">
+            <field name="sequence">32</field>
+            <field name="personaje"></field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario"></field>
+        </record>
+        <record id="lottery_guion_comentario_general_33" model="lottery.guion.comentario">
+            <field name="sequence">33</field>
+            <field name="personaje"></field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario"></field>
+        </record>
+        <record id="lottery_guion_comentario_general_34" model="lottery.guion.comentario">
+            <field name="sequence">34</field>
+            <field name="personaje"></field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario"></field>
+        </record>
+        <record id="lottery_guion_comentario_general_35" model="lottery.guion.comentario">
+            <field name="sequence">35</field>
+            <field name="personaje"></field>
+             <field name="tipo_guion">estadisticas_generales</field>
+            <field name="comentario"></field>
+        </record>
         <!--Desarrollo Estadísticas Tarde-->
         <!--Desarrollo Estadísticas Noche-->
 
