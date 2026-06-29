@@ -1,0 +1,232 @@
+# -*- coding: utf-8 -*-
+import logging
+from datetime import date, timedelta
+
+from odoo import api, fields, models
+from odoo.exceptions import UserError
+
+from .utils import build_result_html
+
+_logger = logging.getLogger(__name__)
+
+QUINIELA_URL = "https://www.loteria.gub.uy/ver_resultados.php"
+
+
+class LotteryScraperQuinielaUy(models.Model):
+    _name = 'lottery.scraper.quiniela.uy'
+    _description = 'Importador automático Quiniela Uruguay'
+
+    name = fields.Char(default='Quiniela Uruguay', readonly=True)
+
+    # A diferencia de Florida, acá la API no recibe rango: solo una fecha por
+    # consulta, y esa fecha devuelve los 20 sorteos de ambos turnos juntos.
+    page_load_timeout = fields.Integer('Timeout petición (seg)', default=30)
+
+    date_from = fields.Date('Fecha desde', help='Vacío = detecta automáticamente desde el último día registrado.')
+    date_to = fields.Date('Fecha hasta', help='Vacío = usa la fecha de hoy.')
+
+    last_run = fields.Datetime('Última ejecución', readonly=True)
+    last_result = fields.Html('Último resultado', readonly=True, sanitize=False)
+
+    # ── Entry points ──────────────────────────────────────────────
+
+    @api.model
+    def cron_import_results(self):
+        """Corre periódicamente (no hay ventana horaria confirmada para UY,
+        así que simplemente reintenta 'hoy' cada vez; si el sitio todavía no
+        publicó el resultado, registra PENDIENTE y no rompe nada)."""
+        scraper = self._get_singleton()
+        today = date.today()
+        log_lines = scraper._import_date(today)
+        scraper.write({
+            'last_run': fields.Datetime.now(),
+            'last_result': build_result_html(log_lines),
+        })
+
+    def action_import_now(self):
+        """Importación manual. Si date_from está configurado usa ese rango
+        (recorriendo día por día, ya que la API no acepta rango); si no,
+        detecta automáticamente desde el último día registrado hasta hoy."""
+        self.ensure_one()
+        log_lines = []
+        try:
+            today = date.today()
+            if self.date_from:
+                current = self.date_from
+                date_to = self.date_to or today
+            else:
+                current = self._get_next_query_date()
+                date_to = today
+
+            while current <= date_to:
+                log_lines += self._import_date(current)
+                current += timedelta(days=1)
+
+        except Exception as exc:
+            log_lines.append(f'[ERROR] {exc}')
+            _logger.error('Scraper Quiniela UY: %s', exc, exc_info=True)
+
+        self.write({
+            'last_run': fields.Datetime.now(),
+            'last_result': build_result_html(log_lines),
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [[False, 'form']],
+            'target': 'current',
+        }
+
+    # ── Detección de próxima fecha a consultar ─────────────────────
+
+    def _get_next_query_date(self):
+        last = self.env['lottery.output'].search(
+            [('sorteo_id.source_code', '=', 'quiniela_uy')], order='date desc, id desc', limit=1)
+        if not last:
+            return date.today()
+        return min(last.date + timedelta(days=1), date.today())
+
+    # ── Fetch + parseo (mismo criterio que el script de referencia) ────
+
+    def _fetch_quiniela(self, dia, mes, anio):
+        """Identifica cada bloque de 20 números por la imagen de cabezal que lo
+        precede en el HTML (cabezal_quinielas_vespertina.png / _nocturno.png),
+        en vez de inferir el turno por la cantidad total de números encontrados.
+        Esto cubre correctamente los 3 casos reales: solo vespertina (días con
+        sorteo nocturno suspendido), solo nocturno (ej. sábado) o ambos."""
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+        except ImportError as exc:
+            raise UserError(
+                f'Librería faltante: {exc}.\nInstala con: pip install requests beautifulsoup4'
+            ) from exc
+        import re
+
+        params = {'vdia': dia, 'vmes': mes, 'vano': anio}
+        headers = {'User-Agent': 'Mozilla/5.0'}
+
+        resp = requests.get(QUINIELA_URL, params=params, headers=headers,
+                            timeout=self.page_load_timeout)
+        resp.raise_for_status()
+
+        soup = BeautifulSoup(resp.text, 'html.parser')
+
+        blocks = {'afternoon': [], 'evening': []}
+        current_turn = None
+
+        for el in soup.descendants:
+            if getattr(el, 'name', None) == 'img':
+                src = (el.get('src') or '').lower()
+                if 'vespertina' in src:
+                    current_turn = 'afternoon'
+                elif 'nocturno' in src:
+                    current_turn = 'evening'
+            elif isinstance(el, str):
+                text = el.strip()
+                if (current_turn and re.fullmatch(r'\d{3}', text)
+                        and len(blocks[current_turn]) < 20):
+                    blocks[current_turn].append(text)
+
+        result = {}
+        for turn, raw in blocks.items():
+            if len(raw) == 20:
+                result[turn] = raw[0::2] + raw[1::2]
+            elif raw:
+                _logger.warning(
+                    'Scraper Quiniela UY: bloque %s incompleto (%d/20 números) para %02d/%02d/%04d',
+                    turn, len(raw), dia, mes, anio)
+                result[turn] = []
+            else:
+                result[turn] = []
+
+        if not result['afternoon'] and not result['evening']:
+            return None
+
+        return {'vespertina': result['afternoon'], 'nocturna': result['evening']}
+
+    # ── Importación ──────────────────────────────────────────────
+
+    def _sorteo_by_premio(self):
+        """Mapa {1: lottery.sorteo(quiniela_uy_1), ..., 20: lottery.sorteo(quiniela_uy_20)}."""
+        sorteos = self.env['lottery.sorteo'].search([('source_code', '=', 'quiniela_uy')])
+        result = {}
+        for s in sorteos:
+            try:
+                n = int(s.code.rsplit('_', 1)[-1])
+                result[n] = s
+            except ValueError:
+                continue
+        return result
+
+    def _import_date(self, draw_date):
+        label = str(draw_date)
+        try:
+            data = self._fetch_quiniela(draw_date.day, draw_date.month, draw_date.year)
+        except Exception as exc:
+            return [f'[ERROR] {label} – {exc}']
+
+        if not data or (not data['vespertina'] and not data['nocturna']):
+            return [f'[PENDIENTE] {label} – aún no hay resultados publicados.']
+
+        log_lines = []
+        if data['vespertina']:
+            log_lines += self._import_turn(draw_date, 'afternoon', data['vespertina'])
+        if data['nocturna']:
+            log_lines += self._import_turn(draw_date, 'evening', data['nocturna'])
+        return log_lines
+
+    def _import_turn(self, draw_date, turn_day, numeros):
+        Output = self.env['lottery.output']
+        LottoNum = self.env['lottery.number']
+        sorteo_by_premio = self._sorteo_by_premio()
+        log_lines = []
+
+        for premio, numero_str in enumerate(numeros, start=1):
+            label = f'{draw_date} {turn_day} S{premio}'
+            sorteo = sorteo_by_premio.get(premio)
+            if not sorteo:
+                log_lines.append(f'[ERROR] {label} – no existe lottery.sorteo quiniela_uy_{premio}')
+                continue
+
+            if Output.search([
+                ('date', '=', draw_date), ('turn_day', '=', turn_day),
+                ('sorteo_id', '=', sorteo.id),
+            ], limit=1):
+                log_lines.append(f'[OMITIDO] {label} – ya registrado')
+                continue
+
+            try:
+                centena_val = int(numero_str[0])
+                numero_val = int(numero_str[1:])
+            except ValueError:
+                log_lines.append(f'[ERROR] {label} – número inválido: {numero_str}')
+                continue
+
+            number_rec = LottoNum.search([('name', '=', numero_val)], limit=1)
+            hundreds_rec = LottoNum.search([('name', '=', centena_val), ('can_use_hundreds', '=', True)], limit=1)
+            if not number_rec or not hundreds_rec:
+                log_lines.append(f'[ERROR] {label} – número {numero_str} no existe en el catálogo')
+                continue
+
+            Output.create({
+                'date': draw_date,
+                'turn_day': turn_day,
+                'sorteo_id': sorteo.id,
+                'number_id': number_rec.id,
+                'hundreds_id': hundreds_rec.id,
+            })
+            log_lines.append(f'[OK] {label} – {numero_str}')
+
+        return log_lines
+
+    # ── Singleton ─────────────────────────────────────────────────
+
+    @api.model
+    def _get_singleton(self):
+        rec = self.search([], limit=1)
+        if not rec:
+            rec = self.create({'name': 'Quiniela Uruguay'})
+        return rec

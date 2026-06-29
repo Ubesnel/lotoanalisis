@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <menuitem id="menu_lottery_groups_item" parent="lottery_base.home_lottery"
-              action="action_lottery_groups" sequence="10"
+    <!-- 2) GRUPOS -->
+    <menuitem name="Grupos" id="menu_grupos_root" sequence="2"
+              parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
 
+    <menuitem id="menu_lottery_groups_item" name="Grupos"
+              parent="lottery_groups.menu_grupos_root"
+              action="action_lottery_groups" sequence="1"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_group_stat_item" name="Atrasos de grupos"
+              parent="lottery_groups.menu_grupos_root"
+              action="action_lottery_group_stat" sequence="2"
+              groups="lottery_base.group_lottery_user"/>
 
 </odoo>

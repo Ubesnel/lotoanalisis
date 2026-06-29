@@ -65,12 +65,58 @@
     </record>
 
     <menuitem id="menu_lottery_scraper_root"
-              name="Importador"
-              sequence="99"/>
+              name="Importadores"
+              parent="lottery_base.menu_configuracion_root"
+              sequence="10"
+              groups="lottery_base.group_lottery_manager"/>
 
     <menuitem id="menu_lottery_scraper"
               name="Pick 3 · Florida"
               parent="menu_lottery_scraper_root"
               action="action_lottery_scraper"
               sequence="10"/>
+
+    <record id="view_lottery_scraper_quiniela_uy_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.quiniela.uy.form</field>
+        <field name="model">lottery.scraper.quiniela.uy</field>
+        <field name="arch" type="xml">
+            <form string="Importador Quiniela Uruguay">
+                <header>
+                    <button name="action_import_now"
+                            string="Importar ahora"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <group string="Importación manual por rango">
+                        <group>
+                            <field name="date_from" string="Fecha desde"/>
+                            <field name="date_to" string="Fecha hasta"/>
+                        </group>
+                        <group>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                        </group>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                    </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper_quiniela_uy" model="ir.actions.act_window">
+        <field name="name">Importador Quiniela Uruguay</field>
+        <field name="res_model">lottery.scraper.quiniela.uy</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_quiniela_uy"
+              name="Quiniela Uruguay"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_quiniela_uy"
+              sequence="20"/>
 </odoo>

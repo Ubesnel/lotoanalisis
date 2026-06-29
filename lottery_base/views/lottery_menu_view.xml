@@ -4,10 +4,20 @@
               web_icon="lottery_base,static/description/icon.png"
               groups="lottery_base.group_lottery_user"/>
 
-    <menuitem id="menu_lottery_number_item" parent="lottery_base.home_lottery"
-              action="action_lottery_number" sequence="1"
+    <!-- 1) NÚMEROS -->
+    <menuitem name="Números" id="menu_numeros_root" sequence="1"
+              parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
 
+    <menuitem id="menu_lottery_number_item" name="Números"
+              parent="lottery_base.menu_numeros_root"
+              action="action_lottery_number" sequence="1"
+              groups="lottery_base.group_lottery_user"/>
+    <!-- "Atrasos de números" se agrega aquí desde lottery_delays_number -->
+
+    <!-- 2) GRUPOS se agrega completo desde lottery_groups -->
+
+    <!-- 3) SALIDAS -->
     <menuitem name="Salidas" id="menu_lottery_output" sequence="20"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
@@ -24,9 +34,21 @@
               action="action_lottery_output_evening" sequence="35"
               groups="lottery_base.group_lottery_user"/>
 
+    <!-- 4) CONFIGURACIÓN -->
+    <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_manager"/>
+
+    <!-- "Importadores" se agrega aquí desde lottery_scraper -->
+
+    <menuitem id="menu_lottery_sorteo_item" name="Sorteos"
+              parent="lottery_base.menu_configuracion_root"
+              action="action_lottery_sorteo" sequence="20"
+              groups="lottery_base.group_lottery_manager"/>
+
     <menuitem id="menu_ir_cron_act_lottery"
-            parent="lottery_base.home_lottery" name="Acciones planificadas"
+            parent="lottery_base.menu_configuracion_root" name="Acciones planificadas"
             action="base.ir_cron_act"
-            sequence="150"/>
+            sequence="30"/>
 
 </odoo>

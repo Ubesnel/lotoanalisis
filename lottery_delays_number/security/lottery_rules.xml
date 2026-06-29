@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="rule_lottery_number_stat_sorteo" model="ir.rule">
+            <field name="name">Estadísticas de números: solo sorteos permitidos</field>
+            <field name="model_id" ref="model_lottery_number_stat"/>
+            <field name="domain_force">[('sorteo_id', 'in', user.sorteo_ids.ids)]</field>
+            <field name="groups" eval="[(4, ref('lottery_base.group_lottery_user'))]"/>
+        </record>
+    </data>
+</odoo>

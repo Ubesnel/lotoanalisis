@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from odoo import models, fields, api
-from datetime import date
-from odoo.exceptions import ValidationError
+from odoo import models, api
 
 
 class LotteryOutput(models.Model):
@@ -17,7 +15,7 @@ class LotteryOutput(models.Model):
         def _run():
             with registry.cursor() as cr:
                 env = api.Environment(cr, uid, {})
-                env['lottery.group'].cron_recompute_from_sql()
+                env['lottery.group.stat'].cron_recompute_from_sql()
                 cr.commit()
 
         self.env.cr.postcommit.add(_run)

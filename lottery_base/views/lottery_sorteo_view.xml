@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_sorteo_tree" model="ir.ui.view">
+        <field name="name">view.lottery.sorteo.tree</field>
+        <field name="model">lottery.sorteo</field>
+        <field name="arch" type="xml">
+            <tree string="Sorteos">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="uses_fireball"/>
+                <field name="enforce_turn_continuity"/>
+                <field name="source_code"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_sorteo_form" model="ir.ui.view">
+        <field name="name">lottery.sorteo.form</field>
+        <field name="model">lottery.sorteo</field>
+        <field name="arch" type="xml">
+            <form string="Sorteo">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" class="oe_inline"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="uses_fireball"/>
+                            <field name="enforce_turn_continuity"/>
+                            <field name="source_code"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_sorteo" model="ir.actions.act_window">
+        <field name="name">Sorteos</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.sorteo</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

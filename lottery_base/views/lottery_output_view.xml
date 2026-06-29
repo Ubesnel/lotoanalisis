@@ -9,6 +9,7 @@
                 <field name="date"/>
                 <field name="complete_number"/>
                 <field name="week_day"/>
+                <field name="sorteo_id" optional="show"/>
                 <field name="month" optional="hide"/>
                 <field name="year" optional="hide"/>
                 <field name="turn_day" column_invisible="1"/>
@@ -27,6 +28,7 @@
                 <field name="date"/>
                 <field name="complete_number"/>
                 <field name="week_day"/>
+                <field name="sorteo_id" optional="show"/>
                 <field name="month" optional="hide"/>
                 <field name="year" optional="hide"/>
                 <field name="turn_day" optional="hide"/>
@@ -44,6 +46,7 @@
                 <sheet>
                     <group>
                         <group>
+                            <field name="sorteo_id"/>
                             <field name="date"/>
                             <field name="week_day"/>
                             <field name="turn_day"/>
@@ -69,6 +72,7 @@
                 <field name="hundreds_id"/>
                 <field name="number_id"/>
                 <field name="date"/>
+                <field name="sorteo_id"/>
                 <filter string="Salidas de día" name="lottery_output_afternoon"
                         domain="[('turn_day', '=', 'afternoon')]"/>
                 <filter string="Salidas de noche" name="lottery_output_evening"
@@ -94,6 +98,7 @@
                             ('date', '&lt;', context_today().strftime('%%Y-%%m-01'))
                         ]"/>
                 <group expand="0" string="Agrupar por">
+                    <filter string="Sorteo" name="group_sorteo_id" context="{'group_by': 'sorteo_id'}"/>
                     <filter string="Centena" name="group_hundreds_id" context="{'group_by': 'hundreds_id'}"/>
                     <filter string="Número" name="group_number_id" context="{'group_by': 'number_id'}"/>
                     <filter string="Año" name="group_year" domain="[]" context="{'group_by': 'year'}"/>

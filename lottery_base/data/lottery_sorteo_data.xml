@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="sorteo_florida" model="lottery.sorteo">
+            <field name="name">Florida</field>
+            <field name="code">florida</field>
+            <field name="sequence">1</field>
+            <field name="uses_fireball" eval="True"/>
+            <field name="enforce_turn_continuity" eval="True"/>
+            <field name="source_code">florida</field>
+        </record>
+        <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 1</field>
+            <field name="code">quiniela_uy_1</field>
+            <field name="sequence">11</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_2" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 2</field>
+            <field name="code">quiniela_uy_2</field>
+            <field name="sequence">12</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_3" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 3</field>
+            <field name="code">quiniela_uy_3</field>
+            <field name="sequence">13</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_4" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 4</field>
+            <field name="code">quiniela_uy_4</field>
+            <field name="sequence">14</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_5" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 5</field>
+            <field name="code">quiniela_uy_5</field>
+            <field name="sequence">15</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_6" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 6</field>
+            <field name="code">quiniela_uy_6</field>
+            <field name="sequence">16</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_7" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 7</field>
+            <field name="code">quiniela_uy_7</field>
+            <field name="sequence">17</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_8" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 8</field>
+            <field name="code">quiniela_uy_8</field>
+            <field name="sequence">18</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_9" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 9</field>
+            <field name="code">quiniela_uy_9</field>
+            <field name="sequence">19</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_10" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 10</field>
+            <field name="code">quiniela_uy_10</field>
+            <field name="sequence">20</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_11" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 11</field>
+            <field name="code">quiniela_uy_11</field>
+            <field name="sequence">21</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_12" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 12</field>
+            <field name="code">quiniela_uy_12</field>
+            <field name="sequence">22</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_13" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 13</field>
+            <field name="code">quiniela_uy_13</field>
+            <field name="sequence">23</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_14" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 14</field>
+            <field name="code">quiniela_uy_14</field>
+            <field name="sequence">24</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_15" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 15</field>
+            <field name="code">quiniela_uy_15</field>
+            <field name="sequence">25</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_16" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 16</field>
+            <field name="code">quiniela_uy_16</field>
+            <field name="sequence">26</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_17" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 17</field>
+            <field name="code">quiniela_uy_17</field>
+            <field name="sequence">27</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_18" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 18</field>
+            <field name="code">quiniela_uy_18</field>
+            <field name="sequence">28</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_19" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 19</field>
+            <field name="code">quiniela_uy_19</field>
+            <field name="sequence">29</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+        <record id="sorteo_quiniela_uy_20" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Sorteo 20</field>
+            <field name="code">quiniela_uy_20</field>
+            <field name="sequence">30</field>
+            <field name="uses_fireball" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quiniela_uy</field>
+        </record>
+    </data>
+</odoo>
