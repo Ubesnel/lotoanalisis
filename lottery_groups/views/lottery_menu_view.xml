@@ -2,7 +2,7 @@
 <odoo>
 
     <!-- 2) GRUPOS -->
-    <menuitem name="Grupos" id="menu_grupos_root" sequence="2"
+    <menuitem name="Grupos" id="menu_grupos_root" sequence="15"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
 

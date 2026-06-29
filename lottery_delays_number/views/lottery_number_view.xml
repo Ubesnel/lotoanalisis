@@ -32,9 +32,9 @@
             <tree string="Estadísticas por sorteo" create="0" edit="0" delete="0" default_order="sorteo_id, number_name">
                 <field name="sorteo_id" optional="show"/>
                 <field name="number_name"/>
-                <field name="total_salidas"/>
-                <field name="total_salidas_dia"/>
-                <field name="total_salidas_noche"/>
+                <field name="total_salidas" optional="hide"/>
+                <field name="total_salidas_dia" optional="hide"/>
+                <field name="total_salidas_noche" optional="hide"/>
                 <field name="total_atrasadas"/>
                 <field name="total_atrasadas_dia"/>
                 <field name="total_atrasadas_noche"/>
@@ -76,6 +76,8 @@
                 <field name="sorteo_id"/>
                 <filter string="Con salidas" name="con_salidas" domain="[('total_salidas', '&gt;', 0)]"/>
                 <filter string="Sin salidas (nunca salió)" name="sin_salidas" domain="[('total_salidas', '=', 0)]"/>
+                <separator/>
+                <filter string="Florida" name="filter_sorteo_florida" domain="[('sorteo_id.code', '=', 'florida')]"/>
                 <group expand="0" string="Agrupar por">
                     <filter string="Sorteo" name="group_sorteo_id" domain="[]" context="{'group_by': 'sorteo_id'}"/>
                     <filter string="Número" name="group_number" domain="[]" context="{'group_by': 'number_name'}"/>
@@ -85,11 +87,11 @@
     </record>
 
     <record id="action_lottery_number_stat" model="ir.actions.act_window">
-        <field name="name">Atrasos y totales</field>
+        <field name="name">Atrasos de números</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">lottery.number.stat</field>
         <field name="view_mode">tree</field>
-        <field name="context">{'search_default_group_sorteo_id': 1}</field>
+        <field name="context">{'search_default_filter_sorteo_florida': 1}</field>
         <field name="search_view_id" ref="view_lottery_number_stat_search"/>
     </record>
 </odoo>

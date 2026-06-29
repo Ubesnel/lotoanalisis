@@ -5,7 +5,7 @@
               groups="lottery_base.group_lottery_user"/>
 
     <!-- 1) NÚMEROS -->
-    <menuitem name="Números" id="menu_numeros_root" sequence="1"
+    <menuitem name="Números" id="menu_numeros_root" sequence="10"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
 
@@ -18,7 +18,7 @@
     <!-- 2) GRUPOS se agrega completo desde lottery_groups -->
 
     <!-- 3) SALIDAS -->
-    <menuitem name="Salidas" id="menu_lottery_output" sequence="20"
+    <menuitem name="Salidas" id="menu_lottery_output" sequence="5"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
 

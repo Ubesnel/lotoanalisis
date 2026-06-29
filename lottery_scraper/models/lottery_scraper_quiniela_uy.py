@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -18,6 +18,16 @@ class LotteryScraperQuinielaUy(models.Model):
 
     name = fields.Char(default='Quiniela Uruguay', readonly=True)
 
+    # ── Ventanas horarias (hora Uruguay) ────────────────────────────
+    # Vespertina se publica ~15:00, Nocturna ~21:00. Las ventanas dejan
+    # algo de margen para que el sitio termine de publicar el resultado.
+    vespertina_start = fields.Float('Inicio ventana Vespertina', default=15.0833)  # 15:05
+    vespertina_end = fields.Float('Fin ventana Vespertina', default=15.25)  # 15:15
+    nocturna_start = fields.Float('Inicio ventana Nocturna', default=21.0833)  # 21:05
+    nocturna_end = fields.Float('Fin ventana Nocturna', default=21.25)  # 21:15
+    uy_offset = fields.Integer('Offset Uruguay desde UTC', default=-3,
+                               help='Uruguay no aplica horario de verano desde 2015: siempre UTC-3.')
+
     # A diferencia de Florida, acá la API no recibe rango: solo una fecha por
     # consulta, y esa fecha devuelve los 20 sorteos de ambos turnos juntos.
     page_load_timeout = fields.Integer('Timeout petición (seg)', default=30)
@@ -32,12 +42,23 @@ class LotteryScraperQuinielaUy(models.Model):
 
     @api.model
     def cron_import_results(self):
-        """Corre periódicamente (no hay ventana horaria confirmada para UY,
-        así que simplemente reintenta 'hoy' cada vez; si el sitio todavía no
-        publicó el resultado, registra PENDIENTE y no rompe nada)."""
+        """Solo hace la petición al sitio dentro de las ventanas horarias en
+        que se publican los resultados (Vespertina ~15:00, Nocturna ~21:00,
+        hora Uruguay). Fuera de esas ventanas no llama a la web."""
         scraper = self._get_singleton()
-        today = date.today()
-        log_lines = scraper._import_date(today)
+        uy_tz = timezone(timedelta(hours=scraper.uy_offset))
+        now_uy = datetime.now(tz=uy_tz)
+        hour_uy = now_uy.hour + now_uy.minute / 60.0
+        today_uy = now_uy.date()
+
+        in_vespertina = scraper.vespertina_start <= hour_uy <= scraper.vespertina_end
+        in_nocturna = scraper.nocturna_start <= hour_uy <= scraper.nocturna_end
+
+        if not (in_vespertina or in_nocturna):
+            _logger.debug('Scraper Quiniela UY: %02d:%02d UY fuera de ventanas.', now_uy.hour, now_uy.minute)
+            return
+
+        log_lines = scraper._import_date(today_uy)
         scraper.write({
             'last_run': fields.Datetime.now(),
             'last_result': build_result_html(log_lines),

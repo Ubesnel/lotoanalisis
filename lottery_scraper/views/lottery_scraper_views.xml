@@ -89,6 +89,20 @@
                             icon="fa-download"/>
                 </header>
                 <sheet>
+                    <group string="Ventanas horarias (hora Uruguay)">
+                        <group string="VESPERTINA ☀ (sorteo ~15:00)">
+                            <field name="vespertina_start" widget="float_time" string="Inicio"/>
+                            <field name="vespertina_end" widget="float_time" string="Fin"/>
+                        </group>
+                        <group string="NOCTURNA 🌙 (sorteo ~21:00)">
+                            <field name="nocturna_start" widget="float_time" string="Inicio"/>
+                            <field name="nocturna_end" widget="float_time" string="Fin"/>
+                        </group>
+                    </group>
+                    <group string="Zona horaria">
+                        <field name="uy_offset" string="Offset UTC→Uruguay (horas)"
+                               help="Uruguay no aplica horario de verano desde 2015: siempre -3"/>
+                    </group>
                     <group string="Importación manual por rango">
                         <group>
                             <field name="date_from" string="Fecha desde"/>

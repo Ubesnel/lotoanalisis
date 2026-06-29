@@ -63,9 +63,9 @@
                   default_order="sorteo_id, group_id">
                 <field name="sorteo_id" optional="show"/>
                 <field name="group_id"/>
-                <field name="total_salidas"/>
-                <field name="total_salidas_dia"/>
-                <field name="total_salidas_noche"/>
+                <field name="total_salidas" optional="hide"/>
+                <field name="total_salidas_dia" optional="hide"/>
+                <field name="total_salidas_noche" optional="hide"/>
                 <field name="salidas_atrasadas"/>
                 <field name="salidas_atrasadas_dia"/>
                 <field name="salidas_atrasadas_noche"/>
@@ -87,6 +87,7 @@
             <search string="Estadísticas de grupos">
                 <field name="group_id"/>
                 <field name="sorteo_id"/>
+                <filter string="Florida" name="filter_sorteo_florida" domain="[('sorteo_id.code', '=', 'florida')]"/>
                 <group expand="0" string="Agrupar por">
                     <filter string="Sorteo" name="group_sorteo_id" domain="[]" context="{'group_by': 'sorteo_id'}"/>
                     <filter string="Grupo" name="group_group" domain="[]" context="{'group_by': 'group_id'}"/>
@@ -96,11 +97,11 @@
     </record>
 
     <record id="action_lottery_group_stat" model="ir.actions.act_window">
-        <field name="name">Atrasos y totales de grupos</field>
+        <field name="name">Atrasos de grupos</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">lottery.group.stat</field>
         <field name="view_mode">tree</field>
-        <field name="context">{'search_default_group_sorteo_id': 1}</field>
+        <field name="context">{'search_default_filter_sorteo_florida': 1}</field>
         <field name="search_view_id" ref="view_lottery_group_stat_search"/>
     </record>
 </odoo>
