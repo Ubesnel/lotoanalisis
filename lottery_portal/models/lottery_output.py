@@ -80,9 +80,36 @@ class LotteryOutput(models.Model):
         self._after_change()
         return res
 
+    _MATERIALIZED_VIEWS = [
+        'lottery_centena_week_mv',
+        'lottery_centena_weekday_mv',
+        'lottery_group_sequences_mv',
+        'lottery_group_analysis_mv',
+        'lottery_top10_afternoon_mv',
+        'lottery_top10_dia_semana_mv',
+        'lottery_top10_mv',
+        'lottery_top10_evening_mv',
+        'lottery_top_atrasos_lineas_mv',
+        'lottery_number_groups_atrasos_mv',
+        'lottery_top_atrasos_terminales_mv',
+        'lottery_top5_bola_extra_dia_mv',
+        'lottery_top5_bola_extra_general_mv',
+        'lottery_top5_bola_extra_noche_mv',
+        'lottery_top5_centena_dia_mv',
+        'lottery_top5_centena_general_mv',
+        'lottery_top5_centena_noche_mv',
+        'lottery_ultima_salida_dia_semana_mv',
+        'lottery_weekend_groups_mv',
+    ]
+
     def _after_change(self):
         self.env['lottery.group.stat'].cron_recompute_from_sql()
+        self.refresh_materialized_views()
         self.env['lottery.stats.service'].clear_caches()
+
+    def refresh_materialized_views(self):
+        for view in self._MATERIALIZED_VIEWS:
+            self.env.cr.execute(f"REFRESH MATERIALIZED VIEW {view}")
 
     # ── Lógica de validación ──────────────────────────────────────
 
