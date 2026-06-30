@@ -10,9 +10,6 @@
                 <div class="hero-deco-blob hero-deco-blob--1"/>
                 <div class="hero-deco-blob hero-deco-blob--2"/>
                 <div class="hero-content">
-                    <div class="hero-badge">
-                        <i class="fa fa-bar-chart"/> Pick 3 Florida · Desde 1988
-                    </div>
                     <h1 class="hero-title">
                         Analiza. <span>Comprende.</span> Decide mejor
                     </h1>
@@ -42,207 +39,27 @@
 
                         <!-- ===== COLUMNA 1: sorteos del día + últimas salidas ===== -->
                         <div class="col-lg-3 col-md-12 mb-3">
-                            <t t-if="lottery_data">
-                                <div class="card shadow border-0 mb-3 overflow-hidden">
-                                    <t t-if="lottery_data.get('afternoon')">
-                                        <div class="lottery-block">
-                                            <div class="lottery-turn-header lottery-turn-dia">
-                                                <i class="fa fa-sun-o"/> Tarde
-                                                <span class="lottery-turn-date">
-                                                    <t t-esc="lottery_data['afternoon']['date']"/>
-                                                </span>
-                                            </div>
-                                            <div class="lottery-row">
-                                                <div class="lottery-numbers">
-                                                    <div class="box-centena-dia">
-                                                        <t t-esc="lottery_data['afternoon']['centena']"/>
-                                                    </div>
-                                                    <div class="box-numero-dia">
-                                                        <t t-esc="lottery_data['afternoon']['numero']"/>
-                                                    </div>
-                                                </div>
-                                                <div class="lottery-extra-wrap">
-                                                    <span class="lottery-extra-label">Extra</span>
-                                                    <div class="box-extra">
-                                                        <t t-esc="lottery_data['afternoon']['extra']"/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </t>
-                                    <t t-if="lottery_data.get('evening')">
-                                        <div class="lottery-block lottery-block-noche">
-                                            <div class="lottery-turn-header lottery-turn-noche">
-                                                <i class="fa fa-moon-o"/> Noche
-                                                <span class="lottery-turn-date">
-                                                    <t t-esc="lottery_data['evening']['date']"/>
-                                                </span>
-                                            </div>
-                                            <div class="lottery-row">
-                                                <div class="lottery-numbers">
-                                                    <div class="box-centena-noche">
-                                                        <t t-esc="lottery_data['evening']['centena']"/>
-                                                    </div>
-                                                    <div class="box-numero-noche">
-                                                        <t t-esc="lottery_data['evening']['numero']"/>
-                                                    </div>
-                                                </div>
-                                                <div class="lottery-extra-wrap">
-                                                    <span class="lottery-extra-label">Extra</span>
-                                                    <div class="box-extra">
-                                                        <t t-esc="lottery_data['evening']['extra']"/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </t>
-                                </div>
-                            </t>
+                            <owl-component name="lottery_portal.UltimosResultados"/>
                             <!-- Últimas 10 salidas (últimos 10 días con datos, incluye hoy) -->
                             <owl-component name="lottery_portal.UltimasSalidasCol1"/>
                             <!-- Atraso de Líneas -->
                             <owl-component name="lottery_portal.TopAtrasosLineas"/>
                         </div>
 
-                        <!-- ===== COLUMNA 2: buscador + chips + artículos + paginación ===== -->
+                        <!-- ===== COLUMNA 2: estadísticas destacadas ===== -->
                         <div class="col-lg-6 col-md-12">
 
-                            <!-- ── Buscador de artículos ── -->
-                            <div class="np-search-wrap">
-                                <form method="get" action="/" class="np-search-form">
-                                    <input type="hidden" name="category" t-att-value="category_slug"/>
-                                    <div class="np-search-inner">
-                                        <i class="fa fa-search np-search-icon"/>
-                                        <input type="text"
-                                               name="q"
-                                               class="np-search-input"
-                                               placeholder="Buscar artículos…"
-                                               t-att-value="search_query"
-                                               autocomplete="off"/>
-                                        <t t-if="search_query">
-                                            <a href="/" class="np-search-clear" title="Limpiar búsqueda">
-                                                <i class="fa fa-times"/>
-                                            </a>
-                                        </t>
-                                        <button type="submit" class="np-search-btn">Buscar</button>
-                                    </div>
-                                </form>
-                                <t t-if="search_query">
-                                    <div class="np-search-info">
-                                        <i class="fa fa-filter"/> Resultados para
-                                        <strong>"<t t-esc="search_query"/>"</strong>
-                                        — <t t-esc="total"/> artículo<t t-if="total != 1">s</t>
-                                        <a href="/" class="np-search-reset ms-2">
-                                            <i class="fa fa-times-circle"/> Limpiar
-                                        </a>
-                                    </div>
-                                </t>
+                            <!-- 10 Números más Atrasados · por día de la semana -->
+                            <div class="row mb-3">
+                                <div class="col-12 col-sm-6 mb-3 mb-sm-0">
+                                    <owl-component name="lottery_portal.TopAtrasos"/>
+                                </div>
+                                <div class="col-12 col-sm-6">
+                                    <owl-component name="lottery_portal.Top10ByDay"/>
+                                </div>
                             </div>
-
-                            <!-- Chips de categorías -->
-                            <div class="np-cat-chips">
-                                <a t-attf-href="/?category=&amp;q=#{ search_query }"
-                                   t-attf-class="np-cat-chip #{ not active_category and 'is-active' or '' }">
-                                    <i class="fa fa-th-large"/>
-                                    <span>Todas</span>
-                                </a>
-                                <t t-foreach="categories" t-as="cat">
-                                    <a t-attf-href="/?category=#{ cat.slug }&amp;q=#{ search_query }"
-                                       t-attf-class="np-cat-chip #{ active_category and active_category.id == cat.id and 'is-active' or '' }"
-                                       t-att-style="active_category and active_category.id == cat.id and ('background:' + (cat.color or '#7c3aed') + ';border-color:' + (cat.color or '#7c3aed')) or ''">
-                                        <i t-attf-class="fa #{ cat.icon or 'fa-tag' }"/>
-                                        <span><t t-esc="cat.name"/></span>
-                                        <span class="np-cat-chip-count"><t t-esc="cat.article_count"/></span>
-                                    </a>
-                                </t>
-                            </div>
-
-                            <!-- GRID DE ARTÍCULOS -->
-                            <t t-if="articles">
-                                <div class="np-grid">
-                                    <t t-foreach="articles" t-as="article">
-                                        <article class="np-card">
-                                            <a t-attf-href="/noticias/#{ article.slug }" class="np-card-imgwrap">
-                                                <img t-att-src="article.get_cover_url()"
-                                                     t-att-alt="article.title or ''"
-                                                     class="np-card-img"/>
-                                                <t t-if="article.is_featured">
-                                                    <span class="np-card-badge-hot">
-                                                        <i class="fa fa-star"/> Destacado
-                                                    </span>
-                                                </t>
-                                            </a>
-                                            <div class="np-card-body">
-                                                <t t-if="article.category_id">
-                                                    <span class="np-card-cat-label">
-                                                        <t t-esc="article.category_id.name.upper()"/>
-                                                    </span>
-                                                </t>
-                                                <h3 class="np-card-title">
-                                                    <a t-attf-href="/noticias/#{ article.slug }">
-                                                        <t t-esc="article.title"/>
-                                                    </a>
-                                                </h3>
-                                                <div class="np-card-meta">
-                                                    <span class="np-card-date">
-                                                        <t t-esc="article.publish_date" t-options='{"widget":"date", "format":"d MMM yyyy"}'/>
-                                                    </span>
-                                                    <span class="np-card-dot"/>
-                                                    <span><i class="fa fa-eye"/>&#160;<t t-esc="article.views_count"/></span>
-                                                    <t t-if="article.allow_comments">
-                                                        <span class="np-card-dot"/>
-                                                        <span><i class="fa fa-comment-o"/>&#160;<t t-esc="article.comment_count"/></span>
-                                                    </t>
-                                                </div>
-                                            </div>
-                                        </article>
-                                    </t>
-                                </div>
-                            </t>
-                            <t t-else="">
-                                <div class="np-empty">
-                                    <div class="np-empty-icon">
-                                        <i t-att-class="search_query and 'fa fa-search' or 'fa fa-newspaper-o'"/>
-                                    </div>
-                                    <t t-if="search_query">
-                                        <h3>Sin resultados para "<t t-esc="search_query"/>"</h3>
-                                        <p>Intenta con otras palabras clave.</p>
-                                        <a href="/" class="np-search-btn mt-2">Ver todos los artículos</a>
-                                    </t>
-                                    <t t-else="">
-                                        <h3>Sin publicaciones aún</h3>
-                                        <p>Vuelve pronto, estamos preparando contenido nuevo para ti.</p>
-                                    </t>
-                                </div>
-                            </t>
-
-                            <!-- PAGINACIÓN -->
-                            <t t-if="total_pages > 1">
-                                <div class="np-pag-info">
-                                    Página <strong><t t-esc="page"/></strong> de <strong><t t-esc="total_pages"/></strong>
-                                    &#160;·&#160; <t t-esc="total"/> artículo<t t-if="total != 1">s</t>
-                                </div>
-                                <nav class="np-pagination">
-                                    <t t-if="page > 1">
-                                        <a t-attf-href="/?page=#{ page - 1 }&amp;category=#{ category_slug }&amp;q=#{ search_query }"
-                                           class="np-pgbtn" title="Página anterior">
-                                            <i class="fa fa-chevron-left"/>
-                                        </a>
-                                    </t>
-                                    <t t-foreach="page_range" t-as="p">
-                                        <a t-attf-href="/?page=#{ p }&amp;category=#{ category_slug }&amp;q=#{ search_query }"
-                                           t-attf-class="np-pgnum #{ p == page and 'active' or '' }">
-                                            <t t-esc="p"/>
-                                        </a>
-                                    </t>
-                                    <t t-if="page &lt; total_pages">
-                                        <a t-attf-href="/?page=#{ page + 1 }&amp;category=#{ category_slug }&amp;q=#{ search_query }"
-                                           class="np-pgbtn" title="Página siguiente">
-                                            <i class="fa fa-chevron-right"/>
-                                        </a>
-                                    </t>
-                                </nav>
-                            </t>
+                            <!-- Sábado + Domingo · Grupos más frecuentes -->
+                            <owl-component name="lottery_portal.LotteryWeekendGroups"/>
 
                             <!-- Atrasos de Parejas · Centenas · Bola Extra -->
                             <div class="row mt-3">

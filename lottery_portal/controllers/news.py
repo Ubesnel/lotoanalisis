@@ -4,13 +4,19 @@ from odoo import http
 from odoo.http import request
 from datetime import datetime
 
+from .portal import _resolve_sorteo_id
+
 
 class NewsController(http.Controller):
 
     ARTICLES_PER_PAGE = 12
 
+    def _resolve_sorteo_id(self, sorteo_id):
+        return _resolve_sorteo_id(sorteo_id)
+
     @http.route('/', type='http', auth='public', website=True)
-    def news_homepage(self, page=1, category=None, q=None, **kwargs):
+    def news_homepage(self, page=1, category=None, q=None, sorteo_id=False, **kwargs):
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
         Article = request.env['news.article'].sudo()
         Category = request.env['news.category'].sudo()
         stats = request.env['lottery.stats.service'].sudo()
@@ -54,8 +60,8 @@ class NewsController(http.Controller):
             'total':           total,
             'category_slug':   category or '',
             'search_query':    search_query,
-            'lottery_data':    stats.get_last_results_full(),
-            'hero_stats':      stats.get_hero_stats(),
+            'lottery_data':    stats.get_last_results_full(sorteo_id=sorteo_id),
+            'hero_stats':      stats.get_hero_stats(sorteo_id=sorteo_id),
         })
 
     @http.route('/noticias/buscar', type='json', auth='public', website=True)
@@ -84,7 +90,8 @@ class NewsController(http.Controller):
         ]
 
     @http.route('/noticias/<string:slug>', type='http', auth='public', website=True)
-    def news_article(self, slug, **kwargs):
+    def news_article(self, slug, sorteo_id=False, **kwargs):
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
         Article = request.env['news.article'].sudo()
         article = Article.search([('slug', '=', slug), ('is_published', '=', True)], limit=1)
         if not article:
@@ -110,7 +117,7 @@ class NewsController(http.Controller):
             'comment_submitted': kwargs.get('comment_submitted', False),
             'comment_error': kwargs.get('comment_error', ''),
             'my_comments': request.session.get('my_comments', []),
-            'lottery_data': stats.get_last_results_full(),
+            'lottery_data': stats.get_last_results_full(sorteo_id=sorteo_id),
         })
 
     @http.route('/noticias/<string:slug>/comentar', type='http', auth='public', website=True,

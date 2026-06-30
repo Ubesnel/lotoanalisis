@@ -3,6 +3,7 @@
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class NumerosCalientes extends Component {
     setup() {
@@ -17,11 +18,18 @@ export class NumerosCalientes extends Component {
         });
 
         onWillStart(async () => {
-            const data = await jsonrpc("/lottery/calientes-all", {});
-            this.state.data = data || this.state.data;
-            this.state.turn = data?.last_turn === "afternoon" ? "evening" : "afternoon";
-            this.state.loading = false;
+            await ensureSorteoLoaded();
+            await this.loadData();
         });
+        onSorteoChange(() => this.loadData());
+    }
+
+    async loadData() {
+        this.state.loading = true;
+        const data = await jsonrpc("/lottery/calientes-all", { sorteo_id: sorteoState.sorteoId });
+        this.state.data = data || this.state.data;
+        this.state.turn = data?.last_turn === "afternoon" ? "evening" : "afternoon";
+        this.state.loading = false;
     }
 
     get current()                { return this.state.data[this.state.turn]; }

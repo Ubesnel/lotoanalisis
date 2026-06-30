@@ -21,6 +21,14 @@
         </xpath>
     </template>
 
+    <template id="portal_sorteo_selector_mount" inherit_id="website.layout">
+        <xpath expr="//body" position="inside">
+            <div class="sorteo-selector-fixed">
+                <owl-component name="lottery_portal.SorteoSelector"/>
+            </div>
+        </xpath>
+    </template>
+
     <template id="portal_website_layout_back_to_top" inherit_id="website.layout">
         <xpath expr="//body" position="inside">
             <button id="loto-back-top" class="loto-back-top" title="Volver al inicio">

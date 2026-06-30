@@ -5,12 +5,11 @@ import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
 import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
-export class UltimasSalidasCol1 extends Component {
-
+export class UltimosResultados extends Component {
     setup() {
         this.state = useState({
-            salidas: [],
-            loading: true,
+            afternoon: false,
+            evening: false,
         });
 
         onWillStart(async () => {
@@ -21,16 +20,15 @@ export class UltimasSalidasCol1 extends Component {
     }
 
     async loadData() {
-        this.state.loading = true;
-        const data = await jsonrpc("/lottery/ultimas_salidas_col1", { sorteo_id: sorteoState.sorteoId });
-        this.state.salidas = data || [];
-        this.state.loading = false;
+        const data = await jsonrpc("/lottery/ultimos-resultados", { sorteo_id: sorteoState.sorteoId });
+        this.state.afternoon = data.afternoon || false;
+        this.state.evening = data.evening || false;
     }
 }
 
-UltimasSalidasCol1.template = "lottery_portal.UltimasSalidasCol1";
+UltimosResultados.template = "lottery_portal.UltimosResultados";
 
 registry.category("public_components").add(
-    "lottery_portal.UltimasSalidasCol1",
-    UltimasSalidasCol1
+    "lottery_portal.UltimosResultados",
+    UltimosResultados
 );

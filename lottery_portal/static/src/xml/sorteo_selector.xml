@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.SorteoSelector" owl="1">
+        <div class="sorteo-selector" t-att-class="{ 'sorteo-selector-loaded': state.loaded }">
+            <i class="fa fa-dice sorteo-selector-icon"/>
+            <select class="sorteo-selector-select" t-on-change="onChange" t-att-value="state.sorteoId">
+                <t t-foreach="state.sorteos" t-as="sorteo" t-key="sorteo.id">
+                    <option t-att-value="sorteo.id" t-esc="sorteo.name" t-att-selected="sorteo.id === state.sorteoId"/>
+                </t>
+            </select>
+            <i class="fa fa-chevron-down sorteo-selector-caret"/>
+        </div>
+    </t>
+</templates>

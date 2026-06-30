@@ -14,21 +14,25 @@ class LotteryTop5CentenaDiaMV(models.Model):
             CREATE MATERIALIZED VIEW lottery_top5_centena_dia_mv AS
             WITH last_seen AS (
                 SELECT
-                    hundreds_id,
-                    (SELECT MAX(date) FROM lottery_output WHERE turn_day = 'afternoon')
-                    - MAX(date) AS atraso
-                FROM lottery_output
-                WHERE turn_day = 'afternoon'
-                GROUP BY hundreds_id
+                    sorteo_id, hundreds_id,
+                    (SELECT MAX(date) FROM lottery_output lo2
+                     WHERE lo2.turn_day = 'afternoon' AND lo2.sorteo_id = lo.sorteo_id) - MAX(lo.date) AS atraso
+                FROM lottery_output lo
+                WHERE lo.turn_day = 'afternoon'
+                GROUP BY sorteo_id, hundreds_id
+            ),
+            ranked AS (
+                SELECT *, ROW_NUMBER() OVER (PARTITION BY sorteo_id ORDER BY atraso DESC) AS rn
+                FROM last_seen
             )
-            SELECT n.name AS centena, ls.atraso
-            FROM last_seen ls
-            JOIN lottery_number n ON n.id = ls.hundreds_id
-            ORDER BY atraso DESC
-            LIMIT 4;
+            SELECT sorteo_id, n.name AS centena, r.atraso
+            FROM ranked r
+            JOIN lottery_number n ON n.id = r.hundreds_id
+            WHERE r.rn <= 4
+            ORDER BY sorteo_id, atraso DESC;
         """)
 
         self.env.cr.execute("""
             CREATE INDEX idx_centena_atrasos_dias_mv
-            ON lottery_top5_centena_dia_mv (atraso DESC);
+            ON lottery_top5_centena_dia_mv (sorteo_id, atraso DESC);
         """)

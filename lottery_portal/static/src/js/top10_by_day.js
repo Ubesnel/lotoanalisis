@@ -3,6 +3,7 @@
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class Top10ByDay extends Component {
 
@@ -17,10 +18,12 @@ export class Top10ByDay extends Component {
         });
 
         this.loadData();
+        onSorteoChange(() => this.loadData());
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top10_by_day_all", {});
+        await ensureSorteoLoaded();
+        const result = await jsonrpc("/lottery/top10_by_day_all", { sorteo_id: sorteoState.sorteoId });
         this._cache = result;
         this.state.numbers = result[this.state.day] || [];
     }

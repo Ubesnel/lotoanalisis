@@ -3,6 +3,7 @@
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 function todayStr() {
     const d = new Date();
@@ -21,11 +22,18 @@ export class UltimasSalidasConsecutivas extends Component {
         });
 
         onWillStart(async () => {
-            const data = await jsonrpc("/lottery/ultimas_salidas_consecutivas", {});
-            const hoy = todayStr();
-            this.state.salidas = (data || []).filter(s => s.fecha !== hoy);
-            this.state.loading = false;
+            await ensureSorteoLoaded();
+            await this.loadData();
         });
+        onSorteoChange(() => this.loadData());
+    }
+
+    async loadData() {
+        this.state.loading = true;
+        const data = await jsonrpc("/lottery/ultimas_salidas_consecutivas", { sorteo_id: sorteoState.sorteoId });
+        const hoy = todayStr();
+        this.state.salidas = (data || []).filter(s => s.fecha !== hoy);
+        this.state.loading = false;
     }
 }
 

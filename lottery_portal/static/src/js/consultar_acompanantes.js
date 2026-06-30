@@ -3,6 +3,7 @@
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class ConsultarAcompanantes extends Component {
     setup() {
@@ -14,6 +15,24 @@ export class ConsultarAcompanantes extends Component {
             socios_anteriores: [],
             loading: false,
         });
+
+        onSorteoChange(() => {
+            if (this.state.number_id) {
+                this.loadSocios();
+            }
+        });
+    }
+
+    async loadSocios() {
+        await ensureSorteoLoaded();
+        this.state.loading = true;
+        const data = await jsonrpc(
+            "/estadisticas-numeros/numeros-socios",
+            { number_id: this.state.number_id, sorteo_id: sorteoState.sorteoId }
+        );
+        this.state.socios_posteriores = data.salidas_numeros_despues_numero || [];
+        this.state.socios_anteriores  = data.salidas_numeros_antes_numero   || [];
+        this.state.loading = false;
     }
 
     getBallClass(i) {
@@ -41,14 +60,7 @@ export class ConsultarAcompanantes extends Component {
         this.state.numero_text = ev.currentTarget.dataset.name;
         this.state.number_id   = parseInt(ev.currentTarget.dataset.id);
         this.state.sugerencias = [];
-        this.state.loading = true;
-        const data = await jsonrpc(
-            "/estadisticas-numeros/numeros-socios",
-            { number_id: this.state.number_id }
-        );
-        this.state.socios_posteriores = data.salidas_numeros_despues_numero || [];
-        this.state.socios_anteriores  = data.salidas_numeros_antes_numero   || [];
-        this.state.loading = false;
+        await this.loadSocios();
     }
 }
 

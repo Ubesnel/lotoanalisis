@@ -14,41 +14,30 @@ class LotteryTop10DiaSemanaMV(models.Model):
         self.env.cr.execute("""
             CREATE MATERIALIZED VIEW lottery_top10_dia_semana_mv AS
             WITH base AS (
+                SELECT
+                    number_id AS id, sorteo_id,
+                    salidas_atrasadas_lunes, salidas_atrasadas_martes, salidas_atrasadas_miercoles,
+                    salidas_atrasadas_jueves, salidas_atrasadas_viernes, salidas_atrasadas_sabado,
+                    salidas_atrasadas_domingo
+                FROM lottery_number_stat
+            ),
+            last_output AS (
+                SELECT DISTINCT ON (number_id, sorteo_id, week_day)
+                    number_id, sorteo_id, week_day, date, turn_day
+                FROM lottery_output
+                ORDER BY number_id, sorteo_id, week_day, date DESC
+            )
             SELECT
-                id,
-                name,
-                salidas_atrasadas_lunes,
-                salidas_atrasadas_martes,
-                salidas_atrasadas_miercoles,
-                salidas_atrasadas_jueves,
-                salidas_atrasadas_viernes,
-                salidas_atrasadas_sabado,
-                salidas_atrasadas_domingo
-            FROM lottery_number
-        ),        
-        last_output AS (
-            SELECT DISTINCT ON (number_id, week_day)
-                number_id,
-                week_day,
-                date,
-                turn_day
-            FROM lottery_output
-            ORDER BY number_id, week_day, date DESC
-        )
-        SELECT
-            b.id,
-            LPAD(b.name::text, 2, '0') AS name,
-            lo.week_day,
-            lo.date,
-            lo.turn_day,
-            b.salidas_atrasadas_lunes,
-            b.salidas_atrasadas_martes,
-            b.salidas_atrasadas_miercoles,
-            b.salidas_atrasadas_jueves,
-            b.salidas_atrasadas_viernes,
-            b.salidas_atrasadas_sabado,
-            b.salidas_atrasadas_domingo
-        FROM base b
-        LEFT JOIN last_output lo
-            ON lo.number_id = b.id;                   
+                b.id,
+                b.sorteo_id,
+                LPAD(ln.name::text, 2, '0') AS name,
+                lo.week_day,
+                lo.date,
+                lo.turn_day,
+                b.salidas_atrasadas_lunes, b.salidas_atrasadas_martes, b.salidas_atrasadas_miercoles,
+                b.salidas_atrasadas_jueves, b.salidas_atrasadas_viernes, b.salidas_atrasadas_sabado,
+                b.salidas_atrasadas_domingo
+            FROM base b
+            JOIN lottery_number ln ON ln.id = b.id
+            LEFT JOIN last_output lo ON lo.number_id = b.id AND lo.sorteo_id = b.sorteo_id;
         """)

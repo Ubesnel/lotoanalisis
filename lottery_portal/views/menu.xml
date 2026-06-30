@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <!-- El módulo website crea su propio menú "Home" -> "/" en tiempo de
+         instalación (no tiene un xmlid fijo predecible). Esta función se
+         ejecuta en cada actualización del módulo y fusiona cualquier menú
+         duplicado que apunte a "/", dejando uno solo llamado "Inicio". -->
+    <function model="website.menu" name="_lottery_fix_home_menu" eval="[[]]"/>
 
-        <record id="menu_lottery_inicio" model="website.menu">
-            <field name="name">Inicio</field>
-            <field name="url">/</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">5</field>
-        </record>
+    <data noupdate="1">
 
         <record id="menu_lottery_estadisticas_generales" model="website.menu">
             <field name="name">Estadísticas Generales</field>

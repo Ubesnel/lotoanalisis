@@ -13,6 +13,7 @@ class LotteryCentenaWeekMV(models.Model):
         self.env.cr.execute("""
             CREATE MATERIALIZED VIEW lottery_centena_week_mv AS
             SELECT
+                lo.sorteo_id,
                 CASE
                     WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
                     WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
@@ -25,9 +26,10 @@ class LotteryCentenaWeekMV(models.Model):
                 COUNT(*) AS total_salidas
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.hundreds_id
-            GROUP BY week_segment, lo.hundreds_id, ln.name
+            GROUP BY lo.sorteo_id, week_segment, lo.hundreds_id, ln.name
             UNION ALL
             SELECT
+                lo.sorteo_id,
                 CASE
                     WHEN EXTRACT(DAY FROM lo.date) BETWEEN 1 AND 7 THEN 'sem_1'
                     WHEN EXTRACT(DAY FROM lo.date) BETWEEN 8 AND 14 THEN 'sem_2'
@@ -41,10 +43,10 @@ class LotteryCentenaWeekMV(models.Model):
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.fireball_id
             WHERE lo.fireball_id IS NOT NULL
-            GROUP BY week_segment, lo.fireball_id, ln.name;
+            GROUP BY lo.sorteo_id, week_segment, lo.fireball_id, ln.name;
         """)
 
         self.env.cr.execute("""
             CREATE INDEX idx_centena_week_mv
-            ON lottery_centena_week_mv (week_segment, field_type, total_salidas DESC);
+            ON lottery_centena_week_mv (sorteo_id, week_segment, field_type, total_salidas DESC);
         """)

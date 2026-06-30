@@ -3,6 +3,7 @@
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class UltimasSalidasDay extends Component {
 
@@ -22,10 +23,12 @@ export class UltimasSalidasDay extends Component {
         });
 
         this.loadData();
+        onSorteoChange(() => this.loadData());
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/ultimas_salidas_by_day", { day: this.todayKey });
+        await ensureSorteoLoaded();
+        const result = await jsonrpc("/lottery/ultimas_salidas_by_day", { day: this.todayKey, sorteo_id: sorteoState.sorteoId });
         this.state.ultimas_salidas = result || [];
     }
 }

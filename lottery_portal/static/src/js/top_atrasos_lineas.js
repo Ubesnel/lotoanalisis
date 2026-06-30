@@ -3,6 +3,7 @@
 import { Component, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class TopAtrasosLineas extends Component {
     setup() {
@@ -13,10 +14,12 @@ export class TopAtrasosLineas extends Component {
         });
 
         this.loadData();
+        onSorteoChange(() => this.loadData());
     }
 
     async loadData() {
-        const result = await jsonrpc("/lottery/top_atrasos_lineas_all", {});
+        await ensureSorteoLoaded();
+        const result = await jsonrpc("/lottery/top_atrasos_lineas_all", { sorteo_id: sorteoState.sorteoId });
         this._cache = result;
         this.state.groups_lines = result[this.state.type_line] || [];
     }

@@ -1,0 +1,98 @@
+.sorteo-selector-fixed {
+    position: fixed;
+    top: 12px;
+    right: 14px;
+    z-index: 1050;
+}
+
+@media (max-width: 767px) {
+    .sorteo-selector-fixed {
+        top: 8px;
+        right: 8px;
+    }
+}
+
+.sorteo-selector {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #6f4a8e 0%, #4a2c6e 100%);
+    border-radius: 999px;
+    padding: 6px 14px 6px 12px;
+    box-shadow: 0 4px 14px rgba(74, 44, 110, 0.35);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    margin: 6px 10px;
+
+    &:hover {
+        box-shadow: 0 6px 18px rgba(74, 44, 110, 0.45);
+        transform: translateY(-1px);
+    }
+
+    &-icon {
+        color: #f5c518;
+        font-size: 14px;
+        flex: none;
+    }
+
+    &-caret {
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 10px;
+        flex: none;
+        pointer-events: none;
+    }
+
+    &-select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.2px;
+        padding: 2px 4px;
+        max-width: 180px;
+        cursor: pointer;
+        outline: none;
+
+        &:focus-visible {
+            outline: 2px solid #f5c518;
+            outline-offset: 2px;
+            border-radius: 6px;
+        }
+
+        option {
+            color: #2b1d3b;
+            background: #fff;
+            font-weight: 500;
+        }
+    }
+
+    &.sorteo-selector-loaded {
+        opacity: 1;
+    }
+}
+
+// Mobile: colapsa a una pill compacta
+@media (max-width: 767px) {
+    .sorteo-selector {
+        padding: 5px 10px 5px 9px;
+        margin: 4px 6px;
+        gap: 6px;
+
+        &-select {
+            max-width: 110px;
+            font-size: 12px;
+        }
+    }
+}
+
+@media (max-width: 420px) {
+    .sorteo-selector {
+        &-select {
+            max-width: 88px;
+        }
+    }
+}

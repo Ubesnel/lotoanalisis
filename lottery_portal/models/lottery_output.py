@@ -81,7 +81,7 @@ class LotteryOutput(models.Model):
         return res
 
     def _after_change(self):
-        self.env['lottery.group'].cron_recompute_from_sql()
+        self.env['lottery.group.stat'].cron_recompute_from_sql()
         self.env['lottery.stats.service'].clear_caches()
 
     # ── Lógica de validación ──────────────────────────────────────
@@ -97,21 +97,24 @@ class LotteryOutput(models.Model):
         hundreds_id = vals.get('hundreds_id')
         fireball_id = vals.get('fireball_id')
         draw_date   = vals.get('date')
+        sorteo_id   = vals.get('sorteo_id')
 
-        if not all([turn, number_id, hundreds_id, fireball_id, draw_date]):
+        uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
+
+        if not all([turn, number_id, hundreds_id, draw_date]) or (uses_fireball and not fireball_id):
             return {}
 
         LottoNum = self.env['lottery.number']
         num_rec = LottoNum.browse(number_id)
         cen_rec = LottoNum.browse(hundreds_id)
-        be_rec  = LottoNum.browse(fireball_id)
+        be_rec  = LottoNum.browse(fireball_id) if uses_fireball else LottoNum
 
-        if not (num_rec.exists() and cen_rec.exists() and be_rec.exists()):
+        if not (num_rec.exists() and cen_rec.exists() and (not uses_fireball or be_rec.exists())):
             return {}
 
         try:
             service  = self.env['lottery.stats.service']
-            all_data = service.get_calientes_all(str(draw_date))
+            all_data = service.get_calientes_all(str(draw_date), sorteo_id=vals.get('sorteo_id'))
             turn_data = all_data.get(turn, {})
         except Exception as exc:
             _logger.error('Validación sorteo %s %s: %s', draw_date, turn, exc)
@@ -126,23 +129,27 @@ class LotteryOutput(models.Model):
 
         num = int(num_rec.name)
         cen = int(cen_rec.name)
-        be  = int(be_rec.name)
 
         h_num = num in hot_nums
         h_cen = cen in hot_cen
-        h_be  = be  in hot_be
         c_num = num not in cold_nums
         c_cen = cen not in cold_cen
-        c_be  = be  not in cold_be
+
+        if uses_fireball:
+            be    = int(be_rec.name)
+            h_be  = be in hot_be
+            c_be  = be not in cold_be
+        else:
+            h_be = c_be = True
 
         return {
             'hot_numero_ok':   h_num,
             'hot_centena_ok':  h_cen,
-            'hot_extra_ok':    h_be,
+            'hot_extra_ok':    h_be if uses_fireball else False,
             'hot_ok':          h_num and h_cen and h_be,
             'cold_numero_ok':  c_num,
             'cold_centena_ok': c_cen,
-            'cold_extra_ok':   c_be,
+            'cold_extra_ok':   c_be if uses_fireball else False,
             'cold_ok':         c_num and c_cen and c_be,
             'validation_date': fields.Datetime.now(),
         }

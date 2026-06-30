@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="lottery_portal.UltimosResultados" owl="1">
+        <div class="card shadow border-0 mb-3 overflow-hidden">
+            <t t-if="state.afternoon">
+                <div class="lottery-block">
+                    <div class="lottery-turn-header lottery-turn-dia">
+                        <i class="fa fa-sun-o"/> Tarde
+                        <span class="lottery-turn-date">
+                            <t t-esc="state.afternoon.date"/>
+                        </span>
+                    </div>
+                    <div class="lottery-row">
+                        <div class="lottery-numbers">
+                            <div class="box-centena-dia">
+                                <t t-esc="state.afternoon.centena"/>
+                            </div>
+                            <div class="box-numero-dia">
+                                <t t-esc="state.afternoon.numero"/>
+                            </div>
+                        </div>
+                        <div class="lottery-extra-wrap">
+                            <span class="lottery-extra-label">Extra</span>
+                            <div class="box-extra">
+                                <t t-esc="state.afternoon.extra"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-if="state.evening">
+                <div class="lottery-block lottery-block-noche">
+                    <div class="lottery-turn-header lottery-turn-noche">
+                        <i class="fa fa-moon-o"/> Noche
+                        <span class="lottery-turn-date">
+                            <t t-esc="state.evening.date"/>
+                        </span>
+                    </div>
+                    <div class="lottery-row">
+                        <div class="lottery-numbers">
+                            <div class="box-centena-noche">
+                                <t t-esc="state.evening.centena"/>
+                            </div>
+                            <div class="box-numero-noche">
+                                <t t-esc="state.evening.numero"/>
+                            </div>
+                        </div>
+                        <div class="lottery-extra-wrap">
+                            <span class="lottery-extra-label">Extra</span>
+                            <div class="box-extra">
+                                <t t-esc="state.evening.extra"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
