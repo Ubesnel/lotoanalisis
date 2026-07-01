@@ -17,7 +17,7 @@ class LotteryOutput(models.Model):
 
     # ── Validación caliente (predicción vs resultado) ─────────────
     hot_numero_ok = fields.Boolean(
-        'Número caliente', default=False, index=True,
+        'Está en Calientes?', default=False, index=True,
         help='El número salido estaba en el top 30 calientes del turno antes del sorteo.')
     hot_centena_ok = fields.Boolean(
         'Centena caliente', default=False, index=True,
@@ -31,7 +31,7 @@ class LotteryOutput(models.Model):
 
     # ── Validación fría ───────────────────────────────────────────
     cold_numero_ok = fields.Boolean(
-        'Número no-frío', default=False, index=True,
+        'Está en Fríos?', default=False, index=True,
         help='El número salido NO estaba en el top 30 fríos del turno antes del sorteo.')
     cold_centena_ok = fields.Boolean(
         'Centena no-fría', default=False, index=True,
@@ -44,6 +44,11 @@ class LotteryOutput(models.Model):
         help='Ninguno de los tres estaba en las listas frías.')
 
     validation_date = fields.Datetime('Validado el', readonly=True)
+
+    # Restantes
+    restante_numero_ok = fields.Boolean(
+        'Está en Restantes?', default=False, index=True,
+        help='El número salido estaba en el grupo Restantes del turno antes del sorteo.')
 
     # ── CRUD ──────────────────────────────────────────────────────
 
@@ -158,8 +163,9 @@ class LotteryOutput(models.Model):
 
         h_num = num in hot_nums
         h_cen = cen in hot_cen
-        c_num = num not in cold_nums
+        c_num = num in cold_nums
         c_cen = cen not in cold_cen
+        rest_num = num not in hot_nums and num not in cold_nums
 
         if uses_fireball:
             be    = int(be_rec.name)
@@ -178,4 +184,5 @@ class LotteryOutput(models.Model):
             'cold_extra_ok':   c_be if uses_fireball else False,
             'cold_ok':         c_num and c_cen and c_be,
             'validation_date': fields.Datetime.now(),
+            'restante_numero_ok': rest_num
         }
