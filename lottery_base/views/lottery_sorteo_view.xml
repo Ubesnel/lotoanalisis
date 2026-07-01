@@ -37,6 +37,32 @@
                             <field name="source_code"/>
                         </group>
                     </group>
+                    <group string="Próximo sorteo (lo que muestra el portal)">
+                        <group>
+                            <field name="next_draw_date"/>
+                            <field name="next_draw_turn"/>
+                        </group>
+                        <group>
+                            <field name="next_draw_manual"/>
+                            <div class="text-muted" colspan="2">
+                                Se recalcula solo desde la última salida y el calendario.
+                                Si lo editás a mano, queda manual hasta que se registre esa salida.
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Calendario (días y turnos)">
+                            <field name="slot_ids">
+                                <tree editable="bottom">
+                                    <field name="dow"/>
+                                    <field name="turn"/>
+                                </tree>
+                            </field>
+                            <div class="text-muted">
+                                Días y turnos en que se juega este sorteo. Vacío = todos los días, ambos turnos.
+                            </div>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

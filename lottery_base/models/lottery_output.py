@@ -111,3 +111,26 @@ class LotteryOutput(models.Model):
                 output.week_day = MAPPING_WEEK_DATE.get(output.date.weekday())
             else:
                 output.week_day = False
+
+    # ── Mantenimiento del "próximo sorteo" del sorteo ──────────────
+    # La secuencialidad estricta (sin saltos) permite derivar el próximo sorteo
+    # de la última salida registrada; autorreparable ante borrado/recarga.
+
+    @api.model
+    def create(self, vals):
+        record = super().create(vals)
+        if record.sorteo_id:
+            record.sorteo_id._on_output_registered(record.date, record.turn_day)
+        return record
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {'date', 'turn_day', 'sorteo_id'} & set(vals):
+            self.mapped('sorteo_id')._recompute_next_draw()
+        return res
+
+    def unlink(self):
+        sorteos = self.mapped('sorteo_id')
+        res = super().unlink()
+        sorteos._recompute_next_draw()
+        return res

@@ -519,29 +519,14 @@ class LotteryController(http.Controller):
     @http.route('/lottery/calientes-next', type='json', auth='public', website=True)
     def get_calientes_next_turn(self, sorteo_id=False, **kwargs):
         sorteo_id = self._resolve_sorteo_id(sorteo_id)
-        return request.env['lottery.stats.service'].sudo().get_calientes_next_turn(self._next_draw_date_str(sorteo_id), sorteo_id=sorteo_id)
+        # Fuente única: el próximo sorteo definido en el sorteo (fecha + turno).
+        date_str, turn = request.env['lottery.sorteo'].sudo().browse(sorteo_id).get_next_draw()
+        return request.env['lottery.stats.service'].sudo().get_calientes_next_turn(date_str, turn, sorteo_id=sorteo_id)
 
     def _next_draw_date_str(self, sorteo_id=False):
-        """
-        Fecha del próximo sorteo = MAX(date) del sorteo + 1 día.
-        IMPORTANTE: se filtra por sorteo. Cada sorteo puede estar registrado
-        hasta una fecha distinta; usar el MAX global daría un día de semana/mes
-        distinto al de la salida real de ESE sorteo y el ranking mostrado en el
-        portal no coincidiría con el que evalúa la validación al crear la salida.
-        Si el sorteo no tiene salidas, cae al MAX global; si no hay ninguna, hoy.
-        """
+        """Fecha del próximo sorteo. Fuente única: el campo next_draw del sorteo
+        (auto-calculado desde la última salida y el calendario, o manual)."""
         from datetime import date
         if sorteo_id:
-            request.env.cr.execute(
-                "SELECT (MAX(date) + INTERVAL '1 day')::date AS next_date "
-                "FROM lottery_output WHERE sorteo_id = %s", (sorteo_id,))
-            row = request.env.cr.dictfetchone()
-            if row and row['next_date']:
-                return str(row['next_date'])
-        request.env.cr.execute(
-            "SELECT (MAX(date) + INTERVAL '1 day')::date AS next_date FROM lottery_output"
-        )
-        row = request.env.cr.dictfetchone()
-        if row and row['next_date']:
-            return str(row['next_date'])
+            return request.env['lottery.sorteo'].sudo().browse(sorteo_id).get_next_draw()[0]
         return str(date.today())

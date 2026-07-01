@@ -2826,11 +2826,10 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('today_str', 'sorteo_id')
-    def get_calientes_next_turn(self, today_str, sorteo_id=False):
-        """Igual que get_calientes_all pero calcula SOLO el próximo turno a
-        jugarse (el opuesto al último registrado). El otro turno no es confiable
-        porque cambiará cuando se juegue este. ~2× más rápido."""
+    @tools.ormcache('today_str', 'turn', 'sorteo_id')
+    def get_calientes_next_turn(self, today_str, turn, sorteo_id=False):
+        """Calcula SOLO el turno del próximo sorteo (fecha + turno vienen del
+        campo next_draw del sorteo, fuente única). ~2× más rápido que ambos."""
         from datetime import date as _date
         today = _date.fromisoformat(today_str)
         pg_dow       = (today.weekday() + 1) % 7
@@ -2841,15 +2840,6 @@ class LotteryStatsService(models.Model):
                         3 if day <= 21 else 4 if day <= 28 else 5)
 
         DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-        self.env.cr.execute("""
-            SELECT
-                MAX(date) FILTER (WHERE turn_day = 'afternoon') + INTERVAL '1 day' AS next_afternoon,
-                MAX(date) FILTER (WHERE turn_day = 'evening')   + INTERVAL '1 day' AS next_evening,
-                (SELECT turn_day FROM lottery_output WHERE sorteo_id = %(sorteo_id)s ORDER BY date DESC, id DESC LIMIT 1) AS last_turn
-            FROM lottery_output
-            WHERE sorteo_id = %(sorteo_id)s
-        """, {'sorteo_id': sorteo_id})
-        row = self.env.cr.dictfetchone() or {}
 
         def _fmt_date(d):
             if not d:
@@ -2862,17 +2852,15 @@ class LotteryStatsService(models.Model):
             boundary = scores_desc[n - 1]['score']
             return [s for s in scores_desc if s['score'] >= boundary]
 
-        last_turn = row.get('last_turn') or 'evening'
-        # El próximo turno es el opuesto al último jugado.
-        turn = 'evening' if last_turn == 'afternoon' else 'afternoon'
+        if turn not in ('afternoon', 'evening'):
+            turn = 'afternoon'
         uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
 
         return {
             'turn':      turn,
-            'last_turn': last_turn,
             'data':      self._calientes_for_turn(
                 turn, pg_dow, week_seg_num, month, year, today_str,
-                sorteo_id, row.get('next_' + turn), _cut_with_ties, _fmt_date, uses_fireball),
+                sorteo_id, today, _cut_with_ties, _fmt_date, uses_fireball),
         }
 
     @api.model

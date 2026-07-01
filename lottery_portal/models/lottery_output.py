@@ -121,7 +121,8 @@ class LotteryOutput(models.Model):
         draw_date   = vals.get('date')
         sorteo_id   = vals.get('sorteo_id')
 
-        uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
+        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
+        uses_fireball = bool(sorteo.uses_fireball)
 
         if not all([turn, number_id, hundreds_id, draw_date]) or (uses_fireball and not fireball_id):
             return {}
@@ -134,9 +135,13 @@ class LotteryOutput(models.Model):
         if not (num_rec.exists() and cen_rec.exists() and (not uses_fireball or be_rec.exists())):
             return {}
 
+        # Contexto = "próximo sorteo" guardado en el sorteo (lo que el portal
+        # mostró ANTES de guardar). Con secuencialidad estricta coincide con la
+        # salida que se registra. Si no está seteado, get_next_draw lo deriva.
         try:
+            ctx_date, ctx_turn = sorteo.get_next_draw()
             service  = self.env['lottery.stats.service']
-            turn_data = service.get_validation_sets(turn, str(draw_date), sorteo_id=vals.get('sorteo_id'))
+            turn_data = service.get_validation_sets(ctx_turn, ctx_date, sorteo_id=sorteo_id)
         except Exception as exc:
             _logger.error('Validación sorteo %s %s: %s', draw_date, turn, exc)
             return {}
