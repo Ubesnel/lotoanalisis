@@ -2758,53 +2758,160 @@ class LotteryStatsService(models.Model):
             boundary = scores_desc[n - 1]['score']
             return [s for s in scores_desc if s['score'] >= boundary]
 
+        uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
         result = {}
         for turn in ('afternoon', 'evening'):
-            next_date   = row.get('next_' + turn)
-            all_scores  = self.get_numeros_calientes(turn, today_str, sorteo_id=sorteo_id)
-            cold_scores = self.get_numeros_frios(turn, today_str, sorteo_id=sorteo_id)
-
-            # ── Hot top-30 (with tie expansion) ──────────────────────────────
-            hot_top   = _cut_with_ties(all_scores, 30)
-            hot_names = {s['name'] for s in hot_top}
-
-            # ── Cold top-30 excluding any number already in hot ───────────────
-            cold_filtered = [s for s in cold_scores if s['name'] not in hot_names]
-            cold_top      = _cut_with_ties(cold_filtered, 30)
-            cold_names    = {s['name'] for s in cold_top}
-
-            # ── Remaining: neither hot nor cold ───────────────────────────────
-            remaining = [s for s in all_scores if s['name'] not in hot_names
-                                                and s['name'] not in cold_names]
-
-            centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
-            centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
-            bola_extra      = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
-            bola_extra_cold = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
-
-            hot_cen_names  = {c['name'] for c in centenas}
-            cold_cen_names = {c['name'] for c in centenas_cold}
-            hot_be_names   = {c['name'] for c in bola_extra}
-            cold_be_names  = {c['name'] for c in bola_extra_cold}
-
-            # Centenas y bolas extra restantes: no clasificadas como calientes ni frías
-            all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
-            all_bola_extra = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
-
-            result[turn] = {
-                'numbers':              hot_top,
-                'numbers_cold':         cold_top,
-                'numbers_remaining':    remaining,
-                'centenas':             centenas,
-                'centenas_cold':        centenas_cold,
-                'centenas_remaining':   [c for c in all_centenas   if c['name'] not in hot_cen_names and c['name'] not in cold_cen_names],
-                'bola_extra':           bola_extra,
-                'bola_extra_cold':      bola_extra_cold,
-                'bola_extra_remaining': [c for c in all_bola_extra if c['name'] not in hot_be_names  and c['name'] not in cold_be_names],
-                'next_draw':            _fmt_date(next_date),
-            }
+            result[turn] = self._calientes_for_turn(
+                turn, pg_dow, week_seg_num, month, year, today_str,
+                sorteo_id, row.get('next_' + turn), _cut_with_ties, _fmt_date, uses_fireball)
         result['last_turn'] = row.get('last_turn') or 'afternoon'
         return result
+
+    def _calientes_for_turn(self, turn, pg_dow, week_seg_num, month, year,
+                            today_str, sorteo_id, next_date, _cut_with_ties, _fmt_date,
+                            uses_fireball=True):
+        """Calcula caliente/restante/frío (números, centenas, bola extra) de UN
+        solo turno. Reutilizado por get_calientes_all (ambos turnos) y por
+        get_calientes_next_turn (solo el próximo turno). Si el sorteo no usa
+        bola extra, no la calcula (correcto y más rápido)."""
+        all_scores  = self.get_numeros_calientes(turn, today_str, sorteo_id=sorteo_id)
+        cold_scores = self.get_numeros_frios(turn, today_str, sorteo_id=sorteo_id)
+
+        # ── Hot top-30 (with tie expansion) ──────────────────────────────
+        hot_top   = _cut_with_ties(all_scores, 30)
+        hot_names = {s['name'] for s in hot_top}
+
+        # ── Cold top-30 excluding any number already in hot ───────────────
+        cold_filtered = [s for s in cold_scores if s['name'] not in hot_names]
+        cold_top      = _cut_with_ties(cold_filtered, 30)
+        cold_names    = {s['name'] for s in cold_top}
+
+        # ── Remaining: neither hot nor cold ───────────────────────────────
+        remaining = [s for s in all_scores if s['name'] not in hot_names
+                                            and s['name'] not in cold_names]
+
+        centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+        centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+
+        hot_cen_names  = {c['name'] for c in centenas}
+        cold_cen_names = {c['name'] for c in centenas_cold}
+
+        # Centenas restantes: no clasificadas como calientes ni frías
+        all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+
+        # Bola extra: solo si el sorteo la usa (ej. Florida Pick 3). El resto
+        # (Quiniela UY) no la tiene, así que se omite su cálculo.
+        if uses_fireball:
+            bola_extra      = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
+            bola_extra_cold = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
+            hot_be_names    = {c['name'] for c in bola_extra}
+            cold_be_names   = {c['name'] for c in bola_extra_cold}
+            all_bola_extra  = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
+            bola_extra_remaining = [c for c in all_bola_extra if c['name'] not in hot_be_names and c['name'] not in cold_be_names]
+        else:
+            bola_extra = bola_extra_cold = bola_extra_remaining = []
+
+        return {
+            'numbers':              hot_top,
+            'numbers_cold':         cold_top,
+            'numbers_remaining':    remaining,
+            'centenas':             centenas,
+            'centenas_cold':        centenas_cold,
+            'centenas_remaining':   [c for c in all_centenas   if c['name'] not in hot_cen_names and c['name'] not in cold_cen_names],
+            'bola_extra':           bola_extra,
+            'bola_extra_cold':      bola_extra_cold,
+            'bola_extra_remaining': bola_extra_remaining,
+            'uses_fireball':        uses_fireball,
+            'next_draw':            _fmt_date(next_date),
+        }
+
+    @api.model
+    @tools.ormcache('today_str', 'sorteo_id')
+    def get_calientes_next_turn(self, today_str, sorteo_id=False):
+        """Igual que get_calientes_all pero calcula SOLO el próximo turno a
+        jugarse (el opuesto al último registrado). El otro turno no es confiable
+        porque cambiará cuando se juegue este. ~2× más rápido."""
+        from datetime import date as _date
+        today = _date.fromisoformat(today_str)
+        pg_dow       = (today.weekday() + 1) % 7
+        day          = today.day
+        month        = today.month
+        year         = today.year
+        week_seg_num = (1 if day <= 7  else 2 if day <= 14 else
+                        3 if day <= 21 else 4 if day <= 28 else 5)
+
+        DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+        self.env.cr.execute("""
+            SELECT
+                MAX(date) FILTER (WHERE turn_day = 'afternoon') + INTERVAL '1 day' AS next_afternoon,
+                MAX(date) FILTER (WHERE turn_day = 'evening')   + INTERVAL '1 day' AS next_evening,
+                (SELECT turn_day FROM lottery_output WHERE sorteo_id = %(sorteo_id)s ORDER BY date DESC, id DESC LIMIT 1) AS last_turn
+            FROM lottery_output
+            WHERE sorteo_id = %(sorteo_id)s
+        """, {'sorteo_id': sorteo_id})
+        row = self.env.cr.dictfetchone() or {}
+
+        def _fmt_date(d):
+            if not d:
+                return ''
+            return '%s %s' % (DAY_NAMES[d.weekday()], d.strftime('%d/%m/%Y'))
+
+        def _cut_with_ties(scores_desc, n):
+            if len(scores_desc) <= n:
+                return scores_desc
+            boundary = scores_desc[n - 1]['score']
+            return [s for s in scores_desc if s['score'] >= boundary]
+
+        last_turn = row.get('last_turn') or 'evening'
+        # El próximo turno es el opuesto al último jugado.
+        turn = 'evening' if last_turn == 'afternoon' else 'afternoon'
+        uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
+
+        return {
+            'turn':      turn,
+            'last_turn': last_turn,
+            'data':      self._calientes_for_turn(
+                turn, pg_dow, week_seg_num, month, year, today_str,
+                sorteo_id, row.get('next_' + turn), _cut_with_ties, _fmt_date, uses_fireball),
+        }
+
+    @api.model
+    @tools.ormcache('turn', 'today_str', 'sorteo_id')
+    def get_validation_sets(self, turn, today_str, sorteo_id=False):
+        """Versión liviana para la validación de una salida: calcula SOLO el
+        turno indicado y solo los conjuntos hot/cold de números, centenas y
+        bola extra (sin el otro turno ni las listas 'remaining'). ~0.4s en frío
+        vs. ~1.5s de get_calientes_all."""
+        from datetime import date as _date
+        today = _date.fromisoformat(today_str)
+        pg_dow = (today.weekday() + 1) % 7
+        day = today.day
+        month = today.month
+        year = today.year
+        week_seg_num = (1 if day <= 7 else 2 if day <= 14 else
+                        3 if day <= 21 else 4 if day <= 28 else 5)
+
+        def _cut_with_ties(scores_desc, n):
+            if len(scores_desc) <= n:
+                return scores_desc
+            boundary = scores_desc[n - 1]['score']
+            return [s for s in scores_desc if s['score'] >= boundary]
+
+        all_scores = self.get_numeros_calientes(turn, today_str, sorteo_id=sorteo_id)
+        cold_scores = self.get_numeros_frios(turn, today_str, sorteo_id=sorteo_id)
+        hot_top = _cut_with_ties(all_scores, 30)
+        hot_names = {s['name'] for s in hot_top}
+        cold_filtered = [s for s in cold_scores if s['name'] not in hot_names]
+        cold_top = _cut_with_ties(cold_filtered, 30)
+
+        return {
+            'numbers':         hot_top,
+            'numbers_cold':    cold_top,
+            'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id),
+            'centenas_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id),
+            'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id),
+            'bola_extra_cold': self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id),
+        }
 
     @api.model
     def get_lineas_terminales_dia_semana(self, wcode, top_n=3, sorteo_id=False):

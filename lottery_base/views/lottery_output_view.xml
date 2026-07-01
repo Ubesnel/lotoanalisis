@@ -24,7 +24,7 @@
         <field name="model">lottery.output</field>
         <field name="arch" type="xml">
             <tree string="Salidas" decoration-warning="turn_day == 'afternoon'"
-                  decoration-success="turn_day == 'evening'" create="0" edit="0" delete="0">
+                  decoration-success="turn_day == 'evening'" create="1" edit="1" delete="1">
                 <field name="date"/>
                 <field name="complete_number"/>
                 <field name="week_day"/>

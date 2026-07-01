@@ -10,7 +10,7 @@
         </t>
         <t t-else="">
 
-            <!-- Barra de predicción / selector de turno -->
+            <!-- Barra de predicción: solo el próximo turno a jugarse -->
             <div class="nc-turn-bar mb-3">
                 <span class="nc-turn-label">
                     <i class="fa fa-magic"/> Predicción · Próximo sorteo
@@ -18,10 +18,7 @@
                         <span class="nc-turn-date"><i class="fa fa-calendar-o"/> <t t-esc="nextDraw"/></span>
                     </t>
                 </span>
-                <select class="form-select form-select-sm w-auto" t-on-change="onChangeTurn">
-                    <option value="afternoon" t-att-selected="state.turn === 'afternoon' ? 'selected' : false">☀ Tarde</option>
-                    <option value="evening"   t-att-selected="state.turn === 'evening'   ? 'selected' : false">🌙 Noche</option>
-                </select>
+                <span class="badge text-bg-light nc-turn-badge"><t t-esc="turnLabel"/></span>
             </div>
 
             <!-- 3 columnas: Calientes · Restantes · Fríos -->
@@ -43,8 +40,8 @@
                             <div class="nc-numbers-grid">
                                 <t t-foreach="numbers" t-as="num" t-key="num.name">
                                     <div class="nc-cell">
-                                        <span t-att-class="'nc-ball ' + (num_index &lt; 10 ? 'nc-ball-hot' : num_index &lt; 20 ? 'nc-ball-warm' : 'nc-ball-cool')"
-                                              t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
+                                        <span t-att-class="'nc-ball ' + num.cls"
+                                              t-att-title="'#' + num.rank + ' · Score: ' + num.score">
                                             <t t-esc="num.name"/>
                                         </span>
                                     </div>
@@ -60,14 +57,15 @@
                                     <div class="nc-cebs-grid">
                                         <t t-foreach="centenas" t-as="cen" t-key="cen.name">
                                             <div class="nc-ceb-item">
-                                                <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
-                                                <span t-att-class="'nc-badge-ceb ' + (cen_index === 0 ? 'nc-badge-ceb--hot' : cen_index &lt; 3 ? 'nc-badge-ceb--warm' : 'nc-badge-ceb--cool')">
+                                                <span class="nc-rank">#<t t-esc="cen.rank"/></span>
+                                                <span t-att-class="'nc-badge-ceb ' + cen.cls">
                                                     <t t-esc="cen.name"/>
                                                 </span>
                                             </div>
                                         </t>
                                     </div>
                                 </div>
+                                <t t-if="usesFireball">
                                 <div class="nc-cebs-divider"/>
                                 <div class="nc-cebs-col">
                                     <div class="nc-section-head">
@@ -77,14 +75,15 @@
                                     <div class="nc-cebs-grid">
                                         <t t-foreach="bolaExtra" t-as="be" t-key="be.name">
                                             <div class="nc-ceb-item">
-                                                <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
-                                                <span t-att-class="'nc-badge-ceb ' + (be_index === 0 ? 'nc-badge-ceb--hot' : be_index &lt; 3 ? 'nc-badge-ceb--warm' : 'nc-badge-ceb--cool')">
+                                                <span class="nc-rank">#<t t-esc="be.rank"/></span>
+                                                <span t-att-class="'nc-badge-ceb ' + be.cls">
                                                     <t t-esc="be.name"/>
                                                 </span>
                                             </div>
                                         </t>
                                     </div>
                                 </div>
+                                </t>
                             </div>
                         </div>
                     </div>
@@ -107,8 +106,8 @@
                             <div class="nc-numbers-grid">
                                 <t t-foreach="numbersRemaining" t-as="num" t-key="'rem_' + num.name">
                                     <div class="nc-cell">
-                                        <span t-att-class="'nc-ball ' + (num_index &lt; 13 ? 'nc-ball-rem1' : num_index &lt; 26 ? 'nc-ball-rem2' : 'nc-ball-rem3')"
-                                              t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
+                                        <span t-att-class="'nc-ball ' + num.cls"
+                                              t-att-title="'#' + num.rank + ' · Score: ' + num.score">
                                             <t t-esc="num.name"/>
                                         </span>
                                     </div>
@@ -124,14 +123,15 @@
                                     <div class="nc-cebs-grid">
                                         <t t-foreach="centenasRemaining" t-as="cen" t-key="'crem_' + cen.name">
                                             <div class="nc-ceb-item">
-                                                <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
-                                                <span t-att-class="'nc-badge-ceb ' + (cen_index === 0 ? 'nc-badge-ceb--rem1' : 'nc-badge-ceb--rem2')">
+                                                <span class="nc-rank">#<t t-esc="cen.rank"/></span>
+                                                <span t-att-class="'nc-badge-ceb ' + cen.cls">
                                                     <t t-esc="cen.name"/>
                                                 </span>
                                             </div>
                                         </t>
                                     </div>
                                 </div>
+                                <t t-if="usesFireball">
                                 <div class="nc-cebs-divider"/>
                                 <div class="nc-cebs-col">
                                     <div class="nc-section-head">
@@ -141,14 +141,15 @@
                                     <div class="nc-cebs-grid">
                                         <t t-foreach="bolaExtraRemaining" t-as="be" t-key="'berem_' + be.name">
                                             <div class="nc-ceb-item">
-                                                <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
-                                                <span t-att-class="'nc-badge-ceb ' + (be_index === 0 ? 'nc-badge-ceb--rem1' : 'nc-badge-ceb--rem2')">
+                                                <span class="nc-rank">#<t t-esc="be.rank"/></span>
+                                                <span t-att-class="'nc-badge-ceb ' + be.cls">
                                                     <t t-esc="be.name"/>
                                                 </span>
                                             </div>
                                         </t>
                                     </div>
                                 </div>
+                                </t>
                             </div>
                         </div>
                     </div>
@@ -170,8 +171,8 @@
                             <div class="nc-numbers-grid">
                                 <t t-foreach="numbersCold" t-as="num" t-key="'cold_' + num.name">
                                     <div class="nc-cell">
-                                        <span t-att-class="'nc-ball ' + (num_index &lt; 10 ? 'nc-ball-cold1' : num_index &lt; 20 ? 'nc-ball-cold2' : 'nc-ball-cold3')"
-                                              t-att-title="'#' + (num_index + 1) + ' · Score: ' + num.score">
+                                        <span t-att-class="'nc-ball ' + num.cls"
+                                              t-att-title="'#' + num.rank + ' · Score: ' + num.score">
                                             <t t-esc="num.name"/>
                                         </span>
                                     </div>
@@ -187,14 +188,15 @@
                                     <div class="nc-cebs-grid">
                                         <t t-foreach="centenasCold" t-as="cen" t-key="'ccold_' + cen.name">
                                             <div class="nc-ceb-item">
-                                                <span class="nc-rank">#<t t-esc="cen_index + 1"/></span>
-                                                <span t-att-class="'nc-badge-ceb nc-badge-ceb--cold ' + (cen_index === 0 ? 'nc-badge-ceb--cold1' : cen_index &lt; 3 ? 'nc-badge-ceb--cold2' : 'nc-badge-ceb--cold3')">
+                                                <span class="nc-rank">#<t t-esc="cen.rank"/></span>
+                                                <span t-att-class="'nc-badge-ceb nc-badge-ceb--cold ' + cen.cls">
                                                     <t t-esc="cen.name"/>
                                                 </span>
                                             </div>
                                         </t>
                                     </div>
                                 </div>
+                                <t t-if="usesFireball">
                                 <div class="nc-cebs-divider"/>
                                 <div class="nc-cebs-col">
                                     <div class="nc-section-head">
@@ -204,14 +206,15 @@
                                     <div class="nc-cebs-grid">
                                         <t t-foreach="bolaExtraCold" t-as="be" t-key="'becold_' + be.name">
                                             <div class="nc-ceb-item">
-                                                <span class="nc-rank">#<t t-esc="be_index + 1"/></span>
-                                                <span t-att-class="'nc-badge-ceb nc-badge-ceb--extra nc-badge-ceb--cold ' + (be_index === 0 ? 'nc-badge-ceb--cold1' : be_index &lt; 3 ? 'nc-badge-ceb--cold2' : 'nc-badge-ceb--cold3')">
+                                                <span class="nc-rank">#<t t-esc="be.rank"/></span>
+                                                <span t-att-class="'nc-badge-ceb nc-badge-ceb--extra nc-badge-ceb--cold ' + be.cls">
                                                     <t t-esc="be.name"/>
                                                 </span>
                                             </div>
                                         </t>
                                     </div>
                                 </div>
+                                </t>
                             </div>
                         </div>
                     </div>

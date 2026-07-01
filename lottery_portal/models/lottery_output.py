@@ -49,20 +49,17 @@ class LotteryOutput(models.Model):
 
     @api.model
     def create(self, vals):
-        # ① Limpiar caché para obtener rankings frescos antes del sorteo.
-        self.env['lottery.stats.service'].clear_caches()
-
-        # ② Capturar predicción ANTES de guardar el sorteo.
-        #    En este momento los rankings reflejan el estado previo al sorteo.
+        # ① Capturar predicción ANTES de guardar el sorteo.
+        #    El caché refleja el estado previo al sorteo, que es exactamente lo que se necesita.
         validation = self._snapshot_validation(vals)
 
-        # ③ Guardar el sorteo (altera atrasos, frecuencias, etc.)
+        # ② Guardar el sorteo.
         record = super().create(vals)
 
-        # ④ Recomputar grupos y limpiar caché
+        # ③ Limpiar caché para que la próxima lectura refleje el nuevo sorteo.
         self._after_change()
 
-        # ⑤ Persistir la validación capturada en ②.
+        # ④ Persistir la validación capturada en ①.
         #    write() con solo campos de validación NO vuelve a disparar _after_change.
         if validation:
             record.write(validation)
@@ -103,8 +100,6 @@ class LotteryOutput(models.Model):
     ]
 
     def _after_change(self):
-        self.env['lottery.group.stat'].cron_recompute_from_sql()
-        self.refresh_materialized_views()
         self.env['lottery.stats.service'].clear_caches()
 
     def refresh_materialized_views(self):
@@ -141,8 +136,7 @@ class LotteryOutput(models.Model):
 
         try:
             service  = self.env['lottery.stats.service']
-            all_data = service.get_calientes_all(str(draw_date), sorteo_id=vals.get('sorteo_id'))
-            turn_data = all_data.get(turn, {})
+            turn_data = service.get_validation_sets(turn, str(draw_date), sorteo_id=vals.get('sorteo_id'))
         except Exception as exc:
             _logger.error('Validación sorteo %s %s: %s', draw_date, turn, exc)
             return {}

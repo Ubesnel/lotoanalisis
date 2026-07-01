@@ -18,6 +18,14 @@ class LotteryScraperQuinielaUy(models.Model):
 
     name = fields.Char(default='Quiniela Uruguay', readonly=True)
 
+    # ── Turnos a importar ───────────────────────────────────────────
+    import_turns = fields.Selection([
+        ('both', 'Ambos turnos'),
+        ('afternoon', 'Solo Vespertina'),
+        ('evening', 'Solo Nocturna'),
+    ], string='Turnos a importar', default='both', required=True,
+        help='Limita qué turno se importa, tanto en el cron como en la importación manual.')
+
     # ── Ventanas horarias (hora Uruguay) ────────────────────────────
     # Vespertina se publica ~15:00, Nocturna ~21:00. Las ventanas dejan
     # algo de margen para que el sitio termine de publicar el resultado.
@@ -51,8 +59,10 @@ class LotteryScraperQuinielaUy(models.Model):
         hour_uy = now_uy.hour + now_uy.minute / 60.0
         today_uy = now_uy.date()
 
-        in_vespertina = scraper.vespertina_start <= hour_uy <= scraper.vespertina_end
-        in_nocturna = scraper.nocturna_start <= hour_uy <= scraper.nocturna_end
+        in_vespertina = (scraper.import_turns in ('both', 'afternoon')
+                         and scraper.vespertina_start <= hour_uy <= scraper.vespertina_end)
+        in_nocturna = (scraper.import_turns in ('both', 'evening')
+                       and scraper.nocturna_start <= hour_uy <= scraper.nocturna_end)
 
         if not (in_vespertina or in_nocturna):
             _logger.debug('Scraper Quiniela UY: %02d:%02d UY fuera de ventanas.', now_uy.hour, now_uy.minute)
@@ -193,9 +203,9 @@ class LotteryScraperQuinielaUy(models.Model):
             return [f'[PENDIENTE] {label} – aún no hay resultados publicados.']
 
         log_lines = []
-        if data['vespertina']:
+        if data['vespertina'] and self.import_turns in ('both', 'afternoon'):
             log_lines += self._import_turn(draw_date, 'afternoon', data['vespertina'])
-        if data['nocturna']:
+        if data['nocturna'] and self.import_turns in ('both', 'evening'):
             log_lines += self._import_turn(draw_date, 'evening', data['nocturna'])
         return log_lines
 

@@ -509,21 +509,35 @@ class LotteryController(http.Controller):
         if turn_day not in ('afternoon', 'evening'):
             turn_day = 'afternoon'
         stats = request.env['lottery.stats.service'].sudo()
-        return stats.get_numeros_calientes(turn_day, self._next_draw_date_str(), sorteo_id=sorteo_id)
+        return stats.get_numeros_calientes(turn_day, self._next_draw_date_str(sorteo_id), sorteo_id=sorteo_id)
 
     @http.route('/lottery/calientes-all', type='json', auth='public', website=True)
     def get_calientes_all(self, sorteo_id=False, **kwargs):
         sorteo_id = self._resolve_sorteo_id(sorteo_id)
-        return request.env['lottery.stats.service'].sudo().get_calientes_all(self._next_draw_date_str(), sorteo_id=sorteo_id)
+        return request.env['lottery.stats.service'].sudo().get_calientes_all(self._next_draw_date_str(sorteo_id), sorteo_id=sorteo_id)
 
-    def _next_draw_date_str(self):
+    @http.route('/lottery/calientes-next', type='json', auth='public', website=True)
+    def get_calientes_next_turn(self, sorteo_id=False, **kwargs):
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
+        return request.env['lottery.stats.service'].sudo().get_calientes_next_turn(self._next_draw_date_str(sorteo_id), sorteo_id=sorteo_id)
+
+    def _next_draw_date_str(self, sorteo_id=False):
         """
-        Fecha del próximo sorteo = MAX(date) de lottery_output + 1 día.
-        Se usa como today_str para que el portal y la validación del snapshot
-        empleen el mismo contexto (día de semana, semana del mes, mes).
-        Si no hay sorteos registrados, devuelve hoy.
+        Fecha del próximo sorteo = MAX(date) del sorteo + 1 día.
+        IMPORTANTE: se filtra por sorteo. Cada sorteo puede estar registrado
+        hasta una fecha distinta; usar el MAX global daría un día de semana/mes
+        distinto al de la salida real de ESE sorteo y el ranking mostrado en el
+        portal no coincidiría con el que evalúa la validación al crear la salida.
+        Si el sorteo no tiene salidas, cae al MAX global; si no hay ninguna, hoy.
         """
-        from datetime import date, timedelta
+        from datetime import date
+        if sorteo_id:
+            request.env.cr.execute(
+                "SELECT (MAX(date) + INTERVAL '1 day')::date AS next_date "
+                "FROM lottery_output WHERE sorteo_id = %s", (sorteo_id,))
+            row = request.env.cr.dictfetchone()
+            if row and row['next_date']:
+                return str(row['next_date'])
         request.env.cr.execute(
             "SELECT (MAX(date) + INTERVAL '1 day')::date AS next_date FROM lottery_output"
         )

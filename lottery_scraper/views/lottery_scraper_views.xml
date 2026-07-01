@@ -89,6 +89,9 @@
                             icon="fa-download"/>
                 </header>
                 <sheet>
+                    <group string="Turnos">
+                        <field name="import_turns" string="Turnos a importar"/>
+                    </group>
                     <group string="Ventanas horarias (hora Uruguay)">
                         <group string="VESPERTINA ☀ (sorteo ~15:00)">
                             <field name="vespertina_start" widget="float_time" string="Inicio"/>

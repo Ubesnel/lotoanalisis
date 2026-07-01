@@ -323,3 +323,206 @@ class LotteryNumberStat(models.Model):
         self.cron_recompute_atrasos_full()
         self.cron_recompute_atrasos_turno()
         self.cron_recompute_atrasos_por_dia_semana()
+
+    def recompute_for_sorteo(self, sorteo_id):
+        """Actualiza estadísticas solo para el sorteo indicado (rápido, para usar en create/write)."""
+        p = {'early_turns': list(EARLY_TURNS), 'sorteo_id': sorteo_id}
+
+        self.env.cr.execute("""
+            INSERT INTO lottery_number_stat (
+                number_id, sorteo_id,
+                total_salidas, total_salidas_dia, total_salidas_noche,
+                cant_salidas_enero, cant_salidas_febrero, cant_salidas_marzo, cant_salidas_abril,
+                cant_salidas_mayo, cant_salidas_junio, cant_salidas_julio, cant_salidas_agosto,
+                cant_salidas_septiembre, cant_salidas_octubre, cant_salidas_noviembre, cant_salidas_diciembre,
+                total_domingo, total_lunes, total_martes, total_miercoles,
+                total_jueves, total_viernes, total_sabado,
+                total_semana_1, total_semana_2, total_semana_3, total_semana_4, total_semana_5
+            )
+            SELECT
+                number_id, sorteo_id,
+                COUNT(*),
+                COUNT(*) FILTER (WHERE turn_day = ANY(%(early_turns)s)),
+                COUNT(*) FILTER (WHERE turn_day != ALL(%(early_turns)s)),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 1),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 2),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 3),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 4),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 5),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 6),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 7),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 8),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 9),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 10),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 11),
+                COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 12),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 0),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 1),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 2),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 3),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 4),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 5),
+                COUNT(*) FILTER (WHERE EXTRACT(DOW FROM date) = 6),
+                COUNT(*) FILTER (WHERE EXTRACT(DAY FROM date) BETWEEN 1 AND 7),
+                COUNT(*) FILTER (WHERE EXTRACT(DAY FROM date) BETWEEN 8 AND 14),
+                COUNT(*) FILTER (WHERE EXTRACT(DAY FROM date) BETWEEN 15 AND 21),
+                COUNT(*) FILTER (WHERE EXTRACT(DAY FROM date) BETWEEN 22 AND 28),
+                COUNT(*) FILTER (WHERE EXTRACT(DAY FROM date) >= 29)
+            FROM lottery_output
+            WHERE sorteo_id = %(sorteo_id)s
+            GROUP BY number_id, sorteo_id
+            ON CONFLICT (number_id, sorteo_id) DO UPDATE SET
+                total_salidas = EXCLUDED.total_salidas,
+                total_salidas_dia = EXCLUDED.total_salidas_dia,
+                total_salidas_noche = EXCLUDED.total_salidas_noche,
+                cant_salidas_enero = EXCLUDED.cant_salidas_enero,
+                cant_salidas_febrero = EXCLUDED.cant_salidas_febrero,
+                cant_salidas_marzo = EXCLUDED.cant_salidas_marzo,
+                cant_salidas_abril = EXCLUDED.cant_salidas_abril,
+                cant_salidas_mayo = EXCLUDED.cant_salidas_mayo,
+                cant_salidas_junio = EXCLUDED.cant_salidas_junio,
+                cant_salidas_julio = EXCLUDED.cant_salidas_julio,
+                cant_salidas_agosto = EXCLUDED.cant_salidas_agosto,
+                cant_salidas_septiembre = EXCLUDED.cant_salidas_septiembre,
+                cant_salidas_octubre = EXCLUDED.cant_salidas_octubre,
+                cant_salidas_noviembre = EXCLUDED.cant_salidas_noviembre,
+                cant_salidas_diciembre = EXCLUDED.cant_salidas_diciembre,
+                total_domingo = EXCLUDED.total_domingo,
+                total_lunes = EXCLUDED.total_lunes,
+                total_martes = EXCLUDED.total_martes,
+                total_miercoles = EXCLUDED.total_miercoles,
+                total_jueves = EXCLUDED.total_jueves,
+                total_viernes = EXCLUDED.total_viernes,
+                total_sabado = EXCLUDED.total_sabado,
+                total_semana_1 = EXCLUDED.total_semana_1,
+                total_semana_2 = EXCLUDED.total_semana_2,
+                total_semana_3 = EXCLUDED.total_semana_3,
+                total_semana_4 = EXCLUDED.total_semana_4,
+                total_semana_5 = EXCLUDED.total_semana_5;
+        """, p)
+
+        self.env.cr.execute("""
+            WITH ranking AS (
+                SELECT
+                    s.number_id, s.sorteo_id,
+                    ROW_NUMBER() OVER (
+                        ORDER BY s.date, CASE WHEN s.turn_day = ANY(%(early_turns)s) THEN 0 ELSE 1 END, s.id
+                    ) AS orden_global
+                FROM lottery_output s
+                WHERE s.sorteo_id = %(sorteo_id)s
+            ),
+            ultima_por_numero AS (
+                SELECT number_id, MAX(orden_global) AS ultima_orden FROM ranking GROUP BY number_id
+            ),
+            max_orden AS (SELECT MAX(orden_global) AS val FROM ranking),
+            atrasos AS (
+                SELECT
+                    n.id AS number_id,
+                    COALESCE(m.val - u.ultima_orden, m.val, 0) AS total_atrasadas
+                FROM lottery_number n
+                CROSS JOIN max_orden m
+                LEFT JOIN ultima_por_numero u ON u.number_id = n.id
+            )
+            INSERT INTO lottery_number_stat (number_id, sorteo_id, total_atrasadas)
+            SELECT number_id, %(sorteo_id)s, total_atrasadas FROM atrasos
+            ON CONFLICT (number_id, sorteo_id) DO UPDATE SET
+                total_atrasadas = EXCLUDED.total_atrasadas;
+        """, p)
+
+        self.env.cr.execute("""
+            WITH ranking_turno AS (
+                SELECT
+                    s.number_id,
+                    (s.turn_day = ANY(%(early_turns)s)) AS es_tarde,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY (s.turn_day = ANY(%(early_turns)s))
+                        ORDER BY s.date, s.id
+                    ) AS orden_turno
+                FROM lottery_output s
+                WHERE s.sorteo_id = %(sorteo_id)s
+            ),
+            ultima_por_numero_turno AS (
+                SELECT number_id, es_tarde, MAX(orden_turno) AS ultima_orden
+                FROM ranking_turno GROUP BY number_id, es_tarde
+            ),
+            ultima_global_turno AS (
+                SELECT es_tarde, MAX(orden_turno) AS max_orden FROM ranking_turno GROUP BY es_tarde
+            ),
+            atrasos AS (
+                SELECT
+                    n.id AS number_id,
+                    COALESCE(gv.max_orden - uv.ultima_orden, gv.max_orden, 0) AS atraso_dia,
+                    COALESCE(gn.max_orden - un.ultima_orden, gn.max_orden, 0) AS atraso_noche
+                FROM lottery_number n
+                LEFT JOIN ultima_global_turno gv ON gv.es_tarde = TRUE
+                LEFT JOIN ultima_por_numero_turno uv ON uv.number_id = n.id AND uv.es_tarde = TRUE
+                LEFT JOIN ultima_global_turno gn ON gn.es_tarde = FALSE
+                LEFT JOIN ultima_por_numero_turno un ON un.number_id = n.id AND un.es_tarde = FALSE
+            )
+            INSERT INTO lottery_number_stat (number_id, sorteo_id, total_atrasadas_dia, total_atrasadas_noche)
+            SELECT number_id, %(sorteo_id)s, atraso_dia, atraso_noche FROM atrasos
+            ON CONFLICT (number_id, sorteo_id) DO UPDATE SET
+                total_atrasadas_dia = EXCLUDED.total_atrasadas_dia,
+                total_atrasadas_noche = EXCLUDED.total_atrasadas_noche;
+        """, p)
+
+        self.env.cr.execute("""
+            WITH dias AS (SELECT generate_series(0,6) AS dow),
+            atrasos AS (
+                SELECT
+                    n.id AS number_id, d.dow,
+                    CASE
+                        WHEN s.last_system_date IS NULL THEN 0
+                        WHEN s.last_number_date IS NULL THEN
+                            GREATEST(0, FLOOR((s.last_system_date::date - s.first_system_date::date) / 7)::int + 1)
+                        ELSE
+                            GREATEST(0, FLOOR((s.last_system_date::date - s.last_number_date::date) / 7)::int)
+                    END AS atraso
+                FROM lottery_number n
+                CROSS JOIN dias d
+                LEFT JOIN LATERAL (
+                    SELECT
+                        (SELECT MIN(date) FROM lottery_output
+                          WHERE sorteo_id = %(sorteo_id)s AND EXTRACT(DOW FROM date) = d.dow) AS first_system_date,
+                        (SELECT MAX(date) FROM lottery_output
+                          WHERE sorteo_id = %(sorteo_id)s AND EXTRACT(DOW FROM date) = d.dow) AS last_system_date,
+                        (SELECT MAX(date) FROM lottery_output
+                          WHERE number_id = n.id AND sorteo_id = %(sorteo_id)s AND EXTRACT(DOW FROM date) = d.dow) AS last_number_date
+                ) s ON TRUE
+            ),
+            atrasos_pivot AS (
+                SELECT
+                    number_id,
+                    MAX(CASE WHEN dow = 0 THEN atraso ELSE 0 END) AS salidas_atrasadas_domingo,
+                    MAX(CASE WHEN dow = 1 THEN atraso ELSE 0 END) AS salidas_atrasadas_lunes,
+                    MAX(CASE WHEN dow = 2 THEN atraso ELSE 0 END) AS salidas_atrasadas_martes,
+                    MAX(CASE WHEN dow = 3 THEN atraso ELSE 0 END) AS salidas_atrasadas_miercoles,
+                    MAX(CASE WHEN dow = 4 THEN atraso ELSE 0 END) AS salidas_atrasadas_jueves,
+                    MAX(CASE WHEN dow = 5 THEN atraso ELSE 0 END) AS salidas_atrasadas_viernes,
+                    MAX(CASE WHEN dow = 6 THEN atraso ELSE 0 END) AS salidas_atrasadas_sabado
+                FROM atrasos
+                GROUP BY number_id
+            )
+            INSERT INTO lottery_number_stat (
+                number_id, sorteo_id,
+                salidas_atrasadas_domingo, salidas_atrasadas_lunes, salidas_atrasadas_martes,
+                salidas_atrasadas_miercoles, salidas_atrasadas_jueves, salidas_atrasadas_viernes,
+                salidas_atrasadas_sabado
+            )
+            SELECT
+                number_id, %(sorteo_id)s,
+                salidas_atrasadas_domingo, salidas_atrasadas_lunes, salidas_atrasadas_martes,
+                salidas_atrasadas_miercoles, salidas_atrasadas_jueves, salidas_atrasadas_viernes,
+                salidas_atrasadas_sabado
+            FROM atrasos_pivot
+            ON CONFLICT (number_id, sorteo_id) DO UPDATE SET
+                salidas_atrasadas_domingo = EXCLUDED.salidas_atrasadas_domingo,
+                salidas_atrasadas_lunes = EXCLUDED.salidas_atrasadas_lunes,
+                salidas_atrasadas_martes = EXCLUDED.salidas_atrasadas_martes,
+                salidas_atrasadas_miercoles = EXCLUDED.salidas_atrasadas_miercoles,
+                salidas_atrasadas_jueves = EXCLUDED.salidas_atrasadas_jueves,
+                salidas_atrasadas_viernes = EXCLUDED.salidas_atrasadas_viernes,
+                salidas_atrasadas_sabado = EXCLUDED.salidas_atrasadas_sabado;
+        """, p)
+
+        self._sync_number_name()
