@@ -514,14 +514,23 @@ class LotteryController(http.Controller):
     @http.route('/lottery/calientes-all', type='json', auth='public', website=True)
     def get_calientes_all(self, sorteo_id=False, **kwargs):
         sorteo_id = self._resolve_sorteo_id(sorteo_id)
-        return request.env['lottery.stats.service'].sudo().get_calientes_all(self._next_draw_date_str(sorteo_id), sorteo_id=sorteo_id)
+        sorteo = request.env['lottery.sorteo'].sudo().browse(sorteo_id)
+        snapshot = sorteo._get_ranking_snapshot()
+        if not snapshot:
+            return {}
+        return snapshot
 
     @http.route('/lottery/calientes-next', type='json', auth='public', website=True)
     def get_calientes_next_turn(self, sorteo_id=False, **kwargs):
         sorteo_id = self._resolve_sorteo_id(sorteo_id)
-        # Fuente única: el próximo sorteo definido en el sorteo (fecha + turno).
-        date_str, turn = request.env['lottery.sorteo'].sudo().browse(sorteo_id).get_next_draw()
-        return request.env['lottery.stats.service'].sudo().get_calientes_next_turn(date_str, turn, sorteo_id=sorteo_id)
+        sorteo = request.env['lottery.sorteo'].sudo().browse(sorteo_id)
+        snapshot = sorteo._get_ranking_snapshot()
+        if not snapshot:
+            return {}
+        _date_str, turn = sorteo.get_next_draw()
+        if turn not in ('afternoon', 'evening'):
+            turn = 'afternoon'
+        return {'turn': turn, 'data': snapshot.get(turn, {})}
 
     def _next_draw_date_str(self, sorteo_id=False):
         """Fecha del próximo sorteo. Fuente única: el campo next_draw del sorteo

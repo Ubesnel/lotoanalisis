@@ -39,6 +39,9 @@ class LotteryOutput(models.Model):
                             GroupStat.recompute_for_sorteo(sid)
                         env['ir.config_parameter'].sudo().set_param(MV_DIRTY_PARAM, '1')
                         env['lottery.stats.service'].clear_caches()
+                        # Recalcular rankings para los sorteos afectados
+                        sorteos = env['lottery.sorteo'].browse(list(pending))
+                        sorteos.compute_ranking_snapshot()
                         newcr.commit()
                 except Exception:
                     _logger.exception('Error recomputando stats de lottery (post-commit)')

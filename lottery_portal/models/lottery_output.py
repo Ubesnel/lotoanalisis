@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 _VALIDATION_FIELDS = frozenset({
     'hot_numero_ok', 'hot_centena_ok', 'hot_extra_ok', 'hot_ok',
     'cold_numero_ok', 'cold_centena_ok', 'cold_extra_ok', 'cold_ok',
-    'validation_date',
+    'restante_numero_ok', 'validation_date',
 })
 
 
@@ -54,21 +54,21 @@ class LotteryOutput(models.Model):
 
     @api.model
     def create(self, vals):
-        # ① Capturar predicción ANTES de guardar el sorteo.
-        #    El caché refleja el estado previo al sorteo, que es exactamente lo que se necesita.
+        # ① Validar contra el ranking PRE-CALCULADO (lectura instantánea de JSON).
         validation = self._snapshot_validation(vals)
 
         # ② Guardar el sorteo.
         record = super().create(vals)
 
-        # ③ Limpiar caché para que la próxima lectura refleje el nuevo sorteo.
-        self._after_change()
-
-        # ④ Persistir la validación capturada en ①.
+        # ③ Persistir la validación capturada en ①.
         #    write() con solo campos de validación NO vuelve a disparar _after_change.
         if validation:
             record.write(validation)
 
+        # El post-commit (lottery_delays_number) se encarga de:
+        #   - recomputar stats incrementales
+        #   - recalcular ranking_snapshot para el próximo sorteo
+        #   - limpiar cachés
         return record
 
     def write(self, vals):
@@ -115,51 +115,49 @@ class LotteryOutput(models.Model):
 
     def _snapshot_validation(self, vals):
         """
-        Evalúa los rankings actuales (antes del sorteo) contra los valores
-        que está a punto de guardarse.  Retorna el dict de campos o {} si
-        faltan datos.
+        Evalúa el número contra el ranking PRE-CALCULADO del sorteo (guardado
+        en lottery.sorteo.ranking_snapshot).  Lectura instantánea, sin SQL.
+        Retorna el dict de campos de validación o {} si no hay snapshot.
         """
         turn        = vals.get('turn_day')
         number_id   = vals.get('number_id')
         hundreds_id = vals.get('hundreds_id')
         fireball_id = vals.get('fireball_id')
-        draw_date   = vals.get('date')
         sorteo_id   = vals.get('sorteo_id')
+
+        if not all([turn, number_id, sorteo_id]):
+            return {}
 
         sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
         uses_fireball = bool(sorteo.uses_fireball)
 
-        if not all([turn, number_id, hundreds_id, draw_date]) or (uses_fireball and not fireball_id):
+        if uses_fireball and not fireball_id:
+            return {}
+
+        turn_data = sorteo.get_validation_data(turn)
+        if not turn_data:
             return {}
 
         LottoNum = self.env['lottery.number']
         num_rec = LottoNum.browse(number_id)
-        cen_rec = LottoNum.browse(hundreds_id)
+        cen_rec = LottoNum.browse(hundreds_id) if hundreds_id else LottoNum
         be_rec  = LottoNum.browse(fireball_id) if uses_fireball else LottoNum
 
-        if not (num_rec.exists() and cen_rec.exists() and (not uses_fireball or be_rec.exists())):
+        if not num_rec.exists():
             return {}
 
-        # Contexto = "próximo sorteo" guardado en el sorteo (lo que el portal
-        # mostró ANTES de guardar). Con secuencialidad estricta coincide con la
-        # salida que se registra. Si no está seteado, get_next_draw lo deriva.
-        try:
-            ctx_date, ctx_turn = sorteo.get_next_draw()
-            service  = self.env['lottery.stats.service']
-            turn_data = service.get_validation_sets(ctx_turn, ctx_date, sorteo_id=sorteo_id)
-        except Exception as exc:
-            _logger.error('Validación sorteo %s %s: %s', draw_date, turn, exc)
-            return {}
+        def _names(items):
+            return {int(i['name'] if isinstance(i, dict) else i) for i in items}
 
-        hot_nums  = {int(n['name']) for n in turn_data.get('numbers', [])}
-        cold_nums = {int(n['name']) for n in turn_data.get('numbers_cold', [])}
-        hot_cen   = {int(n['name']) for n in turn_data.get('centenas', [])}
-        cold_cen  = {int(n['name']) for n in turn_data.get('centenas_cold', [])}
-        hot_be    = {int(n['name']) for n in turn_data.get('bola_extra', [])}
-        cold_be   = {int(n['name']) for n in turn_data.get('bola_extra_cold', [])}
+        hot_nums  = _names(turn_data.get('numbers', []))
+        cold_nums = _names(turn_data.get('numbers_cold', []))
+        hot_cen   = _names(turn_data.get('centenas', []))
+        cold_cen  = _names(turn_data.get('centenas_cold', []))
+        hot_be    = _names(turn_data.get('bola_extra', []))
+        cold_be   = _names(turn_data.get('bola_extra_cold', []))
 
         num = int(num_rec.name)
-        cen = int(cen_rec.name)
+        cen = int(cen_rec.name) if cen_rec and cen_rec.exists() else -1
 
         h_num = num in hot_nums
         h_cen = cen in hot_cen
