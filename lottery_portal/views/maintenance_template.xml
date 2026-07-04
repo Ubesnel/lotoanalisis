@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="maintenance_page" name="Página de mantenimiento">
+        <t t-call="website.layout">
+            <style>
+                .sorteo-selector-fixed { display: none !important; }
+                #loto-back-top         { display: none !important; }
+                nav#top .o_main_nav_entries,
+                #top_menu,
+                #top_menu_collapse { display: none !important; }
+            </style>
+
+            <div class="bp-hero bp-maintenance-hero">
+                <div class="bp-orb bp-orb-1"/>
+                <div class="bp-orb bp-orb-2"/>
+                <div class="bp-orb bp-orb-3"/>
+                <div class="bp-orb bp-orb-4"/>
+                <div class="bp-stars"/>
+
+                <img src="/lottery_portal/static/src/img/valeria.png"
+                     class="bp-char bp-char-eli" alt=""/>
+                <img src="/lottery_portal/static/src/img/mateo.png"
+                     class="bp-char bp-char-ube" alt=""/>
+
+                <div class="bp-hero-center">
+
+                    <div class="bp-hero-badge">
+                        <i class="fa fa-wrench"/>
+                        MANTENIMIENTO
+                    </div>
+
+                    <h1 class="bp-hero-title">
+                        Estamos mejorando<br/>
+                        <span class="bp-hero-title-accent">LotoAnálisis</span>
+                    </h1>
+
+                    <p class="bp-hero-sub">
+                        Estamos realizando una actualización del sistema.<br/>
+                        En breve estaremos de vuelta con todo funcionando.
+                    </p>
+
+                    <div class="bp-maintenance-card">
+                        <div class="bp-maintenance-icon-ring">
+                            <i class="fa fa-cog bp-maintenance-spin"/>
+                        </div>
+                        <p class="bp-maintenance-label">Volvemos pronto</p>
+                        <div class="bp-maintenance-dots">
+                            <span/><span/><span/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </t>
+    </template>
+</odoo>

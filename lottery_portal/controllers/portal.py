@@ -54,6 +54,10 @@ class LotteryPortal(http.Controller):
             'hero_stats': stats.get_hero_stats(sorteo_id=sorteo_id),
         })
 
+    @http.route('/mantenimiento', type='http', auth='public', website=True)
+    def maintenance_page(self, **kwargs):
+        return request.render('lottery_portal.maintenance_page')
+
     @http.route(['/faq'], type='http', auth="user", website=True)
     def faq_page(self, **kwargs):
         return request.render('lottery_portal.faq_page')

@@ -19,6 +19,9 @@ class ResConfigSettings(models.TransientModel):
     facebook_page_url = fields.Char(related='company_id.facebook_page_url', readonly=False,
                                     string='URL Página de Facebook')
 
+    maintenance_mode = fields.Boolean(related='company_id.maintenance_mode', readonly=False,
+                                      string='Modo mantenimiento')
+
     # ── Estado de las estadísticas (vistas materializadas) ────────────────
     # Campos simples (no computados): se poblan en get_values() en cada apertura
     # de Ajustes leyendo directo de la BD, evitando el ormcache por proceso de
