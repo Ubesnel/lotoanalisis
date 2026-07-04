@@ -13,8 +13,10 @@ class ResCompany(models.Model):
     facebook_group_url = fields.Char(
         string="URL Grupo de Facebook",
         help="Enlace al grupo de Facebook que aparece en la página pública de búsqueda.",
+        prefetch=False
     )
     facebook_page_url = fields.Char(
         string="URL Página de Facebook",
         help="Enlace a la página de Facebook (@LotoAnalisis) que aparece en la página pública.",
+        prefetch=False
     )
