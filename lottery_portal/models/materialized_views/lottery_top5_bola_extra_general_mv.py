@@ -4,6 +4,7 @@ from odoo import tools, models
 
 class LotteryTop5BolaExtraGeneralMV(models.Model):
     _name = 'lottery.top5.bola.extra.mv'
+    _table = 'lottery_top5_bola_extra_general_mv'
     _description = 'Lottery Top 5 Bola Extra Materialized View'
     _auto = False
 

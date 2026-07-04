@@ -36,7 +36,17 @@
       "Bash(grep -n \"Extra elements\\\\|flex-shrink-0\" /e/Trabajo/Odoo/Odoo17/addons/website/views/website_templates.xml | head -10)",
       "Bash(python -m py_compile lottery_portal/models/website_menu.py lottery_portal/models/__init__.py)",
       "Bash(python -c \"import xml.etree.ElementTree as ET; ET.parse\\('lottery_portal/views/news_template.xml'\\); print\\('OK'\\)\")",
-      "Bash(git log *)"
+      "Bash(git log *)",
+      "Bash(ls \"E:\\\\Trabajo\\\\Odoo\\\\Odoo17\" | head -30; ls \"E:\\\\Trabajo\\\\Odoo\" 2>/dev/null | head)",
+      "Bash(export PGPASSWORD=odoo17)",
+      "Bash(\"/c/Program Files/PostgreSQL/15/bin/psql\" -h localhost -p 5436 -U odoo17 -lqt)",
+      "Bash(awk -F'|' '{print $1}')",
+      "Bash(grep -v '^\\\\s*$')",
+      "Bash(netstat -ano)",
+      "Bash(\"/c/Program Files/PostgreSQL/15/bin/psql\" -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -t -c \"SELECT pg_size_pretty\\(pg_database_size\\('LOTTERY_MULTI'\\)\\);\")",
+      "Bash(./venv17/Scripts/python.exe odoo-bin *)",
+      "Bash(./venv_odoo/Scripts/python.exe odoo-bin *)",
+      "Bash('/c/Program Files/PostgreSQL/15/bin/psql' -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -t -A -c 'SELECT c.id, c.active, c.interval_number, c.interval_type, a.name->>'\\\\''en_US'\\\\'' FROM ir_cron c JOIN ir_act_server a ON a.id=c.ir_actions_server_id WHERE \\(a.name->>'\\\\''en_US'\\\\''\\) ILIKE '\\\\''%pendiente%'\\\\'' OR a.code LIKE '\\\\''%pending_stats%'\\\\'';' -c ' *)"
     ]
   }
 }

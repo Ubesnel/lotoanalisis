@@ -52,24 +52,18 @@ class LotteryOutput(models.Model):
 
     # ── CRUD ──────────────────────────────────────────────────────
 
-    @api.model
-    def create(self, vals):
-        # ① Validar contra el ranking PRE-CALCULADO (lectura instantánea de JSON).
-        validation = self._snapshot_validation(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Validar contra el ranking PRE-CALCULADO (lectura instantánea de JSON)
+        # y persistirlo en el mismo INSERT: evita el write() posterior con su
+        # ciclo completo de overrides.
+        vals_list = [dict(vals, **self._snapshot_validation(vals)) for vals in vals_list]
 
-        # ② Guardar el sorteo.
-        record = super().create(vals)
-
-        # ③ Persistir la validación capturada en ①.
-        #    write() con solo campos de validación NO vuelve a disparar _after_change.
-        if validation:
-            record.write(validation)
-
-        # El post-commit (lottery_delays_number) se encarga de:
+        # El cron disparado por lottery_delays_number se encarga de:
         #   - recomputar stats incrementales
         #   - recalcular ranking_snapshot para el próximo sorteo
         #   - limpiar cachés
-        return record
+        return super().create(vals_list)
 
     def write(self, vals):
         res = super().write(vals)

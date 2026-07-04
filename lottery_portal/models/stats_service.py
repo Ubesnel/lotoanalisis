@@ -2622,7 +2622,7 @@ class LotteryStatsService(models.Model):
         """, (sorteo_id, turn_day, turn_day, month, year, pg_dow, week_seg_num))
         return self.env.cr.dictfetchall()
 
-    def _get_calientes_cebs(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False):
+    def _get_calientes_cebs(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None):
         """
         Centenas / bola extra calientes.
         Evalúa los 10 valores posibles (0-9) con 6 criterios ponderados:
@@ -2632,9 +2632,11 @@ class LotteryStatsService(models.Model):
           10 % frecuencia mes — salidores del mes actual
            7 % frecuencia DOW — salidores en este día de la semana
            3 % frecuencia sem — salidores en esta semana del mes
-        Retorna los 4 mejores.
+        Retorna los 4 mejores. Acepta `rows` ya consultadas para no repetir
+        la query cuando el llamador puntúa hot/cold/all sobre los mismos datos.
         """
-        rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
+        if rows is None:
+            rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
         if not rows:
             return []
 
@@ -2659,7 +2661,7 @@ class LotteryStatsService(models.Model):
         rows.sort(key=lambda x: x['score'], reverse=True)
         return [{'name': str(r['val'])} for r in rows[:4]]
 
-    def _get_frios_cebs(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False):
+    def _get_frios_cebs(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None):
         """
         Centenas / bola extra frías.
         Mismos 6 criterios que calientes pero INVERTIDOS:
@@ -2669,9 +2671,10 @@ class LotteryStatsService(models.Model):
           10 % menos salidor mes
            7 % menos salidor DOW
            3 % menos salidor sem
-        Retorna los 4 más fríos.
+        Retorna los 4 más fríos. Acepta `rows` ya consultadas (ver _get_calientes_cebs).
         """
-        rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
+        if rows is None:
+            rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
         if not rows:
             return []
 
@@ -2697,9 +2700,11 @@ class LotteryStatsService(models.Model):
         rows.sort(key=lambda x: x['score'], reverse=True)
         return [{'name': str(r['val'])} for r in rows[:4]]
 
-    def _get_all_cebs_scored(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False):
-        """Todos los valores (centenas o bola extra) con su score caliente, sin recortar."""
-        rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
+    def _get_all_cebs_scored(self, turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None):
+        """Todos los valores (centenas o bola extra) con su score caliente, sin recortar.
+        Acepta `rows` ya consultadas (ver _get_calientes_cebs)."""
+        if rows is None:
+            rows = self._query_ceb_stats(turn_day, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
         if not rows:
             return []
         mx_turn   = max(r['atraso_turn']  for r in rows) or 1
@@ -2790,23 +2795,26 @@ class LotteryStatsService(models.Model):
         remaining = [s for s in all_scores if s['name'] not in hot_names
                                             and s['name'] not in cold_names]
 
-        centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
-        centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+        # Una sola query por campo: hot/cold/all se puntúan sobre las mismas filas.
+        cen_rows        = self._query_ceb_stats(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+        centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
+        centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
 
         hot_cen_names  = {c['name'] for c in centenas}
         cold_cen_names = {c['name'] for c in centenas_cold}
 
         # Centenas restantes: no clasificadas como calientes ni frías
-        all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+        all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
 
         # Bola extra: solo si el sorteo la usa (ej. Florida Pick 3). El resto
         # (Quiniela UY) no la tiene, así que se omite su cálculo.
         if uses_fireball:
-            bola_extra      = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
-            bola_extra_cold = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
+            be_rows         = self._query_ceb_stats(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
+            bola_extra      = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows)
+            bola_extra_cold = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows)
             hot_be_names    = {c['name'] for c in bola_extra}
             cold_be_names   = {c['name'] for c in bola_extra_cold}
-            all_bola_extra  = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
+            all_bola_extra  = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows)
             bola_extra_remaining = [c for c in all_bola_extra if c['name'] not in hot_be_names and c['name'] not in cold_be_names]
         else:
             bola_extra = bola_extra_cold = bola_extra_remaining = []
@@ -2892,13 +2900,15 @@ class LotteryStatsService(models.Model):
         cold_filtered = [s for s in cold_scores if s['name'] not in hot_names]
         cold_top = _cut_with_ties(cold_filtered, 30)
 
+        cen_rows = self._query_ceb_stats(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+        be_rows  = self._query_ceb_stats(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
         return {
             'numbers':         hot_top,
             'numbers_cold':    cold_top,
-            'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id),
-            'centenas_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id),
-            'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id),
-            'bola_extra_cold': self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id),
+            'centenas':        self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows),
+            'centenas_cold':   self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows),
+            'bola_extra':      self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows),
+            'bola_extra_cold': self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows),
         }
 
     @api.model

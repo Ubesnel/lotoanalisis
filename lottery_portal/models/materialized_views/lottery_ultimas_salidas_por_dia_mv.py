@@ -4,6 +4,7 @@ from odoo import tools, models
 
 class LotteryUltimaSalidaPorDiaMV(models.Model):
     _name = 'lottery.ultima.salida.dia.mv'
+    _table = 'lottery_ultima_salida_dia_semana_mv'
     _description = 'Lottery Ultima Salida por Día Materialized View'
     _auto = False
 

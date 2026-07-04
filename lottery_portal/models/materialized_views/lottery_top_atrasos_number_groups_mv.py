@@ -6,6 +6,7 @@ from odoo.tools import create_index
 
 class LotteryTopAtrasosNumberGroupsMV(models.Model):
     _name = 'lottery.top.atrasos.number.groups.mv'
+    _table = 'lottery_number_groups_atrasos_mv'
     _description = 'Lottery Top Atrasos Number Groups Materialized View'
     _auto = False
 

@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_lottery_number_stat_user,lottery_number_stat_user,model_lottery_number_stat,lottery_base.group_lottery_user,1,0,0,0
 access_lottery_number_stat_manager,lottery_number_stat_manager,model_lottery_number_stat,lottery_base.group_lottery_manager,1,1,1,1
+access_lottery_stats_dirty_user,lottery_stats_dirty_user,model_lottery_stats_dirty,lottery_base.group_lottery_user,1,0,1,0
+access_lottery_stats_dirty_manager,lottery_stats_dirty_manager,model_lottery_stats_dirty,lottery_base.group_lottery_manager,1,1,1,1

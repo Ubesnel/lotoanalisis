@@ -12,7 +12,7 @@ def _default_sorteo(self):
 class LotteryOutput(models.Model):
     _name = 'lottery.output'
     _description = 'Salida de Números'
-    _order = 'date desc'
+    _order = 'date desc, id desc'
 
     sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True, index=True,
                                 default=_default_sorteo,
@@ -116,12 +116,26 @@ class LotteryOutput(models.Model):
     # La secuencialidad estricta (sin saltos) permite derivar el próximo sorteo
     # de la última salida registrada; autorreparable ante borrado/recarga.
 
-    @api.model
-    def create(self, vals):
-        record = super().create(vals)
-        if record.sorteo_id:
-            record.sorteo_id._on_output_registered(record.date, record.turn_day)
-        return record
+    def init(self):
+        # Índices compuestos para los patrones dominantes de consulta:
+        # "última salida del sorteo" (sorteo_id + date) y los agregados de
+        # atrasos por día de semana (sorteo_id + EXTRACT(DOW) + date).
+        self.env.cr.execute("""
+            CREATE INDEX IF NOT EXISTS lottery_output_sorteo_date_idx
+            ON lottery_output (sorteo_id, date)
+        """)
+        self.env.cr.execute("""
+            CREATE INDEX IF NOT EXISTS lottery_output_sorteo_dow_date_idx
+            ON lottery_output (sorteo_id, (EXTRACT(DOW FROM date)), date)
+        """)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            if record.sorteo_id:
+                record.sorteo_id._on_output_registered(record.date, record.turn_day)
+        return records
 
     def write(self, vals):
         res = super().write(vals)

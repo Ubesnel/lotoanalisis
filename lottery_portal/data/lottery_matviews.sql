@@ -27,26 +27,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- 🔹 Función del trigger
-CREATE OR REPLACE FUNCTION trg_refresh_lottery_matviews()
-RETURNS trigger AS $$
-BEGIN
-    -- Evita ejecuciones múltiples en cascada
-    IF pg_trigger_depth() > 1 THEN
-        RETURN NULL;
-    END IF;
-
-    PERFORM refresh_all_lottery_matviews();
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-
--- 🔹 Trigger
+-- 🔹 El trigger que refrescaba TODAS las MVs en cada INSERT/UPDATE/DELETE de
+--    lottery_output hacía que guardar una salida tardara ~9-15 segundos.
+--    El refresh ahora corre fuera del request del usuario, en el cron
+--    cron_recompute_pending_stats (y cron_refresh_materialized_views como
+--    red de seguridad). Los DROP limpian bases donde el trigger ya existía.
 DROP TRIGGER IF EXISTS trg_refresh_lottery ON lottery_output;
-
-CREATE TRIGGER trg_refresh_lottery
-AFTER INSERT OR UPDATE OR DELETE
-ON lottery_output
-FOR EACH STATEMENT
-EXECUTE FUNCTION trg_refresh_lottery_matviews();
+DROP FUNCTION IF EXISTS trg_refresh_lottery_matviews();

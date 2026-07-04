@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
+        <!-- Cron disparado por _trigger() al guardar una salida: hace todo el
+             recálculo pesado fuera del request del usuario. El intervalo es
+             solo una red de seguridad por si un trigger se pierde. -->
+        <record id="cron_recompute_pending_stats" model="ir.cron">
+            <field name="name">Recalcular estadísticas de sorteos pendientes</field>
+            <field name="model_id" ref="lottery_base.model_lottery_output"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_recompute_pending_stats()</field>
+            <field name='interval_number'>10</field>
+            <field name='interval_type'>minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="priority">2</field>
+            <field name="active" eval="True"/>
+        </record>
+
         <record id="actualizar_estadisticas_numeros" model="ir.cron">
             <field name="name">Actualizar estadísticas de Números por sorteo</field>
             <field name="model_id" ref="model_lottery_number_stat"/>
