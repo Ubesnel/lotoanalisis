@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from odoo import models, api, tools
 import calendar
@@ -669,6 +669,90 @@ class LotteryStatsService(models.Model):
                 'evening':   _top5(type_rows, 'total_evening'),
             }
         return result
+
+    @api.model
+    def get_grupos_por_dia(self, day, sorteo_id=False):
+        """Top 2 grupos, lineas y terminales mas atrasados por dia usando lottery_group_stat."""
+        field_day_map = {
+            'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
+            'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves',
+            'vi': 'salidas_atrasadas_viernes', 'sa': 'salidas_atrasadas_sabado',
+            'do': 'salidas_atrasadas_domingo',
+        }
+        field_day = field_day_map.get(day, 'salidas_atrasadas_lunes')
+
+        def _query_top2(code_filter):
+            self.env.cr.execute(f"""
+                SELECT lg.id, lg.code, UPPER(lg.name) AS name,
+                       lgs.salidas_atrasadas,
+                       lgs.salidas_atrasadas_dia,
+                       lgs.salidas_atrasadas_noche,
+                       lgs.{field_day} AS salidas_atrasadas_por_dia
+                FROM lottery_group_stat lgs
+                JOIN lottery_group lg ON lg.id = lgs.group_id
+                WHERE lgs.sorteo_id = %s AND {code_filter}
+                ORDER BY lgs.{field_day} DESC
+                LIMIT 2
+            """, (sorteo_id,))
+            return self.env.cr.dictfetchall()
+
+        def _enrich(items):
+            for item in items:
+                group_obj = self.env['lottery.group'].browse(item['id'])
+                num_ids = group_obj.number_ids.ids
+                if num_ids:
+                    stats = self.env['lottery.number.stat'].search_read(
+                        [('number_id', 'in', num_ids), ('sorteo_id', '=', sorteo_id)],
+                        ['number_id', field_day],
+                        order=f'{field_day} asc',
+                    )
+                    num_names = {n.id: str(n.name).zfill(2)
+                                 for n in self.env['lottery.number'].browse(num_ids)}
+                    nums_asc = [
+                        {'num': num_names.get(s['number_id'][0], '?'),
+                         'delay': s.get(field_day) or 0}
+                        for s in stats if s.get('number_id')
+                    ]
+                    nums_sorted = sorted(nums_asc, key=lambda x: x['num'])
+                else:
+                    nums_asc = []
+                    nums_sorted = []
+                item['numbers'] = [n['num'] for n in nums_sorted]
+                item['last_on_day'] = nums_asc[0]['num'] if nums_asc else None
+                item['most_delayed_on_day'] = nums_asc[-1]['num'] if nums_asc else None
+            return items
+
+        # Top 2 grupos (excluye pintas, lineas y terminales)
+        # Nota: %% en psycopg2 se convierte en % literal en el SQL enviado a PG
+        top_groups = _query_top2(
+            "lg.code NOT IN ('pinta_0','pinta_1','pinta_2','pinta_3','pinta_4',"
+            "                'pinta_5','pinta_6','pinta_7','pinta_8','pinta_9')"
+            " AND lg.code NOT LIKE 'line_%%' AND lg.code NOT LIKE 'terminal_%%'"
+        )
+        _enrich(top_groups)
+
+        # Top 2 lineas desde lottery_group_stat con codigo line_X
+        top_lines = _query_top2("lg.code LIKE 'line_%%'")
+        for item in top_lines:
+            n = int(item['code'].split('_')[1])
+            item['line_num'] = n
+            item['name'] = f'Linea {n}'
+            item['range'] = f'{n * 10:02d} al {n * 10 + 9:02d}'
+        _enrich(top_lines)
+
+        # Top 2 terminales desde lottery_group_stat con codigo terminal_X
+        top_terminals = _query_top2("lg.code LIKE 'terminal_%%'")
+        for item in top_terminals:
+            n = int(item['code'].split('_')[1])
+            item['terminal_num'] = n
+            item['name'] = f'Terminal {n}'
+        _enrich(top_terminals)
+
+        return {
+            'groups': top_groups,
+            'lines': top_lines,
+            'terminals': top_terminals,
+        }
 
     @api.model
     @tools.ormcache('sorteo_id')

@@ -54,6 +54,16 @@ class LotteryPortal(http.Controller):
             'hero_stats': stats.get_hero_stats(sorteo_id=sorteo_id),
         })
 
+    @http.route('/grupos-por-dia', type='http', auth='user', website=True)
+    def grupos_por_dia(self, **kw):
+        return request.render('lottery_portal.portal_grupos_por_dia')
+
+    @http.route('/grupos-por-dia/dashboard_data', type='json', auth='user')
+    def grupos_por_dia_dashboard_data(self, day=False, sorteo_id=False):
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
+        data = request.env['lottery.stats.service'].sudo().get_grupos_por_dia(day, sorteo_id=sorteo_id)
+        return data
+
     @http.route('/mantenimiento', type='http', auth='public', website=True)
     def maintenance_page(self, **kwargs):
         return request.render('lottery_portal.maintenance_page')
