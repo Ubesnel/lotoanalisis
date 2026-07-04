@@ -16,6 +16,9 @@
         <field name="model">lottery.sorteo</field>
         <field name="inherit_id" ref="lottery_base.view_lottery_sorteo_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='source_code']" position="after">
+                <field name="show_in_public"/>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Ranking calientes / fríos">
                     <div class="mb-3">

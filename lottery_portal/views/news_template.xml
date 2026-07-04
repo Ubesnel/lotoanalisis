@@ -114,10 +114,10 @@
 
                         <!-- BREADCRUMB -->
                         <div class="nap-breadcrumb">
-                            <a href="/"><i class="fa fa-home"/> Inicio</a>
+                            <a href="/inicio"><i class="fa fa-home"/> Inicio</a>
                             <i class="fa fa-angle-right"/>
                             <t t-if="article.category_id">
-                                <a t-attf-href="/?category=#{ article.category_id.slug }">
+                                <a t-attf-href="/inicio?category=#{ article.category_id.slug }">
                                     <t t-esc="article.category_id.name"/>
                                 </a>
                                 <i class="fa fa-angle-right"/>
@@ -215,7 +215,7 @@
                                                 <t t-if="article.category_id">
                                                     <div class="nap-info-item">
                                                         <i t-attf-class="fa #{ article.category_id.icon or 'fa-tag' }"/>
-                                                        <a t-attf-href="/?category=#{ article.category_id.slug }"
+                                                        <a t-attf-href="/inicio?category=#{ article.category_id.slug }"
                                                            class="nap-info-cat"
                                                            t-att-style="'color:' + (article.category_id.color or '#7c3aed')">
                                                             <t t-esc="article.category_id.name"/>
@@ -252,7 +252,7 @@
                                     <div class="nap-scard">
                                         <div class="nap-scard-head"><i class="fa fa-compass"/> Acceso rápido</div>
                                         <div class="nap-scard-body">
-                                            <a href="/" class="nap-qlink"><i class="fa fa-home"/> Inicio</a>
+                                            <a href="/inicio" class="nap-qlink"><i class="fa fa-home"/> Inicio</a>
                                             <a href="/faq" class="nap-qlink"><i class="fa fa-question-circle"/> Preguntas Frecuentes</a>
                                             <a href="/terminos-condiciones" class="nap-qlink"><i class="fa fa-file-text-o"/> Términos y Condiciones</a>
                                             <a href="/politica-privacidad" class="nap-qlink"><i class="fa fa-shield"/> Política de Privacidad</a>
@@ -281,7 +281,7 @@
                                     </div>
                                     <div class="nap-intro-text">
                                         <t t-if="article.category_id">
-                                            <a t-attf-href="/?category=#{ article.category_id.slug }"
+                                            <a t-attf-href="/inicio?category=#{ article.category_id.slug }"
                                                class="nap-category">
                                                 <i t-attf-class="fa #{ article.category_id.icon or 'fa-tag' }"/>
                                                 <t t-esc="article.category_id.name"/>

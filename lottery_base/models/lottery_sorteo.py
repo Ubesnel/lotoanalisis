@@ -46,6 +46,11 @@ class LotterySorteo(models.Model):
                                                   "Pensado para sorteos con calendario diario fijo (ej. Florida).")
     source_code = fields.Char(string='Código de origen (scraper)',
                               help="Identifica qué proveedor/parser del scraper alimenta este sorteo.")
+    show_in_public = fields.Boolean(
+        string='Mostrar en búsqueda pública',
+        default=False,
+        help="Si está activo, este sorteo aparece en el selector de la página pública de búsqueda de salidas históricoas.",
+    )
 
     # ── Calendario semanal ────────────────────────────────────────
     slot_ids = fields.One2many('lottery.sorteo.slot', 'sorteo_id', string='Calendario (días y turnos)',

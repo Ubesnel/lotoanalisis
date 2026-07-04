@@ -12,9 +12,9 @@ class WebsiteMenu(models.Model):
         declarativa. Si por instalaciones o actualizaciones sucesivas
         terminan existiendo varios menús de nivel superior apuntando a "/",
         los fusiona dejando uno solo llamado "Inicio"."""
-        menus = self.search([('url', '=', '/'), ('name', 'in', ('Home', 'Inicio'))])
+        menus = self.search([('url', '=', '/'), ('name', 'in', ('Home', 'Inicio', 'Consultar Salidas'))])
         if not menus:
             return
         keep = menus[0]
-        keep.write({'name': 'Inicio', 'sequence': 5})
+        keep.write({'name': 'Consultar Salidas', 'sequence': 5})
         (menus - keep).unlink()

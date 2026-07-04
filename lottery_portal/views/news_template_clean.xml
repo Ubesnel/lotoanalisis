@@ -151,7 +151,7 @@
 
                                 <!-- BREADCRUMB -->
                                 <div class="nap-breadcrumb">
-                                    <a href="/"><i class="fa fa-home"/> Inicio</a>
+                                    <a href="/inicio"><i class="fa fa-home"/> Inicio</a>
                                     <i class="fa fa-angle-right"/>
                                     <t t-if="article.category_id">
                                         <a t-attf-href="/?category=#{ article.category_id.slug }">

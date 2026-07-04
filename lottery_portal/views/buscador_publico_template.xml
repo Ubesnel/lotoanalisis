@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="buscador_publico_page" name="Búsqueda pública de salidas">
+        <t t-call="website.layout">
+            <style>
+                .sorteo-selector-fixed { display: none !important; }
+                #loto-back-top        { display: none !important; }
+            </style>
+
+            <!-- ══ HERO ══ -->
+            <div class="bp-hero">
+                <div class="bp-orb bp-orb-1"/>
+                <div class="bp-orb bp-orb-2"/>
+                <div class="bp-orb bp-orb-3"/>
+                <div class="bp-orb bp-orb-4"/>
+                <div class="bp-stars"/>
+
+                <img src="/lottery_portal/static/src/img/valeria.png"
+                     class="bp-char bp-char-eli" alt=""/>
+                <img src="/lottery_portal/static/src/img/mateo.png"
+                     class="bp-char bp-char-ube" alt=""/>
+
+                <div class="bp-hero-center">
+
+                    <!-- Badge dinámico con los sorteos habilitados -->
+                    <div class="bp-hero-badge">
+                        <i class="fa fa-star"/>
+                        <t t-if="sorteos_publicos">
+                            <t t-foreach="sorteos_publicos" t-as="s">
+                                <t t-if="not s_first"> · </t>
+                                <t t-esc="s.name"/>
+                            </t>
+                        </t>
+                        <t t-else="">Búsqueda de salidas</t>
+                    </div>
+
+                    <h1 class="bp-hero-title">
+                        Consultá cualquier<br/>
+                        <span class="bp-hero-title-accent">salida histórica</span>
+                    </h1>
+                    <p class="bp-hero-sub">
+                        Ingresá una fecha y conocé los resultados al instante
+                    </p>
+
+                    <div class="bp-search-card">
+                        <div class="bp-search-header">
+                            <i class="fa fa-search me-2"/>Buscar salida histórica
+                        </div>
+                        <div class="bp-search-body">
+                            <owl-component name="lottery_portal.BuscadorPublico"/>
+                        </div>
+                    </div>
+
+                    <!-- Strip Facebook — visible sin bajar -->
+                    <t t-if="facebook_group_url or facebook_page_url">
+                        <div class="bp-fb-strip">
+                            <div class="bp-fb-strip-info">
+                                <strong>
+                                    <i class="fa fa-facebook-square"/>LotoAnalisis
+                                </strong>
+                                <span>Análisis diarios · Estrategias · Comunidad</span>
+                            </div>
+                            <t t-if="facebook_group_url">
+                                <a t-att-href="facebook_group_url"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="bp-fb-strip-btn">
+                                    <i class="fa fa-users"/>Unirse al grupo
+                                </a>
+                            </t>
+                            <t t-elif="facebook_page_url">
+                                <a t-att-href="facebook_page_url"
+                                   target="_blank" rel="noopener noreferrer"
+                                   class="bp-fb-strip-btn">
+                                    <i class="fa fa-thumbs-up"/>Seguir @LotoAnalisis
+                                </a>
+                            </t>
+                        </div>
+                    </t>
+
+                </div>
+            </div>
+
+            <!-- ══ SECCIÓN SOCIAL ══ -->
+            <t t-if="facebook_group_url or facebook_page_url">
+                <div class="bp-social-section">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-md-8 col-lg-6">
+                                <div class="bp-fb-card">
+                                    <div class="bp-fb-header">
+                                        <div class="bp-fb-badge">
+                                            <i class="fa fa-facebook-square me-1"/>Grupo Público
+                                        </div>
+                                        <h3 class="bp-fb-title">LotoAnalisis</h3>
+                                        <p class="bp-fb-subtitle">Análisis · Estrategias · Resultados</p>
+                                    </div>
+                                    <div class="bp-fb-body">
+                                        <div class="bp-fb-feature">
+                                            <span class="bp-fb-icon bp-fb-icon--purple">
+                                                <i class="fa fa-bar-chart"/>
+                                            </span>
+                                            <div>
+                                                <strong>Análisis Diarios</strong>
+                                                <p>Números calientes, fríos, patrones y más.</p>
+                                            </div>
+                                        </div>
+                                        <div class="bp-fb-feature">
+                                            <span class="bp-fb-icon bp-fb-icon--orange">
+                                                <i class="fa fa-lightbulb-o"/>
+                                            </span>
+                                            <div>
+                                                <strong>Estrategias Efectivas</strong>
+                                                <p>Mejores combinaciones para tus jugadas.</p>
+                                            </div>
+                                        </div>
+                                        <div class="bp-fb-feature">
+                                            <span class="bp-fb-icon bp-fb-icon--gold">
+                                                <i class="fa fa-users"/>
+                                            </span>
+                                            <div>
+                                                <strong>Comunidad Activa</strong>
+                                                <p>Aprende y comparte con otros jugadores.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bp-fb-footer">
+                                        <t t-if="facebook_group_url">
+                                            <a t-att-href="facebook_group_url"
+                                               target="_blank" rel="noopener noreferrer"
+                                               class="bp-fb-btn">
+                                                <i class="fa fa-facebook me-2"/>Unirse al grupo
+                                            </a>
+                                        </t>
+                                        <t t-if="facebook_page_url">
+                                            <a t-att-href="facebook_page_url"
+                                               target="_blank" rel="noopener noreferrer"
+                                               class="bp-fb-page-link">
+                                                <i class="fa fa-thumbs-up me-1"/>Seguir @LotoAnalisis
+                                            </a>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+        </t>
+    </template>
+</odoo>

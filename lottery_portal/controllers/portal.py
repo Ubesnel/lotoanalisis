@@ -26,6 +26,16 @@ class LotteryPortal(http.Controller):
             'default_id': default.id if default else (sorteos[0].id if sorteos else False),
         }
 
+    @http.route('/lottery/sorteos-publicos', type='json', auth='public', website=True)
+    def get_sorteos_publicos(self, **kwargs):
+        sorteos = request.env['lottery.sorteo'].sudo().search(
+            [('show_in_public', '=', True)], order='sequence, id')
+        default = sorteos[0] if sorteos else None
+        return {
+            'sorteos': [{'id': s.id, 'name': s.name, 'code': s.code} for s in sorteos],
+            'default_id': default.id if default else False,
+        }
+
     @http.route('/lottery/ultimos-resultados', type='json', auth='public', website=True)
     def get_ultimos_resultados(self, sorteo_id=False, **kwargs):
         sorteo_id = self._resolve_sorteo_id(sorteo_id)
@@ -44,7 +54,7 @@ class LotteryPortal(http.Controller):
             'hero_stats': stats.get_hero_stats(sorteo_id=sorteo_id),
         })
 
-    @http.route(['/faq'], type='http', auth="public", website=True)
+    @http.route(['/faq'], type='http', auth="user", website=True)
     def faq_page(self, **kwargs):
         return request.render('lottery_portal.faq_page')
 
@@ -58,11 +68,11 @@ class LotteryPortal(http.Controller):
             'faqs': faqs.read(['question', 'answer', 'category_id'])
         }
 
-    @http.route(['/terminos-condiciones'], type='http', auth="public", website=True)
+    @http.route(['/terminos-condiciones'], type='http', auth="user", website=True)
     def terminos_condiciones_page(self, **kwargs):
         return request.render('lottery_portal.terminos_condiciones_page')
 
-    @http.route(['/politica-privacidad'], type='http', auth="public", website=True)
+    @http.route(['/politica-privacidad'], type='http', auth="user", website=True)
     def politica_privacidad_page(self, **kwargs):
         return request.render('lottery_portal.politica_privacidad_page')
 

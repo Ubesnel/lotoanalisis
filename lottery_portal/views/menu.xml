@@ -8,6 +8,13 @@
 
     <data noupdate="1">
 
+        <record id="menu_lottery_inicio" model="website.menu">
+            <field name="name">Inicio</field>
+            <field name="url">/inicio</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence">10</field>
+        </record>
+
         <record id="menu_lottery_estadisticas_generales" model="website.menu">
             <field name="name">Estadísticas Generales</field>
             <field name="url">/estadisticas-generales</field>

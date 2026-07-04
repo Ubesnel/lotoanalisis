@@ -14,6 +14,11 @@ class ResConfigSettings(models.TransientModel):
     portal_calendar_month = fields.Selection(related='company_id.portal_calendar_month', string='Mes',
                                              readonly=False)
 
+    facebook_group_url = fields.Char(related='company_id.facebook_group_url', readonly=False,
+                                     string='URL Grupo de Facebook')
+    facebook_page_url = fields.Char(related='company_id.facebook_page_url', readonly=False,
+                                    string='URL Página de Facebook')
+
     # ── Estado de las estadísticas (vistas materializadas) ────────────────
     # Campos simples (no computados): se poblan en get_values() en cada apertura
     # de Ajustes leyendo directo de la BD, evitando el ormcache por proceso de
