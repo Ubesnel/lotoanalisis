@@ -55,10 +55,26 @@
                 <i class="fa fa-arrow-up"/>
             </button>
             <script>//<![CDATA[
-                document.getElementById('loto-back-top').addEventListener('click', function () {
+                (function () {
+                    var btn  = document.getElementById('loto-back-top');
                     var wrap = document.getElementById('wrapwrap');
-                    if (wrap) { wrap.scrollTo({ top: 0, behavior: 'smooth' }); }
-                });
+                    if (!btn || !wrap) return;
+
+                    // Mostrar solo cuando el usuario bajó más de 300px
+                    function onScroll() {
+                        if (wrap.scrollTop > 300) {
+                            btn.classList.add('loto-back-top--visible');
+                        } else {
+                            btn.classList.remove('loto-back-top--visible');
+                        }
+                    }
+                    wrap.addEventListener('scroll', onScroll, { passive: true });
+                    onScroll();
+
+                    btn.addEventListener('click', function () {
+                        wrap.scrollTo({ top: 0, behavior: 'smooth' });
+                    });
+                })();
             //]]></script>
         </xpath>
     </template>

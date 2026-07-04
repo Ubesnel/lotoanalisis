@@ -27,6 +27,7 @@
         "views/politica_privacidad.xml",
         "views/terminos_condiciones.xml",
         "views/buscador_publico_template.xml",
+        "views/maintenance_template.xml",
         "views/contactus.xml",
         "views/website_layout.xml",
         "views/res_config_settings.xml",

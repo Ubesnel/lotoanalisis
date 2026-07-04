@@ -942,7 +942,18 @@ html, #wrapwrap { scroll-behavior: smooth; }
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 16px rgba(111, 74, 142, 0.40);
-    transition: box-shadow 0.25s ease, transform 0.2s ease;
+    /* Arrancar oculto — el JS lo muestra con .loto-back-top--visible */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px) scale(0.85);
+    transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    touch-action: manipulation;
+}
+
+.loto-back-top--visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
 }
 
 .loto-back-top:hover {

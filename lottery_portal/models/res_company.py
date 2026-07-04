@@ -20,3 +20,10 @@ class ResCompany(models.Model):
         help="Enlace a la página de Facebook (@LotoAnalisis) que aparece en la página pública.",
         prefetch=False
     )
+
+    maintenance_mode = fields.Boolean(
+        string="Modo mantenimiento",
+        default=False,
+        prefetch=False,
+        help="Cuando está activo, los usuarios públicos ven la página de mantenimiento en lugar del portal.",
+    )

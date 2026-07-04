@@ -24,6 +24,20 @@
                             <field name="facebook_page_url" placeholder="https://www.facebook.com/LotoAnalisis"/>
                         </setting>
                     </block>
+                    <block title="Modo mantenimiento" id="lottery_maintenance_settings">
+                        <setting string="Modo mantenimiento"
+                                 help="Cuando está activo, los usuarios públicos ven la página de mantenimiento en lugar del portal. Los usuarios internos pueden seguir accediendo con normalidad.">
+                            <field name="maintenance_mode"/>
+                            <div class="content-group mt8">
+                                <div invisible="not maintenance_mode">
+                                    <span class="badge text-bg-danger">⚠ Mantenimiento activo — el portal está bloqueado para usuarios públicos</span>
+                                </div>
+                                <div invisible="maintenance_mode">
+                                    <span class="badge text-bg-success">✓ Portal accesible</span>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
                     <block title="Estado de las estadísticas" id="lottery_stats_status_settings">
                         <setting string="Estado de las estadísticas"
                                  help="Las vistas de atrasos/tops se refrescan en segundo plano (cron cada 1 minuto) cuando se registran o editan salidas.">
