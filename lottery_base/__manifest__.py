@@ -1,6 +1,6 @@
 {
     'name': 'Base',
-    'version': '0.1',
+    'version': '0.2',
     'description': """º
 Configuraciones iniciales
 """,
@@ -12,7 +12,10 @@ Configuraciones iniciales
     'data': [
         'security/groups.xml',
         'security/ir.model.access.csv',
+        'security/lottery_rules.xml',
+        'data/lottery_sorteo_data.xml',
         'data/lottery_number_data.xml',
+        'data/lottery_output_sorteo_filters_data.xml',
         'data/lottery_output_1988_data.xml',
         'data/lottery_output_1989_data.xml',
         'data/lottery_output_1990_data.xml',
@@ -54,9 +57,12 @@ Configuraciones iniciales
         'data/lottery_output_2025_data.xml',
         'data/lottery_output_2026_data.xml',
         'views/lottery_number_view.xml',
+        'views/lottery_sorteo_view.xml',
         'views/lottery_output_view.xml',
-        'views/lottery_menu_view.xml'
+        'views/lottery_menu_view.xml',
+        'views/res_users_view.xml',
     ],
     'installable': True,
+    'post_init_hook': 'post_init_hook',
 
 }

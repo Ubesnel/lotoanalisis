@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 _VALIDATION_FIELDS = frozenset({
     'hot_numero_ok', 'hot_centena_ok', 'hot_extra_ok', 'hot_ok',
     'cold_numero_ok', 'cold_centena_ok', 'cold_extra_ok', 'cold_ok',
-    'validation_date',
+    'restante_numero_ok', 'validation_date',
 })
 
 
@@ -17,7 +17,7 @@ class LotteryOutput(models.Model):
 
     # ── Validación caliente (predicción vs resultado) ─────────────
     hot_numero_ok = fields.Boolean(
-        'Número caliente', default=False, index=True,
+        'Está en Calientes?', default=False, index=True,
         help='El número salido estaba en el top 30 calientes del turno antes del sorteo.')
     hot_centena_ok = fields.Boolean(
         'Centena caliente', default=False, index=True,
@@ -31,7 +31,7 @@ class LotteryOutput(models.Model):
 
     # ── Validación fría ───────────────────────────────────────────
     cold_numero_ok = fields.Boolean(
-        'Número no-frío', default=False, index=True,
+        'Está en Fríos?', default=False, index=True,
         help='El número salido NO estaba en el top 30 fríos del turno antes del sorteo.')
     cold_centena_ok = fields.Boolean(
         'Centena no-fría', default=False, index=True,
@@ -45,29 +45,25 @@ class LotteryOutput(models.Model):
 
     validation_date = fields.Datetime('Validado el', readonly=True)
 
+    # Restantes
+    restante_numero_ok = fields.Boolean(
+        'Está en Restantes?', default=False, index=True,
+        help='El número salido estaba en el grupo Restantes del turno antes del sorteo.')
+
     # ── CRUD ──────────────────────────────────────────────────────
 
-    @api.model
-    def create(self, vals):
-        # ① Limpiar caché para obtener rankings frescos antes del sorteo.
-        self.env['lottery.stats.service'].clear_caches()
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Validar contra el ranking PRE-CALCULADO (lectura instantánea de JSON)
+        # y persistirlo en el mismo INSERT: evita el write() posterior con su
+        # ciclo completo de overrides.
+        vals_list = [dict(vals, **self._snapshot_validation(vals)) for vals in vals_list]
 
-        # ② Capturar predicción ANTES de guardar el sorteo.
-        #    En este momento los rankings reflejan el estado previo al sorteo.
-        validation = self._snapshot_validation(vals)
-
-        # ③ Guardar el sorteo (altera atrasos, frecuencias, etc.)
-        record = super().create(vals)
-
-        # ④ Recomputar grupos y limpiar caché
-        self._after_change()
-
-        # ⑤ Persistir la validación capturada en ②.
-        #    write() con solo campos de validación NO vuelve a disparar _after_change.
-        if validation:
-            record.write(validation)
-
-        return record
+        # El cron disparado por lottery_delays_number se encarga de:
+        #   - recomputar stats incrementales
+        #   - recalcular ranking_snapshot para el próximo sorteo
+        #   - limpiar cachés
+        return super().create(vals_list)
 
     def write(self, vals):
         res = super().write(vals)
@@ -80,69 +76,105 @@ class LotteryOutput(models.Model):
         self._after_change()
         return res
 
+    _MATERIALIZED_VIEWS = [
+        'lottery_centena_week_mv',
+        'lottery_centena_weekday_mv',
+        'lottery_group_sequences_mv',
+        'lottery_group_analysis_mv',
+        'lottery_top10_afternoon_mv',
+        'lottery_top10_dia_semana_mv',
+        'lottery_top10_mv',
+        'lottery_top10_evening_mv',
+        'lottery_top_atrasos_lineas_mv',
+        'lottery_number_groups_atrasos_mv',
+        'lottery_top_atrasos_terminales_mv',
+        'lottery_top5_bola_extra_dia_mv',
+        'lottery_top5_bola_extra_general_mv',
+        'lottery_top5_bola_extra_noche_mv',
+        'lottery_top5_centena_dia_mv',
+        'lottery_top5_centena_general_mv',
+        'lottery_top5_centena_noche_mv',
+        'lottery_ultima_salida_dia_semana_mv',
+        'lottery_weekend_groups_mv',
+    ]
+
     def _after_change(self):
-        self.env['lottery.group'].cron_recompute_from_sql()
         self.env['lottery.stats.service'].clear_caches()
+
+    def refresh_materialized_views(self):
+        for view in self._MATERIALIZED_VIEWS:
+            self.env.cr.execute(f"REFRESH MATERIALIZED VIEW {view}")
 
     # ── Lógica de validación ──────────────────────────────────────
 
     def _snapshot_validation(self, vals):
         """
-        Evalúa los rankings actuales (antes del sorteo) contra los valores
-        que está a punto de guardarse.  Retorna el dict de campos o {} si
-        faltan datos.
+        Evalúa el número contra el ranking PRE-CALCULADO del sorteo (guardado
+        en lottery.sorteo.ranking_snapshot).  Lectura instantánea, sin SQL.
+        Retorna el dict de campos de validación o {} si no hay snapshot.
         """
         turn        = vals.get('turn_day')
         number_id   = vals.get('number_id')
         hundreds_id = vals.get('hundreds_id')
         fireball_id = vals.get('fireball_id')
-        draw_date   = vals.get('date')
+        sorteo_id   = vals.get('sorteo_id')
 
-        if not all([turn, number_id, hundreds_id, fireball_id, draw_date]):
+        if not all([turn, number_id, sorteo_id]):
+            return {}
+
+        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
+        uses_fireball = bool(sorteo.uses_fireball)
+
+        if uses_fireball and not fireball_id:
+            return {}
+
+        turn_data = sorteo.get_validation_data(turn)
+        if not turn_data:
             return {}
 
         LottoNum = self.env['lottery.number']
         num_rec = LottoNum.browse(number_id)
-        cen_rec = LottoNum.browse(hundreds_id)
-        be_rec  = LottoNum.browse(fireball_id)
+        cen_rec = LottoNum.browse(hundreds_id) if hundreds_id else LottoNum
+        be_rec  = LottoNum.browse(fireball_id) if uses_fireball else LottoNum
 
-        if not (num_rec.exists() and cen_rec.exists() and be_rec.exists()):
+        if not num_rec.exists():
             return {}
 
-        try:
-            service  = self.env['lottery.stats.service']
-            all_data = service.get_calientes_all(str(draw_date))
-            turn_data = all_data.get(turn, {})
-        except Exception as exc:
-            _logger.error('Validación sorteo %s %s: %s', draw_date, turn, exc)
-            return {}
+        def _names(items):
+            return {int(i['name'] if isinstance(i, dict) else i) for i in items}
 
-        hot_nums  = {int(n['name']) for n in turn_data.get('numbers', [])}
-        cold_nums = {int(n['name']) for n in turn_data.get('numbers_cold', [])}
-        hot_cen   = {int(n['name']) for n in turn_data.get('centenas', [])}
-        cold_cen  = {int(n['name']) for n in turn_data.get('centenas_cold', [])}
-        hot_be    = {int(n['name']) for n in turn_data.get('bola_extra', [])}
-        cold_be   = {int(n['name']) for n in turn_data.get('bola_extra_cold', [])}
+        hot_nums  = _names(turn_data.get('numbers', []))
+        cold_nums = _names(turn_data.get('numbers_cold', []))
+        hot_cen   = _names(turn_data.get('centenas', []))
+        cold_cen  = _names(turn_data.get('centenas_cold', []))
+        hot_be    = _names(turn_data.get('bola_extra', []))
+        cold_be   = _names(turn_data.get('bola_extra_cold', []))
 
         num = int(num_rec.name)
-        cen = int(cen_rec.name)
-        be  = int(be_rec.name)
+        cen = int(cen_rec.name) if cen_rec and cen_rec.exists() else -1
 
         h_num = num in hot_nums
         h_cen = cen in hot_cen
-        h_be  = be  in hot_be
-        c_num = num not in cold_nums
+        c_num = num in cold_nums
         c_cen = cen not in cold_cen
-        c_be  = be  not in cold_be
+        rest_num = num not in hot_nums and num not in cold_nums
+
+        if uses_fireball:
+            be    = int(be_rec.name)
+            h_be  = be in hot_be
+            c_be  = be not in cold_be
+        else:
+            h_be = c_be = True
 
         return {
             'hot_numero_ok':   h_num,
             'hot_centena_ok':  h_cen,
-            'hot_extra_ok':    h_be,
+            'hot_extra_ok':    h_be if uses_fireball else False,
             'hot_ok':          h_num and h_cen and h_be,
             'cold_numero_ok':  c_num,
             'cold_centena_ok': c_cen,
-            'cold_extra_ok':   c_be,
+            'cold_extra_ok':   c_be if uses_fireball else False,
             'cold_ok':         c_num and c_cen and c_be,
             'validation_date': fields.Datetime.now(),
+            'restante_numero_ok': rest_num
         }

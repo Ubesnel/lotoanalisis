@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from . import lottery_stats_dirty
+from . import lottery_number_stat
 from . import lottery_number
 from . import lottery_output
 

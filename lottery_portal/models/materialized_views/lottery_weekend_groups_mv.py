@@ -14,7 +14,7 @@ class LotteryWeekendGroupsMV(models.Model):
         self.env.cr.execute("""
             CREATE MATERIALIZED VIEW lottery_weekend_groups_mv AS
             WITH weekend_draws AS (
-                SELECT lo.turn_day, lg.code AS grp_code,
+                SELECT lo.turn_day, lo.sorteo_id, lg.code AS grp_code,
                        CASE WHEN lg.code LIKE 'line_%' THEN 'line' ELSE 'terminal' END AS grp_type
                 FROM lottery_output lo
                 JOIN lottery_number ln  ON ln.id  = lo.number_id
@@ -24,16 +24,17 @@ class LotteryWeekendGroupsMV(models.Model):
                   AND EXTRACT(DOW FROM lo.date) IN (0, 6)
             )
             SELECT
+                sorteo_id,
                 grp_type,
                 grp_code,
                 COUNT(*)                                        AS total_general,
                 COUNT(*) FILTER (WHERE turn_day = 'afternoon') AS total_afternoon,
                 COUNT(*) FILTER (WHERE turn_day = 'evening')   AS total_evening
             FROM weekend_draws
-            GROUP BY grp_type, grp_code;
+            GROUP BY sorteo_id, grp_type, grp_code;
         """)
 
         self.env.cr.execute("""
             CREATE INDEX idx_weekend_groups_mv_type
-            ON lottery_weekend_groups_mv (grp_type, total_general DESC);
+            ON lottery_weekend_groups_mv (sorteo_id, grp_type, total_general DESC);
         """)

@@ -6,7 +6,8 @@
         <field name="inherit_id" ref="lottery_base.view_lottery_output_all_tree"/>
         <field name="arch" type="xml">
             <field name="complete_number" position="after">
-                <field name="fireball_id"/>
+                <field name="sorteo_uses_fireball" column_invisible="1"/>
+                <field name="fireball_id" invisible="not sorteo_uses_fireball"/>
             </field>
         </field>
     </record>
@@ -17,7 +18,8 @@
         <field name="inherit_id" ref="lottery_base.view_lottery_output_tree"/>
         <field name="arch" type="xml">
             <field name="complete_number" position="after">
-                <field name="fireball_id"/>
+                <field name="sorteo_uses_fireball" column_invisible="1"/>
+                <field name="fireball_id" invisible="not sorteo_uses_fireball"/>
             </field>
         </field>
     </record>
@@ -28,7 +30,9 @@
         <field name="inherit_id" ref="lottery_base.view_lottery_output_form"/>
         <field name="arch" type="xml">
             <field name="complete_number" position="after">
-                <field name="fireball_id" options="{'no_open': True, 'no_create': True}"/>
+                <field name="sorteo_uses_fireball" invisible="1"/>
+                <field name="fireball_id" options="{'no_open': True, 'no_create': True}"
+                       invisible="not sorteo_uses_fireball"/>
             </field>
         </field>
     </record>

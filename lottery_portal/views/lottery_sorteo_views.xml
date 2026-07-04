@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Server action: recalcular ranking desde la vista lista (multi-selección) -->
+    <record id="action_server_compute_ranking" model="ir.actions.server">
+        <field name="name">Recalcular ranking calientes / fríos</field>
+        <field name="model_id" ref="lottery_base.model_lottery_sorteo"/>
+        <field name="binding_model_id" ref="lottery_base.model_lottery_sorteo"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="state">code</field>
+        <field name="code">records.compute_ranking_snapshot()</field>
+    </record>
+
+    <!-- Extensión del form: pestaña de ranking -->
+    <record id="view_lottery_sorteo_form_ranking" model="ir.ui.view">
+        <field name="name">lottery.sorteo.form.ranking</field>
+        <field name="model">lottery.sorteo</field>
+        <field name="inherit_id" ref="lottery_base.view_lottery_sorteo_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='source_code']" position="after">
+                <field name="show_in_public"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Ranking calientes / fríos">
+                    <div class="mb-3">
+                        <button name="action_compute_ranking" type="object"
+                                string="Recalcular ranking" class="btn-primary"
+                                icon="fa-refresh"/>
+                        <field name="ranking_computed_at" widget="datetime" class="ms-3 d-inline-block"
+                               readonly="1" nolabel="1"/>
+                    </div>
+                    <field name="ranking_display" nolabel="1" readonly="1"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

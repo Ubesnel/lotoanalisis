@@ -11,6 +11,7 @@ Estadísticas sobre Grupos de números
     'depends': ['lottery_delays_number'],
     'data': [
         'security/ir.model.access.csv',
+        'security/lottery_rules.xml',
         'data/lottery_lines_groups_data.xml',
         'data/lottery_pints_groups_data.xml',
         'data/lottery_terminal_groups_data.xml',
@@ -21,6 +22,7 @@ Estadísticas sobre Grupos de números
         'data/lottery_acomp_menor_groups_data.xml',
         'data/lottery_acomp_mayor_groups_data.xml',
         'data/ir_cron.xml',
+        'data/lottery_group_stat_sorteo_filters_data.xml',
         'views/lottery_groups_view.xml',
         'views/lottery_menu_view.xml',
     ],

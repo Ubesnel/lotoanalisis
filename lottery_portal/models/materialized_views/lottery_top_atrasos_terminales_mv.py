@@ -14,6 +14,7 @@ class LotteryTopAtrasosTerminalesMV(models.Model):
             CREATE MATERIALIZED VIEW lottery_top_atrasos_terminales_mv AS
             SELECT
                 lg.code,
+                lgs.sorteo_id AS sorteo_id,
                 CASE lg.code
                     WHEN 'terminal_0' THEN '00-90'
                     WHEN 'terminal_1' THEN '01-91'
@@ -26,9 +27,9 @@ class LotteryTopAtrasosTerminalesMV(models.Model):
                     WHEN 'terminal_8' THEN '08-98'
                     WHEN 'terminal_9' THEN '09-99'
                 END AS name,
-                lg.salidas_atrasadas AS general,
-                lg.salidas_atrasadas_dia AS afternoon,
-                lg.salidas_atrasadas_noche AS evening,
+                lgs.salidas_atrasadas AS general,
+                lgs.salidas_atrasadas_dia AS afternoon,
+                lgs.salidas_atrasadas_noche AS evening,
 
                 last_gen.last_num                     AS last_num_general,
                 to_char(last_gen.last_date,'DD/MM/YY') AS last_date_general,
@@ -47,13 +48,15 @@ class LotteryTopAtrasosTerminalesMV(models.Model):
                 max_eve.delay_val                    AS max_delay_val_evening,
                 max_eve.delay_date                   AS max_delay_date_evening
 
-            FROM lottery_group lg
+            FROM lottery_group_stat lgs
+            JOIN lottery_group lg ON lg.id = lgs.group_id
 
             LEFT JOIN LATERAL (
                 SELECT LPAD(ln.name::text, 2, '0') AS last_num, lo.date AS last_date
                 FROM lottery_output lo
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE ln.name % 10 = SUBSTRING(lg.code FROM 10)::int
+                  AND lo.sorteo_id = lgs.sorteo_id
                 ORDER BY lo.date DESC, lo.id DESC
                 LIMIT 1
             ) last_gen ON TRUE
@@ -64,6 +67,7 @@ class LotteryTopAtrasosTerminalesMV(models.Model):
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE ln.name % 10 = SUBSTRING(lg.code FROM 10)::int
                   AND lo.turn_day = 'afternoon'
+                  AND lo.sorteo_id = lgs.sorteo_id
                 ORDER BY lo.date DESC, lo.id DESC
                 LIMIT 1
             ) last_aft ON TRUE
@@ -74,39 +78,46 @@ class LotteryTopAtrasosTerminalesMV(models.Model):
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE ln.name % 10 = SUBSTRING(lg.code FROM 10)::int
                   AND lo.turn_day = 'evening'
+                  AND lo.sorteo_id = lgs.sorteo_id
                 ORDER BY lo.date DESC, lo.id DESC
                 LIMIT 1
             ) last_eve ON TRUE
 
             LEFT JOIN LATERAL (
-                SELECT ln.name AS num_name, ln.total_atrasadas AS delay_val,
+                SELECT ln.name AS num_name, lns.total_atrasadas AS delay_val,
                        to_char((SELECT MAX(lo2.date) FROM lottery_output lo2
-                                WHERE lo2.number_id = ln.id), 'DD/MM/YY') AS delay_date
+                                WHERE lo2.number_id = ln.id
+                                  AND lo2.sorteo_id = lgs.sorteo_id), 'DD/MM/YY') AS delay_date
                 FROM lottery_number ln
+                JOIN lottery_number_stat lns ON lns.number_id = ln.id AND lns.sorteo_id = lgs.sorteo_id
                 WHERE ln.name % 10 = SUBSTRING(lg.code FROM 10)::int
-                ORDER BY ln.total_atrasadas DESC
+                ORDER BY lns.total_atrasadas DESC
                 LIMIT 1
             ) max_gen ON TRUE
 
             LEFT JOIN LATERAL (
-                SELECT ln.name AS num_name, ln.total_atrasadas_dia AS delay_val,
+                SELECT ln.name AS num_name, lns.total_atrasadas_dia AS delay_val,
                        to_char((SELECT MAX(lo2.date) FROM lottery_output lo2
                                 WHERE lo2.number_id = ln.id
-                                  AND lo2.turn_day = 'afternoon'), 'DD/MM/YY') AS delay_date
+                                  AND lo2.turn_day = 'afternoon'
+                                  AND lo2.sorteo_id = lgs.sorteo_id), 'DD/MM/YY') AS delay_date
                 FROM lottery_number ln
+                JOIN lottery_number_stat lns ON lns.number_id = ln.id AND lns.sorteo_id = lgs.sorteo_id
                 WHERE ln.name % 10 = SUBSTRING(lg.code FROM 10)::int
-                ORDER BY ln.total_atrasadas_dia DESC
+                ORDER BY lns.total_atrasadas_dia DESC
                 LIMIT 1
             ) max_aft ON TRUE
 
             LEFT JOIN LATERAL (
-                SELECT ln.name AS num_name, ln.total_atrasadas_noche AS delay_val,
+                SELECT ln.name AS num_name, lns.total_atrasadas_noche AS delay_val,
                        to_char((SELECT MAX(lo2.date) FROM lottery_output lo2
                                 WHERE lo2.number_id = ln.id
-                                  AND lo2.turn_day = 'evening'), 'DD/MM/YY') AS delay_date
+                                  AND lo2.turn_day = 'evening'
+                                  AND lo2.sorteo_id = lgs.sorteo_id), 'DD/MM/YY') AS delay_date
                 FROM lottery_number ln
+                JOIN lottery_number_stat lns ON lns.number_id = ln.id AND lns.sorteo_id = lgs.sorteo_id
                 WHERE ln.name % 10 = SUBSTRING(lg.code FROM 10)::int
-                ORDER BY ln.total_atrasadas_noche DESC
+                ORDER BY lns.total_atrasadas_noche DESC
                 LIMIT 1
             ) max_eve ON TRUE
 
@@ -116,5 +127,5 @@ class LotteryTopAtrasosTerminalesMV(models.Model):
             );
         """)
 
-        self.env.cr.execute("""CREATE INDEX idx_line_atrasos_mv_terminales ON lottery_top_atrasos_terminales_mv (general DESC);""")
+        self.env.cr.execute("""CREATE INDEX idx_line_atrasos_mv_terminales ON lottery_top_atrasos_terminales_mv (sorteo_id, general DESC);""")
 

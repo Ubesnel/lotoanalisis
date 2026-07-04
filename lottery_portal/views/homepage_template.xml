@@ -8,60 +8,7 @@
 
     <!-- ===== WIDGET REUTILIZABLE: sorteos del día + buscador ===== -->
     <template id="lottery_sidebar_widgets" name="Lottery Sidebar Widgets">
-        <div class="card shadow border-0 mb-3 overflow-hidden">
-            <t t-if="lottery_data and lottery_data.get('afternoon')">
-                <div class="lottery-block">
-                    <div class="lottery-turn-header lottery-turn-dia">
-                        <i class="fa fa-sun-o"/> Tarde
-                        <span class="lottery-turn-date">
-                            <t t-esc="lottery_data['afternoon']['date']"/>
-                        </span>
-                    </div>
-                    <div class="lottery-row">
-                        <div class="lottery-numbers">
-                            <div class="box-centena-dia">
-                                <t t-esc="lottery_data['afternoon']['centena']"/>
-                            </div>
-                            <div class="box-numero-dia">
-                                <t t-esc="lottery_data['afternoon']['numero']"/>
-                            </div>
-                        </div>
-                        <div class="lottery-extra-wrap">
-                            <span class="lottery-extra-label">Extra</span>
-                            <div class="box-extra">
-                                <t t-esc="lottery_data['afternoon']['extra']"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </t>
-            <t t-if="lottery_data and lottery_data.get('evening')">
-                <div class="lottery-block lottery-block-noche">
-                    <div class="lottery-turn-header lottery-turn-noche">
-                        <i class="fa fa-moon-o"/> Noche
-                        <span class="lottery-turn-date">
-                            <t t-esc="lottery_data['evening']['date']"/>
-                        </span>
-                    </div>
-                    <div class="lottery-row">
-                        <div class="lottery-numbers">
-                            <div class="box-centena-noche">
-                                <t t-esc="lottery_data['evening']['centena']"/>
-                            </div>
-                            <div class="box-numero-noche">
-                                <t t-esc="lottery_data['evening']['numero']"/>
-                            </div>
-                        </div>
-                        <div class="lottery-extra-wrap">
-                            <span class="lottery-extra-label">Extra</span>
-                            <div class="box-extra">
-                                <t t-esc="lottery_data['evening']['extra']"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </t>
-        </div>
+        <owl-component name="lottery_portal.UltimosResultados"/>
         <div class="card shadow border-0 overflow-hidden mb-3">
             <div class="card-header text-white fw-bold" style="background-color:#8c6ca8;">
                 <i class="fa fa-search me-2"/>
@@ -80,27 +27,14 @@
         <t t-call="website.layout">
             <div class="container mt-3 mb-0">
 
-                <!-- ── Fila 1: 3 columnas Calientes · Fríos · Restantes ── -->
+                <!-- ── Fila 1: Calientes · Fríos · Restantes ── -->
                 <div class="row mb-3">
                     <div class="col-12">
                         <owl-component name="lottery_portal.NumerosCalientes"/>
                     </div>
                 </div>
 
-                <!-- ── Fila 2: Atrasados (col-4) + Por día (col-4) + Fin semana (col-4) ── -->
-                <div class="row mb-3">
-                    <div class="col-12 col-md-4 mb-3 mb-md-0">
-                        <owl-component name="lottery_portal.TopAtrasos"/>
-                    </div>
-                    <div class="col-12 col-md-4 mb-3 mb-md-0">
-                        <owl-component name="lottery_portal.Top10ByDay"/>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <owl-component name="lottery_portal.LotteryWeekendGroups"/>
-                    </div>
-                </div>
-
-                <!-- ── Fila 3: Secuencias de grupos ancho completo ── -->
+                <!-- ── Fila 2: Secuencias de grupos ancho completo ── -->
                 <div class="row mb-3">
                     <div class="col-12">
                         <owl-component name="lottery_portal.LotteryGroupSequences"/>

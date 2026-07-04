@@ -4,13 +4,30 @@ from odoo import http
 from odoo.http import request
 from datetime import datetime
 
+from .portal import _resolve_sorteo_id
+
 
 class NewsController(http.Controller):
 
     ARTICLES_PER_PAGE = 12
 
+    def _resolve_sorteo_id(self, sorteo_id):
+        return _resolve_sorteo_id(sorteo_id)
+
     @http.route('/', type='http', auth='public', website=True)
-    def news_homepage(self, page=1, category=None, q=None, **kwargs):
+    def buscador_publico_page(self, **kwargs):
+        company = request.env.company.sudo()
+        sorteos = request.env['lottery.sorteo'].sudo().search(
+            [('show_in_public', '=', True)], order='sequence, id')
+        return request.render('lottery_portal.buscador_publico_page', {
+            'facebook_group_url': company.facebook_group_url or '',
+            'facebook_page_url': company.facebook_page_url or '',
+            'sorteos_publicos': sorteos,
+        })
+
+    @http.route('/inicio', type='http', auth='user', website=True)
+    def news_homepage(self, page=1, category=None, q=None, sorteo_id=False, **kwargs):
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
         Article = request.env['news.article'].sudo()
         Category = request.env['news.category'].sudo()
         stats = request.env['lottery.stats.service'].sudo()
@@ -54,8 +71,8 @@ class NewsController(http.Controller):
             'total':           total,
             'category_slug':   category or '',
             'search_query':    search_query,
-            'lottery_data':    stats.get_last_results_full(),
-            'hero_stats':      stats.get_hero_stats(),
+            'lottery_data':    stats.get_last_results_full(sorteo_id=sorteo_id),
+            'hero_stats':      stats.get_hero_stats(sorteo_id=sorteo_id),
         })
 
     @http.route('/noticias/buscar', type='json', auth='public', website=True)
@@ -83,8 +100,9 @@ class NewsController(http.Controller):
             for a in results
         ]
 
-    @http.route('/noticias/<string:slug>', type='http', auth='public', website=True)
-    def news_article(self, slug, **kwargs):
+    @http.route('/noticias/<string:slug>', type='http', auth='user', website=True)
+    def news_article(self, slug, sorteo_id=False, **kwargs):
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
         Article = request.env['news.article'].sudo()
         article = Article.search([('slug', '=', slug), ('is_published', '=', True)], limit=1)
         if not article:
@@ -110,10 +128,10 @@ class NewsController(http.Controller):
             'comment_submitted': kwargs.get('comment_submitted', False),
             'comment_error': kwargs.get('comment_error', ''),
             'my_comments': request.session.get('my_comments', []),
-            'lottery_data': stats.get_last_results_full(),
+            'lottery_data': stats.get_last_results_full(sorteo_id=sorteo_id),
         })
 
-    @http.route('/noticias/<string:slug>/comentar', type='http', auth='public', website=True,
+    @http.route('/noticias/<string:slug>/comentar', type='http', auth='user', website=True,
                 methods=['POST'], csrf=True)
     def news_submit_comment(self, slug, **post):
         Article = request.env['news.article'].sudo()
@@ -159,7 +177,7 @@ class NewsController(http.Controller):
         return request.redirect(f'/noticias/{slug}?comment_submitted=1#comentarios')
 
     @http.route('/noticias/<string:slug>/comentario/<int:cid>/editar',
-                type='http', auth='public', website=True, methods=['POST'], csrf=True)
+                type='http', auth='user', website=True, methods=['POST'], csrf=True)
     def news_edit_comment(self, slug, cid, **post):
         owned = request.session.get('my_comments', [])
         if cid not in owned:
@@ -174,7 +192,7 @@ class NewsController(http.Controller):
         return request.redirect(f'/noticias/{slug}?comment_submitted=1#comentarios')
 
     @http.route('/noticias/<string:slug>/comentario/<int:cid>/eliminar',
-                type='http', auth='public', website=True, methods=['POST'], csrf=True)
+                type='http', auth='user', website=True, methods=['POST'], csrf=True)
     def news_delete_comment(self, slug, cid, **post):
         owned = list(request.session.get('my_comments', []))
         if cid not in owned:
@@ -187,6 +205,6 @@ class NewsController(http.Controller):
             request.session['my_comments'] = owned
         return request.redirect(f'/noticias/{slug}#comentarios')
 
-    @http.route('/noticias/categoria/<string:slug>', type='http', auth='public', website=True)
+    @http.route('/noticias/categoria/<string:slug>', type='http', auth='user', website=True)
     def news_by_category(self, slug, page=1, **kwargs):
-        return request.redirect(f'/?category={slug}&page={page}')
+        return request.redirect(f'/inicio?category={slug}&page={page}')

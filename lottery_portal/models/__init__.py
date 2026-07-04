@@ -8,3 +8,5 @@ from . import calientes_generator
 from . import grupos_dia_semana_generator
 from . import materialized_views
 from . import lottery_output
+from . import lottery_sorteo
+from . import website_menu

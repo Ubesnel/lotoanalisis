@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <menuitem id="menu_lottery_number_stat_item" name="Atrasos de números"
+              parent="lottery_base.menu_numeros_root"
+              action="action_lottery_number_stat" sequence="2"
+              groups="lottery_base.group_lottery_user"/>
+</odoo>

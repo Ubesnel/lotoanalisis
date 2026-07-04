@@ -10,6 +10,24 @@
                     li:has(> a[href="/estadisticas-numeros"]) { display: none !important; }
                 </style>
             </t>
+            <t t-if="not request.env.user._is_public()">
+                <!-- Para usuarios autenticados, ocultar el ítem "Consultar Salidas" -> "/" del menú -->
+                <style>
+                    li:has(> a[href="/"]) { display: none !important; }
+                </style>
+            </t>
+            <t t-if="request.env.user._is_public()">
+                <style>
+                    li:has(> a[href="/inicio"]),
+                    li:has(> a[href="/estadisticas-generales"]),
+                    li:has(> a[href="/estadisticas"]),
+                    li:has(> a[href="/estadisticas-pintas"]),
+                    li:has(> a[href="/estadisticas-numeros"]),
+                    li:has(> a[href="/faq"]),
+                    li:has(> a[href="/politica-privacidad"]),
+                    li:has(> a[href="/terminos-condiciones"]) { display: none !important; }
+                </style>
+            </t>
         </xpath>
     </template>
 
@@ -18,6 +36,16 @@
             <script async="async"
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9112696506385807"
                 crossorigin="anonymous"/>
+        </xpath>
+    </template>
+
+    <template id="portal_sorteo_selector_mount" inherit_id="website.layout">
+        <xpath expr="//body" position="inside">
+            <t t-if="not request.env.user._is_public()">
+                <div class="sorteo-selector-fixed">
+                    <owl-component name="lottery_portal.SorteoSelector"/>
+                </div>
+            </t>
         </xpath>
     </template>
 

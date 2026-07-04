@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="filter_lottery_output_sorteo_florida" model="ir.filters">
+            <field name="name">Pick3 Florida</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_florida')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_1" model="ir.filters">
+            <field name="name">Sorteo 01</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_1')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_2" model="ir.filters">
+            <field name="name">Sorteo 02</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_2')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_3" model="ir.filters">
+            <field name="name">Sorteo 03</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_3')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_4" model="ir.filters">
+            <field name="name">Sorteo 04</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_4')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_5" model="ir.filters">
+            <field name="name">Sorteo 05</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_5')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_6" model="ir.filters">
+            <field name="name">Sorteo 06</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_6')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_7" model="ir.filters">
+            <field name="name">Sorteo 07</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_7')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_8" model="ir.filters">
+            <field name="name">Sorteo 08</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_8')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_9" model="ir.filters">
+            <field name="name">Sorteo 09</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_9')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_10" model="ir.filters">
+            <field name="name">Sorteo 10</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_10')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_11" model="ir.filters">
+            <field name="name">Sorteo 11</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_11')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_12" model="ir.filters">
+            <field name="name">Sorteo 12</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_12')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_13" model="ir.filters">
+            <field name="name">Sorteo 13</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_13')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_14" model="ir.filters">
+            <field name="name">Sorteo 14</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_14')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_15" model="ir.filters">
+            <field name="name">Sorteo 15</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_15')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_16" model="ir.filters">
+            <field name="name">Sorteo 16</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_16')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_17" model="ir.filters">
+            <field name="name">Sorteo 17</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_17')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_18" model="ir.filters">
+            <field name="name">Sorteo 18</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_18')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_19" model="ir.filters">
+            <field name="name">Sorteo 19</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_19')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+        <record id="filter_lottery_output_sorteo_quiniela_uy_20" model="ir.filters">
+            <field name="name">Sorteo 20</field>
+            <field name="model_id">lottery.output</field>
+            <field name="domain" eval="&quot;[('sorteo_id','=', %d)]&quot; % ref('lottery_base.sorteo_quiniela_uy_20')"/>
+            <field name="user_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

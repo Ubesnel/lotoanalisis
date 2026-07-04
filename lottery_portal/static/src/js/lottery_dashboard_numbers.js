@@ -3,6 +3,7 @@
 import { Component, onWillStart, useState} from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class LotteryDashboardNumbers extends Component {
     setup() {
@@ -50,54 +51,66 @@ export class LotteryDashboardNumbers extends Component {
         });
 
         onWillStart(async () => {
-            const [
-                mainData,
-                numWeekDay,
-                numWeek,
-                centenaWeekDay,
-                centenaWeek,
-                repData,
-                pegData,
-            ] = await Promise.all([
-                jsonrpc("/estadisticas-numeros/dashboard_data", { month: this.state.month_index }),
-                jsonrpc("/estadisticas-numeros/numbers-week-day-all", {}),
-                jsonrpc("/estadisticas-numeros/numbers-week-all", {}),
-                jsonrpc("/estadisticas-numeros/centena-week-day-all", {}),
-                jsonrpc("/estadisticas-numeros/centena-week-all", {}),
-                jsonrpc("/estadisticas-numeros/top-repeticiones", {}),
-                jsonrpc("/estadisticas-numeros/top-pegados", {}),
-            ]);
-
-            this.state.kpis = mainData.kpis;
-            this.state.top_numbers = mainData.top_numbers;
-            this.state.bottom_numbers = mainData.bottom_numbers;
-            this.state.remaining_numbers = mainData.remaining_numbers;
-            this.state.loading = false;
-
-            this._numWeekDay = numWeekDay;
-            this._numWeek = numWeek;
-            this._centenaWeekDay = centenaWeekDay;
-            this._centenaWeek = centenaWeek;
-
-            const d = this.state.day;
-            this.state.top_numbers_by_week_day        = numWeekDay.top[d]              || [];
-            this.state.bottom_numbers_by_week_day     = numWeekDay.bottom[d]           || [];
-            this.state.top_centena_by_week_day        = centenaWeekDay.top_centena[d]  || [];
-            this.state.bottom_centena_by_week_day     = centenaWeekDay.bottom_centena[d] || [];
-            this.state.top_bola_extra_by_week_day     = centenaWeekDay.top_bola[d]     || [];
-            this.state.bottom_bola_extra_by_week_day  = centenaWeekDay.bottom_bola[d]  || [];
-
-            const w = this.state.week;
-            this.state.top_numbers_by_week        = numWeek.top[w]              || [];
-            this.state.bottom_numbers_by_week     = numWeek.bottom[w]           || [];
-            this.state.top_centena_by_week        = centenaWeek.top_centena[w]  || [];
-            this.state.bottom_centena_by_week     = centenaWeek.bottom_centena[w] || [];
-            this.state.top_bola_extra_by_week     = centenaWeek.top_bola[w]     || [];
-            this.state.bottom_bola_extra_by_week  = centenaWeek.bottom_bola[w]  || [];
-
-            this.state.top_repeticiones = repData.top_repeticiones;
-            this.state.top_pegados      = pegData.top_pegados;
+            await ensureSorteoLoaded();
+            await this.loadAll();
         });
+        onSorteoChange(() => this.loadAll());
+    }
+
+    async loadAll() {
+        this.state.loading = true;
+        const sorteo_id = sorteoState.sorteoId;
+        const [
+            mainData,
+            numWeekDay,
+            numWeek,
+            centenaWeekDay,
+            centenaWeek,
+            repData,
+            pegData,
+        ] = await Promise.all([
+            jsonrpc("/estadisticas-numeros/dashboard_data", { month: this.state.month_index, sorteo_id }),
+            jsonrpc("/estadisticas-numeros/numbers-week-day-all", { sorteo_id }),
+            jsonrpc("/estadisticas-numeros/numbers-week-all", { sorteo_id }),
+            jsonrpc("/estadisticas-numeros/centena-week-day-all", { sorteo_id }),
+            jsonrpc("/estadisticas-numeros/centena-week-all", { sorteo_id }),
+            jsonrpc("/estadisticas-numeros/top-repeticiones", { sorteo_id }),
+            jsonrpc("/estadisticas-numeros/top-pegados", { sorteo_id }),
+        ]);
+
+        this.state.kpis = mainData.kpis;
+        this.state.top_numbers = mainData.top_numbers;
+        this.state.bottom_numbers = mainData.bottom_numbers;
+        this.state.remaining_numbers = mainData.remaining_numbers;
+        this.state.loading = false;
+
+        this._numWeekDay = numWeekDay;
+        this._numWeek = numWeek;
+        this._centenaWeekDay = centenaWeekDay;
+        this._centenaWeek = centenaWeek;
+
+        const d = this.state.day;
+        this.state.top_numbers_by_week_day        = numWeekDay.top[d]              || [];
+        this.state.bottom_numbers_by_week_day     = numWeekDay.bottom[d]           || [];
+        this.state.top_centena_by_week_day        = centenaWeekDay.top_centena[d]  || [];
+        this.state.bottom_centena_by_week_day     = centenaWeekDay.bottom_centena[d] || [];
+        this.state.top_bola_extra_by_week_day     = centenaWeekDay.top_bola[d]     || [];
+        this.state.bottom_bola_extra_by_week_day  = centenaWeekDay.bottom_bola[d]  || [];
+
+        const w = this.state.week;
+        this.state.top_numbers_by_week        = numWeek.top[w]              || [];
+        this.state.bottom_numbers_by_week     = numWeek.bottom[w]           || [];
+        this.state.top_centena_by_week        = centenaWeek.top_centena[w]  || [];
+        this.state.bottom_centena_by_week     = centenaWeek.bottom_centena[w] || [];
+        this.state.top_bola_extra_by_week     = centenaWeek.top_bola[w]     || [];
+        this.state.bottom_bola_extra_by_week  = centenaWeek.bottom_bola[w]  || [];
+
+        this.state.top_repeticiones = repData.top_repeticiones;
+        this.state.top_pegados      = pegData.top_pegados;
+
+        if (this.state.number_id) {
+            this.buscar_por_numero();
+        }
     }
 
     onChangeDia(ev) {
@@ -203,7 +216,10 @@ export class LotteryDashboardNumbers extends Component {
     }
 
     async buscar_por_numero() {
-        const data = await jsonrpc("/estadisticas-numeros/numeros-socios", { number_id: this.state.number_id });
+        const data = await jsonrpc("/estadisticas-numeros/numeros-socios", {
+            number_id: this.state.number_id,
+            sorteo_id: sorteoState.sorteoId,
+        });
         this.state.socios_posteriores = data.salidas_numeros_despues_numero;
         this.state.socios_anteriores  = data.salidas_numeros_antes_numero;
     }

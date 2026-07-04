@@ -75,6 +75,12 @@ class LotteryScraper(models.Model):
     _description = 'Importador automático Florida Pick 3'
 
     name = fields.Char(default='Florida Pick 3', readonly=True)
+    sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True, index=True,
+                                default=lambda self: self.env.ref('lottery_base.sorteo_florida').id,
+                                help="A qué lottery.sorteo se le asignan las salidas importadas por este "
+                                     "scraper. Cada proveedor de datos (Florida, Quiniela UY, etc.) tendrá "
+                                     "su propio modelo/registro de importador, todos apuntando a su "
+                                     "sorteo correspondiente.")
 
     # ── Ventanas horarias (hora ET como decimal, ej. 14.5 = 2:30 PM) ──
     afternoon_start = fields.Float('Inicio ventana Tarde (ET)', default=14.0)
@@ -123,14 +129,16 @@ class LotteryScraper(models.Model):
         log_lines = []
 
         if scraper.afternoon_start <= hour_et <= scraper.afternoon_end:
-            if Output.search([('date', '=', today_et), ('turn_day', '=', 'afternoon')], limit=1):
+            if Output.search([('date', '=', today_et), ('turn_day', '=', 'afternoon'),
+                              ('sorteo_id', '=', scraper.sorteo_id.id)], limit=1):
                 _logger.debug('Scraper Tarde %s: ya registrada.', today_et)
                 return
             _logger.info('Scraper: ventana Tarde activa.')
             log_lines += scraper._run_for_turn('afternoon', today_et)
 
         elif scraper.evening_start <= hour_et <= scraper.evening_end:
-            if Output.search([('date', '=', today_et), ('turn_day', '=', 'evening')], limit=1):
+            if Output.search([('date', '=', today_et), ('turn_day', '=', 'evening'),
+                              ('sorteo_id', '=', scraper.sorteo_id.id)], limit=1):
                 _logger.debug('Scraper Noche %s: ya registrada.', today_et)
                 return
             _logger.info('Scraper: ventana Noche activa.')
@@ -208,7 +216,7 @@ class LotteryScraper(models.Model):
         today_et = datetime.now(tz=et_tz).date()
 
         last = self.env['lottery.output'].search(
-            [], order='date desc, id desc', limit=1)
+            [('sorteo_id', '=', self.sorteo_id.id)], order='date desc, id desc', limit=1)
 
         if not last:
             return today_et
@@ -675,7 +683,8 @@ class LotteryScraper(models.Model):
         turn_label = 'Tarde' if draw['turn'] == 'afternoon' else 'Noche'
         label = f"{draw['date']} {turn_label}"
 
-        if Output.search([('date', '=', draw['date']), ('turn_day', '=', draw['turn'])], limit=1):
+        if Output.search([('date', '=', draw['date']), ('turn_day', '=', draw['turn']),
+                          ('sorteo_id', '=', self.sorteo_id.id)], limit=1):
             return f'[OMITIDO] {label} – ya registrado'
 
         LottoNum = self.env['lottery.number']
@@ -697,6 +706,7 @@ class LotteryScraper(models.Model):
         Output.create({
             'date':        draw['date'],
             'turn_day':    draw['turn'],
+            'sorteo_id':   self.sorteo_id.id,
             'number_id':   number_rec.id,
             'hundreds_id': hundreds_rec.id,
             'fireball_id': fireball_rec.id,
@@ -790,7 +800,8 @@ class LotteryScraper(models.Model):
 
     @api.model
     def _get_singleton(self):
-        rec = self.search([], limit=1)
+        florida = self.env.ref('lottery_base.sorteo_florida')
+        rec = self.search([('sorteo_id', '=', florida.id)], limit=1)
         if not rec:
-            rec = self.create({'name': 'Florida Pick 3'})
+            rec = self.create({'name': 'Florida Pick 3', 'sorteo_id': florida.id})
         return rec

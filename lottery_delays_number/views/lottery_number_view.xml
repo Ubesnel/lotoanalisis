@@ -1,452 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="numero_kanban" model="ir.ui.view">
-        <field name="name">lottery.number.kanban</field>
+    <record id="view_lottery_number_form_inherit" model="ir.ui.view">
+        <field name="name">lottery.number.form.inherit.stat</field>
         <field name="model">lottery.number</field>
-        <field name="inherit_id" ref="lottery_base.view_lottery_number_kanban"/>
+        <field name="inherit_id" ref="lottery_base.view_lottery_number_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//kanban" position="inside">
-                <field name="total_salidas"/>
-                <field name="total_salidas_dia"/>
-                <field name="total_salidas_noche"/>
-                <field name="cant_salidas_enero"/>
-                <field name="cant_salidas_febrero"/>
-                <field name="cant_salidas_marzo"/>
-                <field name="cant_salidas_abril"/>
-                <field name="cant_salidas_mayo"/>
-                <field name="cant_salidas_junio"/>
-                <field name="cant_salidas_julio"/>
-                <field name="cant_salidas_agosto"/>
-                <field name="cant_salidas_septiembre"/>
-                <field name="cant_salidas_octubre"/>
-                <field name="cant_salidas_noviembre"/>
-                <field name="cant_salidas_diciembre"/>
-                <field name="total_lunes"/>
-                <field name="total_martes"/>
-                <field name="total_miercoles"/>
-                <field name="total_jueves"/>
-                <field name="total_viernes"/>
-                <field name="total_sabado"/>
-                <field name="total_domingo"/>
-                <field name="total_atrasadas_dia"/>
-                <field name="total_atrasadas_noche"/>
-                <field name="salidas_atrasadas_lunes"/>
-                <field name="salidas_atrasadas_martes"/>
-                <field name="salidas_atrasadas_miercoles"/>
-                <field name="salidas_atrasadas_jueves"/>
-                <field name="salidas_atrasadas_viernes"/>
-                <field name="salidas_atrasadas_sabado"/>
-                <field name="salidas_atrasadas_domingo"/>
-            </xpath>
-
-            <xpath expr="//t[@t-name='kanban-box']/div" position="inside">
-                <div class="mt-4">
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <span class="badge bg-primary text-white fs-5 px-3 py-2 w-100">
-                                    Salidas
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:black;font-weight:bold'>Totales</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:black;font-weight:bold'>
-                                    <field name="total_salidas"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:orange;font-weight:bold'>Tarde</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:orange;font-weight:bold'>
-                                    <field name="total_salidas_dia"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Noche</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="total_salidas_noche"/>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="mb-2">
-                                <span class="badge bg-primary text-white fs-5 px-3 py-2 w-100">
-                                    Atrasos
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:black;font-weight:bold'>General</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:black;font-weight:bold'>
-                                    <field name="total_atrasadas"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:orange;font-weight:bold'>Tarde</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:orange;font-weight:bold'>
-                                    <field name="total_atrasadas_dia"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span style='color:green;font-weight:bold'>Noche</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="total_atrasadas_noche"/>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="text-center mb-2">
-                                <span class="badge text-white fs-5 px-3 py-2 w-100"
-                                      style="color:white;background-color:grey;">
-                                    Atrasos por día de la semana
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between text-center">
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Lun</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_lunes"/>
-                                    </span>
-                                </div>
-
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Mar</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_martes"/>
-                                    </span>
-                                </div>
-
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Mié</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_miercoles"/>
-                                    </span>
-                                </div>
-
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Jue</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_jueves"/>
-                                    </span>
-                                </div>
-
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Vie</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_viernes"/>
-                                    </span>
-                                </div>
-
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Sáb</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_sabado"/>
-                                    </span>
-                                </div>
-
-                                <div class="flex-fill">
-                                    <div class="small fw-bold" style="color:grey;font-weight:bold">Dom</div>
-                                    <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                          style="width:35px; height:35px;color:white;font-weight:bold;background-color:grey;">
-                                        <field name="salidas_atrasadas_domingo"/>
-                                    </span>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <div class="row">
-                        <div class="mb-2">
-                            <span class="badge bg-success text-white fs-5 px-3 py-2 w-100">
-                                Cantidad de salidas por mes
-                            </span>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Enero</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_enero"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Febrero</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_febrero"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Marzo</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_marzo"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Abril</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_abril"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Mayo</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_mayo"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span style='color:green;font-weight:bold'>Junio</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_junio"/>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Julio</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle"
-                                      style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_julio"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Agosto</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_agosto"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Septiembre</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_septiembre"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Octubre</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_octubre"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between mb-1">
-                                <span style='color:green;font-weight:bold'>Noviembre</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_noviembre"/>
-                                </span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span style='color:green;font-weight:bold'>Diciembre</span>
-                                <span class="badge d-inline-flex align-items-center justify-content-center
-             rounded-circle" style='color:white;background-color:green;font-weight:bold'>
-                                    <field name="cant_salidas_diciembre"/>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <div class="text-center mb-2">
-                        <span class="badge text-white fs-5 px-3 py-2 w-100"
-                              style="color:white;background-color:#AF16C6;">
-                            Salidas por día de la semana
-                        </span>
-                    </div>
-                    <div class="d-flex justify-content-between text-center">
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Lun</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_lunes"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Mar</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_martes"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Mié</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_miercoles"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Jue</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_jueves"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Vie</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_viernes"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Sáb</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_sabado"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold" style="color:#AF16C6;font-weight:bold">Dom</div>
-                            <span class="badge rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold;background-color:#AF16C6;">
-                                <field name="total_domingo"/>
-                            </span>
-                        </div>
-
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <div class="text-center mb-2">
-                        <span class="badge bg-info text-white fs-5 px-3 py-2 w-100">
-                            Salidas por semana
-                        </span>
-                    </div>
-                    <div class="d-flex justify-content-between text-center">
-                        <div class="flex-fill">
-                            <div class="small fw-bold text-info" style="color:black;font-weight:bold">1 al 7</div>
-                            <span class="badge bg-info rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold">
-                                <field name="total_semana_1"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold text-info" style="color:black;font-weight:bold">8 al 14</div>
-                            <span class="badge bg-info rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold">
-                                <field name="total_semana_2"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold text-info" style="color:black;font-weight:bold">15 al 21</div>
-                            <span class="badge bg-info rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold">
-                                <field name="total_semana_3"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold text-info" style="font-weight:bold">22 al 28</div>
-                            <span class="badge bg-info rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold">
-                                <field name="total_semana_4"/>
-                            </span>
-                        </div>
-
-                        <div class="flex-fill">
-                            <div class="small fw-bold text-info" style="color:black;font-weight:bold">Últimos días</div>
-                            <span class="badge bg-info rounded-circle
-                         d-inline-flex align-items-center justify-content-center"
-                                  style="width:35px; height:35px;color:white;font-weight:bold">
-                                <field name="total_semana_5"/>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </xpath>
+            <sheet position="inside">
+                <notebook>
+                    <page string="Estadísticas por sorteo">
+                        <field name="stat_ids">
+                            <tree create="0" edit="0" delete="0" default_order="sorteo_id">
+                                <field name="sorteo_id" optional="show"/>
+                                <field name="total_salidas"/>
+                                <field name="total_salidas_dia"/>
+                                <field name="total_salidas_noche"/>
+                                <field name="total_atrasadas"/>
+                                <field name="total_atrasadas_dia"/>
+                                <field name="total_atrasadas_noche"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </sheet>
         </field>
     </record>
 
-    <record id="view_lottery_number_tree" model="ir.ui.view">
-        <field name="name">view.lottery.number.tree</field>
-        <field name="model">lottery.number</field>
-        <field name="inherit_id" ref="lottery_base.view_lottery_number_tree"/>
+    <record id="view_lottery_number_stat_tree" model="ir.ui.view">
+        <field name="name">view.lottery.number.stat.tree</field>
+        <field name="model">lottery.number.stat</field>
         <field name="arch" type="xml">
-            <field name="can_use_hundreds" position="before">
-                <field name="total_atrasadas" optional="show"/>
-                <field name="total_atrasadas_dia" optional="show"/>
-                <field name="total_atrasadas_noche" optional="show"/>
-                <field name="salidas_atrasadas_lunes" optional="show"/>
-                <field name="salidas_atrasadas_martes" optional="show"/>
-                <field name="salidas_atrasadas_miercoles" optional="show"/>
-                <field name="salidas_atrasadas_jueves" optional="show"/>
-                <field name="salidas_atrasadas_viernes" optional="show"/>
-                <field name="salidas_atrasadas_sabado" optional="show"/>
-                <field name="salidas_atrasadas_domingo" optional="show"/>
-                <field name="total_salidas" optional="hide" string="TS"/>
-                <field name="total_salidas_dia" optional="hide" string="TSD"/>
-                <field name="total_salidas_noche" optional="hide" string="TSN"/>
-                <field name="cant_salidas_enero" optional="hide" string="S. Ene"/>
-                <field name="cant_salidas_febrero" optional="hide" string="S. Feb"/>
-                <field name="cant_salidas_marzo" optional="hide" string="S. Mar"/>
-                <field name="cant_salidas_abril" optional="hide" string="S. Abr"/>
-                <field name="cant_salidas_mayo" optional="hide" string="S. May"/>
-                <field name="cant_salidas_junio" optional="hide" string="S. Jun"/>
-                <field name="cant_salidas_julio" optional="hide" string="S. Jul"/>
-                <field name="cant_salidas_agosto" optional="hide" string="S. Ago"/>
-                <field name="cant_salidas_septiembre" optional="hide" string="S. Sep"/>
-                <field name="cant_salidas_octubre" optional="hide" string="S. Oct"/>
-                <field name="cant_salidas_noviembre" optional="hide" string="S. Nov"/>
-                <field name="cant_salidas_diciembre" optional="hide" string="S. Dic"/>
-                <field name="total_lunes" optional="hide" string="S. Lun"/>
-                <field name="total_martes" optional="hide" string="S. Mar"/>
-                <field name="total_miercoles" optional="hide" string="S. Mie"/>
-                <field name="total_jueves" optional="hide" string="S. Jue"/>
-                <field name="total_viernes" optional="hide" string="S. Vie"/>
-                <field name="total_sabado" optional="hide" string="S. Sab"/>
-                <field name="total_domingo" optional="hide" string="S. Dom"/>
-                <field name="total_semana_1" optional="hide" string="S. 1 al 7"/>
-                <field name="total_semana_2" optional="hide" string="S. 8 al 14"/>
-                <field name="total_semana_3" optional="hide" string="S. 15 al 21"/>
-                <field name="total_semana_4" optional="hide" string="S. 22 al 28"/>
-                <field name="total_semana_5" optional="hide" string="S. 29-30-31"/>
-            </field>
+            <tree string="Estadísticas por sorteo" create="0" edit="0" delete="0" default_order="sorteo_id, number_name">
+                <field name="sorteo_id" optional="show"/>
+                <field name="number_name"/>
+                <field name="total_salidas" optional="hide"/>
+                <field name="total_salidas_dia" optional="hide"/>
+                <field name="total_salidas_noche" optional="hide"/>
+                <field name="total_atrasadas"/>
+                <field name="total_atrasadas_dia"/>
+                <field name="total_atrasadas_noche"/>
+                <field name="salidas_atrasadas_lunes" optional="hide"/>
+                <field name="salidas_atrasadas_martes" optional="hide"/>
+                <field name="salidas_atrasadas_miercoles" optional="hide"/>
+                <field name="salidas_atrasadas_jueves" optional="hide"/>
+                <field name="salidas_atrasadas_viernes" optional="hide"/>
+                <field name="salidas_atrasadas_sabado" optional="hide"/>
+                <field name="salidas_atrasadas_domingo" optional="hide"/>
+                <field name="cant_salidas_enero" optional="hide"/>
+                <field name="cant_salidas_febrero" optional="hide"/>
+                <field name="cant_salidas_marzo" optional="hide"/>
+                <field name="cant_salidas_abril" optional="hide"/>
+                <field name="cant_salidas_mayo" optional="hide"/>
+                <field name="cant_salidas_junio" optional="hide"/>
+                <field name="cant_salidas_julio" optional="hide"/>
+                <field name="cant_salidas_agosto" optional="hide"/>
+                <field name="cant_salidas_septiembre" optional="hide"/>
+                <field name="cant_salidas_octubre" optional="hide"/>
+                <field name="cant_salidas_noviembre" optional="hide"/>
+                <field name="cant_salidas_diciembre" optional="hide"/>
+                <field name="total_semana_1" optional="hide"/>
+                <field name="total_semana_2" optional="hide"/>
+                <field name="total_semana_3" optional="hide"/>
+                <field name="total_semana_4" optional="hide"/>
+                <field name="total_semana_5" optional="hide"/>
+            </tree>
         </field>
+    </record>
+
+    <record id="view_lottery_number_stat_search" model="ir.ui.view">
+        <field name="name">lottery.number.stat.search</field>
+        <field name="model">lottery.number.stat</field>
+        <field name="arch" type="xml">
+            <search string="Estadísticas de números">
+                <field name="number_id"/>
+                <field name="number_name"/>
+                <field name="sorteo_id"/>
+                <filter string="Con salidas" name="con_salidas" domain="[('total_salidas', '&gt;', 0)]"/>
+                <filter string="Sin salidas (nunca salió)" name="sin_salidas" domain="[('total_salidas', '=', 0)]"/>
+                <separator/>
+                <filter string="Florida" name="filter_sorteo_florida" domain="[('sorteo_id.code', '=', 'florida')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Sorteo" name="group_sorteo_id" domain="[]" context="{'group_by': 'sorteo_id'}"/>
+                    <filter string="Número" name="group_number" domain="[]" context="{'group_by': 'number_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lottery_number_stat" model="ir.actions.act_window">
+        <field name="name">Atrasos de números</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.number.stat</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_filter_sorteo_florida': 1}</field>
+        <field name="search_view_id" ref="view_lottery_number_stat_search"/>
     </record>
 </odoo>

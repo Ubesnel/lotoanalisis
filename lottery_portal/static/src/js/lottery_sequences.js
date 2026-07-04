@@ -3,6 +3,7 @@
 import { Component, useState, onWillStart } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 export class LotteryGroupSequences extends Component {
     setup() {
@@ -13,10 +14,16 @@ export class LotteryGroupSequences extends Component {
         });
 
         onWillStart(async () => {
-            const data = await jsonrpc("/lottery/group-sequences", {});
-            this._cache = data || this._cache;
-            this.state.data = this._cache;
+            await ensureSorteoLoaded();
+            await this.loadData();
         });
+        onSorteoChange(() => this.loadData());
+    }
+
+    async loadData() {
+        const data = await jsonrpc("/lottery/group-sequences", { sorteo_id: sorteoState.sorteoId });
+        this._cache = data || this._cache;
+        this.state.data = this._cache;
     }
 
     get lineRows()     { return this.state.data.line     || []; }

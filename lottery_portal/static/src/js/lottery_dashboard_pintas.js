@@ -3,6 +3,7 @@
 import { Component, onWillStart, onMounted, onPatched, useState, useRef} from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { jsonrpc } from "@web/core/network/rpc_service";
+import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 
 export class LotteryDashboardPintas extends Component {
@@ -62,9 +63,22 @@ export class LotteryDashboardPintas extends Component {
         });
 
         onWillStart(async () => {
+            await ensureSorteoLoaded();
             await this.loadTop6GroupsData();
             await this.getMonthText();
 
+        });
+        onSorteoChange(() => {
+            this.state.select_group_id = null;
+            this.state.grupo_text = '';
+            this.state.data_general = null;
+            this.state.select_group_tarde_id = null;
+            this.state.grupo_text_tarde = '';
+            this.state.data_tarde = null;
+            this.state.select_group_noche_id = null;
+            this.state.grupo_text_noche = '';
+            this.state.data_noche = null;
+            this.loadTop6GroupsData();
         });
 
         onMounted(() => {
@@ -78,7 +92,8 @@ export class LotteryDashboardPintas extends Component {
         const data = await jsonrpc("/estadisticas-pintas/dashboard_data", {
             day: this.state.day_index,
             week: this.state.week_index,
-            month: this.state.month_index
+            month: this.state.month_index,
+            sorteo_id: sorteoState.sorteoId,
         });
         this.state.top_6_groups_info = data.get_top_3_pintas;
         this.state.top_6_groups_info_tarde = data.get_top_3_pintas_tarde;
@@ -91,6 +106,7 @@ export class LotteryDashboardPintas extends Component {
     async loadDataGeneralChart(select_group_id) {
         const result = await jsonrpc("/lottery/get_data_chart_general_pinta", {
             group_id: select_group_id,
+            sorteo_id: sorteoState.sorteoId,
         });
         this._pendingCharts.general = true;
         this.state.data_general = result;
@@ -99,6 +115,7 @@ export class LotteryDashboardPintas extends Component {
     async loadDataGeneralChartTarde(select_group_tarde_id) {
         const result = await jsonrpc("/lottery/get_data_chart_tarde_pinta", {
             group_id: select_group_tarde_id,
+            sorteo_id: sorteoState.sorteoId,
         });
         this._pendingCharts.tarde = true;
         this.state.data_tarde = result;
@@ -107,6 +124,7 @@ export class LotteryDashboardPintas extends Component {
     async loadDataGeneralChartNoche(select_group_noche_id) {
         const result = await jsonrpc("/lottery/get_data_chart_noche_pinta", {
             group_id: select_group_noche_id,
+            sorteo_id: sorteoState.sorteoId,
         });
         this._pendingCharts.noche = true;
         this.state.data_noche = result;
@@ -249,7 +267,8 @@ export class LotteryDashboardPintas extends Component {
         const result = await jsonrpc('/lottery/get_group_numbers', {
             group_id: groupId,
             orden: groupOrden,
-            day: this.state.day_index
+            day: this.state.day_index,
+            sorteo_id: sorteoState.sorteoId,
         });
         this.state.groupNumbers[key] = result;
     }

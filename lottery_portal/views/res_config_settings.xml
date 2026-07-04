@@ -14,6 +14,36 @@
                             <field name="portal_calendar_month"/>
                         </setting>
                     </block>
+                    <block title="Redes sociales · Página pública" id="lottery_social_settings">
+                        <setting string="Grupo de Facebook"
+                                 help="URL del grupo de Facebook que aparece en el card publicitario de la página pública de búsqueda.">
+                            <field name="facebook_group_url" placeholder="https://www.facebook.com/groups/..."/>
+                        </setting>
+                        <setting string="Página de Facebook"
+                                 help="URL de la página de Facebook (@LotoAnalisis) que aparece en el card publicitario.">
+                            <field name="facebook_page_url" placeholder="https://www.facebook.com/LotoAnalisis"/>
+                        </setting>
+                    </block>
+                    <block title="Estado de las estadísticas" id="lottery_stats_status_settings">
+                        <setting string="Estado de las estadísticas"
+                                 help="Las vistas de atrasos/tops se refrescan en segundo plano (cron cada 1 minuto) cuando se registran o editan salidas.">
+                            <field name="lottery_stats_up_to_date" invisible="1"/>
+                            <field name="lottery_stats_last_refresh" invisible="1"/>
+                            <div class="content-group mt8">
+                                <div invisible="not lottery_stats_up_to_date">
+                                    <span class="badge text-bg-success">✓ Actualizadas</span>
+                                </div>
+                                <div invisible="lottery_stats_up_to_date">
+                                    <span class="badge text-bg-warning">⏳ Pendiente de refresco</span>
+                                </div>
+                                <div class="text-muted mt4">
+                                    Último refresh: <field name="lottery_stats_last_refresh" readonly="1" nolabel="1" class="oe_inline"/>
+                                </div>
+                                <button name="action_force_refresh_materialized_views" type="object"
+                                        string="Refrescar ahora" class="btn-secondary mt8" icon="fa-refresh"/>
+                            </div>
+                        </setting>
+                    </block>
                 </app>
             </xpath>
         </field>
