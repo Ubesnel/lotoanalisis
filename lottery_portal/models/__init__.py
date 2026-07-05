@@ -1,4 +1,5 @@
 from . import ir_http
+from . import page_visit
 from . import stats_service
 from . import res_company
 from . import res_config_settings

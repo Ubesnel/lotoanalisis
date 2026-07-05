@@ -15,6 +15,7 @@ export class NumerosCalientes extends Component {
             showHot:       true,
             showCold:      true,
             showRemaining: true,
+            imgView: "",   // "hot" | "cold" | "remaining" | ""
         });
 
         this.TURN_LABELS = { afternoon: "☀ Tarde", evening: "🌙 Noche" };
@@ -66,6 +67,32 @@ export class NumerosCalientes extends Component {
     toggleHot()       { this.state.showHot       = !this.state.showHot;       }
     toggleCold()      { this.state.showCold      = !this.state.showCold;      }
     toggleRemaining() { this.state.showRemaining = !this.state.showRemaining; }
+
+    // ── Vista de imágenes ──
+    get selectedImgNumbers() {
+        if (this.state.imgView === "hot")       return this.numbers;
+        if (this.state.imgView === "cold")      return this.numbersCold;
+        if (this.state.imgView === "remaining") return this.numbersRemaining;
+        return [];
+    }
+
+    get imageLines() {
+        const grouped = {};
+        for (const num of this.selectedImgNumbers) {
+            const line = Math.floor(Number(num.name) / 10);
+            if (!grouped[line]) grouped[line] = [];
+            grouped[line].push(num);
+        }
+        return Object.keys(grouped)
+            .sort((a, b) => Number(a) - Number(b))
+            .map(line => ({
+                line: Number(line),
+                label: `Línea ${line} (${String(Number(line) * 10).padStart(2, '0')} al ${String(Number(line) * 10 + 9).padStart(2, '0')})`,
+                numbers: grouped[line].sort((a, b) => Number(a.name) - Number(b.name)),
+            }));
+    }
+
+    setImgView(ev) { this.state.imgView = ev.target.value; }
 }
 
 NumerosCalientes.template = "lottery_portal.NumerosCalientes";

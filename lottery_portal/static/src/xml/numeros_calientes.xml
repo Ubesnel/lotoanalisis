@@ -21,6 +21,45 @@
                 <span class="badge text-bg-light nc-turn-badge"><t t-esc="turnLabel"/></span>
             </div>
 
+            <!-- Selector de vista por imagen -->
+            <div class="row mb-3">
+                <div class="col-12 col-md-5 col-lg-4">
+                    <select class="form-select form-select-sm nc-imgview-select" t-on-change="setImgView">
+                        <option value="">&#128248; Ver por imagen…</option>
+                        <option value="hot">&#128293; Números Calientes</option>
+                        <option value="cold">&#10052; Números Fríos</option>
+                        <option value="remaining">&#11093; Números Restantes</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Vista de imágenes por línea (col-12) -->
+            <t t-if="state.imgView">
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card nc-imgview-card p-3 mb-2">
+                        <div class="nc-imgview-wrap">
+                            <t t-foreach="imageLines" t-as="grp" t-key="grp.line">
+                                <div class="nc-imgview-col">
+                                    <div class="nc-imgview-col-header">
+                                        <t t-esc="grp.label"/>
+                                    </div>
+                                    <t t-foreach="grp.numbers" t-as="num" t-key="num.name">
+                                        <div class="nc-imgview-cell">
+                                            <img t-att-src="'/lottery_portal/static/src/img/numeros/' + num.name + '.png'"
+                                                 t-att-alt="num.name"
+                                                 class="nc-imgview-num"
+                                                 t-att-title="'#' + num.rank + ' · ' + num.name"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
             <!-- 3 columnas: Calientes · Restantes · Fríos -->
             <div class="row g-3">
 

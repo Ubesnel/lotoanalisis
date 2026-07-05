@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+<t t-name="lottery_portal.GruposPorDia" owl="1">
+
+    <!-- Hero -->
+    <section class="hero-analitico-dashboard">
+        <div class="hero-content">
+            <h3 class="hero-title-dashboard">
+                Grupos por Día · <t t-esc="state.dayName"/>
+            </h3>
+            <p class="hero-subfrase">
+                <i>Los 2 grupos, líneas y terminales más atrasados los
+                <t t-esc="state.dayName"/>s — con los números que los forman</i>
+            </p>
+        </div>
+    </section>
+
+    <div class="container mt-3 mb-4">
+
+        <!-- Loading -->
+        <t t-if="state.loading">
+            <div class="text-center py-5">
+                <i class="fa fa-spinner fa-spin fa-2x" style="color:#8c6ca8;"/>
+                <div class="mt-2" style="color:#8c6ca8;font-weight:600;">Calculando…</div>
+            </div>
+        </t>
+
+        <t t-else="">
+
+            <!-- ══════════════════════════════════════════
+                 SECCIÓN 1 — Grupos más atrasados
+            ══════════════════════════════════════════ -->
+            <div class="group-section-header group-section-header--general mb-3">
+                <i class="fa fa-th me-2"/>
+                2 Grupos más Atrasados los <t t-esc="state.dayName"/>s
+            </div>
+
+            <div class="row g-3 mb-4">
+                <t t-foreach="state.groups" t-as="grp" t-key="grp.id">
+                    <t t-set="gkey" t-value="'g_' + grp.id"/>
+                    <div class="col-12 col-md-6">
+                        <div class="grupo-card h-100">
+
+                            <!-- Header -->
+                            <div class="grupo-card-title gpd-header">
+                                <t t-esc="grp.name"/>
+                            </div>
+
+                            <div class="grupo-card-body">
+
+                                <!-- Stats -->
+                                <div class="grupo-stats-row">
+                                    <div class="grupo-stat">
+                                        <span class="grupo-stat-label" style="color:#8c6ca8;">Gral</span>
+                                        <span class="badge-groups-general"><t t-esc="grp.salidas_atrasadas"/></span>
+                                    </div>
+                                    <div class="grupo-stat">
+                                        <span class="grupo-stat-label" style="color:#d97706;">Tarde</span>
+                                        <span class="badge-groups-tarde"><t t-esc="grp.salidas_atrasadas_dia"/></span>
+                                    </div>
+                                    <div class="grupo-stat">
+                                        <span class="grupo-stat-label" style="color:#2d5a8e;">Noche</span>
+                                        <span class="badge-groups-noche"><t t-esc="grp.salidas_atrasadas_noche"/></span>
+                                    </div>
+                                    <div class="grupo-stat">
+                                        <span class="grupo-stat-label" style="color:#16a34a;"><t t-esc="state.dayName"/></span>
+                                        <span class="badge-groups-por-dia"><t t-esc="grp.salidas_atrasadas_por_dia"/></span>
+                                    </div>
+                                </div>
+
+                                <!-- Último / Más atrasado por día -->
+                                <div class="gpd-day-row mt-2">
+                                    <div class="gpd-day-item">
+                                        <div class="acomp-section-label mb-1">
+                                            Último que salió un <t t-esc="state.dayName"/>
+                                        </div>
+                                        <t t-if="grp.last_on_day">
+                                            <img t-att-src="imgUrl(grp.last_on_day)"
+                                                 t-att-alt="grp.last_on_day"
+                                                 class="gpd-num-img"/>
+                                        </t>
+                                        <span t-else="" class="text-muted small">—</span>
+                                    </div>
+                                    <div class="gpd-day-item">
+                                        <div class="acomp-section-label mb-1">
+                                            Más tiempo sin salir un <t t-esc="state.dayName"/>
+                                        </div>
+                                        <t t-if="grp.most_delayed_on_day">
+                                            <img t-att-src="imgUrl(grp.most_delayed_on_day)"
+                                                 t-att-alt="grp.most_delayed_on_day"
+                                                 class="gpd-num-img"/>
+                                        </t>
+                                        <span t-else="" class="text-muted small">—</span>
+                                    </div>
+                                </div>
+
+                                <!-- Toggle números -->
+                                <div class="d-flex justify-content-center mt-2 mb-2">
+                                    <button class="btn btn-sm fw-bold gpd-btn-std"
+                                            t-on-click="() => this.toggleNums(gkey)">
+                                        <t t-if="!state.openNums[gkey]">
+                                            <i class="fa fa-eye me-1"/>Ver números
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-eye-slash me-1"/>Ocultar
+                                        </t>
+                                    </button>
+                                </div>
+
+                                <!-- Grid de imágenes -->
+                                <t t-if="state.openNums[gkey]">
+                                    <div class="gpd-num-grid">
+                                        <t t-foreach="grp.numbers || []" t-as="num" t-key="num">
+                                            <img t-att-src="imgUrl(num)"
+                                                 t-att-alt="num"
+                                                 class="gpd-num-img-sm"
+                                                 t-att-title="num"/>
+                                        </t>
+                                    </div>
+                                </t>
+
+                            </div><!-- /card-body -->
+                        </div><!-- /grupo-card -->
+                    </div>
+                </t>
+            </div><!-- /row grupos -->
+
+            <!-- ══════════════════════════════════════════
+                 SECCIÓN 2 — Líneas más atrasadas
+            ══════════════════════════════════════════ -->
+            <div class="group-section-header group-section-header--tarde mb-3">
+                <i class="fa fa-bars me-2"/>
+                2 Líneas más Atrasadas los <t t-esc="state.dayName"/>s
+            </div>
+
+            <div class="row g-3 mb-4">
+                <t t-foreach="state.lines" t-as="lin" t-key="lin.line_num">
+                    <t t-set="lkey" t-value="'l_' + lin.line_num"/>
+                    <div class="col-12 col-md-6">
+                        <div class="grupo-card h-100">
+
+                            <div class="grupo-card-title gpd-header">
+                                <t t-esc="lin.name"/>
+                                <span class="ms-2 fw-normal" style="font-size:0.8rem;">
+                                    (<t t-esc="lin.range"/>)
+                                </span>
+                            </div>
+
+                            <div class="grupo-card-body">
+
+                                <div class="grupo-stats-row">
+                                    <div class="grupo-stat">
+                                        <span class="grupo-stat-label" style="color:#16a34a;"><t t-esc="state.dayName"/></span>
+                                        <span class="badge-groups-por-dia"><t t-esc="lin.salidas_atrasadas_por_dia"/></span>
+                                    </div>
+                                </div>
+
+                                <div class="gpd-day-row mt-2">
+                                    <div class="gpd-day-item">
+                                        <div class="acomp-section-label mb-1">
+                                            Último que salió un <t t-esc="state.dayName"/>
+                                        </div>
+                                        <t t-if="lin.last_on_day">
+                                            <img t-att-src="imgUrl(lin.last_on_day)"
+                                                 t-att-alt="lin.last_on_day"
+                                                 class="gpd-num-img"/>
+                                        </t>
+                                        <span t-else="" class="text-muted small">—</span>
+                                    </div>
+                                    <div class="gpd-day-item">
+                                        <div class="acomp-section-label mb-1">
+                                            Más tiempo sin salir un <t t-esc="state.dayName"/>
+                                        </div>
+                                        <t t-if="lin.most_delayed_on_day">
+                                            <img t-att-src="imgUrl(lin.most_delayed_on_day)"
+                                                 t-att-alt="lin.most_delayed_on_day"
+                                                 class="gpd-num-img"/>
+                                        </t>
+                                        <span t-else="" class="text-muted small">—</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-center mt-2 mb-2">
+                                    <button class="btn btn-sm fw-bold gpd-btn-std"
+                                            t-on-click="() => this.toggleNums(lkey)">
+                                        <t t-if="!state.openNums[lkey]">
+                                            <i class="fa fa-eye me-1"/>Ver números
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-eye-slash me-1"/>Ocultar
+                                        </t>
+                                    </button>
+                                </div>
+
+                                <t t-if="state.openNums[lkey]">
+                                    <div class="gpd-num-grid">
+                                        <t t-foreach="lin.numbers || []" t-as="num" t-key="num">
+                                            <img t-att-src="imgUrl(num)"
+                                                 t-att-alt="num"
+                                                 class="gpd-num-img-sm"
+                                                 t-att-title="num"/>
+                                        </t>
+                                    </div>
+                                </t>
+
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div><!-- /row líneas -->
+
+            <!-- ══════════════════════════════════════════
+                 SECCIÓN 3 — Terminales más atrasados
+            ══════════════════════════════════════════ -->
+            <div class="group-section-header group-section-header--noche mb-3">
+                <i class="fa fa-hashtag me-2"/>
+                2 Terminales más Atrasados los <t t-esc="state.dayName"/>s
+            </div>
+
+            <div class="row g-3 mb-4">
+                <t t-foreach="state.terminals" t-as="ter" t-key="ter.terminal_num">
+                    <t t-set="tkey" t-value="'t_' + ter.terminal_num"/>
+                    <div class="col-12 col-md-6">
+                        <div class="grupo-card h-100">
+
+                            <div class="grupo-card-title gpd-header">
+                                <t t-esc="ter.name"/>
+                            </div>
+
+                            <div class="grupo-card-body">
+
+                                <div class="grupo-stats-row">
+                                    <div class="grupo-stat">
+                                        <span class="grupo-stat-label" style="color:#16a34a;"><t t-esc="state.dayName"/></span>
+                                        <span class="badge-groups-por-dia"><t t-esc="ter.salidas_atrasadas_por_dia"/></span>
+                                    </div>
+                                </div>
+
+                                <div class="gpd-day-row mt-2">
+                                    <div class="gpd-day-item">
+                                        <div class="acomp-section-label mb-1">
+                                            Último que salió un <t t-esc="state.dayName"/>
+                                        </div>
+                                        <t t-if="ter.last_on_day">
+                                            <img t-att-src="imgUrl(ter.last_on_day)"
+                                                 t-att-alt="ter.last_on_day"
+                                                 class="gpd-num-img"/>
+                                        </t>
+                                        <span t-else="" class="text-muted small">—</span>
+                                    </div>
+                                    <div class="gpd-day-item">
+                                        <div class="acomp-section-label mb-1">
+                                            Más tiempo sin salir un <t t-esc="state.dayName"/>
+                                        </div>
+                                        <t t-if="ter.most_delayed_on_day">
+                                            <img t-att-src="imgUrl(ter.most_delayed_on_day)"
+                                                 t-att-alt="ter.most_delayed_on_day"
+                                                 class="gpd-num-img"/>
+                                        </t>
+                                        <span t-else="" class="text-muted small">—</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-center mt-2 mb-2">
+                                    <button class="btn btn-sm fw-bold gpd-btn-std"
+                                            t-on-click="() => this.toggleNums(tkey)">
+                                        <t t-if="!state.openNums[tkey]">
+                                            <i class="fa fa-eye me-1"/>Ver números
+                                        </t>
+                                        <t t-else="">
+                                            <i class="fa fa-eye-slash me-1"/>Ocultar
+                                        </t>
+                                    </button>
+                                </div>
+
+                                <t t-if="state.openNums[tkey]">
+                                    <div class="gpd-num-grid">
+                                        <t t-foreach="ter.numbers || []" t-as="num" t-key="num">
+                                            <img t-att-src="imgUrl(num)"
+                                                 t-att-alt="num"
+                                                 class="gpd-num-img-sm"
+                                                 t-att-title="num"/>
+                                        </t>
+                                    </div>
+                                </t>
+
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div><!-- /row terminales -->
+
+            <!-- ══════════════════════════════════════════
+                 SECCIÓN 4 — Más probables para el próximo sorteo
+            ══════════════════════════════════════════ -->
+            <div class="group-section-header group-section-header--general mb-3">
+                <i class="fa fa-magic me-2"/>
+                Más Probables para el Próximo Sorteo
+                <t t-if="state.prob">
+                    · <t t-esc="state.prob.next_turn_label"/> del <t t-esc="state.prob.next_date"/>
+                </t>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                <button class="btn btn-sm fw-bold gpd-btn-std"
+                        t-on-click="consultarProbLineas">
+                    <i class="fa fa-bars me-1"/>
+                    <t t-if="!state.showProbLineas">Consultar Líneas</t>
+                    <t t-else="">Ocultar Líneas</t>
+                </button>
+                <button class="btn btn-sm fw-bold gpd-btn-std"
+                        t-on-click="consultarProbTerminales">
+                    <i class="fa fa-hashtag me-1"/>
+                    <t t-if="!state.showProbTerminales">Consultar Terminales</t>
+                    <t t-else="">Ocultar Terminales</t>
+                </button>
+            </div>
+
+            <t t-if="state.probLoading">
+                <div class="text-center py-3">
+                    <i class="fa fa-spinner fa-spin fa-2x" style="color:#8c6ca8;"/>
+                    <div class="mt-2" style="color:#8c6ca8;font-weight:600;">Calculando…</div>
+                </div>
+            </t>
+
+            <t t-if="state.prob and (state.showProbLineas or state.showProbTerminales)">
+                <div class="row g-3 mb-4">
+
+                    <!-- Tablita: 3 líneas más probables -->
+                    <t t-if="state.showProbLineas">
+                        <div class="col-12 col-md-6">
+                            <div class="grupo-card h-100">
+                                <div class="grupo-card-title gpd-header">
+                                    3 Líneas más Probables
+                                </div>
+                                <div class="grupo-card-body">
+                                    <t t-if="!state.prob.lineas.length">
+                                        <div class="text-muted small text-center py-2">Sin datos</div>
+                                    </t>
+                                    <t t-foreach="state.prob.lineas" t-as="lin" t-key="lin.idx">
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="fw-bold">
+                                                    <t t-esc="lin.name"/>
+                                                    <span class="fw-normal ms-1" style="font-size:0.8rem;">
+                                                        (<t t-esc="lin.range"/>)
+                                                    </span>
+                                                </span>
+                                                <span class="gpd-prob-score">
+                                                    <t t-esc="lin.score"/> pts
+                                                </span>
+                                            </div>
+                                            <div class="gpd-num-grid">
+                                                <t t-foreach="lin.numbers" t-as="num" t-key="num">
+                                                    <img t-att-src="imgUrl(num)"
+                                                         t-att-alt="num"
+                                                         class="gpd-num-img-sm"
+                                                         t-att-title="num"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Tablita: 3 terminales más probables -->
+                    <t t-if="state.showProbTerminales">
+                        <div class="col-12 col-md-6">
+                            <div class="grupo-card h-100">
+                                <div class="grupo-card-title gpd-header">
+                                    3 Terminales más Probables
+                                </div>
+                                <div class="grupo-card-body">
+                                    <t t-if="!state.prob.terminales.length">
+                                        <div class="text-muted small text-center py-2">Sin datos</div>
+                                    </t>
+                                    <t t-foreach="state.prob.terminales" t-as="ter" t-key="ter.idx">
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="fw-bold"><t t-esc="ter.name"/></span>
+                                                <span class="gpd-prob-score">
+                                                    <t t-esc="ter.score"/> pts
+                                                </span>
+                                            </div>
+                                            <div class="gpd-num-grid">
+                                                <t t-foreach="ter.numbers" t-as="num" t-key="num">
+                                                    <img t-att-src="imgUrl(num)"
+                                                         t-att-alt="num"
+                                                         class="gpd-num-img-sm"
+                                                         t-att-title="num"/>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                </div>
+
+                <!-- Números de cruce: línea Y terminal en el top 3 -->
+                <t t-if="state.showProbLineas and state.showProbTerminales and state.prob.cross.length">
+                    <div class="grupo-card mb-4">
+                        <div class="grupo-card-body text-center">
+                            <div class="acomp-section-label mb-2">
+                                Números de cruce (línea y terminal probables a la vez)
+                            </div>
+                            <div class="gpd-num-grid">
+                                <t t-foreach="state.prob.cross" t-as="num" t-key="num">
+                                    <img t-att-src="imgUrl(num)"
+                                         t-att-alt="num"
+                                         class="gpd-num-img-sm"
+                                         t-att-title="num"/>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+
+        </t><!-- /t-else loading -->
+    </div><!-- /container -->
+
+</t>
+</templates>

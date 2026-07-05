@@ -1,6 +1,6 @@
 {
     "name": "Lottery Scraper",
-    "version": "1.0",
+    "version": "1.1",
     "author": "SeuS IT",
     "category": "Tools",
     "summary": "Importación automática de resultados Florida Pick 3",

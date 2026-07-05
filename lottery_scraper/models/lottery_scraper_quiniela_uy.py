@@ -27,12 +27,12 @@ class LotteryScraperQuinielaUy(models.Model):
         help='Limita qué turno se importa, tanto en el cron como en la importación manual.')
 
     # ── Ventanas horarias (hora Uruguay) ────────────────────────────
-    # Vespertina se publica ~15:00, Nocturna ~21:00. Las ventanas dejan
-    # algo de margen para que el sitio termine de publicar el resultado.
-    vespertina_start = fields.Float('Inicio ventana Vespertina', default=15.0833)  # 15:05
-    vespertina_end = fields.Float('Fin ventana Vespertina', default=15.25)  # 15:15
-    nocturna_start = fields.Float('Inicio ventana Nocturna', default=21.0833)  # 21:05
-    nocturna_end = fields.Float('Fin ventana Nocturna', default=21.25)  # 21:15
+    # Vespertina se publica ~15:00, Nocturna ~21:00. Ventana de 1 hora
+    # para cubrir variaciones en la publicación del sitio.
+    vespertina_start = fields.Float('Inicio ventana Vespertina', default=15.0)   # 15:00
+    vespertina_end = fields.Float('Fin ventana Vespertina', default=16.0)         # 16:00
+    nocturna_start = fields.Float('Inicio ventana Nocturna', default=21.0)        # 21:00
+    nocturna_end = fields.Float('Fin ventana Nocturna', default=22.0)             # 22:00
     uy_offset = fields.Integer('Offset Uruguay desde UTC', default=-3,
                                help='Uruguay no aplica horario de verano desde 2015: siempre UTC-3.')
 

@@ -24,8 +24,8 @@
         Quiniela Uruguay: corre cada 5 minutos, pero el método solo hace la
         petición al sitio si la hora actual (Uruguay) está dentro de alguna
         de las dos ventanas de publicación:
-          · Vespertina → 15:05 - 15:15
-          · Nocturna    → 21:05 - 21:15
+          · Vespertina → 15:00 - 16:00
+          · Nocturna    → 21:00 - 22:00
         Fuera de esas ventanas, no llama a la web (evita pegarle al sitio
         todo el día). Si dentro de la ventana el resultado aún no está
         publicado, registra "PENDIENTE" y reintenta en el próximo ciclo de
