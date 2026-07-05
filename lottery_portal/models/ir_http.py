@@ -34,7 +34,7 @@ class IrHttp(models.AbstractModel):
                         return redirect(_MAINTENANCE_PATH, 302)
 
                 # Registrar visita si la URL es una página rastreable
-                if any(path == p or path.startswith(p + '/') for p in _TRACK_PREFIXES):
+                if path == '/' or any(path == p or path.startswith(p + '/') for p in _TRACK_PREFIXES):
                     env['lottery.page.visit']._record_visit(request)
         except Exception:
             pass
