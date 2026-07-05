@@ -3159,3 +3159,482 @@ class LotteryStatsService(models.Model):
 
         return out
 
+    # ─── Líneas y Terminales más probables (próximo sorteo) ──────────────────
+
+    @api.model
+    @tools.ormcache('turn_day', 'today_str', 'sorteo_id')
+    def get_lineas_terminales_probables(self, turn_day, today_str, sorteo_id=False):
+        """
+        Top 3 líneas y top 3 terminales más probables para el próximo sorteo
+        (fecha/turno vienen de sorteo.get_next_draw()). Adaptación a nivel de
+        grupo de los criterios de get_numeros_calientes: con solo 10 entidades
+        por lado, los criterios puntúan de forma continua por ranking (no por
+        magnitud) para que ningún atraso extremo domine el pronóstico.
+
+        ── Criterios (máx ~159 pts, ningún criterio > ~9% del total) ────────
+        G1   15 pts  Frecuencia del mes actual (rank 1-10 continuo)
+        G2   13 pts  Seguimiento directo: top 5 que siguen a la última del
+                     mismo tipo (línea→línea / terminal→terminal)
+             +10 pts pendiente: no cumplido en los últimos 4 ciclos
+        G3    9 pts  Seguimiento cruzado (último terminal→línea y viceversa)
+             +7 pts  pendiente cruzado
+             +4 pts  bonus si aparece en top 5 directo Y cruzado
+        G4   10 pts  Atraso general (rank, no magnitud)
+        G5    9 pts  Cobertura: % de sus números en top-5 grupos/pintas
+                     atrasados (general)
+        G6    8 pts  Semana del mes: 40% frecuencia + 60% atraso en esa semana
+        G7    7 pts  Día de la semana: solo top 5 salidoras del día,
+                     40% freq + 60% atraso del día
+        G8   12 pts  Atraso del turno del próximo sorteo (rank)
+        G9    9 pts  Salidor del mes × atraso del turno (rank)
+        G10  10 pts  Dígitos de últimos 3 sorteos (exacto 1.0 / vecino ±1 0.5)
+        G11 −10 pts  Recencia: salió en el último sorteo (−10) o en los
+                     2 anteriores (−5)
+        G12   8 pts  Fin de semana (solo sáb/dom): top 5 weekend,
+                     40% freq + 60% atraso weekend
+        G13   6 pts  Turno cruzado: top-5 atrasada del turno próximo Y activa
+                     en el turno contrario (2+ salidas en últimas 6 → 2/4/6)
+        G14   8 pts  Ritmo propio: atraso actual vs MEDIANA histórica de sus
+                     intervalos en el turno (pico en ventana 0.9–1.3,
+                     baja a 4 si está pasada — evita que una perdida domine)
+        G15   7 pts  Dígitos dominantes: top 5 dígitos más repetidos en
+                     ambas posiciones en los últimos 12 sorteos
+        G16   7 pts  Espejo pendiente: cada XY sorteado espera línea Y y
+                     terminal X (pareja NN además línea 0/terminal 0 —
+                     bajito/pelón); pendientes en últimos 6 → 3.5 c/u, tope 7
+        """
+        from datetime import date as _date
+
+        today = _date.fromisoformat(today_str)
+        month = today.month
+        pg_dow = (today.weekday() + 1) % 7      # PG: 0=domingo … 6=sábado
+        day = today.day
+
+        if turn_day not in ('afternoon', 'evening'):
+            turn_day = 'afternoon'
+        opposite_turn = 'evening' if turn_day == 'afternoon' else 'afternoon'
+        is_weekend = pg_dow in (0, 6)
+        week_seg = (1 if day <= 7 else 2 if day <= 14 else
+                    3 if day <= 21 else 4 if day <= 28 else 5)
+
+        month_field = MONTH_FIELD_MAP[month]
+        dow_name = {0: 'domingo', 1: 'lunes', 2: 'martes', 3: 'miercoles',
+                    4: 'jueves', 5: 'viernes', 6: 'sabado'}[pg_dow]
+        freq_dow_field = f'total_{dow_name}'
+        atraso_dow_field = f'salidas_atrasadas_{dow_name}'
+        week_field = f'total_semana_{week_seg}'
+        atraso_turn_field = ('salidas_atrasadas_dia' if turn_day == 'afternoon'
+                             else 'salidas_atrasadas_noche')
+
+        cr = self.env.cr
+        LINE_EXPR = '(ln.name::int / 10)'
+        TERM_EXPR = '(ln.name::int %% 10)'
+        ORDER_DRAW = ("lo.date, CASE lo.turn_day WHEN 'afternoon' THEN 0 ELSE 1 END, lo.id")
+
+        # ── 1. Stats por grupo desde lottery_group_stat (line_X / terminal_X) ─
+        cr.execute(f"""
+            SELECT lg.code,
+                   lgs.{month_field}        AS freq_mes,
+                   lgs.salidas_atrasadas    AS atraso_gen,
+                   lgs.{atraso_turn_field}  AS atraso_turno,
+                   lgs.{freq_dow_field}     AS freq_dow,
+                   lgs.{atraso_dow_field}   AS atraso_dow,
+                   lgs.{week_field}         AS freq_semana
+            FROM lottery_group_stat lgs
+            JOIN lottery_group lg ON lg.id = lgs.group_id
+            WHERE lgs.sorteo_id = %s
+              AND (lg.code LIKE 'line_%%' OR lg.code LIKE 'terminal_%%')
+        """, (sorteo_id,))
+        stats = {'line': {}, 'terminal': {}}
+        for r in cr.dictfetchall():
+            typ, _, idx = r['code'].rpartition('_')
+            if typ in stats and idx.isdigit():
+                stats[typ][int(idx)] = r
+
+        empty = {
+            'next_date': today.strftime('%d/%m/%Y'),
+            'next_turn': turn_day,
+            'next_turn_label': 'Tarde' if turn_day == 'afternoon' else 'Noche',
+            'lineas': [], 'terminales': [], 'cross': [],
+        }
+        if not stats['line'] or not stats['terminal']:
+            return empty
+
+        # ── 2. Últimos sorteos (señales G10/G11/G13/G15/G16) ─────────────────
+        cr.execute("""
+            SELECT ln.name::int AS num, lo.turn_day
+            FROM lottery_output lo
+            JOIN lottery_number ln ON ln.id = lo.number_id
+            WHERE lo.sorteo_id = %s
+            ORDER BY lo.date DESC,
+                     CASE lo.turn_day WHEN 'afternoon' THEN 1 ELSE 0 END,
+                     lo.id DESC
+            LIMIT 20
+        """, (sorteo_id,))
+        recent = cr.dictfetchall()          # más reciente primero
+
+        # G10: dígitos de últimos 3 sorteos — exacto 1.0, vecino ±1 0.5
+        w_line, w_term = {}, {}
+        for d in recent[:3]:
+            for digit, wmap in ((d['num'] // 10, w_line), (d['num'] % 10, w_term)):
+                wmap[digit] = wmap.get(digit, 0) + 1.0
+                for nb in (digit - 1, digit + 1):
+                    if 0 <= nb <= 9:
+                        wmap[nb] = wmap.get(nb, 0) + 0.5
+
+        # G11: recencia
+        last_line = recent[0]['num'] // 10 if recent else None
+        last_term = recent[0]['num'] % 10 if recent else None
+        near_lines = {d['num'] // 10 for d in recent[1:3]}
+        near_terms = {d['num'] % 10 for d in recent[1:3]}
+
+        # G15: dígitos dominantes en últimos 12 sorteos (ambas posiciones)
+        digit_count = {}
+        for d in recent[:12]:
+            for digit in (d['num'] // 10, d['num'] % 10):
+                digit_count[digit] = digit_count.get(digit, 0) + 1
+        dom_rank = {dig: i + 1 for i, (dig, _cnt) in enumerate(
+            sorted(digit_count.items(), key=lambda x: x[1], reverse=True)[:5])}
+
+        # G16: espejo pendiente — XY espera línea Y y terminal X;
+        # pareja NN espera además línea 0 y terminal 0 (bajito / pelón)
+        window = list(reversed(recent[:6]))   # orden cronológico
+        pend_line, pend_term = {}, {}
+        for i, d in enumerate(window):
+            dec, uni = d['num'] // 10, d['num'] % 10
+            later = window[i + 1:]
+            expects_l = {uni} | ({0} if dec == uni else set())
+            expects_t = {dec} | ({0} if dec == uni else set())
+            for tgt in expects_l:
+                if not any(x['num'] // 10 == tgt for x in later):
+                    pend_line[tgt] = pend_line.get(tgt, 0) + 1
+            for tgt in expects_t:
+                if not any(x['num'] % 10 == tgt for x in later):
+                    pend_term[tgt] = pend_term.get(tgt, 0) + 1
+
+        # G13: actividad en las últimas 6 tiradas del turno contrario
+        opp_draws = [d for d in recent if d['turn_day'] == opposite_turn][:6]
+        opp_line, opp_term = {}, {}
+        for d in opp_draws:
+            opp_line[d['num'] // 10] = opp_line.get(d['num'] // 10, 0) + 1
+            opp_term[d['num'] % 10] = opp_term.get(d['num'] % 10, 0) + 1
+
+        # ── 3. Seguimientos directo y cruzado (G2/G3) ────────────────────────
+        def _followers(from_expr, to_expr):
+            """Top 5 valores 'to' que siguen al último valor 'from' sorteado,
+            con cuántas veces se cumplió en los últimos 4 ciclos (pendientes)."""
+            cr.execute(f"""
+                WITH ordered AS (
+                    SELECT {from_expr} AS from_g,
+                           {to_expr}   AS to_g,
+                           ROW_NUMBER() OVER (ORDER BY {ORDER_DRAW}) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE lo.sorteo_id = %s
+                ),
+                last_g AS (SELECT from_g FROM ordered ORDER BY rn DESC LIMIT 1),
+                top_consec AS (
+                    SELECT nxt.to_g AS next_g, COUNT(*) AS freq
+                    FROM ordered cur
+                    JOIN ordered nxt ON nxt.rn = cur.rn + 1
+                    WHERE cur.from_g = (SELECT from_g FROM last_g)
+                    GROUP BY nxt.to_g
+                    ORDER BY freq DESC
+                    LIMIT 5
+                ),
+                last_4_occ AS (
+                    SELECT rn FROM ordered
+                    WHERE from_g = (SELECT from_g FROM last_g)
+                    ORDER BY rn DESC
+                    OFFSET 1 LIMIT 4
+                ),
+                fulfilled AS (
+                    SELECT o.to_g AS f_g, COUNT(*) AS cnt
+                    FROM ordered o
+                    JOIN last_4_occ l4 ON o.rn = l4.rn + 1
+                    WHERE o.to_g IN (SELECT next_g FROM top_consec)
+                    GROUP BY o.to_g
+                )
+                SELECT t.next_g, t.freq, COALESCE(f.cnt, 0) AS count_fulfilled
+                FROM top_consec t
+                LEFT JOIN fulfilled f ON f.f_g = t.next_g
+                ORDER BY t.freq DESC
+            """, (sorteo_id,))
+            return {r['next_g']: {'rank': i + 1, 'fulfilled': r['count_fulfilled']}
+                    for i, r in enumerate(cr.dictfetchall())}
+
+        line_direct = _followers(LINE_EXPR, LINE_EXPR)
+        line_cross = _followers(TERM_EXPR, LINE_EXPR)
+        term_direct = _followers(TERM_EXPR, TERM_EXPR)
+        term_cross = _followers(LINE_EXPR, TERM_EXPR)
+
+        # ── 4. Series filtradas: semana del mes (G6) y weekend (G12) ─────────
+        def _series_stats(grp_expr, where_extra, extra_params):
+            cr.execute(f"""
+                WITH s AS (
+                    SELECT {grp_expr} AS g,
+                           ROW_NUMBER() OVER (ORDER BY {ORDER_DRAW}) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE lo.sorteo_id = %s {where_extra}
+                ),
+                mx AS (SELECT COALESCE(MAX(rn), 0) AS v FROM s)
+                SELECT g, COUNT(*) AS freq,
+                       (SELECT v FROM mx) - MAX(rn) AS delay
+                FROM s GROUP BY g
+            """, (sorteo_id, *extra_params))
+            return {r['g']: r for r in cr.dictfetchall()}
+
+        seg_where = """AND (CASE WHEN EXTRACT(DAY FROM lo.date) <= 7  THEN 1
+                                 WHEN EXTRACT(DAY FROM lo.date) <= 14 THEN 2
+                                 WHEN EXTRACT(DAY FROM lo.date) <= 21 THEN 3
+                                 WHEN EXTRACT(DAY FROM lo.date) <= 28 THEN 4
+                                 ELSE 5 END) = %s"""
+        seg_line = _series_stats(LINE_EXPR, seg_where, (week_seg,))
+        seg_term = _series_stats(TERM_EXPR, seg_where, (week_seg,))
+
+        wk_line, wk_term = {}, {}
+        if is_weekend:
+            wk_where = "AND EXTRACT(DOW FROM lo.date) IN (0, 6)"
+            wk_line = _series_stats(LINE_EXPR, wk_where, ())
+            wk_term = _series_stats(TERM_EXPR, wk_where, ())
+
+        # ── 5. Ritmo propio (G14): mediana de intervalos en el turno ─────────
+        def _rhythm(grp_expr):
+            cr.execute(f"""
+                WITH s AS (
+                    SELECT {grp_expr} AS g,
+                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                    FROM lottery_output lo
+                    JOIN lottery_number ln ON ln.id = lo.number_id
+                    WHERE lo.sorteo_id = %s AND lo.turn_day = %s
+                ),
+                mx   AS (SELECT COALESCE(MAX(rn), 0) AS v FROM s),
+                gaps AS (SELECT g,
+                                rn - LAG(rn) OVER (PARTITION BY g ORDER BY rn) - 1 AS gap
+                         FROM s),
+                med  AS (SELECT g,
+                                PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY gap) AS med_gap
+                         FROM gaps WHERE gap IS NOT NULL GROUP BY g),
+                cur  AS (SELECT g, (SELECT v FROM mx) - MAX(rn) AS delay FROM s GROUP BY g)
+                SELECT c.g, c.delay, m.med_gap
+                FROM cur c LEFT JOIN med m ON m.g = c.g
+            """, (sorteo_id, turn_day))
+            return {r['g']: r for r in cr.dictfetchall()}
+
+        rhythm_line = _rhythm(LINE_EXPR)
+        rhythm_term = _rhythm(TERM_EXPR)
+
+        # ── 6. Cobertura de grupos/pintas atrasados — general (G5) ───────────
+        def _delayed_numbers(code_filter):
+            cr.execute(f"""
+                SELECT group_code, MIN(general) AS atraso
+                FROM lottery_number_groups_atrasos_mv
+                WHERE sorteo_id = %s {code_filter}
+                GROUP BY group_code
+                ORDER BY atraso DESC
+                LIMIT 5
+            """, (sorteo_id,))
+            codes = [r['group_code'] for r in cr.dictfetchall()]
+            if not codes:
+                return set()
+            cr.execute("""
+                SELECT DISTINCT ln.name::int AS num
+                FROM lottery_group lg
+                JOIN lottery_group_number_rel rel ON rel.group_id = lg.id
+                JOIN lottery_number ln ON ln.id = rel.number_id
+                WHERE lg.code = ANY(%s)
+            """, (codes,))
+            return {r['num'] for r in cr.dictfetchall()}
+
+        delayed_nums = (
+            _delayed_numbers("AND group_code NOT LIKE 'pinta_%%' "
+                             "AND group_code NOT LIKE 'line_%%' "
+                             "AND group_code NOT LIKE 'terminal_%%'")
+            | _delayed_numbers("AND group_code LIKE 'pinta_%%'")
+        )
+        cov_line = {i: sum(1 for n in delayed_nums if n // 10 == i) / 10.0
+                    for i in range(10)}
+        cov_term = {i: sum(1 for n in delayed_nums if n % 10 == i) / 10.0
+                    for i in range(10)}
+
+        # ── 7. Ponderación ────────────────────────────────────────────────────
+        def _rank_map(idx_stats, key):
+            ordered = sorted(idx_stats, key=lambda i: idx_stats[i].get(key) or 0,
+                             reverse=True)
+            return {i: pos + 1 for pos, i in enumerate(ordered)}
+
+        def _score_side(idx_stats, direct, cross, seg, wk, rhythm, cov,
+                        w_dig, pend, opp_cnt, last_g, near_g):
+            n_ent = max(len(idx_stats), 1)
+            rank_mes = _rank_map(idx_stats, 'freq_mes')
+            rank_gen = _rank_map(idx_stats, 'atraso_gen')
+            rank_turn = _rank_map(idx_stats, 'atraso_turno')
+            combo = {i: (idx_stats[i].get('freq_mes') or 0)
+                        * (idx_stats[i].get('atraso_turno') or 0)
+                     for i in idx_stats}
+            rank_combo = {i: pos + 1 for pos, i in enumerate(
+                sorted(combo, key=lambda i: combo[i], reverse=True))}
+
+            dow_top5 = sorted(idx_stats,
+                              key=lambda i: idx_stats[i].get('freq_dow') or 0,
+                              reverse=True)[:5]
+            dow_rank = {i: pos + 1 for pos, i in enumerate(dow_top5)}
+            max_atr_dow = max((idx_stats[i].get('atraso_dow') or 0
+                               for i in dow_top5), default=1) or 1
+
+            rank_sem = _rank_map(idx_stats, 'freq_semana')
+            max_seg_delay = max((seg.get(i, {}).get('delay') or 0
+                                 for i in idx_stats), default=1) or 1
+
+            wk_top5 = sorted(wk, key=lambda i: wk[i]['freq'] or 0, reverse=True)[:5]
+            wk_rank = {i: pos + 1 for pos, i in enumerate(wk_top5)}
+            max_wk_delay = max((wk[i]['delay'] or 0 for i in wk_top5),
+                               default=1) or 1
+
+            top5_turn = {i for i, rk in rank_turn.items() if rk <= 5}
+
+            results = []
+            for i in sorted(idx_stats):
+                st = idx_stats[i]
+                b = {}
+
+                # G1: frecuencia del mes (continuo por rank)
+                b['freq_mes'] = 15.0 * (1 - (rank_mes[i] - 1) / n_ent)
+
+                # G2: seguimiento directo + pendiente
+                if i in direct:
+                    b['seg_directo'] = 13.0 * (1 - (direct[i]['rank'] - 1) / 5)
+                    b['seg_directo_pend'] = 10.0 * (4 - min(direct[i]['fulfilled'], 4)) / 4
+
+                # G3: seguimiento cruzado + pendiente + bonus doble señal
+                if i in cross:
+                    b['seg_cruzado'] = 9.0 * (1 - (cross[i]['rank'] - 1) / 5)
+                    b['seg_cruzado_pend'] = 7.0 * (4 - min(cross[i]['fulfilled'], 4)) / 4
+                    if i in direct:
+                        b['bonus_doble'] = 4.0
+
+                # G4 / G8: atrasos por ranking (no magnitud — una perdida
+                # cobra lo mismo que "la más atrasada por poco")
+                b['atraso_gen'] = 10.0 * (1 - (rank_gen[i] - 1) / n_ent)
+                b['atraso_turno'] = 12.0 * (1 - (rank_turn[i] - 1) / n_ent)
+
+                # G9: salidor del mes × atraso del turno
+                b['salidor_x_atraso'] = 9.0 * (1 - (rank_combo[i] - 1) / n_ent)
+
+                # G6: semana del mes — 40% frecuencia + 60% atraso
+                f_sem = 1 - (rank_sem[i] - 1) / n_ent
+                d_sem = (seg.get(i, {}).get('delay') or 0) / max_seg_delay
+                b['semana_mes'] = 8.0 * (0.4 * f_sem + 0.6 * d_sem)
+
+                # G7: día de la semana — solo top 5 salidoras del día
+                if i in dow_rank:
+                    f_dow = 1 - (dow_rank[i] - 1) / 5
+                    d_dow = (st.get('atraso_dow') or 0) / max_atr_dow
+                    b['dia_semana'] = 7.0 * (0.4 * f_dow + 0.6 * d_dow)
+
+                # G12: fin de semana (solo sáb/dom)
+                if i in wk_rank:
+                    f_wk = 1 - (wk_rank[i] - 1) / 5
+                    d_wk = (wk[i]['delay'] or 0) / max_wk_delay
+                    b['weekend'] = 8.0 * (0.4 * f_wk + 0.6 * d_wk)
+
+                # G10: dígitos de los últimos 3 sorteos (±1 a medio peso)
+                if w_dig.get(i):
+                    b['digitos_3'] = 10.0 * min(w_dig[i], 2.0) / 2.0
+
+                # G15: dígitos dominantes de los últimos 12 sorteos
+                if i in dom_rank:
+                    b['digitos_dominantes'] = 7.0 * (1 - (dom_rank[i] - 1) / 5)
+
+                # G16: espejo pendiente (incluye pareja → bajito/pelón)
+                if pend.get(i):
+                    b['espejo'] = min(3.5 * pend[i], 7.0)
+
+                # G13: turno cruzado — atrasada aquí, calentando en el otro
+                if i in top5_turn:
+                    k = opp_cnt.get(i, 0)
+                    if k >= 4:
+                        b['turno_cruzado'] = 6.0
+                    elif k == 3:
+                        b['turno_cruzado'] = 4.0
+                    elif k == 2:
+                        b['turno_cruzado'] = 2.0
+
+                # G14: ritmo propio — pico al entrar en su ventana (0.9–1.3
+                # de su mediana), baja a 4 si está pasada (la deuda extrema
+                # ya cobra en G4/G8)
+                rh = rhythm.get(i) or {}
+                med_gap = float(rh['med_gap']) if rh.get('med_gap') else 0.0
+                if med_gap > 0:
+                    ratio = (rh.get('delay') or 0) / med_gap
+                    if ratio < 0.5:
+                        pts = 0.0
+                    elif ratio < 0.9:
+                        pts = 8.0 * (ratio - 0.5) / 0.4
+                    elif ratio <= 1.3:
+                        pts = 8.0
+                    else:
+                        pts = 4.0
+                    if pts:
+                        b['ritmo'] = pts
+
+                # G5: cobertura de grupos/pintas atrasados
+                if cov.get(i):
+                    b['cobertura'] = 9.0 * cov[i]
+
+                # G11: penalización por recencia
+                if i == last_g:
+                    b['recencia'] = -10.0
+                elif i in near_g:
+                    b['recencia'] = -5.0
+
+                b = {k: round(v, 1) for k, v in b.items()}
+                results.append({
+                    'idx': i,
+                    'score': round(sum(b.values()), 1),
+                    'breakdown': b,
+                })
+            results.sort(key=lambda x: x['score'], reverse=True)
+            return results
+
+        line_scores = _score_side(stats['line'], line_direct, line_cross,
+                                  seg_line, wk_line, rhythm_line, cov_line,
+                                  w_line, pend_line, opp_line,
+                                  last_line, near_lines)
+        term_scores = _score_side(stats['terminal'], term_direct, term_cross,
+                                  seg_term, wk_term, rhythm_term, cov_term,
+                                  w_term, pend_term, opp_term,
+                                  last_term, near_terms)
+
+        top_lineas = [{
+            'idx': r['idx'],
+            'name': f"Línea {r['idx']}",
+            'range': f"{r['idx'] * 10:02d} al {r['idx'] * 10 + 9:02d}",
+            'score': r['score'],
+            'numbers': [f"{r['idx'] * 10 + u:02d}" for u in range(10)],
+            'breakdown': r['breakdown'],
+        } for r in line_scores[:3]]
+
+        top_terminales = [{
+            'idx': r['idx'],
+            'name': f"Terminal {r['idx']}",
+            'range': f"{r['idx']:02d} al {90 + r['idx']:02d}",
+            'score': r['score'],
+            'numbers': [f"{d * 10 + r['idx']:02d}" for d in range(10)],
+            'breakdown': r['breakdown'],
+        } for r in term_scores[:3]]
+
+        # Números de cruce: intersección top-3 líneas × top-3 terminales
+        cross_nums = sorted(f"{l['idx'] * 10 + t['idx']:02d}"
+                            for l in top_lineas for t in top_terminales)
+
+        return {
+            'next_date': today.strftime('%d/%m/%Y'),
+            'next_turn': turn_day,
+            'next_turn_label': 'Tarde' if turn_day == 'afternoon' else 'Noche',
+            'lineas': top_lineas,
+            'terminales': top_terminales,
+            'cross': cross_nums,
+        }
+

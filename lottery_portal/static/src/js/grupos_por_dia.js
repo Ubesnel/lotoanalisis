@@ -21,13 +21,22 @@ export class GruposPorDia extends Component {
             terminals: [],
             openNums:  {},
             loading:   true,
+            prob:              null,
+            probLoading:       false,
+            showProbLineas:    false,
+            showProbTerminales: false,
         });
 
         onWillStart(async () => {
             await ensureSorteoLoaded();
             await this.loadData();
         });
-        onSorteoChange(() => this.loadData());
+        onSorteoChange(() => {
+            this.state.prob = null;
+            this.state.showProbLineas = false;
+            this.state.showProbTerminales = false;
+            this.loadData();
+        });
     }
 
     async loadData() {
@@ -44,6 +53,34 @@ export class GruposPorDia extends Component {
 
     toggleNums(key) {
         this.state.openNums[key] = !this.state.openNums[key];
+    }
+
+    async _ensureProbLoaded() {
+        if (this.state.prob || this.state.probLoading) {
+            return;
+        }
+        this.state.probLoading = true;
+        try {
+            this.state.prob = await jsonrpc("/grupos-por-dia/probables", {
+                sorteo_id: sorteoState.sorteoId,
+            });
+        } finally {
+            this.state.probLoading = false;
+        }
+    }
+
+    async consultarProbLineas() {
+        this.state.showProbLineas = !this.state.showProbLineas;
+        if (this.state.showProbLineas) {
+            await this._ensureProbLoaded();
+        }
+    }
+
+    async consultarProbTerminales() {
+        this.state.showProbTerminales = !this.state.showProbTerminales;
+        if (this.state.showProbTerminales) {
+            await this._ensureProbLoaded();
+        }
     }
 
     imgUrl(num) {

@@ -64,6 +64,17 @@ class LotteryPortal(http.Controller):
         data = request.env['lottery.stats.service'].sudo().get_grupos_por_dia(day, sorteo_id=sorteo_id)
         return data
 
+    @http.route('/grupos-por-dia/probables', type='json', auth='user')
+    def grupos_por_dia_probables(self, sorteo_id=False, **kw):
+        """3 líneas y 3 terminales más probables para el próximo sorteo."""
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
+        sorteo = request.env['lottery.sorteo'].sudo().browse(sorteo_id)
+        date_str, turn = sorteo.get_next_draw()
+        if turn not in ('afternoon', 'evening'):
+            turn = 'afternoon'
+        return request.env['lottery.stats.service'].sudo().get_lineas_terminales_probables(
+            turn, date_str, sorteo_id=sorteo_id)
+
     @http.route('/mantenimiento', type='http', auth='public', website=True)
     def maintenance_page(self, **kwargs):
         return request.render('lottery_portal.maintenance_page')

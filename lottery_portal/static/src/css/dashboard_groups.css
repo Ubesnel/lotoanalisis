@@ -336,3 +336,16 @@
     background: linear-gradient(135deg, #7a5c96, #5e3a7d);
     color: #fff !important;
 }
+
+/* Score de líneas/terminales más probables */
+.gpd-prob-score {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #8c6ca8, #a78bfa);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
