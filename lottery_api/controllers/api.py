@@ -294,6 +294,111 @@ class LotteryAppApi(http.Controller):
             } for line, nums in sorted(lines.items())],
         })
 
+    @http.route('/api/lottery/v1/stats/grupos-dia', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def grupos_dia(self, sorteo_id=None, day=None, **kwargs):
+        """Top 2 grupos, líneas y terminales más atrasados de un día de semana."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        day = self._resolve_day(day)
+        data = self._stats().get_grupos_por_dia(day, sorteo_id=sorteo.id)
+        data['day'] = day
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/recomendados', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def recomendados(self, sorteo_id=None, **kwargs):
+        """Líneas y terminales recomendados por LotoAnálisis para el próximo
+        sorteo, con los números de cruce (combinación) debajo."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        date_str, turn = sorteo.get_next_draw()
+        if turn not in ('afternoon', 'evening'):
+            turn = 'afternoon'
+        data = self._stats().get_lineas_terminales_probables(
+            turn, date_str, sorteo_id=sorteo.id)
+        # El desglose de puntajes es interno; la app no lo necesita.
+        for side in ('lineas', 'terminales'):
+            for item in data.get(side) or []:
+                item.pop('breakdown', None)
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/grupos-atrasados', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def grupos_atrasados(self, sorteo_id=None, **kwargs):
+        """Top 3 grupos más atrasados por turno (general / tarde / noche)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        stats = self._stats()
+        field_map = {'general': 'salidas_atrasadas',
+                     'afternoon': 'salidas_atrasadas_dia',
+                     'evening': 'salidas_atrasadas_noche'}
+        return _json_response({
+            option: [{'name': r['name'], 'atraso': r[field] or 0}
+                     for r in stats.get_top_6_groups(option, sorteo_id=sorteo.id)[:3]]
+            for option, field in field_map.items()
+        })
+
+    @http.route('/api/lottery/v1/stats/pintas-atrasadas', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def pintas_atrasadas(self, sorteo_id=None, **kwargs):
+        """Top 2 pintas más atrasadas por turno (general / tarde / noche)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        stats = self._stats()
+        field_map = {'general': 'salidas_atrasadas',
+                     'afternoon': 'salidas_atrasadas_dia',
+                     'evening': 'salidas_atrasadas_noche'}
+        return _json_response({
+            option: [{'name': r['name'], 'atraso': r[field] or 0}
+                     for r in stats.get_top_3_pintas(option, sorteo_id=sorteo.id)[:2]]
+            for option, field in field_map.items()
+        })
+
+    PINTA_CODES = ['pinta_%d' % i for i in range(10)]
+
+    @http.route('/api/lottery/v1/stats/grupos-lista', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def grupos_lista(self, tipo='grupos', **kwargs):
+        """Grupos disponibles para el gráfico de históricos."""
+        domain = ([('code', 'in', self.PINTA_CODES)] if tipo == 'pintas'
+                  else [('code', 'not in', self.PINTA_CODES)])
+        grupos = request.env['lottery.group'].sudo().search(domain, order='name')
+        return _json_response({
+            'items': [{'id': g.id, 'name': g.name, 'code': g.code}
+                      for g in grupos],
+        })
+
+    @http.route('/api/lottery/v1/stats/grupo-historico', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def grupo_historico(self, group_id=None, tipo='grupos', sorteo_id=None,
+                        **kwargs):
+        """Histograma de intervalos de atraso de un grupo, por turno."""
+        if not group_id or not str(group_id).isdigit():
+            return _json_response({'error': 'invalid_group'}, status=400)
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        group = request.env['lottery.group'].sudo().browse(int(group_id))
+        if not group.exists():
+            return _json_response({'error': 'group_not_found'}, status=404)
+
+        stats = self._stats()
+        method = (stats.get_group_delay_intervals_pintas if tipo == 'pintas'
+                  else stats.get_group_delay_intervals)
+        return _json_response({
+            'group': {'id': group.id, 'name': group.name},
+            'general': method(group.id, sorteo_id=sorteo.id),
+            'afternoon': method(group.id, 'afternoon', sorteo_id=sorteo.id),
+            'evening': method(group.id, 'evening', sorteo_id=sorteo.id),
+        })
+
     @http.route('/api/lottery/v1/stats/acompanantes', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def acompanantes(self, numero=None, sorteo_id=None, **kwargs):
