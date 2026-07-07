@@ -9,7 +9,9 @@
         "lottery_fireball",
         "lottery_portal",
     ],
-    "data": [],
+    "data": [
+        "views/res_config_settings.xml",
+    ],
     "installable": True,
     "application": False,
 }
