@@ -232,6 +232,68 @@ class LotteryAppApi(http.Controller):
             'evening': stats.get_top5_bola_extra_evening(sorteo_id=sorteo.id)[:4],
         })
 
+    @http.route('/api/lottery/v1/stats/secuencias-grupos', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def secuencias_grupos(self, sorteo_id=None, **kwargs):
+        """Para cada línea/terminal, top 5 grupos que más salen a continuación."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        return _json_response(
+            self._stats().get_all_group_sequences(sorteo_id=sorteo.id))
+
+    @http.route('/api/lottery/v1/stats/proximo-sorteo', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def proximo_sorteo(self, sorteo_id=None, **kwargs):
+        """Mejores números por líneas para el próximo sorteo.
+
+        La tabla de origen (calientes / restantes / fríos) se define en
+        Ajustes → Loterías → App móvil; la app muestra lo que se devuelva
+        aquí, sin lógica propia.
+        """
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        key_map = {
+            'calientes': 'numbers',
+            'restantes': 'numbers_remaining',
+            'frios': 'numbers_cold',
+        }
+        labels = {'calientes': 'Calientes', 'restantes': 'Restantes',
+                  'frios': 'Fríos'}
+        tabla = request.env['ir.config_parameter'].sudo().get_param(
+            'lottery_api.proximo_sorteo_tabla', 'restantes')
+        if tabla not in key_map:
+            tabla = 'restantes'
+
+        date_str, turn = sorteo.get_next_draw()
+        snapshot = sorteo._get_ranking_snapshot() or {}
+        turn_data = snapshot.get(turn) or {}
+        raw_numbers = turn_data.get(key_map[tabla]) or []
+
+        lines = {}
+        for item in raw_numbers:
+            try:
+                n = int(item.get('name'))
+            except (TypeError, ValueError):
+                continue
+            lines.setdefault(n // 10, []).append(str(n).zfill(2))
+
+        return _json_response({
+            'tabla': tabla,
+            'tabla_label': labels[tabla],
+            'turn': turn,
+            'turn_label': TURN_LABELS.get(turn),
+            'next_draw': turn_data.get('next_draw') or date_str,
+            'lines': [{
+                'line': line,
+                'label': f'Línea {line}',
+                'range': f'{line * 10:02d}-{line * 10 + 9:02d}',
+                'numbers': sorted(nums),
+            } for line, nums in sorted(lines.items())],
+        })
+
     @http.route('/api/lottery/v1/stats/acompanantes', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def acompanantes(self, numero=None, sorteo_id=None, **kwargs):
