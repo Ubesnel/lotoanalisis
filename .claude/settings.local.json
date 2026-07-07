@@ -48,7 +48,8 @@
       "Bash(./venv_odoo/Scripts/python.exe odoo-bin *)",
       "Bash('/c/Program Files/PostgreSQL/15/bin/psql' -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -t -A -c 'SELECT c.id, c.active, c.interval_number, c.interval_type, a.name->>'\\\\''en_US'\\\\'' FROM ir_cron c JOIN ir_act_server a ON a.id=c.ir_actions_server_id WHERE \\(a.name->>'\\\\''en_US'\\\\''\\) ILIKE '\\\\''%pendiente%'\\\\'' OR a.code LIKE '\\\\''%pending_stats%'\\\\'';' -c ' *)",
       "Bash(ls \"E:\\\\Trabajo\\\\Odoo\\\\Odoo17\" 2>/dev/null | head -30)",
-      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name like 'python%'\")"
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name like 'python%'\")",
+      "PowerShell($env:Path += ';C:\\\\dev\\\\flutter\\\\bin'; Set-Location E:\\\\Trabajo\\\\Flutter\\\\lottery_app; flutter analyze; if \\($?\\) { flutter test })"
     ]
   }
 }
