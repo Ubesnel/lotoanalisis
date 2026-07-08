@@ -4,7 +4,10 @@ from odoo.http import request
 from werkzeug.utils import redirect
 
 _MAINTENANCE_PATH = '/mantenimiento'
-_SKIP_PREFIXES = ('/web/', '/lottery/', '/salidas/', '/static/', '/favicon')
+# /api/ queda fuera del modo mantenimiento: la app móvil debe seguir
+# funcionando aunque el sitio web esté en mantenimiento.
+_SKIP_PREFIXES = ('/web/', '/lottery/', '/salidas/', '/static/', '/favicon',
+                  '/api/')
 
 # Páginas del portal que se rastrean
 _TRACK_PREFIXES = (
