@@ -93,11 +93,13 @@ class LotteryPortal(http.Controller):
             'faqs': faqs.read(['question', 'answer', 'category_id'])
         }
 
-    @http.route(['/terminos-condiciones'], type='http', auth="user", website=True)
+    # Páginas legales públicas: Google Play exige que la política de
+    # privacidad sea accesible sin iniciar sesión.
+    @http.route(['/terminos-condiciones'], type='http', auth="public", website=True)
     def terminos_condiciones_page(self, **kwargs):
         return request.render('lottery_portal.terminos_condiciones_page')
 
-    @http.route(['/politica-privacidad'], type='http', auth="user", website=True)
+    @http.route(['/politica-privacidad'], type='http', auth="public", website=True)
     def politica_privacidad_page(self, **kwargs):
         return request.render('lottery_portal.politica_privacidad_page')
 

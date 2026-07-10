@@ -13,6 +13,9 @@ from odoo import http
 from odoo.http import request
 
 WEEKDAYS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+             'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+WEEK_LABELS = {1: '1 al 7', 2: '8 al 14', 3: '15 al 21', 4: '22 al 28', 5: '29 al 31'}
 TURN_LABELS = {'afternoon': 'Tarde', 'evening': 'Noche'}
 
 
@@ -326,39 +329,74 @@ class LotteryAppApi(http.Controller):
                 item.pop('breakdown', None)
         return _json_response(data)
 
-    @http.route('/api/lottery/v1/stats/grupos-atrasados', type='http',
-                auth='public', methods=['GET'], csrf=False, cors='*')
-    def grupos_atrasados(self, sorteo_id=None, **kwargs):
-        """Top 3 grupos más atrasados por turno (general / tarde / noche)."""
-        sorteo = _get_public_sorteo(sorteo_id)
-        if not sorteo:
-            return _json_response({'error': 'sorteo_not_found'}, status=404)
+    def _grupos_atrasados_payload(self, sorteo, top_fn, analysis_limit):
+        """Payload común de grupos/pintas atrasados: por turno, cada grupo con
+        sus 4 contadores de atraso, los números que lo forman (ordenados por
+        el atraso del turno) y el análisis de números que muestra la web."""
         stats = self._stats()
+        now = datetime.now()
+        day = VALID_DAYS[now.weekday()]
+        week = (now.day + 6) // 7  # semana del mes, como la web (ceil(día/7))
+        month = now.month
         field_map = {'general': 'salidas_atrasadas',
                      'afternoon': 'salidas_atrasadas_dia',
                      'evening': 'salidas_atrasadas_noche'}
-        return _json_response({
-            option: [{'name': r['name'], 'atraso': r[field] or 0}
-                     for r in stats.get_top_6_groups(option, sorteo_id=sorteo.id)[:3]]
-            for option, field in field_map.items()
-        })
+        orden_map = {'general': 'total_atrasadas',
+                     'afternoon': 'total_atrasadas_dia',
+                     'evening': 'total_atrasadas_noche'}
+        Group = request.env['lottery.group'].sudo()
+
+        payload = {
+            'day': day,
+            'day_label': WEEKDAYS_ES[now.weekday()],
+            'week_label': WEEK_LABELS.get(week, ''),
+            'month_label': MONTHS_ES[month - 1],
+        }
+        analysis_cache = {}
+        for option, field in field_map.items():
+            items = []
+            for r in top_fn(option, day, sorteo_id=sorteo.id):
+                gid = r['id']
+                if gid not in analysis_cache:
+                    analysis_cache[gid] = stats.get_info_group_numbers_analysis(
+                        gid, day, week, month, analysis_limit,
+                        sorteo_id=sorteo.id)
+                numbers = stats.get_info_groups_numbers(
+                    Group.browse(gid), orden_map[option], day,
+                    sorteo_id=sorteo.id)
+                items.append({
+                    'id': gid,
+                    'name': r['name'],
+                    'atraso': r[field] or 0,
+                    'salidas_atrasadas': r['salidas_atrasadas'] or 0,
+                    'salidas_atrasadas_dia': r['salidas_atrasadas_dia'] or 0,
+                    'salidas_atrasadas_noche': r['salidas_atrasadas_noche'] or 0,
+                    'salidas_atrasadas_por_dia': r['salidas_atrasadas_por_dia'] or 0,
+                    'numbers': [n['numero'] for n in numbers],
+                    'analysis': analysis_cache[gid],
+                })
+            payload[option] = items
+        return payload
+
+    @http.route('/api/lottery/v1/stats/grupos-atrasados', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def grupos_atrasados(self, sorteo_id=None, **kwargs):
+        """Top 5 grupos más atrasados por turno, con números y análisis."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        return _json_response(self._grupos_atrasados_payload(
+            sorteo, self._stats().get_top_6_groups, analysis_limit=3))
 
     @http.route('/api/lottery/v1/stats/pintas-atrasadas', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def pintas_atrasadas(self, sorteo_id=None, **kwargs):
-        """Top 2 pintas más atrasadas por turno (general / tarde / noche)."""
+        """Top 3 pintas más atrasadas por turno, con números y análisis."""
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
-        stats = self._stats()
-        field_map = {'general': 'salidas_atrasadas',
-                     'afternoon': 'salidas_atrasadas_dia',
-                     'evening': 'salidas_atrasadas_noche'}
-        return _json_response({
-            option: [{'name': r['name'], 'atraso': r[field] or 0}
-                     for r in stats.get_top_3_pintas(option, sorteo_id=sorteo.id)[:2]]
-            for option, field in field_map.items()
-        })
+        return _json_response(self._grupos_atrasados_payload(
+            sorteo, self._stats().get_top_3_pintas, analysis_limit=8))
 
     PINTA_CODES = ['pinta_%d' % i for i in range(10)]
 
@@ -397,6 +435,108 @@ class LotteryAppApi(http.Controller):
             'general': method(group.id, sorteo_id=sorteo.id),
             'afternoon': method(group.id, 'afternoon', sorteo_id=sorteo.id),
             'evening': method(group.id, 'evening', sorteo_id=sorteo.id),
+        })
+
+    @http.route('/api/lottery/v1/stats/numeros-mes', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def numeros_mes(self, sorteo_id=None, **kwargs):
+        """Números que más / menos salen en el mes actual + intermedios,
+        con las salidas que van registrando en el mes (mismas 3 tablas de
+        /estadisticas-numeros)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        stats = self._stats()
+        now = datetime.now()
+        return _json_response({
+            'month': now.month,
+            'month_label': MONTHS_ES[now.month - 1],
+            'year': now.year,
+            'top': stats.get_top_numbers_month(
+                now.month, now.year, sorteo_id=sorteo.id),
+            'intermedios': stats.get_remaining_numbers_month(
+                now.month, now.year, sorteo_id=sorteo.id),
+            'bottom': stats.get_bottom_numbers_month(
+                now.month, now.year, sorteo_id=sorteo.id),
+        })
+
+    @http.route('/api/lottery/v1/stats/numeros-salidas-dia', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def numeros_salidas_dia(self, sorteo_id=None, **kwargs):
+        """Top / bottom 15 números por día de la semana (todos los días en
+        una sola respuesta; la app cambia de día sin volver a consultar)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        data = self._stats().get_numbers_all_weekdays(sorteo_id=sorteo.id)
+        data['day'] = VALID_DAYS[datetime.now().weekday()]
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/numeros-salidas-semana', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def numeros_salidas_semana(self, sorteo_id=None, **kwargs):
+        """Top / bottom 15 números por semana del mes (sem_1..sem_5)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        data = self._stats().get_numbers_all_weeks(sorteo_id=sorteo.id)
+        data['week'] = 'sem_%d' % min((datetime.now().day + 6) // 7, 5)
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/centenas-bolas-salidas', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def centenas_bolas_salidas(self, sorteo_id=None, **kwargs):
+        """Centenas y bolas extra que más / menos salen: histórico global,
+        por día de la semana y por semana del mes."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        stats = self._stats()
+        Output = request.env['lottery.output'].sudo()
+
+        def historico(field):
+            groups = Output.read_group(
+                [('sorteo_id', '=', sorteo.id), (field, '!=', False)],
+                ['id'], [field])
+            items = sorted(
+                ({'centena': g[field][1], 'total_salidas': g[f'{field}_count']}
+                 for g in groups if g.get(field)),
+                key=lambda x: x['total_salidas'], reverse=True)
+            return {'top': items[:4], 'bottom': list(reversed(items[-4:]))}
+
+        return _json_response({
+            'day': VALID_DAYS[datetime.now().weekday()],
+            'week': 'sem_%d' % min((datetime.now().day + 6) // 7, 5),
+            'historico': {
+                'centena': historico('hundreds_id'),
+                'bola': historico('fireball_id'),
+            },
+            'por_dia': stats.get_centenas_all_weekdays(sorteo_id=sorteo.id),
+            'por_semana': stats.get_centenas_all_weeks(sorteo_id=sorteo.id),
+        })
+
+    @http.route('/api/lottery/v1/faq', type='http', auth='public',
+                methods=['GET'], csrf=False, cors='*')
+    def faq(self, **kwargs):
+        """Preguntas frecuentes del sitio, agrupadas por categoría (mismos
+        datos que la página /faq de la web)."""
+        categories = request.env['website.faq.category'].sudo().search(
+            [], order='sequence, id')
+        faqs = request.env['website.faq'].sudo().search(
+            [('active', '=', True)], order='sequence, id')
+        by_cat = {}
+        for f in faqs:
+            by_cat.setdefault(f.category_id.id, []).append({
+                'question': f.question,
+                'answer': f.answer,
+            })
+        return _json_response({
+            'categories': [{
+                'id': c.id,
+                'name': c.name,
+                'icon': c.icon,
+                'faqs': by_cat.get(c.id, []),
+            } for c in categories if by_cat.get(c.id)],
         })
 
     @http.route('/api/lottery/v1/stats/acompanantes', type='http',
