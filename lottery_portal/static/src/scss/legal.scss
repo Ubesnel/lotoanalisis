@@ -241,6 +241,17 @@ $white:         #ffffff;
         font-size: 15px;
     }
 
+    // Los enlaces (mailto) heredan el violeta del sitio y se pierden
+    // sobre el fondo violeta de esta tarjeta: van en blanco subrayado.
+    .legal-card-body a {
+        color: $white;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+
+        &:hover { color: rgba($white, 0.8); }
+    }
+
     &:hover {
         box-shadow: 0 12px 36px rgba($purple-dark, 0.40);
         border-color: transparent;
