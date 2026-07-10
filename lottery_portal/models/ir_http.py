@@ -8,6 +8,9 @@ _MAINTENANCE_PATH = '/mantenimiento'
 # funcionando aunque el sitio web esté en mantenimiento.
 _SKIP_PREFIXES = ('/web/', '/lottery/', '/salidas/', '/static/', '/favicon',
                   '/api/')
+# Páginas legales siempre accesibles aun en mantenimiento: Google Play
+# verifica la política de privacidad en cualquier momento.
+_LEGAL_PATHS = ('/politica-privacidad', '/terminos-condiciones')
 
 # Páginas del portal que se rastrean
 _TRACK_PREFIXES = (
@@ -31,7 +34,7 @@ class IrHttp(models.AbstractModel):
             )
             if request.httprequest.method == 'GET' and not skip:
                 env = request.env
-                if env.user._is_public():
+                if env.user._is_public() and path not in _LEGAL_PATHS:
                     company = env.company.sudo()
                     if company.maintenance_mode:
                         return redirect(_MAINTENANCE_PATH, 302)

@@ -83,8 +83,10 @@
                             <h2 class="legal-card-title">Datos recopilados en el sitio web</h2>
                         </div>
                         <div class="legal-card-body">
-                            <p class="legal-subheading">
-                                <i class="fa fa-bar-chart"/> Datos técnicos
+                            <p>
+                                El sitio web no requiere registro ni cuentas de usuario para
+                                consultar su contenido. Al navegar solo se registran datos
+                                técnicos estándar:
                             </p>
                             <ul class="legal-list">
                                 <li>Dirección IP</li>
@@ -92,14 +94,6 @@
                                 <li>Sistema operativo</li>
                                 <li>Fecha y hora de acceso</li>
                                 <li>Páginas visitadas</li>
-                            </ul>
-                            <p class="legal-subheading" style="margin-top:18px;">
-                                <i class="fa fa-user"/> Datos de usuario (login)
-                            </p>
-                            <ul class="legal-list">
-                                <li>Identificador de usuario</li>
-                                <li>Nombre</li>
-                                <li>Información básica de la cuenta</li>
                             </ul>
                         </div>
                     </div>
@@ -113,11 +107,10 @@
                         </div>
                         <div class="legal-card-body">
                             <ul class="legal-list">
-                                <li>Permitir el acceso autenticado al sitio web</li>
                                 <li>Garantizar el correcto funcionamiento del sitio y de la aplicación</li>
                                 <li>Mejorar la experiencia del usuario</li>
                                 <li>Mantener la seguridad del sistema</li>
-                                <li>Analizar el uso del sitio</li>
+                                <li>Analizar el uso del sitio de forma agregada y anónima</li>
                             </ul>
                         </div>
                     </div>
