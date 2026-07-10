@@ -51,7 +51,8 @@
       "PowerShell(Get-CimInstance Win32_Process -Filter \"Name like 'python%'\")",
       "PowerShell($env:Path += ';C:\\\\dev\\\\flutter\\\\bin'; Set-Location E:\\\\Trabajo\\\\Flutter\\\\lottery_app; flutter analyze; if \\($?\\) { flutter test })",
       "PowerShell($env:Path += ';C:\\\\dev\\\\flutter\\\\bin'; Set-Location E:\\\\Trabajo\\\\Flutter\\\\lottery_app; flutter run -d chrome)",
-      "Read(//c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/c7a67028-fc99-4af9-aa10-04c973e53fbb/tasks/**)"
+      "Read(//c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/c7a67028-fc99-4af9-aa10-04c973e53fbb/tasks/**)",
+      "PowerShell(E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\venv_odoo\\\\Scripts\\\\python.exe \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\15a01dc4-77b1-4861-8a3f-9ccffb658519\\\\scratchpad\\\\make_store_assets.py\")"
     ]
   }
 }
