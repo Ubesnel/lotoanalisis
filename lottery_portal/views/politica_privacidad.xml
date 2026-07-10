@@ -12,10 +12,11 @@
                         </div>
                         <h1 class="legal-hero-title">Política de Privacidad</h1>
                         <p class="legal-hero-subtitle">
-                            Tu privacidad es importante para nosotros. Aquí explicamos cómo tratamos tu información.
+                            Tu privacidad es importante para nosotros. Aquí explicamos cómo tratamos tu información
+                            en el sitio web y en la aplicación móvil LotoAnálisis.
                         </p>
                         <div class="legal-date-badge">
-                            <i class="fa fa-calendar"/> Última actualización: 27 de marzo de 2026
+                            <i class="fa fa-calendar"/> Última actualización: 9 de julio de 2026
                         </div>
                         <div class="legal-hero-line"/>
                     </div>
@@ -29,19 +30,57 @@
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                Este sitio web proporciona acceso a información y estadísticas relacionadas
-                                con sorteos de lotería. El uso del sitio implica la aceptación de esta
+                                Este sitio web y la aplicación móvil <strong>LotoAnálisis</strong>,
+                                desarrollados por Ubesnel Rojas (SEUS IT), proporcionan acceso a
+                                información y estadísticas relacionadas con sorteos de lotería.
+                                El uso del sitio o de la aplicación implica la aceptación de esta
                                 Política de Privacidad.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 2. Datos recopilados -->
+                    <!-- 2. Aplicación móvil LotoAnálisis -->
                     <div class="legal-card">
                         <div class="legal-card-header">
                             <span class="legal-card-num">2</span>
+                            <i class="fa fa-mobile legal-card-icon"/>
+                            <h2 class="legal-card-title">Aplicación móvil LotoAnálisis</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                <strong>La aplicación móvil no recopila, almacena ni comparte datos
+                                personales.</strong> No requiere registro ni inicio de sesión, y no
+                                solicita permisos de acceso a contactos, ubicación, cámara, micrófono
+                                ni archivos del dispositivo.
+                            </p>
+                            <ul class="legal-list">
+                                <li>
+                                    Para mostrar resultados y estadísticas, la aplicación consulta
+                                    nuestro servidor a través de internet; cada solicitud genera
+                                    registros técnicos estándar (dirección IP y datos de la petición)
+                                    usados exclusivamente para la operación y seguridad del servicio.
+                                </li>
+                                <li>
+                                    En el dispositivo solo se guardan preferencias locales de uso
+                                    (por ejemplo, si ya se mostró la pantalla de bienvenida); esta
+                                    información no sale del teléfono y se elimina al desinstalar la
+                                    aplicación.
+                                </li>
+                                <li>
+                                    La aplicación muestra información estadística dirigida a personas
+                                    mayores de 18 años y no permite realizar apuestas ni operaciones
+                                    con dinero real.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. Datos recopilados en el sitio web -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">3</span>
                             <i class="fa fa-database legal-card-icon"/>
-                            <h2 class="legal-card-title">Datos recopilados</h2>
+                            <h2 class="legal-card-title">Datos recopilados en el sitio web</h2>
                         </div>
                         <div class="legal-card-body">
                             <p class="legal-subheading">
@@ -65,17 +104,17 @@
                         </div>
                     </div>
 
-                    <!-- 3. Uso de los datos -->
+                    <!-- 4. Uso de los datos -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">3</span>
+                            <span class="legal-card-num">4</span>
                             <i class="fa fa-cog legal-card-icon"/>
                             <h2 class="legal-card-title">Uso de los datos</h2>
                         </div>
                         <div class="legal-card-body">
                             <ul class="legal-list">
-                                <li>Permitir el acceso autenticado</li>
-                                <li>Garantizar el correcto funcionamiento del sitio</li>
+                                <li>Permitir el acceso autenticado al sitio web</li>
+                                <li>Garantizar el correcto funcionamiento del sitio y de la aplicación</li>
                                 <li>Mejorar la experiencia del usuario</li>
                                 <li>Mantener la seguridad del sistema</li>
                                 <li>Analizar el uso del sitio</li>
@@ -83,32 +122,35 @@
                         </div>
                     </div>
 
-                    <!-- 4. Cookies -->
+                    <!-- 5. Cookies -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">4</span>
+                            <span class="legal-card-num">5</span>
                             <i class="fa fa-history legal-card-icon"/>
                             <h2 class="legal-card-title">Cookies</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                Este sitio utiliza cookies para mantener la sesión del usuario, recordar
-                                preferencias y mejorar la experiencia de navegación.
+                                El sitio web utiliza cookies para mantener la sesión del usuario,
+                                recordar preferencias y mejorar la experiencia de navegación.
+                                La aplicación móvil no utiliza cookies.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 5. Publicidad -->
+                    <!-- 6. Publicidad -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">5</span>
+                            <span class="legal-card-num">6</span>
                             <i class="fa fa-bullhorn legal-card-icon"/>
                             <h2 class="legal-card-title">Publicidad</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                Este sitio puede utilizar servicios de publicidad como Google AdSense,
-                                que emplean cookies para mostrar anuncios personalizados.
+                                El sitio web puede utilizar servicios de publicidad como Google AdSense,
+                                que emplean cookies para mostrar anuncios personalizados. La aplicación
+                                móvil no muestra publicidad actualmente; si en el futuro la incorpora,
+                                esta política se actualizará antes de su implementación.
                             </p>
                             <p>
                                 Más información:
@@ -119,10 +161,10 @@
                         </div>
                     </div>
 
-                    <!-- 6. Compartición de datos -->
+                    <!-- 7. Compartición de datos -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">6</span>
+                            <span class="legal-card-num">7</span>
                             <i class="fa fa-share-alt legal-card-icon"/>
                             <h2 class="legal-card-title">Compartición de datos</h2>
                         </div>
@@ -134,10 +176,10 @@
                         </div>
                     </div>
 
-                    <!-- 7. Seguridad -->
+                    <!-- 8. Seguridad -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">7</span>
+                            <span class="legal-card-num">8</span>
                             <i class="fa fa-lock legal-card-icon"/>
                             <h2 class="legal-card-title">Seguridad</h2>
                         </div>
@@ -149,10 +191,10 @@
                         </div>
                     </div>
 
-                    <!-- 8. Derechos del usuario -->
+                    <!-- 9. Derechos del usuario -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">8</span>
+                            <span class="legal-card-num">9</span>
                             <i class="fa fa-user-circle legal-card-icon"/>
                             <h2 class="legal-card-title">Derechos del usuario</h2>
                         </div>
@@ -164,10 +206,10 @@
                         </div>
                     </div>
 
-                    <!-- 9. Cambios -->
+                    <!-- 10. Cambios -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">9</span>
+                            <span class="legal-card-num">10</span>
                             <i class="fa fa-refresh legal-card-icon"/>
                             <h2 class="legal-card-title">Cambios en la política</h2>
                         </div>
@@ -179,17 +221,19 @@
                         </div>
                     </div>
 
-                    <!-- 10. Contacto -->
+                    <!-- 11. Contacto -->
                     <div class="legal-card legal-card--contact">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">10</span>
+                            <span class="legal-card-num">11</span>
                             <i class="fa fa-envelope legal-card-icon"/>
                             <h2 class="legal-card-title">Contacto</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
                                 Para consultas sobre esta política o el tratamiento de tus datos,
-                                utiliza los medios de contacto disponibles en el sitio.
+                                escribe a
+                                <a href="mailto:ubesnelrojas@gmail.com">ubesnelrojas@gmail.com</a>
+                                o utiliza los medios de contacto disponibles en el sitio.
                             </p>
                         </div>
                     </div>
