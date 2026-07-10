@@ -54,7 +54,8 @@
       "Read(//c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/c7a67028-fc99-4af9-aa10-04c973e53fbb/tasks/**)",
       "PowerShell(E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\venv_odoo\\\\Scripts\\\\python.exe \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\15a01dc4-77b1-4861-8a3f-9ccffb658519\\\\scratchpad\\\\make_store_assets.py\")",
       "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:8065/politica-privacidad\" -UseBasicParsing -TimeoutSec 15; [regex]::Matches\\($r.Content, '.{80}login.{80}', 'IgnoreCase'\\) | ForEach-Object { $_.Value -replace '\\\\s+', ' ' } | Select-Object -First 5)",
-      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:8065/politica-privacidad\" -UseBasicParsing -TimeoutSec 15; [regex]::Matches\\($r.Content, '.{60}\\(login|sesión|sesion\\).{60}', 'IgnoreCase'\\) | ForEach-Object { \\($_.Value -replace '\\\\s+', ' '\\) } | Select-Object -First 6)"
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:8065/politica-privacidad\" -UseBasicParsing -TimeoutSec 15; [regex]::Matches\\($r.Content, '.{60}\\(login|sesión|sesion\\).{60}', 'IgnoreCase'\\) | ForEach-Object { \\($_.Value -replace '\\\\s+', ' '\\) } | Select-Object -First 6)",
+      "PowerShell($c = Get-Content \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\store\\\\politica_privacidad.html\" -Raw; Set-Content \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\store\\\\politica_privacidad.html\" -Value \\($c -replace 'ubesnelrojas@gmail\\\\.com', 'lotoanalisis@gmail.com'\\) -Encoding utf8)"
     ]
   }
 }

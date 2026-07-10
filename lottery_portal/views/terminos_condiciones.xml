@@ -12,10 +12,11 @@
                         </div>
                         <h1 class="legal-hero-title">Términos y Condiciones</h1>
                         <p class="legal-hero-subtitle">
-                            Lee detenidamente las condiciones de uso antes de utilizar nuestros servicios.
+                            Lee detenidamente las condiciones de uso antes de utilizar el sitio web
+                            o la aplicación móvil LotoAnálisis.
                         </p>
                         <div class="legal-date-badge">
-                            <i class="fa fa-calendar"/> Última actualización: 27 de marzo de 2026
+                            <i class="fa fa-calendar"/> Última actualización: 9 de julio de 2026
                         </div>
                         <div class="legal-hero-line"/>
                     </div>
@@ -29,51 +30,91 @@
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                Al acceder y utilizar este sitio web, el usuario acepta íntegramente estos
-                                Términos y Condiciones. Si no está de acuerdo, le rogamos que no utilice el sitio.
+                                Al acceder y utilizar este sitio web o la aplicación móvil
+                                <strong>LotoAnálisis</strong> (en conjunto, "el servicio"), el usuario
+                                acepta íntegramente estos Términos y Condiciones. Si no está de
+                                acuerdo, le rogamos que no utilice el servicio.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 2. Uso del sitio -->
+                    <!-- 2. Uso del servicio -->
                     <div class="legal-card">
                         <div class="legal-card-header">
                             <span class="legal-card-num">2</span>
                             <i class="fa fa-globe legal-card-icon"/>
-                            <h2 class="legal-card-title">Uso del sitio</h2>
+                            <h2 class="legal-card-title">Uso del servicio</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                El sitio proporciona información y estadísticas relacionadas con sorteos
-                                de lotería. Al utilizarlo, el usuario se compromete a:
+                                El servicio proporciona información y estadísticas relacionadas con
+                                sorteos de lotería. Al utilizarlo, el usuario se compromete a:
                             </p>
                             <ul class="legal-list">
-                                <li>No utilizar el sitio con fines ilegales o no autorizados</li>
+                                <li>No utilizar el servicio con fines ilegales o no autorizados</li>
                                 <li>No intentar acceder sin autorización a sistemas o datos</li>
                                 <li>No realizar scraping ni uso abusivo del servicio</li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- 3. Disponibilidad -->
+                    <!-- 3. Edad mínima -->
                     <div class="legal-card">
                         <div class="legal-card-header">
                             <span class="legal-card-num">3</span>
+                            <i class="fa fa-id-card legal-card-icon"/>
+                            <h2 class="legal-card-title">Edad mínima</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                El servicio muestra información estadística sobre sorteos de lotería
+                                y está dirigido exclusivamente a personas mayores de 18 años.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 4. No afiliación y fuentes oficiales -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">4</span>
+                            <i class="fa fa-institution legal-card-icon"/>
+                            <h2 class="legal-card-title">No afiliación y fuentes oficiales</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                LotoAnálisis es un servicio informativo independiente:
+                                <strong>no vende billetes de lotería, no acepta apuestas ni pagos,
+                                y no entrega premios.</strong> No está afiliado, asociado ni
+                                respaldado por ningún operador oficial de lotería.
+                            </p>
+                            <p>
+                                Los resultados y estadísticas se publican con fines informativos y
+                                pueden contener errores u omisiones. Ante cualquier discrepancia,
+                                prevalece siempre la información publicada por el operador oficial
+                                del sorteo correspondiente.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 5. Disponibilidad -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">5</span>
                             <i class="fa fa-server legal-card-icon"/>
                             <h2 class="legal-card-title">Disponibilidad</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                El sitio puede no estar disponible en todo momento debido a tareas de
-                                mantenimiento, actualizaciones o fallos técnicos imprevistos.
+                                El servicio puede no estar disponible en todo momento debido a tareas
+                                de mantenimiento, actualizaciones o fallos técnicos imprevistos.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 4. Limitación de responsabilidad -->
+                    <!-- 6. Limitación de responsabilidad -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">4</span>
+                            <span class="legal-card-num">6</span>
                             <i class="fa fa-exclamation-triangle legal-card-icon"/>
                             <h2 class="legal-card-title">Limitación de responsabilidad</h2>
                         </div>
@@ -81,68 +122,73 @@
                             <p>
                                 La información proporcionada tiene carácter meramente informativo y
                                 estadístico. No se garantiza ningún resultado ni ganancia en sorteos
-                                a partir del uso de la información brindada en el sitio.
+                                a partir del uso de la información brindada en el servicio, y las
+                                decisiones que el usuario tome con base en ella son de su exclusiva
+                                responsabilidad.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 5. Propiedad intelectual -->
+                    <!-- 7. Propiedad intelectual -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">5</span>
+                            <span class="legal-card-num">7</span>
                             <i class="fa fa-copyright legal-card-icon"/>
                             <h2 class="legal-card-title">Propiedad intelectual</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                Todo el contenido del sitio — incluyendo textos, gráficos, estadísticas
-                                y código — no puede ser copiado, distribuido ni reutilizado sin
-                                autorización expresa del titular.
+                                Todo el contenido del servicio — incluyendo textos, gráficos,
+                                estadísticas y código — no puede ser copiado, distribuido ni
+                                reutilizado sin autorización expresa del titular.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 6. Publicidad -->
+                    <!-- 8. Publicidad -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">6</span>
+                            <span class="legal-card-num">8</span>
                             <i class="fa fa-bullhorn legal-card-icon"/>
                             <h2 class="legal-card-title">Publicidad</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                El sitio puede mostrar publicidad de terceros, como Google AdSense.
+                                El sitio web puede mostrar publicidad de terceros, como Google AdSense.
                                 No tenemos control sobre el contenido específico de dichos anuncios.
+                                La aplicación móvil no muestra publicidad actualmente.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 7. Modificaciones -->
+                    <!-- 9. Modificaciones -->
                     <div class="legal-card">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">7</span>
+                            <span class="legal-card-num">9</span>
                             <i class="fa fa-pencil legal-card-icon"/>
                             <h2 class="legal-card-title">Modificaciones</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
                                 Nos reservamos el derecho de modificar estos términos en cualquier
-                                momento. Los cambios entrarán en vigor desde su publicación en el sitio.
+                                momento. Los cambios entrarán en vigor desde su publicación en esta
+                                misma página.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 8. Contacto -->
+                    <!-- 10. Contacto -->
                     <div class="legal-card legal-card--contact">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">8</span>
+                            <span class="legal-card-num">10</span>
                             <i class="fa fa-envelope legal-card-icon"/>
                             <h2 class="legal-card-title">Contacto</h2>
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                Para cualquier consulta relacionada con estos términos, utiliza los
-                                medios de contacto disponibles en el sitio.
+                                Para cualquier consulta relacionada con estos términos, escribe a
+                                <a href="mailto:lotoanalisis@gmail.com">lotoanalisis@gmail.com</a>
+                                o utiliza los medios de contacto disponibles en el sitio.
                             </p>
                         </div>
                     </div>
