@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_sorteo_form_api" model="ir.ui.view">
+        <field name="name">lottery.sorteo.form.api</field>
+        <field name="model">lottery.sorteo</field>
+        <field name="inherit_id" ref="lottery_portal.view_lottery_sorteo_form_ranking"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='show_in_public']" position="after">
+                <field name="show_in_app"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
