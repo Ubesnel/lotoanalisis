@@ -11,6 +11,7 @@
     ],
     "data": [
         "views/res_config_settings.xml",
+        "views/lottery_sorteo_views.xml",
     ],
     "installable": True,
     "application": False,

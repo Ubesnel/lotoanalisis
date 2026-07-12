@@ -46,10 +46,10 @@ def _serialize_output(record):
 
 
 def _get_public_sorteo(sorteo_id):
-    """Devuelve el sorteo pedido solo si es visible públicamente; si no se
-    pide ninguno, el primero público."""
+    """Devuelve el sorteo pedido solo si está habilitado para la app; si no
+    se pide ninguno, el primero habilitado (por secuencia)."""
     Sorteo = request.env['lottery.sorteo'].sudo()
-    domain = [('show_in_public', '=', True)]
+    domain = [('show_in_app', '=', True)]
     if sorteo_id:
         sorteo = Sorteo.search(domain + [('id', '=', int(sorteo_id))], limit=1)
     else:
@@ -63,7 +63,7 @@ class LotteryAppApi(http.Controller):
                 methods=['GET'], csrf=False, cors='*')
     def sorteos(self, **kwargs):
         sorteos = request.env['lottery.sorteo'].sudo().search(
-            [('show_in_public', '=', True)], order='sequence, id')
+            [('show_in_app', '=', True)], order='sequence, id')
         return _json_response({
             'sorteos': [{
                 'id': s.id,
