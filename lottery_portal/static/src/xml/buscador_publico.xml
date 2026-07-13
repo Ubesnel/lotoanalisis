@@ -57,6 +57,27 @@
                                 <t t-esc="state.resultados.afternoon.bola_extra"/>
                             </div>
                         </div>
+                        <t t-if="state.resultados.afternoon.premio_2 or state.resultados.afternoon.premio_3">
+                            <div class="numeros-corridos-row">
+                                <span class="numeros-corridos-label">Números corridos:</span>
+                                <t t-if="state.resultados.afternoon.premio_2">
+                                    <span class="corrido-ball corrido-ball-1">
+                                        <t t-esc="state.resultados.afternoon.premio_2[0]"/>
+                                    </span>
+                                    <span class="corrido-ball corrido-ball-2">
+                                        <t t-esc="state.resultados.afternoon.premio_2[1]"/>
+                                    </span>
+                                </t>
+                                <t t-if="state.resultados.afternoon.premio_3">
+                                    <span class="corrido-ball corrido-ball-3">
+                                        <t t-esc="state.resultados.afternoon.premio_3[0]"/>
+                                    </span>
+                                    <span class="corrido-ball corrido-ball-4">
+                                        <t t-esc="state.resultados.afternoon.premio_3[1]"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </t>
                     </div>
                 </t>
                 <t t-if="state.resultados.evening">
@@ -77,6 +98,27 @@
                                 <t t-esc="state.resultados.evening.bola_extra"/>
                             </div>
                         </div>
+                        <t t-if="state.resultados.evening.premio_2 or state.resultados.evening.premio_3">
+                            <div class="numeros-corridos-row">
+                                <span class="numeros-corridos-label">Números corridos:</span>
+                                <t t-if="state.resultados.evening.premio_2">
+                                    <span class="corrido-ball corrido-ball-1">
+                                        <t t-esc="state.resultados.evening.premio_2[0]"/>
+                                    </span>
+                                    <span class="corrido-ball corrido-ball-2">
+                                        <t t-esc="state.resultados.evening.premio_2[1]"/>
+                                    </span>
+                                </t>
+                                <t t-if="state.resultados.evening.premio_3">
+                                    <span class="corrido-ball corrido-ball-3">
+                                        <t t-esc="state.resultados.evening.premio_3[0]"/>
+                                    </span>
+                                    <span class="corrido-ball corrido-ball-4">
+                                        <t t-esc="state.resultados.evening.premio_3[1]"/>
+                                    </span>
+                                </t>
+                            </div>
+                        </t>
                     </div>
                 </t>
             </t>

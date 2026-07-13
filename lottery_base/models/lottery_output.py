@@ -25,6 +25,18 @@ class LotteryOutput(models.Model):
         ('afternoon', 'Tarde'), ('evening', 'Noche'),
     ], string='Turno del día', required=True, index=True)
     complete_number = fields.Char(string='Número completo', compute='_compute_complete_number', store=True)
+
+    # ── Números corridos (solo sorteos Pick3) ─────────────────────
+    premio_2_id = fields.Many2one(
+        'lottery.number', string='Premio 2',
+        index=True,
+        options="{'no_open': True, 'no_create': True}",
+    )
+    premio_3_id = fields.Many2one(
+        'lottery.number', string='Premio 3',
+        index=True,
+        options="{'no_open': True, 'no_create': True}",
+    )
     week_day = fields.Selection([('lu', 'Lunes'), ('ma', 'Martes'), ('mi', 'Miércoles'),
                                  ('ju', 'Jueves'), ('vi', 'Viernes'), ('sa', 'Sábado'), ('do', 'Domingo')],
                                 string='Día de la semana', index=True, compute='_compute_week_day', store=True)

@@ -702,3 +702,41 @@
     0%, 80%, 100% { transform: scale(.7); opacity: .5; }
     40%            { transform: scale(1.2); opacity: 1; }
 }
+
+/* ── NÚMEROS CORRIDOS (Pick 4) ─────────────────────────────── */
+
+.numeros-corridos-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+
+.numeros-corridos-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    letter-spacing: 0.03em;
+    margin-right: 4px;
+    white-space: nowrap;
+}
+
+.corrido-ball {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a3a1a;
+    background: #86efac;          /* verde claro */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    line-height: 1;
+}
