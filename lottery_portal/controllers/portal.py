@@ -457,7 +457,9 @@ class LotteryController(http.Controller):
             r.turn_day: {
                 'centena': r.hundreds_id.name,
                 'numero': str(r.number_id.name).zfill(2),
-                'bola_extra': r.fireball_id.name if r.fireball_id else "-"
+                'bola_extra': r.fireball_id.name if r.fireball_id else "-",
+                'premio_2': str(r.premio_2_id.name).zfill(2) if r.premio_2_id else None,
+                'premio_3': str(r.premio_3_id.name).zfill(2) if r.premio_3_id else None,
             }
             for r in salidas
         }

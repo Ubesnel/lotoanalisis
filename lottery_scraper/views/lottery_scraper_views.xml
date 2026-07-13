@@ -11,6 +11,11 @@
                             type="object"
                             class="btn-primary"
                             icon="fa-download"/>
+                    <button name="action_backfill_pick4"
+                            string="Importar Pick 4 (Premio 2 y 3)"
+                            type="object"
+                            icon="fa-refresh"
+                            confirm="Consultará la API de Pick 4 para el rango de fechas definido (o todos si está vacío). ¿Continuar?"/>
                 </header>
                 <sheet>
                     <group string="Ventanas horarias (hora ET)">

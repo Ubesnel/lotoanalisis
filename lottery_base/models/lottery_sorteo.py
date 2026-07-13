@@ -51,6 +51,11 @@ class LotterySorteo(models.Model):
         default=False,
         help="Si está activo, este sorteo aparece en el selector de la página pública de búsqueda de salidas históricoas.",
     )
+    is_pick3 = fields.Boolean(
+        string='Números corridos',
+        default=False,
+        help="Indica que este sorteo es de tipo Pick3 (3 premios). Habilita los campos Premio 2 y Premio 3 en el registro de salidas.",
+    )
 
     # ── Calendario semanal ────────────────────────────────────────
     slot_ids = fields.One2many('lottery.sorteo.slot', 'sorteo_id', string='Calendario (días y turnos)',

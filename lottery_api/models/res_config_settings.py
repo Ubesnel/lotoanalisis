@@ -7,6 +7,7 @@ class ResConfigSettings(models.TransientModel):
 
     lottery_api_proximo_tabla = fields.Selection(
         [
+            ('', 'Sin tabla (ocultar sección)'),
             ('calientes', 'Calientes'),
             ('restantes', 'Restantes'),
             ('frios', 'Fríos'),
@@ -15,6 +16,6 @@ class ResConfigSettings(models.TransientModel):
         default='restantes',
         config_parameter='lottery_api.proximo_sorteo_tabla',
         help="Qué ranking del snapshot se envía a la app LotoAnálisis en la "
-             "vista Próximo Sorteo (mejores números por líneas). Se puede "
-             "cambiar en cualquier momento sin actualizar la app.",
+             "vista Próximo Sorteo (mejores números por líneas). Dejarlo vacío "
+             "oculta la sección en la app mientras evaluás cuál tabla mostrar.",
     )

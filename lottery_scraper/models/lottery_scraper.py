@@ -12,6 +12,7 @@ _logger = logging.getLogger(__name__)
 SCRAPER_URL    = 'https://floridalottery.com/es/games/draw-games/pick-3'
 FLORIDA_API    = 'https://apim-website-prod-eastus.azure-api.net/drawgamesapp/searchgames'
 PICK3_GAME_ID  = 104
+PICK4_GAME_ID  = 108
 
 _HEADERS = {
     'User-Agent': (
@@ -254,6 +255,14 @@ class LotteryScraper(models.Model):
                                             date_from=date_from, date_to=date_to)
             if draws:
                 _logger.info('Scraper: %d sorteos obtenidos via API oficial.', len(draws))
+                # Enriquecer con datos de Pick 4 (Premio 2 y Premio 3)
+                ef = date_from or draws[0]['date']
+                et = date_to or draws[-1]['date']
+                pick4_index = self._fetch_pick4_index(session, timeout, ef, et)
+                for draw in draws:
+                    p4 = pick4_index.get((draw['date'], draw['turn']), {})
+                    draw['premio2'] = p4.get('premio2')
+                    draw['premio3'] = p4.get('premio3')
                 return draws
             errors.append('API oficial: no retornó sorteos para la fecha consultada.')
         except Exception as exc:
@@ -292,6 +301,53 @@ class LotteryScraper(models.Model):
             _logger.warning('Scraper: fallback HTML falló: %s', exc, exc_info=True)
 
         raise UserError('No se pudieron obtener los sorteos:\n\n' + '\n'.join(errors))
+
+    def _fetch_pick4_index(self, session, timeout, date_from, date_to):
+        """
+        Consulta la API de Pick 4 (ID=108) para el rango de fechas indicado.
+        Retorna dict keyed por (date, turn) → {'premio2': int, 'premio3': int}.
+        Premio 2 = wn1·wn2 (primer par), Premio 3 = wn3·wn4 (segundo par).
+        """
+        start_str = date_from.strftime('%d-%b-%Y').upper()
+        end_str   = date_to.strftime('%d-%b-%Y').upper()
+        try:
+            resp = session.get(
+                FLORIDA_API,
+                params={'id': PICK4_GAME_ID, 'startDate': start_str, 'endDate': end_str},
+                headers=_API_HEADERS,
+                timeout=timeout,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if not isinstance(data, list):
+                data = [data]
+        except Exception as exc:
+            _logger.warning('Scraper Pick4: API falló: %s', exc)
+            return {}
+
+        index = {}
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+            draw_date = self._parse_date(item.get('DrawDate', ''))
+            if not draw_date:
+                continue
+            draw_type = str(item.get('DrawType', '')).upper()
+            turn = 'afternoon' if draw_type == 'MIDDAY' else 'evening'
+            numbers = item.get('DrawNumbers', [])
+            wn = {n['NumberType']: n['NumberPick']
+                  for n in numbers if isinstance(n, dict) and 'NumberType' in n}
+            if not all(k in wn for k in ('wn1', 'wn2', 'wn3', 'wn4')):
+                continue
+            try:
+                premio2 = int(str(wn['wn1']) + str(wn['wn2']))
+                premio3 = int(str(wn['wn3']) + str(wn['wn4']))
+            except (ValueError, KeyError):
+                continue
+            index[(draw_date, turn)] = {'premio2': premio2, 'premio3': premio3}
+            _logger.info('Scraper Pick4: %s %s → P2=%02d P3=%02d',
+                         draw_date, turn, premio2, premio3)
+        return index
 
     def _fetch_florida_api(self, session, timeout, date_from=None, date_to=None):
         """
@@ -703,6 +759,17 @@ class LotteryScraper(models.Model):
         if not fireball_rec:
             return f'[ERROR] {label} – bola extra {draw["extra"]} no existe'
 
+        premio2_rec = False
+        premio3_rec = False
+        if draw.get('premio2') is not None:
+            premio2_rec = LottoNum.search([('name', '=', draw['premio2'])], limit=1)
+            if not premio2_rec:
+                _logger.warning('Scraper: Premio2 %02d no existe en lottery.number', draw['premio2'])
+        if draw.get('premio3') is not None:
+            premio3_rec = LottoNum.search([('name', '=', draw['premio3'])], limit=1)
+            if not premio3_rec:
+                _logger.warning('Scraper: Premio3 %02d no existe en lottery.number', draw['premio3'])
+
         Output.create({
             'date':        draw['date'],
             'turn_day':    draw['turn'],
@@ -710,8 +777,12 @@ class LotteryScraper(models.Model):
             'number_id':   number_rec.id,
             'hundreds_id': hundreds_rec.id,
             'fireball_id': fireball_rec.id,
+            'premio_2_id': premio2_rec.id if premio2_rec else False,
+            'premio_3_id': premio3_rec.id if premio3_rec else False,
         })
-        return f'[OK] {label} – {draw["centena"]}{draw["numero"]:02d} extra:{draw["extra"]}'
+        p2_str = f' | P2:{draw["premio2"]:02d}' if draw.get('premio2') is not None else ''
+        p3_str = f' P3:{draw["premio3"]:02d}' if draw.get('premio3') is not None else ''
+        return f'[OK] {label} – {draw["centena"]}{draw["numero"]:02d} extra:{draw["extra"]}{p2_str}{p3_str}'
 
     # ── Formato HTML del resultado ────────────────────────────────
 
@@ -795,6 +866,89 @@ class LotteryScraper(models.Model):
             )
 
         return f'<div class="p-2">{"".join(headers)}{table}</div>'
+
+    def action_backfill_pick4(self):
+        """
+        Rellena premio_2_id y premio_3_id en registros de lottery.output existentes
+        consultando la API de Pick 4. Respeta date_from / date_to si están definidos.
+        """
+        self.ensure_one()
+        try:
+            import requests
+        except ImportError as exc:
+            raise UserError(f'Librería faltante: {exc}') from exc
+
+        session = requests.Session()
+        session.headers.update(_HEADERS)
+        timeout = self.page_load_timeout
+
+        et_tz = timezone(timedelta(hours=self.et_offset))
+        today_et = datetime.now(tz=et_tz).date()
+
+        Output = self.env['lottery.output']
+        LottoNum = self.env['lottery.number']
+        log_lines = []
+
+        # Dominio base: sorteo + rango de fechas si está definido
+        domain = [('sorteo_id', '=', self.sorteo_id.id)]
+        if self.date_from:
+            domain.append(('date', '>=', self.date_from))
+        if self.date_to:
+            domain.append(('date', '<=', self.date_to))
+
+        outputs = Output.search(domain, order='date asc')
+
+        if not outputs:
+            log_lines.append('No hay registros en el rango seleccionado.')
+        else:
+            dates = sorted({o.date for o in outputs})
+            date_min, date_max = dates[0], min(dates[-1], today_et)
+            rango = f'{date_min} → {date_max}'
+            log_lines.append(f'{len(outputs)} registros en el rango ({rango}) …')
+
+            # Consultar Pick 4 en bloques de 90 días
+            pick4_index = {}
+            current = date_min
+            while current <= date_max:
+                block_end = min(current + timedelta(days=89), date_max)
+                block = self._fetch_pick4_index(session, timeout, current, block_end)
+                pick4_index.update(block)
+                current = block_end + timedelta(days=1)
+
+            updated = skipped = 0
+            for output in outputs:
+                key = (output.date, output.turn_day)
+                p4 = pick4_index.get(key)
+                if not p4:
+                    skipped += 1
+                    continue
+                vals = {}
+                p2 = LottoNum.search([('name', '=', p4['premio2'])], limit=1)
+                p3 = LottoNum.search([('name', '=', p4['premio3'])], limit=1)
+                if p2:
+                    vals['premio_2_id'] = p2.id
+                if p3:
+                    vals['premio_3_id'] = p3.id
+                if vals:
+                    output.write(vals)
+                    updated += 1
+                else:
+                    skipped += 1
+
+            log_lines.append(f'[OK] {updated} registros actualizados, {skipped} sin datos Pick 4.')
+
+        self.write({
+            'last_run':    fields.Datetime.now(),
+            'last_result': self._build_result_html(log_lines),
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [[False, 'form']],
+            'target': 'current',
+        }
 
     # ── Singleton ─────────────────────────────────────────────────
 

@@ -36,9 +36,8 @@
         <field name="model">lottery.output</field>
         <field name="inherit_id" ref="lottery_base.view_lottery_output_form"/>
         <field name="arch" type="xml">
-            <sheet position="inside">
-                <notebook>
-                    <page string="Predicción vs Resultado" name="validation">
+            <page name="numeros_corridos" position="after">
+                <page string="Predicción vs Resultado" name="validation">
                         <group>
                             <group>
                                 <field name="hot_numero_ok"/>
@@ -51,8 +50,7 @@
                             <field name="validation_date" string="Validado en"/>
                         </group>
                     </page>
-                </notebook>
-            </sheet>
+            </page>
         </field>
     </record>
 

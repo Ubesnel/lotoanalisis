@@ -7,7 +7,7 @@
             <xpath expr="//app[@name='lottery']" position="inside">
                 <block title="App móvil LotoAnálisis" id="lottery_api_settings">
                     <setting string="Tabla del Próximo Sorteo"
-                             help="Ranking que la app muestra en 'Próximo Sorteo · Mejores números por líneas': Calientes, Restantes o Fríos. La app siempre muestra lo que esté configurado aquí.">
+                             help="Ranking que la app muestra en 'Próximo Sorteo · Mejores números por líneas': Calientes, Restantes o Fríos. Dejarlo vacío oculta la sección en la app mientras decidís cuál tabla activar.">
                         <field name="lottery_api_proximo_tabla"/>
                     </setting>
                 </block>
