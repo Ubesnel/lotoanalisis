@@ -74,7 +74,17 @@
       "Bash(taskkill //PID 16204 //F)",
       "Bash(tasklist //FI \"IMAGENAME eq flutter_tools.snapshot\")",
       "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/jarsigner.exe\" -verify -verbose build/app/outputs/bundle/release/app-release.aab)",
-      "Bash(echo \"update exit: $?\")"
+      "Bash(echo \"update exit: $?\")",
+      "Bash(venv_odoo/Scripts/python.exe -m py_compile lottery/lottery_api/controllers/api.py)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:8065/api/lottery/v1/sorteos\")",
+      "Bash(curl -s \"http://localhost:8065/api/lottery/v1/stats/ultimas-salidas\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d['items'][0], ensure_ascii=False\\)\\)\")",
+      "Bash(curl -s \"http://localhost:8065/api/lottery/v1/results/latest\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d['afternoon'], ensure_ascii=False\\)\\)\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); i=d['items'][0]; print\\({k: i[k] for k in \\('fecha','numero_dia','premio2_dia','premio3_dia','numero_noche','premio2_noche','premio3_noche'\\)}\\)\")",
+      "Bash(curl -s \"http://localhost:8065/api/lottery/v1/stats/salidas-dia?day=lu\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); i=d['items'][0]; print\\({k: i.get\\(k\\) for k in \\('fecha','premio2_dia','premio3_dia','premio2_noche','premio3_noche'\\)}\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:5199\")"
     ]
   }
 }
