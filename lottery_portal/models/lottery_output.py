@@ -7,8 +7,11 @@ _logger = logging.getLogger(__name__)
 # Escribir solo estos campos no dispara _after_change ni recalcula grupos.
 _VALIDATION_FIELDS = frozenset({
     'hot_numero_ok', 'hot_centena_ok', 'hot_extra_ok', 'hot_ok',
+    'hot_1_ok', 'hot_2_ok', 'hot_3_ok',
     'cold_numero_ok', 'cold_centena_ok', 'cold_extra_ok', 'cold_ok',
-    'restante_numero_ok', 'validation_date',
+    'cold_1_ok', 'cold_2_ok', 'cold_3_ok',
+    'restante_numero_ok', 'restante_1_ok', 'restante_2_ok',
+    'restante_3_ok', 'restante_4_ok', 'validation_date',
 })
 
 
@@ -29,6 +32,20 @@ class LotteryOutput(models.Model):
         'Satisfactorio caliente', default=False, index=True,
         help='Los tres (número, centena y extra) estaban en los rangos calientes.')
 
+    # Bloque dentro de Calientes (por score descendente):
+    # C1 = posiciones 1-10, C2 = 11-20, C3 = 21 en adelante (empates).
+    hot_1_ok = fields.Boolean(
+        'Caliente 1', default=False, index=True,
+        help='El número estaba en las posiciones 1-10 de Calientes '
+             '(los de mayor score) antes del sorteo.')
+    hot_2_ok = fields.Boolean(
+        'Caliente 2', default=False, index=True,
+        help='El número estaba en las posiciones 11-20 de Calientes antes del sorteo.')
+    hot_3_ok = fields.Boolean(
+        'Caliente 3', default=False, index=True,
+        help='El número estaba en las posiciones 21 en adelante de Calientes '
+             'antes del sorteo.')
+
     # ── Validación fría ───────────────────────────────────────────
     cold_numero_ok = fields.Boolean(
         'Está en Fríos?', default=False, index=True,
@@ -43,12 +60,43 @@ class LotteryOutput(models.Model):
         'Satisfactorio frío', default=False, index=True,
         help='Ninguno de los tres estaba en las listas frías.')
 
+    # Bloque dentro de Fríos (por score frío descendente):
+    # F1 = posiciones 1-10 (los más fríos), F2 = 11-20, F3 = 21 en adelante.
+    cold_1_ok = fields.Boolean(
+        'Frío 1', default=False, index=True,
+        help='El número estaba en las posiciones 1-10 de Fríos '
+             '(los más fríos) antes del sorteo.')
+    cold_2_ok = fields.Boolean(
+        'Frío 2', default=False, index=True,
+        help='El número estaba en las posiciones 11-20 de Fríos antes del sorteo.')
+    cold_3_ok = fields.Boolean(
+        'Frío 3', default=False, index=True,
+        help='El número estaba en las posiciones 21 en adelante de Fríos '
+             'antes del sorteo.')
+
     validation_date = fields.Datetime('Validado el', readonly=True)
 
     # Restantes
     restante_numero_ok = fields.Boolean(
         'Está en Restantes?', default=False, index=True,
         help='El número salido estaba en el grupo Restantes del turno antes del sorteo.')
+
+    # Bloque dentro de Restantes (por cercanía a Calientes según el score):
+    # R1 = posiciones 1-10, R2 = 11-20, R3 = 21-30, R4 = 31 en adelante.
+    restante_1_ok = fields.Boolean(
+        'Restante 1', default=False, index=True,
+        help='El número estaba en las posiciones 1-10 de Restantes '
+             '(los más pegados a Calientes) antes del sorteo.')
+    restante_2_ok = fields.Boolean(
+        'Restante 2', default=False, index=True,
+        help='El número estaba en las posiciones 11-20 de Restantes antes del sorteo.')
+    restante_3_ok = fields.Boolean(
+        'Restante 3', default=False, index=True,
+        help='El número estaba en las posiciones 21-30 de Restantes antes del sorteo.')
+    restante_4_ok = fields.Boolean(
+        'Restante 4', default=False, index=True,
+        help='El número estaba en las posiciones 31 en adelante de Restantes '
+             '(los más pegados a Fríos) antes del sorteo.')
 
     # ── CRUD ──────────────────────────────────────────────────────
 
@@ -63,7 +111,25 @@ class LotteryOutput(models.Model):
         #   - recomputar stats incrementales
         #   - recalcular ranking_snapshot para el próximo sorteo
         #   - limpiar cachés
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        records._check_predictions()
+        return records
+
+    def _check_predictions(self):
+        """Verifica la predicción (lottery.prediction) de cada salida: marca
+        cumplida si el número salido estaba entre los predichos."""
+        Prediction = self.env['lottery.prediction'].sudo()
+        for out in self:
+            prediction = Prediction.search([
+                ('sorteo_id', '=', out.sorteo_id.id),
+                ('date', '=', out.date),
+                ('turn_day', '=', out.turn_day),
+            ], limit=1)
+            if prediction:
+                prediction.write({
+                    'cumplida': out.number_id.id in prediction.number_ids.ids,
+                    'verification_date': fields.Datetime.now(),
+                })
 
     def write(self, vals):
         res = super().write(vals)
@@ -143,8 +209,15 @@ class LotteryOutput(models.Model):
         def _names(items):
             return {int(i['name'] if isinstance(i, dict) else i) for i in items}
 
-        hot_nums  = _names(turn_data.get('numbers', []))
-        cold_nums = _names(turn_data.get('numbers_cold', []))
+        def _ordered(items):
+            # Lista ordenada por score descendente, tal como viene del snapshot.
+            return [int(i['name'] if isinstance(i, dict) else i) for i in items]
+
+        hot_list  = _ordered(turn_data.get('numbers', []))
+        cold_list = _ordered(turn_data.get('numbers_cold', []))
+        rest_list = _ordered(turn_data.get('numbers_remaining', []))
+        hot_nums  = set(hot_list)
+        cold_nums = set(cold_list)
         hot_cen   = _names(turn_data.get('centenas', []))
         cold_cen  = _names(turn_data.get('centenas_cold', []))
         hot_be    = _names(turn_data.get('bola_extra', []))
@@ -159,6 +232,18 @@ class LotteryOutput(models.Model):
         c_cen = cen not in cold_cen
         rest_num = num not in hot_nums and num not in cold_nums
 
+        # Bloque dentro de cada lista según la posición en el ranking (score
+        # descendente). Los primeros bloques son fijos de 10 posiciones; el
+        # último absorbe el resto (varía con los empates).
+        def _block(lst, max_block):
+            if num not in lst:
+                return 0
+            return min(lst.index(num) // 10, max_block - 1) + 1
+
+        hot_block  = _block(hot_list, 3)
+        cold_block = _block(cold_list, 3)
+        rest_block = _block(rest_list, 4)
+
         if uses_fireball:
             be    = int(be_rec.name)
             h_be  = be in hot_be
@@ -171,10 +256,20 @@ class LotteryOutput(models.Model):
             'hot_centena_ok':  h_cen,
             'hot_extra_ok':    h_be if uses_fireball else False,
             'hot_ok':          h_num and h_cen and h_be,
+            'hot_1_ok':        hot_block == 1,
+            'hot_2_ok':        hot_block == 2,
+            'hot_3_ok':        hot_block == 3,
             'cold_numero_ok':  c_num,
             'cold_centena_ok': c_cen,
             'cold_extra_ok':   c_be if uses_fireball else False,
             'cold_ok':         c_num and c_cen and c_be,
+            'cold_1_ok':       cold_block == 1,
+            'cold_2_ok':       cold_block == 2,
+            'cold_3_ok':       cold_block == 3,
             'validation_date': fields.Datetime.now(),
-            'restante_numero_ok': rest_num
+            'restante_numero_ok': rest_num,
+            'restante_1_ok': rest_block == 1,
+            'restante_2_ok': rest_block == 2,
+            'restante_3_ok': rest_block == 3,
+            'restante_4_ok': rest_block == 4,
         }

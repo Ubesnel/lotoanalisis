@@ -70,22 +70,30 @@
                             <i class="fa fa-fire"/>
                             <span>Calientes</span>
                             <div class="nc-col-legend ms-auto">
-                                <span class="nc-pip nc-pip--hot"/><span>1–10</span>
-                                <span class="nc-pip nc-pip--warm"/><span>11–20</span>
-                                <span class="nc-pip nc-pip--cool"/><span>21–30</span>
+                                <span class="nc-pip nc-pip--hot"/><span>C1</span>
+                                <span class="nc-pip nc-pip--warm"/><span>C2</span>
+                                <span class="nc-pip nc-pip--cool"/><span>C3</span>
                             </div>
                         </div>
                         <div class="card-body p-2">
-                            <div class="nc-numbers-grid">
-                                <t t-foreach="numbers" t-as="num" t-key="num.name">
-                                    <div class="nc-cell">
-                                        <span t-att-class="'nc-ball ' + num.cls"
-                                              t-att-title="'#' + num.rank + ' · Score: ' + num.score">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </div>
-                                </t>
-                            </div>
+                            <!-- Números calientes en 3 bloques de 10 por score
+                                 (C1 = los de mayor score) -->
+                            <t t-foreach="hotBlocks" t-as="blk" t-key="'hotblk_' + blk.n">
+                                <div class="nc-block-hdr">
+                                    <span t-att-class="'nc-pip ' + blk.pip"/>
+                                    Caliente <t t-esc="blk.n"/>
+                                </div>
+                                <div class="nc-numbers-grid">
+                                    <t t-foreach="blk.numbers" t-as="num" t-key="num.name">
+                                        <div class="nc-cell">
+                                            <span t-att-class="'nc-ball ' + num.cls"
+                                                  t-att-title="'#' + num.rank + ' · Score: ' + num.score">
+                                                <t t-esc="num.name"/>
+                                            </span>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
                             <!-- Centenas + Bola Extra calientes -->
                             <div class="nc-cebs-row mt-2">
                                 <div class="nc-cebs-col">
@@ -135,23 +143,31 @@
                             <i class="fa fa-circle-o"/>
                             <span>Restantes</span>
                             <div class="nc-col-legend ms-auto">
-                                <span class="nc-pip nc-pip--rem1"/><span>1–13</span>
-                                <span class="nc-pip nc-pip--rem2"/><span>14–26</span>
-                                <span class="nc-pip nc-pip--rem3"/><span>27–40</span>
+                                <span class="nc-pip nc-pip--rem1"/><span>R1</span>
+                                <span class="nc-pip nc-pip--rem2"/><span>R2</span>
+                                <span class="nc-pip nc-pip--rem3"/><span>R3</span>
+                                <span class="nc-pip nc-pip--rem4"/><span>R4</span>
                             </div>
                         </div>
                         <div class="card-body p-2">
-                            <!-- Números restantes con 3 grupos de color por posición -->
-                            <div class="nc-numbers-grid">
-                                <t t-foreach="numbersRemaining" t-as="num" t-key="'rem_' + num.name">
-                                    <div class="nc-cell">
-                                        <span t-att-class="'nc-ball ' + num.cls"
-                                              t-att-title="'#' + num.rank + ' · Score: ' + num.score">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </div>
-                                </t>
-                            </div>
+                            <!-- Números restantes en 4 bloques de 10 por cercanía
+                                 a Calientes (R1 = los más pegados a Calientes) -->
+                            <t t-foreach="remainingBlocks" t-as="blk" t-key="'remblk_' + blk.n">
+                                <div class="nc-block-hdr">
+                                    <span t-att-class="'nc-pip ' + blk.pip"/>
+                                    Restante <t t-esc="blk.n"/>
+                                </div>
+                                <div class="nc-numbers-grid">
+                                    <t t-foreach="blk.numbers" t-as="num" t-key="'rem_' + num.name">
+                                        <div class="nc-cell">
+                                            <span t-att-class="'nc-ball ' + num.cls"
+                                                  t-att-title="'#' + num.rank + ' · Score: ' + num.score">
+                                                <t t-esc="num.name"/>
+                                            </span>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
                             <!-- Centenas + Bola Extra restantes -->
                             <div class="nc-cebs-row mt-2">
                                 <div class="nc-cebs-col">
@@ -201,22 +217,30 @@
                             <i class="fa fa-snowflake-o"/>
                             <span>Más Fríos</span>
                             <div class="nc-col-legend ms-auto">
-                                <span class="nc-pip nc-pip--cold1"/><span>1–10</span>
-                                <span class="nc-pip nc-pip--cold2"/><span>11–20</span>
-                                <span class="nc-pip nc-pip--cold3"/><span>21–30</span>
+                                <span class="nc-pip nc-pip--cold1"/><span>F1</span>
+                                <span class="nc-pip nc-pip--cold2"/><span>F2</span>
+                                <span class="nc-pip nc-pip--cold3"/><span>F3</span>
                             </div>
                         </div>
                         <div class="card-body p-2">
-                            <div class="nc-numbers-grid">
-                                <t t-foreach="numbersCold" t-as="num" t-key="'cold_' + num.name">
-                                    <div class="nc-cell">
-                                        <span t-att-class="'nc-ball ' + num.cls"
-                                              t-att-title="'#' + num.rank + ' · Score: ' + num.score">
-                                            <t t-esc="num.name"/>
-                                        </span>
-                                    </div>
-                                </t>
-                            </div>
+                            <!-- Números fríos en 3 bloques de 10 por score frío
+                                 (F1 = los más fríos) -->
+                            <t t-foreach="coldBlocks" t-as="blk" t-key="'coldblk_' + blk.n">
+                                <div class="nc-block-hdr">
+                                    <span t-att-class="'nc-pip ' + blk.pip"/>
+                                    Frío <t t-esc="blk.n"/>
+                                </div>
+                                <div class="nc-numbers-grid">
+                                    <t t-foreach="blk.numbers" t-as="num" t-key="'cold_' + num.name">
+                                        <div class="nc-cell">
+                                            <span t-att-class="'nc-ball ' + num.cls"
+                                                  t-att-title="'#' + num.rank + ' · Score: ' + num.score">
+                                                <t t-esc="num.name"/>
+                                            </span>
+                                        </div>
+                                    </t>
+                                </div>
+                            </t>
                             <!-- Centenas + Bola Extra frías -->
                             <div class="nc-cebs-row mt-2">
                                 <div class="nc-cebs-col">

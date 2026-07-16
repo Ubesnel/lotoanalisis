@@ -9,8 +9,18 @@
         <field name="arch" type="xml">
             <field name="complete_number" position="after">
                 <field name="hot_numero_ok" optional="show" widget="boolean_toggle"/>
+                <field name="hot_1_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="hot_2_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="hot_3_ok" optional="hide" widget="boolean_toggle"/>
                 <field name="restante_numero_ok" optional="show" widget="boolean_toggle"/>
+                <field name="restante_1_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="restante_2_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="restante_3_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="restante_4_ok" optional="hide" widget="boolean_toggle"/>
                 <field name="cold_numero_ok" optional="show" widget="boolean_toggle"/>
+                <field name="cold_1_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="cold_2_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="cold_3_ok" optional="hide" widget="boolean_toggle"/>
 
             </field>
         </field>
@@ -24,8 +34,18 @@
         <field name="arch" type="xml">
             <field name="complete_number" position="after">
                 <field name="hot_numero_ok"  optional="show" widget="boolean_toggle"/>
+                <field name="hot_1_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="hot_2_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="hot_3_ok" optional="hide" widget="boolean_toggle"/>
                 <field name="restante_numero_ok" optional="show" widget="boolean_toggle"/>
+                <field name="restante_1_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="restante_2_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="restante_3_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="restante_4_ok" optional="hide" widget="boolean_toggle"/>
                 <field name="cold_numero_ok" optional="show" widget="boolean_toggle"/>
+                <field name="cold_1_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="cold_2_ok" optional="hide" widget="boolean_toggle"/>
+                <field name="cold_3_ok" optional="hide" widget="boolean_toggle"/>
             </field>
         </field>
     </record>
@@ -41,8 +61,18 @@
                         <group>
                             <group>
                                 <field name="hot_numero_ok"/>
+                                <field name="hot_1_ok"/>
+                                <field name="hot_2_ok"/>
+                                <field name="hot_3_ok"/>
                                 <field name="restante_numero_ok"/>
+                                <field name="restante_1_ok"/>
+                                <field name="restante_2_ok"/>
+                                <field name="restante_3_ok"/>
+                                <field name="restante_4_ok"/>
                                 <field name="cold_numero_ok"/>
+                                <field name="cold_1_ok"/>
+                                <field name="cold_2_ok"/>
+                                <field name="cold_3_ok"/>
 
                             </group>
                         </group>
@@ -65,12 +95,42 @@
                 <filter string="Calientes"
                         name="hot_numero_ok"
                         domain="[('hot_numero_ok', '=', True)]"/>
+                <filter string="Caliente 1"
+                        name="hot_1_ok"
+                        domain="[('hot_1_ok', '=', True)]"/>
+                <filter string="Caliente 2"
+                        name="hot_2_ok"
+                        domain="[('hot_2_ok', '=', True)]"/>
+                <filter string="Caliente 3"
+                        name="hot_3_ok"
+                        domain="[('hot_3_ok', '=', True)]"/>
                 <filter string="Fríos"
                         name="cold_numero_ok"
                         domain="[('cold_numero_ok', '=', True)]"/>
+                <filter string="Frío 1"
+                        name="cold_1_ok"
+                        domain="[('cold_1_ok', '=', True)]"/>
+                <filter string="Frío 2"
+                        name="cold_2_ok"
+                        domain="[('cold_2_ok', '=', True)]"/>
+                <filter string="Frío 3"
+                        name="cold_3_ok"
+                        domain="[('cold_3_ok', '=', True)]"/>
                 <filter string="Restantes"
                         name="restantes_ok"
                         domain="[('restante_numero_ok', '=', True)]"/>
+                <filter string="Restante 1"
+                        name="restante_1_ok"
+                        domain="[('restante_1_ok', '=', True)]"/>
+                <filter string="Restante 2"
+                        name="restante_2_ok"
+                        domain="[('restante_2_ok', '=', True)]"/>
+                <filter string="Restante 3"
+                        name="restante_3_ok"
+                        domain="[('restante_3_ok', '=', True)]"/>
+                <filter string="Restante 4"
+                        name="restante_4_ok"
+                        domain="[('restante_4_ok', '=', True)]"/>
                 <filter string="Sin validar"
                         name="not_validated"
                         domain="[('validation_date', '=', False)]"/>

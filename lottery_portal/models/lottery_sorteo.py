@@ -91,11 +91,24 @@ class LotterySorteo(models.Model):
             parts.append('<table class="table table-sm table-bordered" style="width:auto">')
             parts.append('<thead><tr><th></th><th>Calientes</th><th>Fríos</th></tr></thead>')
             parts.append('<tbody>')
+            # Bloques por posición en el ranking (mismo criterio que la
+            # validación de salidas): los primeros fijos de 10, el último
+            # absorbe el resto (varía con los empates).
+            def _blk_html(lst, prefix, nblocks):
+                blocks = [lst[i * 10:(i + 1) * 10] for i in range(nblocks - 1)]
+                blocks.append(lst[(nblocks - 1) * 10:])
+                return '<br/>'.join(
+                    f'<b>{prefix}{i + 1}:</b> {", ".join(fmt(n) for n in blk)}'
+                    for i, blk in enumerate(blocks) if blk)
+
             parts.append(f'<tr><td><b>Números</b> ({len(nums_hot)}/{len(nums_cold)})</td>'
-                         f'<td style="font-size:11px">{", ".join(fmt(n) for n in nums_hot[:15])}'
-                         f'{"…" if len(nums_hot) > 15 else ""}</td>'
-                         f'<td style="font-size:11px">{", ".join(fmt(n) for n in nums_cold[:15])}'
-                         f'{"…" if len(nums_cold) > 15 else ""}</td></tr>')
+                         f'<td style="font-size:11px">{_blk_html(nums_hot, "C", 3)}</td>'
+                         f'<td style="font-size:11px">{_blk_html(nums_cold, "F", 3)}</td></tr>')
+            nums_rem = data.get('numbers_remaining', [])
+            if nums_rem:
+                parts.append(f'<tr><td><b>Restantes</b> ({len(nums_rem)})</td>'
+                             f'<td colspan="2" style="font-size:11px">'
+                             f'{_blk_html(nums_rem, "R", 4)}</td></tr>')
             parts.append(f'<tr><td><b>Centenas</b></td>'
                          f'<td>{", ".join(fmt(c) for c in cen_hot)}</td>'
                          f'<td>{", ".join(fmt(c) for c in cen_cold)}</td></tr>')

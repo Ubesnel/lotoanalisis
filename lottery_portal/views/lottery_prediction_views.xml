@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Tree ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_prediction_tree" model="ir.ui.view">
+        <field name="name">lottery.prediction.tree</field>
+        <field name="model">lottery.prediction</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="cumplida" decoration-muted="not verification_date">
+                <field name="date"/>
+                <field name="turn_day"/>
+                <field name="sorteo_id" optional="show"/>
+                <field name="numbers_count"/>
+                <field name="number_ids" widget="many2many_tags" optional="show"/>
+                <field name="cumplida" widget="boolean_toggle" readonly="1"/>
+                <field name="verification_date" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_prediction_form" model="ir.ui.view">
+        <field name="name">lottery.prediction.form</field>
+        <field name="model">lottery.prediction</field>
+        <field name="arch" type="xml">
+            <form string="Predicción">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="turn_day"/>
+                            <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="numbers_count"/>
+                            <field name="cumplida" readonly="1"/>
+                            <field name="verification_date"/>
+                        </group>
+                    </group>
+                    <group string="Números a predecir">
+                        <field name="number_ids" nolabel="1" colspan="2"
+                               widget="many2many_tags"
+                               options="{'no_open': True, 'no_create': True}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search ────────────────────────────────────────────────── -->
+    <record id="view_lottery_prediction_search" model="ir.ui.view">
+        <field name="name">lottery.prediction.search</field>
+        <field name="model">lottery.prediction</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="date"/>
+                <field name="number_ids"/>
+                <field name="sorteo_id"/>
+                <filter string="Tarde" name="pred_afternoon"
+                        domain="[('turn_day', '=', 'afternoon')]"/>
+                <filter string="Noche" name="pred_evening"
+                        domain="[('turn_day', '=', 'evening')]"/>
+                <separator/>
+                <filter string="Cumplidas" name="cumplidas"
+                        domain="[('cumplida', '=', True)]"/>
+                <filter string="No cumplidas" name="no_cumplidas"
+                        domain="[('cumplida', '=', False), ('verification_date', '!=', False)]"/>
+                <filter string="Sin verificar" name="sin_verificar"
+                        domain="[('verification_date', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Fecha" name="group_date"
+                            context="{'group_by': 'date'}"/>
+                    <filter string="Turno" name="group_turn"
+                            context="{'group_by': 'turn_day'}"/>
+                    <filter string="Sorteo" name="group_sorteo"
+                            context="{'group_by': 'sorteo_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Acción y menú ─────────────────────────────────────────── -->
+    <record id="action_lottery_prediction" model="ir.actions.act_window">
+        <field name="name">Predicciones</field>
+        <field name="res_model">lottery.prediction</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registrá tu primera predicción
+            </p>
+            <p>
+                Elegí la fecha y el turno del próximo sorteo y agregá los
+                números que predecís que van a salir.
+            </p>
+        </field>
+    </record>
+
+    <menuitem name="Predicciones" id="menu_predicciones_root" sequence="20"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_prediction_item" name="Predicciones"
+              parent="menu_predicciones_root"
+              action="action_lottery_prediction" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>

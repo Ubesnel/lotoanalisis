@@ -9,3 +9,5 @@ access_news_article_public,news_article_public,model_news_article,,1,0,0,0
 access_news_comment_public,news_comment_public,model_news_comment,,1,0,1,0
 access_page_visit_manager,page_visit_manager,model_lottery_page_visit,lottery_base.group_lottery_manager,1,1,1,1
 access_page_visit_public,page_visit_public,model_lottery_page_visit,,0,0,1,0
+access_lottery_prediction_user,lottery_prediction_user,model_lottery_prediction,lottery_base.group_lottery_user,1,0,0,0
+access_lottery_prediction_manager,lottery_prediction_manager,model_lottery_prediction,lottery_base.group_lottery_manager,1,1,1,1

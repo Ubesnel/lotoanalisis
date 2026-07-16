@@ -299,6 +299,41 @@ class LotteryAppApi(http.Controller):
             } for line, nums in sorted(lines.items())],
         })
 
+    @http.route('/api/lottery/v1/stats/numeros-magicos', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def numeros_magicos(self, sorteo_id=None, **kwargs):
+        """Predicción de números (lottery.prediction) para el próximo sorteo.
+
+        Si no hay predicción cargada para esa fecha/turno, found = false y la
+        app muestra el aviso de "todavía no se han definido".
+        """
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        date_str, turn = sorteo.get_next_draw()
+        base = {
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'date': date_str,
+            'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
+            'turn': turn,
+            'turn_label': TURN_LABELS.get(turn, turn),
+        }
+
+        prediction = request.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date_str),
+            ('turn_day', '=', turn),
+        ], limit=1)
+        if not prediction or not prediction.number_ids:
+            return _json_response(dict(base, found=False, numbers=[]))
+
+        numbers = sorted(prediction.number_ids.mapped('name'))
+        return _json_response(dict(
+            base, found=True,
+            numbers=[str(n).zfill(2) for n in numbers],
+        ))
+
     @http.route('/api/lottery/v1/stats/grupos-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def grupos_dia(self, sorteo_id=None, day=None, **kwargs):

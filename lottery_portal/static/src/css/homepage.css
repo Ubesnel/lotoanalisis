@@ -2096,14 +2096,31 @@ html, #wrapwrap { scroll-behavior: smooth; }
 .nc-pip--cold2 { background: linear-gradient(135deg, #06b6d4, #0066cc); }
 .nc-pip--cold3 { background: linear-gradient(135deg, #64748b, #475569); }
 
-/* ── Pip y bolas restantes (3 grupos de ~13) ────────────────── */
+/* ── Pip y bolas restantes (4 bloques de 10 por cercanía a
+      Calientes: R1 = más pegados a Calientes, R4 = a Fríos) ──── */
 .nc-pip--rem1  { background: linear-gradient(135deg, #7c3aed, #a855f7); }
 .nc-pip--rem2  { background: linear-gradient(135deg, #0891b2, #06b6d4); }
 .nc-pip--rem3  { background: linear-gradient(135deg, #d97706, #f59e0b); }
+.nc-pip--rem4  { background: linear-gradient(135deg, #be185d, #ec4899); }
 
 .nc-ball-rem1  { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }
 .nc-ball-rem2  { background: linear-gradient(135deg, #0891b2, #06b6d4); color: #fff; }
 .nc-ball-rem3  { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }
+.nc-ball-rem4  { background: linear-gradient(135deg, #be185d, #ec4899); color: #fff; }
+
+/* Encabezado de cada bloque dentro de Calientes / Restantes / Fríos */
+.nc-block-hdr {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: .72rem;
+    font-weight: 800;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin: 8px 2px 3px;
+}
+.nc-block-hdr:first-of-type { margin-top: 2px; }
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 767px) {

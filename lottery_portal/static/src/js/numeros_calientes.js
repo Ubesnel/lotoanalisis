@@ -51,8 +51,43 @@ export class NumerosCalientes extends Component {
     get current()                { return this.state.data[this.state.turn]; }
 
     get numbers()          { return this._prep(this.current.numbers,           i => i < 10 ? 'nc-ball-hot'  : i < 20 ? 'nc-ball-warm' : 'nc-ball-cool'); }
-    get numbersRemaining() { return this._prep(this.current.numbers_remaining, i => i < 13 ? 'nc-ball-rem1' : i < 26 ? 'nc-ball-rem2' : 'nc-ball-rem3'); }
+    get numbersRemaining() { return this._prep(this.current.numbers_remaining, i => i < 10 ? 'nc-ball-rem1' : i < 20 ? 'nc-ball-rem2' : i < 30 ? 'nc-ball-rem3' : 'nc-ball-rem4'); }
     get numbersCold()      { return this._prep(this.current.numbers_cold,      i => i < 10 ? 'nc-ball-cold1': i < 20 ? 'nc-ball-cold2': 'nc-ball-cold3'); }
+
+    // Bloques por posición en el ranking (score descendente): los primeros
+    // fijos de 10, el último absorbe el resto (varía con los empates).
+    // Dentro de cada bloque se muestran ordenados de menor a mayor.
+    _blocks(list, ballCls, pipCls) {
+        const max = ballCls.length;
+        const blocks = ballCls.map(() => []);
+        (list || []).forEach((it, i) => {
+            const b = Math.min(Math.floor(i / 10), max - 1);
+            blocks[b].push({ ...it, rank: i + 1, cls: ballCls[b] });
+        });
+        return blocks
+            .map((nums, idx) => ({
+                n: idx + 1,
+                pip: pipCls[idx],
+                numbers: nums.sort((a, b) => Number(a.name) - Number(b.name)),
+            }))
+            .filter(blk => blk.numbers.length);
+    }
+
+    get hotBlocks() {
+        return this._blocks(this.current.numbers,
+            ['nc-ball-hot', 'nc-ball-warm', 'nc-ball-cool'],
+            ['nc-pip--hot', 'nc-pip--warm', 'nc-pip--cool']);
+    }
+    get coldBlocks() {
+        return this._blocks(this.current.numbers_cold,
+            ['nc-ball-cold1', 'nc-ball-cold2', 'nc-ball-cold3'],
+            ['nc-pip--cold1', 'nc-pip--cold2', 'nc-pip--cold3']);
+    }
+    get remainingBlocks() {
+        return this._blocks(this.current.numbers_remaining,
+            ['nc-ball-rem1', 'nc-ball-rem2', 'nc-ball-rem3', 'nc-ball-rem4'],
+            ['nc-pip--rem1', 'nc-pip--rem2', 'nc-pip--rem3', 'nc-pip--rem4']);
+    }
 
     get centenas()         { return this._prep(this.current.centenas,          i => i === 0 ? 'nc-badge-ceb--hot' : i < 3 ? 'nc-badge-ceb--warm' : 'nc-badge-ceb--cool'); }
     get centenasRemaining(){ return this._prep(this.current.centenas_remaining,i => i === 0 ? 'nc-badge-ceb--rem1' : 'nc-badge-ceb--rem2'); }
