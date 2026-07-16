@@ -61,7 +61,8 @@
       "Bash(python -u -c ' *)",
       "PowerShell(Get-Item \"C:\\\\Users\\\\Ubesnel\\\\mlb_nrfi_yrfi\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" | Select-Object FullName, @{N='Size MB';E={[math]::Round\\($_.Length/1MB,1\\)}}, LastWriteTime)",
       "Bash(python -)",
-      "PowerShell(Get-Item \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" | Select-Object @{N='Size MB';E={[math]::Round\\($_.Length/1MB,1\\)}}, LastWriteTime)"
+      "PowerShell(Get-Item \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" | Select-Object @{N='Size MB';E={[math]::Round\\($_.Length/1MB,1\\)}}, LastWriteTime)",
+      "PowerShell(python \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\cbea76aa-95b9-4262-a228-af90685e75ae\\\\scratchpad\\\\gen_icon.py\" 2>&1)"
     ]
   }
 }
