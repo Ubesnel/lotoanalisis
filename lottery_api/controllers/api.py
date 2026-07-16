@@ -42,6 +42,9 @@ def _serialize_output(record):
         'centena': str(record.hundreds_id.name),
         'numero': str(record.number_id.name).zfill(2),
         'extra': str(record.fireball_id.name) if record.fireball_id else None,
+        # Números corridos (Premio 2 y 3, solo sorteos Pick3 con dato cargado)
+        'premio_2': str(record.premio_2_id.name).zfill(2) if record.premio_2_id else None,
+        'premio_3': str(record.premio_3_id.name).zfill(2) if record.premio_3_id else None,
     }
 
 
@@ -160,6 +163,32 @@ class LotteryAppApi(http.Controller):
             'items': self._stats().get_top_10_por_dia_semana(day, sorteo_id=sorteo.id),
         })
 
+    def _attach_corridos(self, items, sorteo_id):
+        """Agrega premio2/premio3 (números corridos) por turno a las filas de
+        salidas (que vienen de la MV, sin esos campos). Claves nuevas:
+        premio2_dia, premio3_dia, premio2_noche, premio3_noche."""
+        dates = [i['date'] for i in items if i.get('date')]
+        if not dates:
+            return items
+        request.env.cr.execute("""
+            SELECT o.date, o.turn_day, n2.name AS p2, n3.name AS p3
+            FROM lottery_output o
+            LEFT JOIN lottery_number n2 ON n2.id = o.premio_2_id
+            LEFT JOIN lottery_number n3 ON n3.id = o.premio_3_id
+            WHERE o.sorteo_id = %s AND o.date = ANY(%s)
+              AND (o.premio_2_id IS NOT NULL OR o.premio_3_id IS NOT NULL)
+        """, (sorteo_id, dates))
+        corridos = {(r['date'], r['turn_day']): r
+                    for r in request.env.cr.dictfetchall()}
+        for item in items:
+            for turn, suffix in (('afternoon', 'dia'), ('evening', 'noche')):
+                row = corridos.get((item.get('date'), turn))
+                item['premio2_' + suffix] = (
+                    str(row['p2']).zfill(2) if row and row['p2'] is not None else None)
+                item['premio3_' + suffix] = (
+                    str(row['p3']).zfill(2) if row and row['p3'] is not None else None)
+        return items
+
     @http.route('/api/lottery/v1/stats/salidas-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def salidas_dia(self, sorteo_id=None, day=None, **kwargs):
@@ -167,9 +196,10 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         day = self._resolve_day(day)
+        items = self._stats().get_ultimas_salidas_por_dia(day, sorteo_id=sorteo.id)
         return _json_response({
             'day': day,
-            'items': self._stats().get_ultimas_salidas_por_dia(day, sorteo_id=sorteo.id),
+            'items': self._attach_corridos(items, sorteo.id),
         })
 
     @http.route('/api/lottery/v1/stats/ultimas-salidas', type='http',
@@ -178,8 +208,9 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
+        items = self._stats().get_ultimas_salidas_col1(sorteo_id=sorteo.id)
         return _json_response({
-            'items': self._stats().get_ultimas_salidas_col1(sorteo_id=sorteo.id),
+            'items': self._attach_corridos(items, sorteo.id),
         })
 
     @http.route('/api/lottery/v1/stats/atrasos-lineas', type='http',
