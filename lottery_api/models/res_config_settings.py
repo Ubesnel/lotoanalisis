@@ -5,9 +5,12 @@ from odoo import fields, models
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    # OJO: la opción "ocultar" usa el valor 'none' (no '' ni False): un
+    # selection vacío hace que config_parameter BORRE el parámetro al
+    # guardar, y todo vuelve al default 'restantes'.
     lottery_api_proximo_tabla = fields.Selection(
         [
-            ('', 'Sin tabla (ocultar sección)'),
+            ('none', 'Sin tabla (ocultar sección)'),
             ('calientes', 'Calientes'),
             ('restantes', 'Restantes'),
             ('frios', 'Fríos'),

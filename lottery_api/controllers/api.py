@@ -298,8 +298,9 @@ class LotteryAppApi(http.Controller):
                   'frios': 'Fríos'}
         tabla = request.env['ir.config_parameter'].sudo().get_param(
             'lottery_api.proximo_sorteo_tabla', 'restantes')
-        if not tabla:
-            return _json_response({'tabla': '', 'numeros': [], 'turn': None})
+        if not tabla or tabla == 'none':
+            return _json_response(
+                {'tabla': '', 'numeros': [], 'lines': [], 'turn': None})
         if tabla not in key_map:
             tabla = 'restantes'
 
