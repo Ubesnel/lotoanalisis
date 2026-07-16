@@ -35,6 +35,7 @@
         "views/res_config_settings.xml",
         "views/menu.xml",
         "views/lottery_output_validation_views.xml",
+        "views/lottery_prediction_views.xml",
         "views/lottery_sorteo_views.xml",
     ],
     'assets': {

@@ -62,7 +62,19 @@
       "PowerShell(Get-Item \"C:\\\\Users\\\\Ubesnel\\\\mlb_nrfi_yrfi\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" | Select-Object FullName, @{N='Size MB';E={[math]::Round\\($_.Length/1MB,1\\)}}, LastWriteTime)",
       "Bash(python -)",
       "PowerShell(Get-Item \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-debug.apk\" | Select-Object @{N='Size MB';E={[math]::Round\\($_.Length/1MB,1\\)}}, LastWriteTime)",
-      "PowerShell(python \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\cbea76aa-95b9-4262-a228-af90685e75ae\\\\scratchpad\\\\gen_icon.py\" 2>&1)"
+      "PowerShell(python \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\cbea76aa-95b9-4262-a228-af90685e75ae\\\\scratchpad\\\\gen_icon.py\" 2>&1)",
+      "Read(//e/Trabajo/Flutter/lottery_app/**)",
+      "Bash(flutter analyze *)",
+      "Bash(venv_odoo/Scripts/python.exe -c ' *)",
+      "Bash(venv_odoo/Scripts/python.exe odoo-bin *)",
+      "Bash(tasklist //FI \"IMAGENAME eq python.exe\" //FO CSV)",
+      "Bash(tasklist //FI \"IMAGENAME eq dart.exe\" //FO CSV)",
+      "Bash(taskkill //PID 19924 //F)",
+      "Bash(taskkill //PID 21172 //F)",
+      "Bash(taskkill //PID 16204 //F)",
+      "Bash(tasklist //FI \"IMAGENAME eq flutter_tools.snapshot\")",
+      "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/jarsigner.exe\" -verify -verbose build/app/outputs/bundle/release/app-release.aab)",
+      "Bash(echo \"update exit: $?\")"
     ]
   }
 }
