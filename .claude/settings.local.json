@@ -84,7 +84,14 @@
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); i=d['items'][0]; print\\({k: i[k] for k in \\('fecha','numero_dia','premio2_dia','premio3_dia','numero_noche','premio2_noche','premio3_noche'\\)}\\)\")",
       "Bash(curl -s \"http://localhost:8065/api/lottery/v1/stats/salidas-dia?day=lu\")",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); i=d['items'][0]; print\\({k: i.get\\(k\\) for k in \\('fecha','premio2_dia','premio3_dia','premio2_noche','premio3_noche'\\)}\\)\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:5199\")"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:5199\")",
+      "Bash(taskkill //PID 7344 //F)",
+      "Bash(flutter build *)",
+      "Bash(flutter create *)",
+      "Bash(taskkill //PID 16732 //F)",
+      "Bash(taskkill //PID 16408 //F)",
+      "Bash(taskkill //PID 20256 //F)",
+      "Bash(awk '{print $5, $6, $7, $8}')"
     ]
   }
 }
