@@ -92,7 +92,11 @@
       "Bash(taskkill //PID 16408 //F)",
       "Bash(taskkill //PID 20256 //F)",
       "Bash(awk '{print $5, $6, $7, $8}')",
-      "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/jarsigner.exe\" -verify build/app/outputs/bundle/release/app-release.aab)"
+      "Bash(\"C:/Program Files/Android/Android Studio/jbr/bin/jarsigner.exe\" -verify build/app/outputs/bundle/release/app-release.aab)",
+      "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/sorteos\")",
+      "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/stats/numeros-magicos\")",
+      "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/results/latest\")",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); a=d.get\\('afternoon'\\) or {}; print\\({k: a.get\\(k\\) for k in \\('date','numero','premio_2','premio_3'\\)}\\)\")"
     ]
   }
 }
