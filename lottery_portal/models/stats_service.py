@@ -474,6 +474,114 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('month', 'current_year', 'sorteo_id', 'years_top', 'years_mid', 'years_bottom')
+    def get_month_overdue_sections(self, month=None, current_year=None, sorteo_id=False,
+                                   years_top=2, years_mid=2, years_bottom=4):
+        """Números del mes con atraso en años, en 3 secciones por categoría.
+
+        Para cada categoría de /numeros-mes (top=calientes, intermedios,
+        bottom=fríos) filtra los números que llevan al menos N años completos
+        sin salir en el mes actual, SIN contar el año en curso (es el año a
+        evaluar). Ej: estamos en 2026, el 34 salió por última vez en julio
+        el 05/07/2023 → 2024 y 2025 sin salir = 2 años → entra con N=2.
+        Umbral por categoría: top e intermedios ≥ 2 años, bottom ≥ 4
+        (configurables via years_top / years_mid / years_bottom).
+        Nunca salió en el mes → también entra.
+
+        Por categoría devuelve:
+          all            → Sección 1: todos los que cumplen el umbral
+          salieron_anio  → Sección 2: de la 1, los que ya salieron este año
+                           (en cualquier mes del año actual)
+          sin_salir_anio → Sección 3: de la 1, los que no salieron este año
+        """
+        categories = {
+            'top': (self.get_top_numbers_month(
+                month, current_year, sorteo_id=sorteo_id), years_top),
+            'intermedios': (self.get_remaining_numbers_month(
+                month, current_year, sorteo_id=sorteo_id), years_mid),
+            'bottom': (self.get_bottom_numbers_month(
+                month, current_year, sorteo_id=sorteo_id), years_bottom),
+        }
+
+        # Última salida en este mes en años ANTERIORES al actual, por número
+        self.env.cr.execute("""
+            SELECT DISTINCT ON (lo.number_id)
+                lo.number_id,
+                TO_CHAR(lo.date, 'DD/MM/YYYY') AS last_month_date,
+                lo.year AS last_month_year,
+                lo.turn_day AS last_month_turn,
+                CASE lo.week_day
+                    WHEN 'lu' THEN 'Lun'
+                    WHEN 'ma' THEN 'Mar'
+                    WHEN 'mi' THEN 'Mié'
+                    WHEN 'ju' THEN 'Jue'
+                    WHEN 'vi' THEN 'Vie'
+                    WHEN 'sa' THEN 'Sáb'
+                    WHEN 'do' THEN 'Dom'
+                    ELSE lo.week_day
+                END AS last_month_week_day
+            FROM lottery_output lo
+            WHERE lo.sorteo_id = %(sorteo_id)s
+              AND lo.month = %(month)s::text
+              AND lo.year < %(year)s
+            ORDER BY lo.number_id, lo.date DESC
+        """, {'sorteo_id': sorteo_id, 'month': month, 'year': current_year})
+        prev = {r['number_id']: r for r in self.env.cr.dictfetchall()}
+
+        # Última salida del año ACTUAL (cualquier mes), por número
+        self.env.cr.execute("""
+            SELECT DISTINCT ON (lo.number_id)
+                lo.number_id,
+                TO_CHAR(lo.date, 'DD/MM/YYYY') AS last_year_date,
+                lo.turn_day AS last_year_turn
+            FROM lottery_output lo
+            WHERE lo.sorteo_id = %(sorteo_id)s
+              AND lo.year = %(year)s
+            ORDER BY lo.number_id, lo.date DESC
+        """, {'sorteo_id': sorteo_id, 'year': current_year})
+        curr = {r['number_id']: r for r in self.env.cr.dictfetchall()}
+
+        result = {}
+        for key, (numbers, threshold) in categories.items():
+            section_all = []
+            for n in numbers:
+                p = prev.get(n['id'])
+                if p:
+                    missed_years = current_year - p['last_month_year'] - 1
+                    if missed_years < threshold:
+                        continue
+                else:
+                    missed_years = None  # nunca salió en este mes
+                c = curr.get(n['id'])
+                section_all.append({
+                    'id': n['id'],
+                    'name': n['name'],
+                    'rank': n['rank'],
+                    'total': n['total'],
+                    'salidas_mes_anio': n['salidas_mes_anio'],
+                    'last_month_date': p['last_month_date'] if p else None,
+                    'last_month_turn': p['last_month_turn'] if p else None,
+                    'last_month_week_day': p['last_month_week_day'] if p else None,
+                    'years_sin_salir_mes': missed_years,
+                    'nunca_salio_mes': p is None,
+                    'salio_anio_actual': bool(c),
+                    'last_year_date': c['last_year_date'] if c else None,
+                    'last_year_turn': c['last_year_turn'] if c else None,
+                })
+            # Más atrasados primero; "nunca salió" encabeza la lista
+            section_all.sort(key=lambda i: (
+                -(i['years_sin_salir_mes'] if i['years_sin_salir_mes'] is not None else 9999),
+                i['rank'],
+            ))
+            result[key] = {
+                'years_threshold': threshold,
+                'all': section_all,
+                'salieron_anio': [i for i in section_all if i['salio_anio_actual']],
+                'sin_salir_anio': [i for i in section_all if not i['salio_anio_actual']],
+            }
+        return result
+
+    @api.model
     @tools.ormcache('sorteo_id')
     def get_numbers_all_weekdays(self, sorteo_id=False):
         self.env.cr.execute("""

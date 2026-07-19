@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='show_in_public']" position="after">
                 <field name="show_in_app"/>
+                <field name="proximo_tabla_app"/>
             </xpath>
         </field>
     </record>

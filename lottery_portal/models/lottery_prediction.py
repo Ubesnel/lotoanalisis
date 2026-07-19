@@ -22,6 +22,11 @@ class LotteryPrediction(models.Model):
     turn_day = fields.Selection([
         ('afternoon', 'Tarde'), ('evening', 'Noche'),
     ], string='Turno del día', required=True, index=True)
+    published = fields.Boolean(
+        string='Publicado', default=False, index=True,
+        help='Solo las predicciones publicadas se envían a la app móvil '
+             '(Números Mágicos). Permite prepararlas con anticipación y '
+             'publicarlas cuando estén listas.')
     number_ids = fields.Many2many(
         'lottery.number', 'lottery_prediction_number_rel',
         'prediction_id', 'number_id',

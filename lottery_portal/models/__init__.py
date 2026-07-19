@@ -11,5 +11,6 @@ from . import grupos_dia_semana_generator
 from . import materialized_views
 from . import lottery_output
 from . import lottery_prediction
+from . import lottery_curiosity
 from . import lottery_sorteo
 from . import website_menu
