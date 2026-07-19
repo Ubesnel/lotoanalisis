@@ -491,8 +491,8 @@ class LotteryStatsService(models.Model):
         Por categoría devuelve:
           all            → Sección 1: todos los que cumplen el umbral
           salieron_anio  → Sección 2: de la 1, los que ya salieron este año
-                           (en cualquier mes del año actual)
-          sin_salir_anio → Sección 3: de la 1, los que no salieron este año
+                           en el mes actual (mismo mes, año en curso)
+          sin_salir_anio → Sección 3: de la 1, los que no salieron este año en el mes
         """
         categories = {
             'top': (self.get_top_numbers_month(
@@ -528,7 +528,7 @@ class LotteryStatsService(models.Model):
         """, {'sorteo_id': sorteo_id, 'month': month, 'year': current_year})
         prev = {r['number_id']: r for r in self.env.cr.dictfetchall()}
 
-        # Última salida del año ACTUAL (cualquier mes), por número
+        # Última salida del año ACTUAL en el MES ACTUAL, por número
         self.env.cr.execute("""
             SELECT DISTINCT ON (lo.number_id)
                 lo.number_id,
@@ -537,8 +537,9 @@ class LotteryStatsService(models.Model):
             FROM lottery_output lo
             WHERE lo.sorteo_id = %(sorteo_id)s
               AND lo.year = %(year)s
+              AND lo.month = %(month)s::text
             ORDER BY lo.number_id, lo.date DESC
-        """, {'sorteo_id': sorteo_id, 'year': current_year})
+        """, {'sorteo_id': sorteo_id, 'year': current_year, 'month': month})
         curr = {r['number_id']: r for r in self.env.cr.dictfetchall()}
 
         result = {}
