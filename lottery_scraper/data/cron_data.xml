@@ -32,6 +32,25 @@
         5 min, dentro de la misma ventana. Arranca inactivo: revisar y
         activar manualmente antes de dejarlo corriendo en producción.
     -->
+    <!--
+        New York Numbers/Win 4: data.ny.gov publica los resultados con retraso
+        variable (horas, a veces recién al día siguiente), por eso no se usan
+        ventanas horarias: corre cada hora, consulta desde el último sorteo
+        registrado hasta hoy ET e importa lo que falte (una sola petición por
+        corrida). Si el día ya está completo, no llama a la API.
+        Arranca inactivo: revisar y activar manualmente tras validar.
+    -->
+    <record id="cron_import_new_york_results" model="ir.cron">
+        <field name="name">New York · Importar resultados diarios</field>
+        <field name="model_id" ref="model_lottery_scraper_new_york"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
     <record id="cron_import_quiniela_uy_results" model="ir.cron">
         <field name="name">Quiniela UY · Importar resultados diarios</field>
         <field name="model_id" ref="model_lottery_scraper_quiniela_uy"/>

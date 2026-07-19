@@ -9,6 +9,17 @@
             <field name="enforce_turn_continuity" eval="True"/>
             <field name="source_code">florida</field>
         </record>
+        <record id="sorteo_new_york" model="lottery.sorteo">
+            <field name="name">New York</field>
+            <field name="code">new_york</field>
+            <field name="sequence">2</field>
+            <field name="uses_fireball" eval="False"/>
+            <!-- Histórico 1980-2001 solo tiene turno Noche: la continuidad
+                 Tarde→Noche rompería la importación de esos años. -->
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="source_code">new_york</field>
+        </record>
         <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
             <field name="name">Quiniela UY - Sorteo 1</field>
             <field name="code">quiniela_uy_1</field>

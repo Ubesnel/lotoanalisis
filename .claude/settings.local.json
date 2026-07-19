@@ -96,7 +96,9 @@
       "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/sorteos\")",
       "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/stats/numeros-magicos\")",
       "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/results/latest\")",
-      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); a=d.get\\('afternoon'\\) or {}; print\\({k: a.get\\(k\\) for k in \\('date','numero','premio_2','premio_3'\\)}\\)\")"
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); a=d.get\\('afternoon'\\) or {}; print\\({k: a.get\\(k\\) for k in \\('date','numero','premio_2','premio_3'\\)}\\)\")",
+      "Bash(ls \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\lib\\\\screens\\\\\" && echo \"---\" && ls \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\lib\\\\widgets\\\\\")",
+      "Bash(C:\\\\dev\\\\flutter\\\\bin\\\\flutter.bat analyze *)"
     ]
   }
 }
