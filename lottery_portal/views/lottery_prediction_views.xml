@@ -12,6 +12,7 @@
                 <field name="sorteo_id" optional="show"/>
                 <field name="numbers_count"/>
                 <field name="number_ids" widget="many2many_tags" optional="show"/>
+                <field name="published" widget="boolean_toggle"/>
                 <field name="cumplida" widget="boolean_toggle" readonly="1"/>
                 <field name="verification_date" optional="hide"/>
             </tree>
@@ -32,6 +33,7 @@
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                         </group>
                         <group>
+                            <field name="published"/>
                             <field name="numbers_count"/>
                             <field name="cumplida" readonly="1"/>
                             <field name="verification_date"/>
@@ -60,6 +62,11 @@
                         domain="[('turn_day', '=', 'afternoon')]"/>
                 <filter string="Noche" name="pred_evening"
                         domain="[('turn_day', '=', 'evening')]"/>
+                <separator/>
+                <filter string="Publicadas" name="published"
+                        domain="[('published', '=', True)]"/>
+                <filter string="Sin publicar" name="not_published"
+                        domain="[('published', '=', False)]"/>
                 <separator/>
                 <filter string="Cumplidas" name="cumplidas"
                         domain="[('cumplida', '=', True)]"/>

@@ -281,9 +281,9 @@ class LotteryAppApi(http.Controller):
     def proximo_sorteo(self, sorteo_id=None, **kwargs):
         """Mejores números por líneas para el próximo sorteo.
 
-        La tabla de origen (calientes / restantes / fríos) se define en
-        Ajustes → Loterías → App móvil; la app muestra lo que se devuelva
-        aquí, sin lógica propia.
+        La tabla de origen (calientes / restantes / fríos) se configura en la
+        ficha de cada sorteo (campo proximo_tabla_app): cada sorteo puede
+        mostrar una tabla distinta en la app. Vacío = sección oculta.
         """
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
@@ -296,9 +296,8 @@ class LotteryAppApi(http.Controller):
         }
         labels = {'calientes': 'Calientes', 'restantes': 'Restantes',
                   'frios': 'Fríos'}
-        tabla = request.env['ir.config_parameter'].sudo().get_param(
-            'lottery_api.proximo_sorteo_tabla', 'restantes')
-        if not tabla or tabla == 'none':
+        tabla = sorteo.proximo_tabla_app
+        if not tabla:
             return _json_response(
                 {'tabla': '', 'numeros': [], 'lines': [], 'turn': None})
         if tabla not in key_map:
@@ -356,6 +355,7 @@ class LotteryAppApi(http.Controller):
             ('sorteo_id', '=', sorteo.id),
             ('date', '=', date_str),
             ('turn_day', '=', turn),
+            ('published', '=', True),
         ], limit=1)
         if not prediction or not prediction.number_ids:
             return _json_response(dict(base, found=False, numbers=[]))
@@ -528,6 +528,75 @@ class LotteryAppApi(http.Controller):
             'bottom': stats.get_bottom_numbers_month(
                 now.month, now.year, sorteo_id=sorteo.id),
         })
+
+    @http.route('/api/lottery/v1/curiosidades', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def curiosidades(self, sorteo_id=None, limit=50, **kwargs):
+        """Curiosidades publicadas del sorteo, para la sección
+        "LotoAnálisis informa" de la app (estilo noticias, más reciente
+        primero). Solo se devuelven las marcadas como publicadas."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        try:
+            limit = min(max(int(limit), 1), 200)
+        except (TypeError, ValueError):
+            limit = 50
+
+        curiosities = request.env['lottery.curiosity'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('published', '=', True),
+        ], order='date desc, id desc', limit=limit)
+
+        return _json_response({
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'items': [{
+                'id': c.id,
+                'date': c.date.strftime('%d/%m/%Y'),
+                'weekday': WEEKDAYS_ES[c.date.weekday()],
+                'text': c.text,
+            } for c in curiosities],
+        })
+
+    @http.route('/api/lottery/v1/stats/numeros-mes-atrasados', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def numeros_mes_atrasados(self, sorteo_id=None, years_top=2,
+                              years_intermedios=2, years_bottom=4, **kwargs):
+        """Números del mes con atraso en años, en 3 secciones por categoría.
+
+        Por cada categoría de /numeros-mes (top / intermedios / bottom)
+        devuelve los números que llevan N o más años completos sin salir en
+        el mes actual — sin contar el año en curso, que es el que se evalúa.
+        Umbrales por defecto: top e intermedios ≥ 2 años, bottom ≥ 4 (se
+        pueden ajustar por query param: years_top, years_intermedios,
+        years_bottom).
+
+        Estructura por categoría:
+          all            → Sección 1: todos los que cumplen el umbral
+          salieron_anio  → Sección 2: de la 1, ya salieron en el año actual
+          sin_salir_anio → Sección 3: de la 1, aún no salen este año
+        """
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        try:
+            years_top = max(int(years_top), 0)
+            years_intermedios = max(int(years_intermedios), 0)
+            years_bottom = max(int(years_bottom), 0)
+        except (TypeError, ValueError):
+            return _json_response({'error': 'invalid_years_param'}, status=400)
+
+        now = datetime.now()
+        data = self._stats().get_month_overdue_sections(
+            now.month, now.year, sorteo_id=sorteo.id,
+            years_top=years_top, years_mid=years_intermedios,
+            years_bottom=years_bottom)
+        return _json_response(dict(
+            data,
+            month=now.month,
+            month_label=MONTHS_ES[now.month - 1],
+            year=now.year,
+        ))
 
     @http.route('/api/lottery/v1/stats/numeros-salidas-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

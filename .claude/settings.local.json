@@ -98,7 +98,20 @@
       "Bash(curl -s \"https://www.seus-it.com/api/lottery/v1/results/latest\")",
       "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); a=d.get\\('afternoon'\\) or {}; print\\({k: a.get\\(k\\) for k in \\('date','numero','premio_2','premio_3'\\)}\\)\")",
       "Bash(ls \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\lib\\\\screens\\\\\" && echo \"---\" && ls \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\\\\lib\\\\widgets\\\\\")",
-      "Bash(C:\\\\dev\\\\flutter\\\\bin\\\\flutter.bat analyze *)"
+      "Bash(C:\\\\dev\\\\flutter\\\\bin\\\\flutter.bat analyze *)",
+      "Bash(python -m py_compile lottery_api/models/lottery_sorteo.py lottery_api/controllers/api.py \"lottery_api/migrations/1.1/post-migrate.py\")",
+      "Bash(python -c \"import xml.etree.ElementTree as ET; ET.parse\\('lottery_api/views/lottery_sorteo_views.xml'\\); print\\('TODO OK'\\)\")",
+      "Bash(python -m py_compile lottery_portal/models/lottery_curiosity.py)",
+      "Bash(python -c \"import xml.etree.ElementTree as ET; ET.parse\\('lottery_portal/views/lottery_curiosity_views.xml'\\); print\\('TODO OK'\\)\")",
+      "Bash(python -m py_compile lottery_portal/models/lottery_curiosity.py lottery_portal/models/lottery_prediction.py lottery_api/controllers/api.py \"lottery_portal/migrations/1.1/post-migrate.py\")",
+      "Bash(python -m py_compile lottery_portal/models/stats_service.py lottery_api/controllers/api.py)",
+      "Read(//e/Trabajo/Odoo/Odoo17/**)",
+      "Bash(curl -s --max-time 30 \"http://localhost:8065/api/lottery/v1/sorteos\")",
+      "Bash(curl -s -D - -o /dev/null --max-time 20 http://localhost:8065/web/login)",
+      "Bash(curl -s -X POST http://localhost:8065/web/database/list -H \"Content-Type: application/json\" --max-time 20 -d '{\"jsonrpc\":\"2.0\",\"method\":\"call\",\"params\":{}}')",
+      "Bash(python -m py_compile lottery_portal/models/lottery_curiosity.py lottery_api/controllers/api.py)",
+      "Bash(python -c \"import xml.etree.ElementTree as ET; ET.parse\\('lottery_portal/views/lottery_curiosity_views.xml'\\); print\\('BACKEND OK'\\)\")",
+      "Bash(ls /e/Trabajo/Flutter/lottery_app/lib/screens/ /e/Trabajo/Flutter/lottery_app/lib/models/ /e/Trabajo/Flutter/lottery_app/lib/services/ /e/Trabajo/Flutter/lottery_app/lib/widgets/)"
     ]
   }
 }

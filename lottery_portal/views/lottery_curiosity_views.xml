@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Tree ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_curiosity_tree" model="ir.ui.view">
+        <field name="name">lottery.curiosity.tree</field>
+        <field name="model">lottery.curiosity</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="not published">
+                <field name="date"/>
+                <field name="sorteo_id" optional="show"/>
+                <field name="text"/>
+                <field name="published" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_curiosity_form" model="ir.ui.view">
+        <field name="name">lottery.curiosity.form</field>
+        <field name="model">lottery.curiosity</field>
+        <field name="arch" type="xml">
+            <form string="Curiosidad">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="published"/>
+                        </group>
+                    </group>
+                    <group string="Noticia">
+                        <field name="text" nolabel="1" colspan="2"
+                               placeholder="Escribí la curiosidad o información a mostrar en la app…"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search ────────────────────────────────────────────────── -->
+    <record id="view_lottery_curiosity_search" model="ir.ui.view">
+        <field name="name">lottery.curiosity.search</field>
+        <field name="model">lottery.curiosity</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="text"/>
+                <field name="date"/>
+                <field name="sorteo_id"/>
+                <filter string="Hoy" name="today"
+                        domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter string="Publicadas" name="published"
+                        domain="[('published', '=', True)]"/>
+                <filter string="Sin publicar" name="not_published"
+                        domain="[('published', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Fecha" name="group_date"
+                            context="{'group_by': 'date'}"/>
+                    <filter string="Sorteo" name="group_sorteo"
+                            context="{'group_by': 'sorteo_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Acción y menú ─────────────────────────────────────────── -->
+    <record id="action_lottery_curiosity" model="ir.actions.act_window">
+        <field name="name">Curiosidades</field>
+        <field name="res_model">lottery.curiosity</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Registrá la primera curiosidad
+            </p>
+            <p>
+                Escribí curiosidades o informaciones por sorteo y publicalas
+                para que aparezcan en la app en "LotoAnálisis informa".
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lottery_curiosity" name="Curiosidades"
+              parent="lottery_base.home_lottery"
+              action="action_lottery_curiosity" sequence="25"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>
