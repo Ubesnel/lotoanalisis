@@ -1,9 +1,9 @@
 {
     "name": "Lottery Scraper",
-    "version": "1.1",
+    "version": "1.2",
     "author": "SeuS IT",
     "category": "Tools",
-    "summary": "Importación automática de resultados Florida Pick 3",
+    "summary": "Importación automática de resultados Florida Pick 3, Quiniela UY y New York Numbers",
     "depends": [
         "lottery_base",
         "lottery_fireball",

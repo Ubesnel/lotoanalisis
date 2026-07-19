@@ -81,6 +81,62 @@
               action="action_lottery_scraper"
               sequence="10"/>
 
+    <record id="view_lottery_scraper_new_york_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.new.york.form</field>
+        <field name="model">lottery.scraper.new.york</field>
+        <field name="arch" type="xml">
+            <form string="Importador Numbers · New York">
+                <header>
+                    <button name="action_import_now"
+                            string="Importar ahora"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Fuente: data.ny.gov (dataset Daily Numbers/Win-4).
+                        Trae Numbers (Premio 1) y Win 4 (Premios 2 y 3) en una sola consulta.
+                        Histórico: Noche desde 02/09/1980 · Win 4 Noche desde 21/07/1981 ·
+                        Tarde desde 02/12/2001.
+                        Para el backfill completo poner "Fecha desde" = 02/09/1980.
+                    </div>
+                    <group string="Zona horaria">
+                        <field name="et_offset"
+                               string="Offset UTC→ET (horas)"
+                               help="-4 en verano EDT (mar-nov) · -5 en invierno EST (nov-mar)"/>
+                    </group>
+                    <group string="Importación manual por rango">
+                        <group>
+                            <field name="date_from" string="Fecha desde"/>
+                            <field name="date_to"   string="Fecha hasta"/>
+                        </group>
+                        <group>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                        </group>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                    </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper_new_york" model="ir.actions.act_window">
+        <field name="name">Importador Numbers · New York</field>
+        <field name="res_model">lottery.scraper.new.york</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_new_york"
+              name="Numbers · New York"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_new_york"
+              sequence="15"/>
+
     <record id="view_lottery_scraper_quiniela_uy_form" model="ir.ui.view">
         <field name="name">lottery.scraper.quiniela.uy.form</field>
         <field name="model">lottery.scraper.quiniela.uy</field>
