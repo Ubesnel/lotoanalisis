@@ -59,6 +59,6 @@ class LotteryOutput(models.Model):
         if out.fireball_id:
             partes.append(f'Bola extra: {out.fireball_id.name}')
 
-        title = f'Resultado de {out.sorteo_id.name}'
-        body = ' · '.join(partes)
+        title = f'🎯 Resultado {out.sorteo_id.name} disponible'
+        body = ' · '.join(partes) + '\n📈 Consulta el análisis actualizado para el próximo sorteo'
         return title, body
