@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_consulta_combinaciones_form" model="ir.ui.view">
+        <field name="name">lottery.consulta.combinaciones.form</field>
+        <field name="model">lottery.consulta.combinaciones</field>
+        <field name="arch" type="xml">
+            <form string="Consulta de combinaciones">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="sorteo_id"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="window"/>
+                        </group>
+                    </group>
+                    <field name="result_html" nolabel="1" colspan="2"/>
+                </sheet>
+                <footer>
+                    <button name="action_consultar" string="Consultar"
+                            type="object" class="btn-primary"/>
+                    <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_consulta_combinaciones" model="ir.actions.act_window">
+        <field name="name">Consulta 25 números</field>
+        <field name="res_model">lottery.consulta.combinaciones</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_consulta_combinaciones" name="Consulta 25 números"
+              parent="menu_predicciones_root"
+              action="action_consulta_combinaciones" sequence="20"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>
