@@ -37,6 +37,7 @@
         "views/lottery_output_validation_views.xml",
         "views/lottery_prediction_views.xml",
         "views/consulta_combinaciones_views.xml",
+        "views/patron_atraso_views.xml",
         "views/lottery_curiosity_views.xml",
         "views/lottery_sorteo_views.xml",
     ],
