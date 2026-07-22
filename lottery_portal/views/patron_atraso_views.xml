@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_patron_atraso_form" model="ir.ui.view">
+        <field name="name">lottery.patron.atraso.form</field>
+        <field name="model">lottery.patron.atraso</field>
+        <field name="arch" type="xml">
+            <form string="Atraso del patrón línea/terminal">
+                <sheet>
+                    <group>
+                        <field name="sorteo_id"
+                               options="{'no_open': True, 'no_create': True}"/>
+                        <field name="date"/>
+                        <field name="patron" widget="radio"/>
+                    </group>
+                    <field name="result_html" nolabel="1" colspan="2"/>
+                </sheet>
+                <footer>
+                    <button name="action_consultar" string="Consultar"
+                            type="object" class="btn-primary"/>
+                    <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_patron_atraso" model="ir.actions.act_window">
+        <field name="name">Atraso de patrón línea/terminal</field>
+        <field name="res_model">lottery.patron.atraso</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_patron_atraso" name="Atraso patrón línea/terminal"
+              parent="menu_predicciones_root"
+              action="action_patron_atraso" sequence="21"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>
