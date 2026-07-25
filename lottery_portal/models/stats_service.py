@@ -1241,20 +1241,29 @@ class LotteryStatsService(models.Model):
     @api.model
     @tools.ormcache('number_id', 'sorteo_id')
     def get_salidas_numeros_despues_numero(self, number_id, sorteo_id=False):
+        """Top 10 números que más salieron dentro de los 3 sorteos
+        siguientes a cada aparición de number_id (ventana ampliada de 1 a 3,
+        los 3 offsets pesan igual)."""
         self.env.cr.execute("""
             SELECT
                 LPAD(ln_next.name::text, 2, '0') AS name,
                 COUNT(ln_next.name) AS cantidad_veces
             FROM (
                 SELECT lo.*,
-                    LEAD(lo.id) OVER (
-                        ORDER BY lo.date ASC,
-                                 CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
-                    ) AS next_id
+                    LEAD(lo.id, 1) OVER w AS next_id_1,
+                    LEAD(lo.id, 2) OVER w AS next_id_2,
+                    LEAD(lo.id, 3) OVER w AS next_id_3
                 FROM lottery_output lo
                 WHERE lo.sorteo_id = %s
+                WINDOW w AS (
+                    ORDER BY lo.date ASC,
+                             CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                )
             ) lo_actual
-            JOIN lottery_output lo_next ON lo_next.id = lo_actual.next_id
+            CROSS JOIN LATERAL (
+                VALUES (lo_actual.next_id_1), (lo_actual.next_id_2), (lo_actual.next_id_3)
+            ) AS nxt(next_id)
+            JOIN lottery_output lo_next ON lo_next.id = nxt.next_id
             JOIN lottery_number ln_next ON ln_next.id = lo_next.number_id
             WHERE lo_actual.number_id = %s
             GROUP BY ln_next.name
@@ -1266,20 +1275,29 @@ class LotteryStatsService(models.Model):
     @api.model
     @tools.ormcache('number_id', 'sorteo_id')
     def get_salidas_numeros_antes_numero(self, number_id, sorteo_id=False):
+        """Top 10 números que más salieron dentro de los 3 sorteos
+        anteriores a cada aparición de number_id (ventana ampliada de 1 a 3,
+        los 3 offsets pesan igual)."""
         self.env.cr.execute("""
             SELECT
                 LPAD(ln_prev.name::text, 2, '0') AS name,
                 COUNT(ln_prev.name) AS cantidad_veces
             FROM (
                 SELECT lo.*,
-                    LAG(lo.id) OVER (
-                        ORDER BY lo.date ASC,
-                                 CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
-                    ) AS prev_id
+                    LAG(lo.id, 1) OVER w AS prev_id_1,
+                    LAG(lo.id, 2) OVER w AS prev_id_2,
+                    LAG(lo.id, 3) OVER w AS prev_id_3
                 FROM lottery_output lo
                 WHERE lo.sorteo_id = %s
+                WINDOW w AS (
+                    ORDER BY lo.date ASC,
+                             CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                )
             ) lo_actual
-            JOIN lottery_output lo_prev ON lo_prev.id = lo_actual.prev_id
+            CROSS JOIN LATERAL (
+                VALUES (lo_actual.prev_id_1), (lo_actual.prev_id_2), (lo_actual.prev_id_3)
+            ) AS prv(prev_id)
+            JOIN lottery_output lo_prev ON lo_prev.id = prv.prev_id
             JOIN lottery_number ln_prev ON ln_prev.id = lo_prev.number_id
             WHERE lo_actual.number_id = %s
             GROUP BY ln_prev.name
@@ -1287,6 +1305,58 @@ class LotteryStatsService(models.Model):
             LIMIT 10
         """, (sorteo_id, number_id,))
         return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_companion_affinity(self, sorteo_id, fecha_corte=False, turno=False):
+        """Afinidad simétrica entre cada par de números 0-99: cuántas veces
+        aparecieron uno cerca del otro (dentro de una ventana de 3 sorteos,
+        antes o después) hasta fecha_corte inclusive (False = todo el
+        historial). Usado por la Tabla LotoAnálisis (lottery.tabla.
+        acompanantes) para ubicar los números en la grilla — no es un
+        endpoint de alta frecuencia, así que sin ormcache: cada corte de
+        fecha es distinto y se pide bajo demanda desde el wizard.
+
+        turno=False → General (mezcla tarde y noche, como siempre).
+        turno='afternoon'/'evening' → solo esa secuencia de sorteos
+        consecutivos (ventana de 3 dentro del mismo turno, saltando el
+        otro).
+
+        Devuelve {(num_a, num_b): peso} con num_a < num_b (cada par una
+        sola vez, sumando ambas direcciones)."""
+        date_filter = "AND lo.date <= %(fecha_corte)s" if fecha_corte else ""
+        turno_filter = "AND lo.turn_day = %(turno)s" if turno else ""
+        self.env.cr.execute(f"""
+            SELECT ln_a.name AS num_a, ln_b.name AS num_b, COUNT(*) AS peso
+            FROM (
+                SELECT lo.*,
+                    LEAD(lo.number_id, 1) OVER w AS n1,
+                    LEAD(lo.number_id, 2) OVER w AS n2,
+                    LEAD(lo.number_id, 3) OVER w AS n3,
+                    LAG(lo.number_id, 1) OVER w AS p1,
+                    LAG(lo.number_id, 2) OVER w AS p2,
+                    LAG(lo.number_id, 3) OVER w AS p3
+                FROM lottery_output lo
+                WHERE lo.sorteo_id = %(sorteo_id)s {date_filter} {turno_filter}
+                WINDOW w AS (
+                    ORDER BY lo.date ASC,
+                             CASE lo.turn_day WHEN 'afternoon' THEN 1 WHEN 'evening' THEN 2 END
+                )
+            ) lo_actual
+            CROSS JOIN LATERAL (
+                VALUES (n1), (n2), (n3), (p1), (p2), (p3)
+            ) AS nb(neighbor_id)
+            JOIN lottery_number ln_a ON ln_a.id = lo_actual.number_id
+            JOIN lottery_number ln_b ON ln_b.id = nb.neighbor_id
+            WHERE ln_a.name <> ln_b.name
+            GROUP BY ln_a.name, ln_b.name
+        """, {'sorteo_id': sorteo_id, 'fecha_corte': fecha_corte, 'turno': turno})
+
+        affinity = {}
+        for row in self.env.cr.dictfetchall():
+            a, b = int(row['num_a']), int(row['num_b'])
+            key = (a, b) if a < b else (b, a)
+            affinity[key] = affinity.get(key, 0) + row['peso']
+        return affinity
 
     @api.model
     @tools.ormcache('day', 'field', 'sorteo_id')

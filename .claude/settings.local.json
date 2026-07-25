@@ -130,7 +130,20 @@
       "Bash(cd \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\" && find . -iname \"*whatsnew*\" -o -iname \"*release-notes*\" -o -iname \"*changelog*\" 2>/dev/null | grep -v node_modules | grep -v build)",
       "Bash(find \"C:/dev/flutter\" -path \"*io/flutter/embedding/android/FlutterActivity.java\" 2>/dev/null | head -5)",
       "WebFetch(domain:dl.google.com)",
-      "Bash(cd /e/Trabajo/Flutter/lottery_app && ls -la --time-style=full-iso lib/services/ads_service.dart lib/widgets/apoya_bar.dart lib/screens/root_shell.dart android/app/src/main/kotlin/*/*/*/MainActivity.kt 2>/dev/null; find android/app/src/main/kotlin -name MainActivity.kt)"
+      "Bash(cd /e/Trabajo/Flutter/lottery_app && ls -la --time-style=full-iso lib/services/ads_service.dart lib/widgets/apoya_bar.dart lib/screens/root_shell.dart android/app/src/main/kotlin/*/*/*/MainActivity.kt 2>/dev/null; find android/app/src/main/kotlin -name MainActivity.kt)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5959)",
+      "Bash('/c/Program Files/PostgreSQL/15/bin/psql.exe' -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -c ' *)",
+      "Bash('/c/Program Std/PostgreSQL/15/bin/psql.exe' -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -c ' *)",
+      "Bash(./venv_odoo/Scripts/python.exe -c \"import PIL; print\\(PIL.__version__\\)\")",
+      "Bash(./venv_odoo/Scripts/python.exe -c ' *)",
+      "Bash(python -m py_compile lottery_portal/models/tabla_acompanantes_png.py lottery_portal/models/lottery_tabla_acompanantes.py)",
+      "Bash('E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\venv_odoo\\\\Scripts\\\\python.exe' -c ' *)",
+      "Bash(python -m py_compile lottery_portal/models/stats_service.py lottery_portal/models/lottery_tabla_acompanantes.py lottery_portal/models/lottery_tabla_acompanantes_cache.py)",
+      "Bash(python -c \"import xml.dom.minidom as m; m.parse\\('lottery_portal/views/lottery_tabla_acompanantes_views.xml'\\); print\\('XML OK'\\)\")",
+      "Bash(\"E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\venv_odoo\\\\Scripts\\\\python.exe\" \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\c8e9ed98-ff2b-4c3d-b5dc-0fa244342d2d\\\\scratchpad\\\\test_full_grid.py\")",
+      "Bash(python -m py_compile lottery_portal/models/tabla_acompanantes_grid.py lottery_portal/models/lottery_tabla_acompanantes.py lottery_portal/models/lottery_tabla_acompanantes_cache.py)",
+      "Bash(\"/c/Program Files/PostgreSQL/15/bin/psql.exe\" -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -c \"SELECT name, latest_version, state FROM ir_module_module WHERE name = 'lottery_portal';\")",
+      "Bash(python -m py_compile lottery_portal/migrations/1.2/pre-migrate.py)"
     ]
   }
 }

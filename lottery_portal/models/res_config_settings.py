@@ -22,6 +22,10 @@ class ResConfigSettings(models.TransientModel):
     maintenance_mode = fields.Boolean(related='company_id.maintenance_mode', readonly=False,
                                       string='Modo mantenimiento')
 
+    tabla_acompanantes_fecha_referencia = fields.Date(
+        related='company_id.tabla_acompanantes_fecha_referencia', readonly=False,
+        string='Fecha de referencia')
+
     # ── Estado de las estadísticas (vistas materializadas) ────────────────
     # Campos simples (no computados): se poblan en get_values() en cada apertura
     # de Ajustes leyendo directo de la BD, evitando el ormcache por proceso de
