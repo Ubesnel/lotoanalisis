@@ -27,24 +27,12 @@
                         </page>
                         <page string="Acompañantes por Número">
                             <group invisible="not grid_json">
-                                <group>
-                                    <button name="action_ver_numero"
-                                            string="Mostrar acompañantes"
-                                            type="object"
-                                            icon="fa-users"
-                                            class="btn btn-primary btn-lg oe_highlight"
-                                            style="min-width:220px; height:44px; font-size:15px;"/>
-                                </group>
-
-                                <group>
-                                    <field name="numero_consulta_id"
-                                           options="{'no_open': True, 'no_create': True}"/>
-                                </group>
+                                <field name="numero_consulta_id"
+                                       options="{'no_open': True, 'no_create': True}"/>
                             </group>
 
                             <field name="resultado_numero_html"
                                    nolabel="1"
-                                   colspan="2"
                                    invisible="not resultado_numero_html"/>
                         </page>
                     </notebook>

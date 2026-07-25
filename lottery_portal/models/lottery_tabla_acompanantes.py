@@ -7,7 +7,7 @@ las demás piezas gráficas de LotoAnálisis."""
 import base64
 import json
 
-from odoo import fields, models
+from odoo import fields, models, api
 from odoo.exceptions import UserError
 
 from .charada_data import DECADE_COLORS
@@ -179,6 +179,13 @@ class LotteryTablaAcompanantes(models.TransientModel):
                 </div>
             </td>'''
 
+    @api.onchange('numero_consulta_id')
+    def _onchange_numero_consulta(self):
+        if self.numero_consulta_id:
+            self.action_ver_numero()
+        else:
+            self.resultado_numero_html = False
+
     def action_ver_numero(self):
         self.ensure_one()
         if not self.grid_json:
@@ -199,30 +206,95 @@ class LotteryTablaAcompanantes(models.TransientModel):
                             or (r - c) == (r0 - c0) or (r + c) == (r0 + c0))
         )
 
-        cell = 42
-        rows_html = []
-        for i in range(0, len(companions), 8):
-            row = companions[i:i + 8]
-            rows_html.append(
-                '<tr>' + ''.join(self._ball_html(n, cell) for n in row) + '</tr>')
-
-        self.resultado_numero_html = f'''
-            <div style="text-align:center;">
-                <p class="text-muted small" style="margin-bottom:8px;">
-                    Números en la misma fila, columna o diagonal que
-                    <b>{n0:02d}</b> ({len(companions)}):
+        if not companions:
+            self.resultado_numero_html = f'''
+                <p class="text-muted small">
+                    <b>{n0:02d}</b> no comparte fila, columna ni diagonal con
+                    ningún otro número en esta tabla.
                 </p>
-                <table style="border-collapse:collapse;margin:0 auto;">
-                    {''.join(rows_html)}
-                </table>
-            </div>
-        ''' if companions else f'''
-            <p class="text-muted small">
-                <b>{n0:02d}</b> no comparte fila, columna ni diagonal con
-                ningún otro número en esta tabla.
-            </p>
-        '''
+            '''
+            return self._reopen()
+
+        self.resultado_numero_html = self._render_numero_result(n0, companions)
         return self._reopen()
+
+    def _clasificacion_turno(self):
+        """Turno cuyo caliente/restante/frío se usa para clasificar. Tabla
+        Tarde → solo clasificación de tarde. Tabla Noche → solo la de
+        noche. Tabla General → la del próximo sorteo (tarde o noche, el
+        que corresponda — no hay una versión "general" de calientes/
+        fríos, siempre es por turno)."""
+        if self.turno in ('afternoon', 'evening'):
+            return self.turno
+        return self.sorteo_id.get_next_draw()[1]
+
+    def _render_numero_result(self, n0, companions):
+        snapshot = self.sorteo_id._get_ranking_snapshot() or {}
+        turn = self._clasificacion_turno()
+        turn_data = snapshot.get(turn) or {}
+
+        if not turn_data:
+            # Sin snapshot calculado todavía para este sorteo: mostramos la
+            # lista simple, sin clasificar.
+            cell = 42
+            rows_html = []
+            for i in range(0, len(companions), 8):
+                row = companions[i:i + 8]
+                rows_html.append('<tr>' + ''.join(
+                    self._ball_html(n, cell) for n in row) + '</tr>')
+            return f'''
+                <div style="text-align:center;">
+                    <p class="text-muted small" style="margin-bottom:8px;">
+                        Números en la misma fila, columna o diagonal que
+                        <b>{n0:02d}</b> ({len(companions)}). Todavía no hay
+                        caliente/restante/frío calculado para este sorteo.
+                    </p>
+                    <table style="border-collapse:collapse;margin:0 auto;">
+                        {''.join(rows_html)}
+                    </table>
+                </div>
+            '''
+
+        hot = {int(s['name']) for s in turn_data.get('numbers') or []}
+        cold = {int(s['name']) for s in turn_data.get('numbers_cold') or []}
+        remaining = {int(s['name']) for s in turn_data.get('numbers_remaining') or []}
+
+        grupos = [
+            ('Calientes', [n for n in companions if n in hot]),
+            ('Restantes', [n for n in companions if n in remaining]),
+            ('Fríos', [n for n in companions if n in cold]),
+        ]
+        turn_label = dict(self._fields['turno'].selection).get(turn, turn)
+
+        secciones = []
+        for titulo, numeros in grupos:
+            if not numeros:
+                continue
+            rows_html = []
+            for i in range(0, len(numeros), 8):
+                row = numeros[i:i + 8]
+                rows_html.append('<tr>' + ''.join(
+                    self._ball_html(n, cell=42) for n in row) + '</tr>')
+            secciones.append(f'''
+                <div style="margin-bottom:14px;">
+                    <p class="text-muted small" style="margin-bottom:4px;
+                        font-weight:700;">{titulo} ({len(numeros)})</p>
+                    <table style="border-collapse:collapse;margin:0 auto;">
+                        {''.join(rows_html)}
+                    </table>
+                </div>
+            ''')
+
+        return f'''
+            <div style="text-align:center;">
+                <p class="text-muted small" style="margin-bottom:10px;">
+                    Números en la misma fila, columna o diagonal que
+                    <b>{n0:02d}</b> ({len(companions)}), según
+                    caliente/restante/frío de {turn_label}:
+                </p>
+                {''.join(secciones)}
+            </div>
+        '''
 
     def _render_html(self, grid, grid_size):
         cell = 42
