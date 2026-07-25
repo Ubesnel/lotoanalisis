@@ -117,7 +117,20 @@
       "Bash(python -c \"import xml.dom.minidom as m; m.parse\\('views/patron_atraso_views.xml'\\); print\\('OK xml well-formed'\\)\")",
       "Read(//c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/ba0c3074-379c-4f09-bab9-ded09b507386/scratchpad/**)",
       "Bash(python verify_cadena.py)",
-      "Bash(python verify_cruzado_fix.py)"
+      "Bash(python verify_cruzado_fix.py)",
+      "Bash(find \"C:/Users/Ubesnel\" -name \"pubspec.yaml\" -maxdepth 5 2>/dev/null | head -20)",
+      "Bash(ls -la \"E:/Trabajo/Flutter/lottery_app/\")",
+      "Bash(flutter pub *)",
+      "Bash(flutter --version)",
+      "WebFetch(domain:pub.dev)",
+      "Read(//e//**)",
+      "Bash(where flutter *)",
+      "Bash(where adb *)",
+      "Bash(where emulator *)",
+      "Bash(cd \"E:\\\\Trabajo\\\\Flutter\\\\lottery_app\" && find . -iname \"*whatsnew*\" -o -iname \"*release-notes*\" -o -iname \"*changelog*\" 2>/dev/null | grep -v node_modules | grep -v build)",
+      "Bash(find \"C:/dev/flutter\" -path \"*io/flutter/embedding/android/FlutterActivity.java\" 2>/dev/null | head -5)",
+      "WebFetch(domain:dl.google.com)",
+      "Bash(cd /e/Trabajo/Flutter/lottery_app && ls -la --time-style=full-iso lib/services/ads_service.dart lib/widgets/apoya_bar.dart lib/screens/root_shell.dart android/app/src/main/kotlin/*/*/*/MainActivity.kt 2>/dev/null; find android/app/src/main/kotlin -name MainActivity.kt)"
     ]
   }
 }
