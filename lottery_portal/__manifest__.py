@@ -1,6 +1,6 @@
 {
     "name": "Portal",
-    "version": "1.1",
+    "version": "1.2",
     "author": "SeuS IT",
     "category": "Website",
     "summary": "Estadísticas de Lotería",
@@ -38,6 +38,7 @@
         "views/lottery_prediction_views.xml",
         "views/consulta_combinaciones_views.xml",
         "views/patron_atraso_views.xml",
+        "views/lottery_tabla_acompanantes_views.xml",
         "views/lottery_curiosity_views.xml",
         "views/lottery_sorteo_views.xml",
     ],

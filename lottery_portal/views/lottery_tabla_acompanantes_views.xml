@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lottery_tabla_acompanantes_form" model="ir.ui.view">
+        <field name="name">lottery.tabla.acompanantes.form</field>
+        <field name="model">lottery.tabla.acompanantes</field>
+        <field name="arch" type="xml">
+            <form string="Tabla LotoAnálisis">
+                <sheet>
+                    <group>
+                        <field name="sorteo_id"
+                               options="{'no_open': True, 'no_create': True}"/>
+                        <field name="fecha_corte"/>
+                        <field name="turno" widget="radio" options="{'horizontal': true}"/>
+                        <field name="grid_size" widget="radio" options="{'horizontal': true}"/>
+                    </group>
+                    <field name="result_html" nolabel="1" colspan="2"/>
+                    <field name="grid_json" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_generar" string="Generar tabla"
+                            type="object" class="btn-primary"/>
+                    <button name="action_download_png" string="Descargar PNG"
+                            type="object" class="btn-secondary"
+                            invisible="not grid_json"/>
+                    <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_tabla_acompanantes" model="ir.actions.act_window">
+        <field name="name">Tabla LotoAnálisis</field>
+        <field name="res_model">lottery.tabla.acompanantes</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_lottery_tabla_acompanantes" name="Tabla LotoAnálisis"
+              parent="menu_predicciones_root"
+              action="action_lottery_tabla_acompanantes" sequence="22"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>

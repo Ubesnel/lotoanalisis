@@ -38,6 +38,12 @@
                             </div>
                         </setting>
                     </block>
+                    <block title="Tabla LotoAnálisis" id="lottery_tabla_acompanantes_settings">
+                        <setting string="Fecha de referencia"
+                                 help="Fecha de corte por defecto del wizard Tabla LotoAnálisis (Predicciones → Tabla LotoAnálisis). Vacío = usa la fecha de hoy.">
+                            <field name="tabla_acompanantes_fecha_referencia"/>
+                        </setting>
+                    </block>
                     <block title="Estado de las estadísticas" id="lottery_stats_status_settings">
                         <setting string="Estado de las estadísticas"
                                  help="Las vistas de atrasos/tops se refrescan en segundo plano (cron cada 1 minuto) cuando se registran o editan salidas.">

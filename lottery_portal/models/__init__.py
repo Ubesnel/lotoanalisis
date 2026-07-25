@@ -14,5 +14,7 @@ from . import lottery_prediction
 from . import lottery_curiosity
 from . import consulta_combinaciones
 from . import patron_atraso
+from . import lottery_tabla_acompanantes_cache
+from . import lottery_tabla_acompanantes
 from . import lottery_sorteo
 from . import website_menu

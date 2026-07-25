@@ -27,3 +27,13 @@ class ResCompany(models.Model):
         prefetch=False,
         help="Cuando está activo, los usuarios públicos ven la página de mantenimiento en lugar del portal.",
     )
+
+    tabla_acompanantes_fecha_referencia = fields.Date(
+        string="Tabla LotoAnálisis · fecha de referencia",
+        prefetch=False,
+        help="Fecha de corte que usa por defecto el wizard Tabla LotoAnálisis "
+             "(Predicciones → Tabla LotoAnálisis). Como el resultado con una "
+             "fecha ya pasada no cambia, sirve para tener una versión estable "
+             "y volver a compararla más adelante (por ejemplo, la misma fecha "
+             "dentro de 5 años). Vacío = usa la fecha de hoy.",
+    )
