@@ -8,21 +8,38 @@
             <form string="Tabla LotoAnálisis">
                 <sheet>
                     <group>
-                        <field name="sorteo_id"
-                               options="{'no_open': True, 'no_create': True}"/>
-                        <field name="fecha_corte"/>
-                        <field name="turno" widget="radio" options="{'horizontal': true}"/>
-                        <field name="grid_size" widget="radio" options="{'horizontal': true}"/>
+                        <group>
+                            <field name="sorteo_id"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                            <field name="turno" widget="radio" options="{'horizontal': true}"/>
+
+                        </group>
+                        <group>
+                            <field name="fecha_corte"/>
+                            <field name="grid_size" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+
                     </group>
-                    <field name="result_html" nolabel="1" colspan="2"/>
-                    <field name="grid_json" invisible="1"/>
+                    <notebook>
+                        <page string="Tabla">
+                            <field name="result_html" nolabel="1" colspan="2"/>
+                            <field name="grid_json" invisible="1"/>
+                        </page>
+                        <page string="Acompañantes por Número">
+                            <group invisible="not grid_json">
+                                <field name="numero_consulta_id"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+
+                            <field name="resultado_numero_html"
+                                   nolabel="1"
+                                   invisible="not resultado_numero_html"/>
+                        </page>
+                    </notebook>
                 </sheet>
                 <footer>
                     <button name="action_generar" string="Generar tabla"
                             type="object" class="btn-primary"/>
-                    <button name="action_download_png" string="Descargar PNG"
-                            type="object" class="btn-secondary"
-                            invisible="not grid_json"/>
                     <button string="Cerrar" special="cancel" class="btn-secondary"/>
                 </footer>
             </form>
