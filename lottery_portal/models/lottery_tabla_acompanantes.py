@@ -8,6 +8,7 @@ import base64
 import json
 
 from odoo import fields, models
+from odoo.exceptions import UserError
 
 from .charada_data import DECADE_COLORS
 from .tabla_acompanantes_grid import build_grid
@@ -49,6 +50,13 @@ class LotteryTablaAcompanantes(models.TransientModel):
     result_html = fields.Html(string='Resultado', readonly=True, sanitize=False)
     # Grilla ya calculada, para no recalcularla al descargar el PNG.
     grid_json = fields.Text(readonly=True)
+
+    numero_consulta_id = fields.Many2one(
+        'lottery.number', string='Número',
+        help='Elegí un número de la tabla ya generada para ver, ordenados '
+             'de menor a mayor, los demás números que comparten su misma '
+             'fila, columna o diagonal.')
+    resultado_numero_html = fields.Html(readonly=True, sanitize=False)
 
     def _get_cache(self):
         self.ensure_one()
@@ -133,6 +141,89 @@ class LotteryTablaAcompanantes(models.TransientModel):
             'target': 'new',
         }
 
+    def _ball_html(self, n, cell):
+        """Celda <td> de una bola numerada, mismo estilo (degradé + brillo)
+        que usa la tabla completa — para no duplicar el diseño entre la
+        grilla y la consulta por número."""
+        color = DECADE_COLORS[n // 10]
+        light = 'rgb(%d,%d,%d)' % tuple(min(255, v + 35) for v in color)
+        dark = 'rgb(%d,%d,%d)' % tuple(max(0, v - 35) for v in color)
+        return f'''
+            <td style="width:{cell}px;height:{cell}px;padding:2px;">
+                <div style="position:relative;width:100%;height:100%;
+                    border-radius:50%;
+                    background:linear-gradient(135deg,{light},{dark});
+                    box-shadow:0 3px 5px rgba(0,0,0,.35),
+                        inset 0 -3px 5px rgba(0,0,0,.2);
+                    color:#fff;display:flex;align-items:center;
+                    justify-content:center;font-weight:800;
+                    font-size:12.5px;">
+                    <div style="position:absolute;top:14%;left:22%;
+                        width:32%;height:20%;border-radius:50%;
+                        background:rgba(255,255,255,.55);
+                        filter:blur(1px);"></div>
+                    <span style="position:relative;">{n:02d}</span>
+                </div>
+            </td>'''
+
+    def _face_html(self, face, cell):
+        return f'''
+            <td style="width:{cell}px;height:{cell}px;padding:2px;">
+                <div style="width:100%;height:100%;border-radius:50%;
+                    background:linear-gradient(135deg,#EDE7F6,#FFE0B2);
+                    display:flex;align-items:center;justify-content:center;
+                    overflow:hidden;">
+                    <img src="/lottery_portal/static/src/img/{face}"
+                         style="width:88%;height:88%;object-fit:cover;
+                            border-radius:50%;"/>
+                </div>
+            </td>'''
+
+    def action_ver_numero(self):
+        self.ensure_one()
+        if not self.grid_json:
+            raise UserError('Primero generá la tabla.')
+        if not self.numero_consulta_id:
+            raise UserError('Elegí un número primero.')
+        n0 = self.numero_consulta_id.name
+
+        grid = self._parse_grid_json(self.grid_json)
+        pos_by_numero = {n: cell for cell, n in grid.items()}
+        if n0 not in pos_by_numero:
+            raise UserError('Ese número no está en la tabla generada.')
+        r0, c0 = pos_by_numero[n0]
+
+        companions = sorted(
+            n for (r, c), n in grid.items()
+            if n != n0 and (r == r0 or c == c0
+                            or (r - c) == (r0 - c0) or (r + c) == (r0 + c0))
+        )
+
+        cell = 42
+        rows_html = []
+        for i in range(0, len(companions), 8):
+            row = companions[i:i + 8]
+            rows_html.append(
+                '<tr>' + ''.join(self._ball_html(n, cell) for n in row) + '</tr>')
+
+        self.resultado_numero_html = f'''
+            <div style="text-align:center;">
+                <p class="text-muted small" style="margin-bottom:8px;">
+                    Números en la misma fila, columna o diagonal que
+                    <b>{n0:02d}</b> ({len(companions)}):
+                </p>
+                <table style="border-collapse:collapse;margin:0 auto;">
+                    {''.join(rows_html)}
+                </table>
+            </div>
+        ''' if companions else f'''
+            <p class="text-muted small">
+                <b>{n0:02d}</b> no comparte fila, columna ni diagonal con
+                ningún otro número en esta tabla.
+            </p>
+        '''
+        return self._reopen()
+
     def _render_html(self, grid, grid_size):
         cell = 42
         face_i = 0
@@ -142,40 +233,11 @@ class LotteryTablaAcompanantes(models.TransientModel):
             for c in range(grid_size):
                 n = grid.get((r, c))
                 if n is not None:
-                    color = DECADE_COLORS[n // 10]
-                    light = 'rgb(%d,%d,%d)' % tuple(min(255, v + 35) for v in color)
-                    dark = 'rgb(%d,%d,%d)' % tuple(max(0, v - 35) for v in color)
-                    cells.append(f'''
-                        <td style="width:{cell}px;height:{cell}px;padding:2px;">
-                            <div style="position:relative;width:100%;height:100%;
-                                border-radius:50%;
-                                background:linear-gradient(135deg,{light},{dark});
-                                box-shadow:0 3px 5px rgba(0,0,0,.35),
-                                    inset 0 -3px 5px rgba(0,0,0,.2);
-                                color:#fff;display:flex;align-items:center;
-                                justify-content:center;font-weight:800;
-                                font-size:12.5px;">
-                                <div style="position:absolute;top:14%;left:22%;
-                                    width:32%;height:20%;border-radius:50%;
-                                    background:rgba(255,255,255,.55);
-                                    filter:blur(1px);"></div>
-                                <span style="position:relative;">{n:02d}</span>
-                            </div>
-                        </td>''')
+                    cells.append(self._ball_html(n, cell))
                 else:
                     face = 'mateo_cara.png' if face_i % 2 == 0 else 'valeria_cara.png'
                     face_i += 1
-                    cells.append(f'''
-                        <td style="width:{cell}px;height:{cell}px;padding:2px;">
-                            <div style="width:100%;height:100%;border-radius:50%;
-                                background:linear-gradient(135deg,#EDE7F6,#FFE0B2);
-                                display:flex;align-items:center;justify-content:center;
-                                overflow:hidden;">
-                                <img src="/lottery_portal/static/src/img/{face}"
-                                     style="width:88%;height:88%;object-fit:cover;
-                                        border-radius:50%;"/>
-                            </div>
-                        </td>''')
+                    cells.append(self._face_html(face, cell))
             rows_html.append('<tr>' + ''.join(cells) + '</tr>')
 
         return f'''

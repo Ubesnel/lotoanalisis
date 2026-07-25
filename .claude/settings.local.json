@@ -143,7 +143,8 @@
       "Bash(\"E:\\\\Trabajo\\\\Odoo\\\\Odoo17\\\\venv_odoo\\\\Scripts\\\\python.exe\" \"C:\\\\Users\\\\Ubesnel\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\E--Trabajo-Odoo-Odoo17-lottery\\\\c8e9ed98-ff2b-4c3d-b5dc-0fa244342d2d\\\\scratchpad\\\\test_full_grid.py\")",
       "Bash(python -m py_compile lottery_portal/models/tabla_acompanantes_grid.py lottery_portal/models/lottery_tabla_acompanantes.py lottery_portal/models/lottery_tabla_acompanantes_cache.py)",
       "Bash(\"/c/Program Files/PostgreSQL/15/bin/psql.exe\" -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -c \"SELECT name, latest_version, state FROM ir_module_module WHERE name = 'lottery_portal';\")",
-      "Bash(python -m py_compile lottery_portal/migrations/1.2/pre-migrate.py)"
+      "Bash(python -m py_compile lottery_portal/migrations/1.2/pre-migrate.py)",
+      "Bash(python -m py_compile lottery_portal/models/lottery_tabla_acompanantes.py)"
     ]
   }
 }
