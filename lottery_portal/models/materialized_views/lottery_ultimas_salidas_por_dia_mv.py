@@ -31,3 +31,8 @@ class LotteryUltimaSalidaPorDiaMV(models.Model):
             LEFT JOIN lottery_number be ON be.id = lo.fireball_id
             GROUP BY lo.sorteo_id, lo.week_day, lo.date;
         """)
+
+        self.env.cr.execute("""
+            CREATE INDEX idx_ultima_salida_dia_semana_mv
+            ON lottery_ultima_salida_dia_semana_mv (sorteo_id, date DESC);
+        """)

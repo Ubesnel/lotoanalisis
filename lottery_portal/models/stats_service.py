@@ -44,10 +44,12 @@ class LotteryStatsService(models.Model):
     _description = 'Lottery Statistics Service'
 
     def clear_caches(self):
-        self.env.registry.clear_cache()
+        # Balde propio ('lottery_stats') para no invalidar el cache ORM de
+        # todo Odoo (core + otros addons) en cada recompute de stats.
+        self.env.registry.clear_cache('lottery_stats')
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_hero_stats(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT
@@ -72,7 +74,7 @@ class LotteryStatsService(models.Model):
             'total_sorteos': total_fmt,
         }
 
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_last_results_full(self, sorteo_id=False):
         LotteryOutput = self.env['lottery.output'].sudo()
 
@@ -117,24 +119,24 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top_10_general(self, sorteo_id=False):
         self.env.cr.execute("""SELECT * FROM lottery_top10_mv WHERE sorteo_id = %s""", (sorteo_id,))
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top_10_dia(self, sorteo_id=False):
         self.env.cr.execute("""SELECT * FROM lottery_top10_afternoon_mv WHERE sorteo_id = %s""", (sorteo_id,))
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top_10_noche(self, sorteo_id=False):
         self.env.cr.execute("""SELECT * FROM lottery_top10_evening_mv WHERE sorteo_id = %s""", (sorteo_id,))
         return self.env.cr.dictfetchall()
 
-    @tools.ormcache('day', 'sorteo_id')
+    @tools.ormcache('day', 'sorteo_id', cache='lottery_stats')
     def get_ultimas_salidas_por_dia(self, day, sorteo_id=False):
         self.env.cr.execute("""
             SELECT * FROM lottery_ultima_salida_dia_semana_mv
@@ -174,7 +176,7 @@ class LotteryStatsService(models.Model):
         """, (sorteo_id,))
         return self.env.cr.dictfetchall()
 
-    @tools.ormcache('month', 'year', 'sorteo_id')
+    @tools.ormcache('month', 'year', 'sorteo_id', cache='lottery_stats')
     def get_month_year(self, month, year, sorteo_id=False):
         if not month:
             month = str(date.today().month)
@@ -183,7 +185,7 @@ class LotteryStatsService(models.Model):
         return '%s %s' % (MONTHS_DICT[month], year)
 
     @api.model
-    @tools.ormcache('week_code', 'sorteo_id')
+    @tools.ormcache('week_code', 'sorteo_id', cache='lottery_stats')
     def get_top_10_por_dia_semana(self, week_code, sorteo_id=False):
         field_map = {
             'lu': 'salidas_atrasadas_lunes',
@@ -213,7 +215,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top5_centenas_afternoon(self, sorteo_id=False):
         self.env.cr.execute("""
                         SELECT centena, atraso
@@ -222,7 +224,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top5_centenas_evening(self, sorteo_id=False):
         self.env.cr.execute("""
                         SELECT centena, atraso
@@ -231,7 +233,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top5_centenas_general(self, sorteo_id=False):
         self.env.cr.execute("""
                 SELECT centena, atraso
@@ -240,7 +242,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('type', 'sorteo_id')
+    @tools.ormcache('type', 'sorteo_id', cache='lottery_stats')
     def get_top_atrasos_lineas(self, type, sorteo_id=False):
         query = """
             SELECT
@@ -258,7 +260,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('type', 'sorteo_id')
+    @tools.ormcache('type', 'sorteo_id', cache='lottery_stats')
     def get_top_atrasos_terminales(self, type, sorteo_id=False):
         query = """
                 SELECT
@@ -276,7 +278,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('type', 'groups_code', 'sorteo_id')
+    @tools.ormcache('type', 'groups_code', 'sorteo_id', cache='lottery_stats')
     def get_top_atrasos_number_groups(self, type, groups_code, sorteo_id=False):
         field_map = {
             'general': 'general',
@@ -299,7 +301,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top5_bola_extra_afternoon(self, sorteo_id=False):
         self.env.cr.execute("""
                                 SELECT centena, atraso
@@ -308,7 +310,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top5_bola_extra_evening(self, sorteo_id=False):
         self.env.cr.execute("""
                                 SELECT centena, atraso
@@ -317,7 +319,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top5_bola_extra_general(self, sorteo_id=False):
         self.env.cr.execute("""
                         SELECT centena, atraso
@@ -385,7 +387,7 @@ class LotteryStatsService(models.Model):
         """
 
     @api.model
-    @tools.ormcache('month', 'current_year', 'sorteo_id')
+    @tools.ormcache('month', 'current_year', 'sorteo_id', cache='lottery_stats')
     def get_top_numbers_month(self, month=None, current_year=None, sorteo_id=False):
         field = MONTH_FIELD_MAP.get(month)
         if not field:
@@ -403,7 +405,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('month', 'current_year', 'sorteo_id')
+    @tools.ormcache('month', 'current_year', 'sorteo_id', cache='lottery_stats')
     def get_remaining_numbers_month(self, month=None, current_year=None, sorteo_id=False):
         field = MONTH_FIELD_MAP.get(month)
         if not field:
@@ -421,7 +423,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('month_filter', 'numbers', 'sorteo_id')
+    @tools.ormcache('month_filter', 'numbers', 'sorteo_id', cache='lottery_stats')
     def get_top_numbers_month_info(self, month_filter, numbers, sorteo_id=False):
         number_ids = [n.get('id') for n in numbers]
         query = """
@@ -455,7 +457,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('month', 'current_year', 'sorteo_id')
+    @tools.ormcache('month', 'current_year', 'sorteo_id', cache='lottery_stats')
     def get_bottom_numbers_month(self, month=None, current_year=None, sorteo_id=False):
         field = MONTH_FIELD_MAP.get(month)
         if not field:
@@ -474,7 +476,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('month', 'current_year', 'sorteo_id', 'years_top', 'years_mid', 'years_bottom')
+    @tools.ormcache('month', 'current_year', 'sorteo_id', 'years_top', 'years_mid', 'years_bottom', cache='lottery_stats')
     def get_month_overdue_sections(self, month=None, current_year=None, sorteo_id=False,
                                    years_top=2, years_mid=2, years_bottom=4):
         """Números del mes con atraso en años, en 3 secciones por categoría.
@@ -583,7 +585,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_numbers_all_weekdays(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT LPAD(ln.name::text, 2, '0') AS name, ln.id,
@@ -608,7 +610,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_numbers_all_weeks(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT LPAD(ln.name::text, 2, '0') AS name, ln.id,
@@ -632,7 +634,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_centenas_all_weekdays(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT week_day, field_type, centena, total_salidas
@@ -654,7 +656,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_centenas_all_weeks(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT week_segment, field_type, centena, total_salidas
@@ -676,7 +678,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_all_atrasos_lineas(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT name, general, afternoon, evening,
@@ -709,7 +711,7 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_all_atrasos_terminales(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT name, general, afternoon, evening,
@@ -742,7 +744,7 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_weekend_groups(self, sorteo_id=False):
         """Top 5 líneas y terminales que más salen en sábado + domingo."""
         self.env.cr.execute("""
@@ -780,8 +782,13 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
+    @tools.ormcache('day', 'sorteo_id', cache='lottery_stats')
     def get_grupos_por_dia(self, day, sorteo_id=False):
-        """Top 2 grupos, lineas y terminales mas atrasados por dia usando lottery_group_stat."""
+        """Top 2 grupos, lineas y terminales mas atrasados por dia usando lottery_group_stat.
+
+        No depende de CURRENT_DATE (a diferencia de get_ultimas_salidas_col1/
+        consecutivas): cachear es seguro, igual que su gemelo
+        get_top_10_por_dia_semana."""
         field_day_map = {
             'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
             'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves',
@@ -864,7 +871,7 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_all_group_sequences(self, sorteo_id=False):
         """Para cada línea/terminal, top 5 grupos que salen más frecuentemente a continuación."""
         from collections import defaultdict
@@ -919,7 +926,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_group_sequences_cross(self, sorteo_id=False):
         """Cross-type sequences between consecutive draws:
            line → next-draw terminal  and  terminal → next-draw line.
@@ -1022,7 +1029,7 @@ class LotteryStatsService(models.Model):
         return result
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_all_atrasos_parejas(self, sorteo_id=False):
         self.env.cr.execute("""
             SELECT name, general, afternoon, evening, last_date, last_turn,
@@ -1056,7 +1063,7 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('day', 'sorteo_id')
+    @tools.ormcache('day', 'sorteo_id', cache='lottery_stats')
     def get_top_numbers_by_week_day(self, day, sorteo_id=False):
         field = WEEKDAY_FIELD_MAP.get(day)
 
@@ -1079,7 +1086,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('week', 'sorteo_id')
+    @tools.ormcache('week', 'sorteo_id', cache='lottery_stats')
     def get_top_numbers_by_week(self, week, sorteo_id=False):
         field = WEEK_FIELD_MAP.get(week)
 
@@ -1102,7 +1109,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('day', 'sorteo_id')
+    @tools.ormcache('day', 'sorteo_id', cache='lottery_stats')
     def get_bottom_numbers_by_week_day(self, day, sorteo_id=False):
         field = WEEKDAY_FIELD_MAP.get(day)
 
@@ -1125,7 +1132,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('week', 'sorteo_id')
+    @tools.ormcache('week', 'sorteo_id', cache='lottery_stats')
     def get_bottom_numbers_by_week(self, week, sorteo_id=False):
         field = WEEK_FIELD_MAP.get(week)
 
@@ -1234,7 +1241,7 @@ class LotteryStatsService(models.Model):
         return {'general': general, 'tarde': tarde, 'noche': noche}
 
     @api.model
-    @tools.ormcache('number_id', 'sorteo_id')
+    @tools.ormcache('number_id', 'sorteo_id', cache='lottery_stats')
     def get_salidas_numeros_despues_numero(self, number_id, sorteo_id=False):
         self.env.cr.execute("""
             SELECT
@@ -1259,7 +1266,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('number_id', 'sorteo_id')
+    @tools.ormcache('number_id', 'sorteo_id', cache='lottery_stats')
     def get_salidas_numeros_antes_numero(self, number_id, sorteo_id=False):
         self.env.cr.execute("""
             SELECT
@@ -1284,7 +1291,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('day', 'field', 'sorteo_id')
+    @tools.ormcache('day', 'field', 'sorteo_id', cache='lottery_stats')
     def get_top_centenas_by_week_day(self, day, field, sorteo_id=False):
         self.env.cr.execute("""
             SELECT centena, total_salidas
@@ -1296,7 +1303,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('day', 'field', 'sorteo_id')
+    @tools.ormcache('day', 'field', 'sorteo_id', cache='lottery_stats')
     def get_bottom_centenas_by_week_day(self, day, field, sorteo_id=False):
         self.env.cr.execute("""
             SELECT centena, total_salidas
@@ -1308,7 +1315,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('week', 'field', 'sorteo_id')
+    @tools.ormcache('week', 'field', 'sorteo_id', cache='lottery_stats')
     def get_top_centenas_by_week(self, week, field, sorteo_id=False):
         self.env.cr.execute("""
             SELECT centena, total_salidas
@@ -1320,7 +1327,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('week', 'field', 'sorteo_id')
+    @tools.ormcache('week', 'field', 'sorteo_id', cache='lottery_stats')
     def get_bottom_centenas_by_week(self, week, field, sorteo_id=False):
         self.env.cr.execute("""
             SELECT centena, total_salidas
@@ -1332,7 +1339,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top_repeticiones(self, sorteo_id=False):
         query = f"""WITH data AS (select number_id, date,
               LAG(number_id) OVER (ORDER BY date, CASE WHEN turn_day = 'afternoon' THEN 1 ELSE 2 END) AS prev_number
@@ -1350,7 +1357,7 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_id')
+    @tools.ormcache('sorteo_id', cache='lottery_stats')
     def get_top_pegados(self, sorteo_id=False):
         query = f"""WITH data AS (
             SELECT
@@ -1382,7 +1389,7 @@ class LotteryStatsService(models.Model):
         self.env.cr.execute(query, {'sorteo_id': sorteo_id})
         return self.env.cr.dictfetchall()
 
-    @tools.ormcache('option', 'day', 'sorteo_id')
+    @tools.ormcache('option', 'day', 'sorteo_id', cache='lottery_stats')
     def get_top_6_groups(self, option=False, day=False, sorteo_id=False):
         field_map = {'general': 'salidas_atrasadas', 'afternoon': 'salidas_atrasadas_dia',
                      'evening': 'salidas_atrasadas_noche'}
@@ -1405,7 +1412,7 @@ class LotteryStatsService(models.Model):
         groups = self.env.cr.dictfetchall()
         return groups
 
-    @tools.ormcache('group', 'orden', 'day', 'sorteo_id')
+    @tools.ormcache('group', 'orden', 'day', 'sorteo_id', cache='lottery_stats')
     def get_info_groups_numbers(self, group, orden, day, sorteo_id=False):
         field_map = {'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
                      'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves', 'vi': 'salidas_atrasadas_viernes',
@@ -1430,7 +1437,7 @@ class LotteryStatsService(models.Model):
             for n in stats
         ]
 
-    @tools.ormcache('option', 'day', 'sorteo_id')
+    @tools.ormcache('option', 'day', 'sorteo_id', cache='lottery_stats')
     def get_top_3_pintas(self, option=False, day=False, sorteo_id=False):
         field_map = {'general': 'salidas_atrasadas', 'afternoon': 'salidas_atrasadas_dia',
                      'evening': 'salidas_atrasadas_noche'}
@@ -1453,7 +1460,7 @@ class LotteryStatsService(models.Model):
         groups = self.env.cr.dictfetchall()
         return groups
 
-    @tools.ormcache('group_id', 'day', 'week', 'month', 'limit', 'sorteo_id')
+    @tools.ormcache('group_id', 'day', 'week', 'month', 'limit', 'sorteo_id', cache='lottery_stats')
     def get_info_group_numbers_analysis(self, group_id, day, week, month, limit, sorteo_id=False):
         if not group_id or not day or not month or not week:
             return {}
@@ -1555,7 +1562,7 @@ class LotteryStatsService(models.Model):
 
         return result
 
-    @tools.ormcache('group_id', 'turn', 'sorteo_id')
+    @tools.ormcache('group_id', 'turn', 'sorteo_id', cache='lottery_stats')
     def get_group_delay_intervals(self, group_id, turn=None, sorteo_id=False):
         where_clause = "where o.sorteo_id = %s"
         params = [group_id]
@@ -1608,7 +1615,7 @@ class LotteryStatsService(models.Model):
 
         return self.env.cr.dictfetchone()
 
-    @tools.ormcache('group_id', 'turn', 'sorteo_id')
+    @tools.ormcache('group_id', 'turn', 'sorteo_id', cache='lottery_stats')
     def get_group_delay_intervals_pintas(self, group_id, turn=None, sorteo_id=False):
         where_clause = "where o.sorteo_id = %s"
         params = [group_id]
@@ -1663,7 +1670,7 @@ class LotteryStatsService(models.Model):
     # ─── Números Calientes ───────────────────────────────────────────────────
 
     @api.model
-    @tools.ormcache('turn_day', 'today_str', 'sorteo_id')
+    @tools.ormcache('turn_day', 'today_str', 'sorteo_id', cache='lottery_stats')
     def get_numeros_calientes(self, turn_day, today_str, sorteo_id=False):
         """
         Ponderación separada: estadísticas GENERALES aplican igual a ambos turnos;
@@ -2244,7 +2251,7 @@ class LotteryStatsService(models.Model):
     # ─── Números Fríos ───────────────────────────────────────────────────────
 
     @api.model
-    @tools.ormcache('turn_day', 'today_str', 'sorteo_id')
+    @tools.ormcache('turn_day', 'today_str', 'sorteo_id', cache='lottery_stats')
     def get_numeros_frios(self, turn_day, today_str, sorteo_id=False):
         """
         Espejo invertido de get_numeros_calientes.
@@ -2920,7 +2927,7 @@ class LotteryStatsService(models.Model):
         return [{'name': str(r['val'])} for r in rows]
 
     @api.model
-    @tools.ormcache('today_str', 'sorteo_id')
+    @tools.ormcache('today_str', 'sorteo_id', cache='lottery_stats')
     def get_calientes_all(self, today_str, sorteo_id=False):
         """Endpoint unificado: números, centenas y bola extra calientes para ambos turnos."""
         from datetime import date as _date
@@ -3027,7 +3034,7 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('today_str', 'turn', 'sorteo_id')
+    @tools.ormcache('today_str', 'turn', 'sorteo_id', cache='lottery_stats')
     def get_calientes_next_turn(self, today_str, turn, sorteo_id=False):
         """Calcula SOLO el turno del próximo sorteo (fecha + turno vienen del
         campo next_draw del sorteo, fuente única). ~2× más rápido que ambos."""
@@ -3065,7 +3072,7 @@ class LotteryStatsService(models.Model):
         }
 
     @api.model
-    @tools.ormcache('turn', 'today_str', 'sorteo_id')
+    @tools.ormcache('turn', 'today_str', 'sorteo_id', cache='lottery_stats')
     def get_validation_sets(self, turn, today_str, sorteo_id=False):
         """Versión liviana para la validación de una salida: calcula SOLO el
         turno indicado y solo los conjuntos hot/cold de números, centenas y
@@ -3271,7 +3278,7 @@ class LotteryStatsService(models.Model):
     # ─── Líneas y Terminales más probables (próximo sorteo) ──────────────────
 
     @api.model
-    @tools.ormcache('turn_day', 'today_str', 'sorteo_id')
+    @tools.ormcache('turn_day', 'today_str', 'sorteo_id', cache='lottery_stats')
     def get_lineas_terminales_probables(self, turn_day, today_str, sorteo_id=False):
         """
         Top 3 líneas y top 3 terminales más probables para el próximo sorteo
