@@ -10,10 +10,14 @@
                 <field name="date"/>
                 <field name="turn_day"/>
                 <field name="sorteo_id" optional="show"/>
+                <field name="temperature" optional="show"/>
                 <field name="numbers_count"/>
                 <field name="number_ids" widget="many2many_tags" optional="show"/>
                 <field name="published" widget="boolean_toggle"/>
                 <field name="cumplida" widget="boolean_toggle" readonly="1"/>
+                <field name="cumplida_20" widget="boolean_toggle" readonly="1" optional="show"/>
+                <field name="cumplida_10" widget="boolean_toggle" readonly="1" optional="show"/>
+                <field name="cumplida_5" widget="boolean_toggle" readonly="1" optional="show"/>
                 <field name="verification_date" optional="hide"/>
             </tree>
         </field>
@@ -31,19 +35,57 @@
                             <field name="date"/>
                             <field name="turn_day"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="temperature"/>
                         </group>
                         <group>
                             <field name="published"/>
                             <field name="numbers_count"/>
-                            <field name="cumplida" readonly="1"/>
                             <field name="verification_date"/>
                         </group>
                     </group>
-                    <group string="Números a predecir">
-                        <field name="number_ids" nolabel="1" colspan="2"
-                               widget="many2many_tags"
-                               options="{'no_open': True, 'no_create': True}"/>
-                    </group>
+
+                    <notebook>
+                        <page string="Números a predecir" name="numeros_principal">
+                            <group>
+                                <field name="cumplida" readonly="1"/>
+                            </group>
+                            <group string="Números a predecir">
+                                <field name="number_ids" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
+                        <page string="20 Números" name="numeros_20">
+                            <group>
+                                <field name="cumplida_20" readonly="1"/>
+                            </group>
+                            <group string="20 Números a predecir">
+                                <field name="number_ids_20" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
+                        <page string="10 Números" name="numeros_10">
+                            <group>
+                                <field name="cumplida_10" readonly="1"/>
+                            </group>
+                            <group string="10 Números a predecir">
+                                <field name="number_ids_10" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
+                        <page string="5 Números" name="numeros_5">
+                            <group>
+                                <field name="cumplida_5" readonly="1"/>
+                            </group>
+                            <group string="5 Números a predecir">
+                                <field name="number_ids_5" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
@@ -63,6 +105,13 @@
                 <filter string="Noche" name="pred_evening"
                         domain="[('turn_day', '=', 'evening')]"/>
                 <separator/>
+                <filter string="Calientes" name="pred_hot"
+                        domain="[('temperature', '=', 'hot')]"/>
+                <filter string="Restantes" name="pred_remaining"
+                        domain="[('temperature', '=', 'remaining')]"/>
+                <filter string="Fríos" name="pred_cold"
+                        domain="[('temperature', '=', 'cold')]"/>
+                <separator/>
                 <filter string="Publicadas" name="published"
                         domain="[('published', '=', True)]"/>
                 <filter string="Sin publicar" name="not_published"
@@ -81,6 +130,8 @@
                             context="{'group_by': 'turn_day'}"/>
                     <filter string="Sorteo" name="group_sorteo"
                             context="{'group_by': 'sorteo_id'}"/>
+                    <filter string="Temperatura" name="group_temperature"
+                            context="{'group_by': 'temperature'}"/>
                 </group>
             </search>
         </field>

@@ -182,6 +182,36 @@
         </field>
     </record>
 
+    <record id="action_lottery_output_florida" model="ir.actions.act_window">
+        <field name="name">Florida Pick3</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'florida')]</field>
+        <field name="context">{'search_default_current_month': 1}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_new_york" model="ir.actions.act_window">
+        <field name="name">New York</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'new_york')]</field>
+        <field name="context">{'search_default_current_month': 1}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_1" model="ir.actions.act_window">
+        <field name="name">Quiniela UY Premio 1</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_1')]</field>
+        <field name="context">{'search_default_current_month': 1}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
     <record id="action_lottery_output_all" model="ir.actions.act_window">
         <field name="name">Todas</field>
         <field name="type">ir.actions.act_window</field>

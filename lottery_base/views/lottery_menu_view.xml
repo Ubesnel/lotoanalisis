@@ -26,15 +26,23 @@
               action="action_lottery_output_all" sequence="5"
               groups="lottery_base.group_lottery_manager"/>
 
-    <menuitem id="menu_lottery_output_afternoon_item" parent="lottery_base.menu_lottery_output"
-              action="action_lottery_output_afternoon" sequence="15"
+    <!-- 4) SORTEOS DENTRO DE SALIDAS -->
+    <menuitem id="menu_lottery_output_florida_item" name="Florida Pick3"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_florida" sequence="10"
               groups="lottery_base.group_lottery_user"/>
 
-    <menuitem id="menu_lottery_output_evening_item" parent="lottery_base.menu_lottery_output"
-              action="action_lottery_output_evening" sequence="35"
+    <menuitem id="menu_lottery_output_new_york_item" name="New York"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_new_york" sequence="15"
               groups="lottery_base.group_lottery_user"/>
 
-    <!-- 4) CONFIGURACIÓN -->
+    <menuitem id="menu_lottery_output_quiniela_uy_1_item" name="Quiniela UY Premio 1"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_quiniela_uy_1" sequence="20"
+              groups="lottery_base.group_lottery_user"/>
+
+    <!-- 5) CONFIGURACIÓN -->
     <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_manager"/>

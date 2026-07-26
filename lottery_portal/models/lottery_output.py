@@ -126,8 +126,12 @@ class LotteryOutput(models.Model):
                 ('turn_day', '=', out.turn_day),
             ], limit=1)
             if prediction:
+                num_id = out.number_id.id
                 prediction.write({
-                    'cumplida': out.number_id.id in prediction.number_ids.ids,
+                    'cumplida':    num_id in prediction.number_ids.ids,
+                    'cumplida_20': num_id in prediction.number_ids_20.ids,
+                    'cumplida_10': num_id in prediction.number_ids_10.ids,
+                    'cumplida_5':  num_id in prediction.number_ids_5.ids,
                     'verification_date': fields.Datetime.now(),
                 })
 
