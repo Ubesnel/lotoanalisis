@@ -9,6 +9,8 @@ consumirlas desde la app (y desde Chrome durante el desarrollo Flutter web).
 import json
 from datetime import datetime
 
+import pytz
+
 from odoo import http
 from odoo.http import request
 
@@ -58,6 +60,17 @@ def _get_public_sorteo(sorteo_id):
     else:
         sorteo = Sorteo.search(domain, order='sequence, id', limit=1)
     return sorteo
+
+
+def _now_local():
+    """Hora actual en la zona horaria de la empresa.
+
+    Evita el desfase UTC: en Uruguay (UTC-3) después de las 21:00 el servidor
+    UTC ya está en el día siguiente, pero los cálculos de día-de-semana y
+    semana-del-mes deben reflejar la hora local del usuario.
+    """
+    tz_name = request.env.company.partner_id.tz or 'America/Montevideo'
+    return datetime.now(pytz.timezone(tz_name))
 
 
 class LotteryAppApi(http.Controller):
@@ -136,7 +149,7 @@ class LotteryAppApi(http.Controller):
         """Código de día ('lu'..'do'); por defecto, el día de hoy."""
         if day in VALID_DAYS:
             return day
-        return VALID_DAYS[datetime.now().weekday()]
+        return VALID_DAYS[_now_local().weekday()]
 
     @http.route('/api/lottery/v1/stats/atrasos-numeros', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -357,13 +370,25 @@ class LotteryAppApi(http.Controller):
             ('turn_day', '=', turn),
             ('published', '=', True),
         ], limit=1)
-        if not prediction or not prediction.number_ids:
-            return _json_response(dict(base, found=False, numbers=[]))
 
-        numbers = sorted(prediction.number_ids.mapped('name'))
+        def _nums(field):
+            return [str(n).zfill(2) for n in sorted(field.mapped('name'))]
+
+        if not prediction or not (
+            prediction.number_ids or prediction.number_ids_20
+            or prediction.number_ids_10 or prediction.number_ids_5
+        ):
+            return _json_response(dict(
+                base, found=False,
+                numbers=[], numbers_20=[], numbers_10=[], numbers_5=[],
+            ))
+
         return _json_response(dict(
             base, found=True,
-            numbers=[str(n).zfill(2) for n in numbers],
+            numbers=_nums(prediction.number_ids),
+            numbers_20=_nums(prediction.number_ids_20),
+            numbers_10=_nums(prediction.number_ids_10),
+            numbers_5=_nums(prediction.number_ids_5),
         ))
 
     @http.route('/api/lottery/v1/stats/grupos-dia', type='http',
@@ -403,7 +428,7 @@ class LotteryAppApi(http.Controller):
         sus 4 contadores de atraso, los números que lo forman (ordenados por
         el atraso del turno) y el análisis de números que muestra la web."""
         stats = self._stats()
-        now = datetime.now()
+        now = _now_local()
         day = VALID_DAYS[now.weekday()]
         week = (now.day + 6) // 7  # semana del mes, como la web (ceil(día/7))
         month = now.month
@@ -516,7 +541,7 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         stats = self._stats()
-        now = datetime.now()
+        now = _now_local()
         return _json_response({
             'month': now.month,
             'month_label': MONTHS_ES[now.month - 1],
@@ -586,7 +611,7 @@ class LotteryAppApi(http.Controller):
         except (TypeError, ValueError):
             return _json_response({'error': 'invalid_years_param'}, status=400)
 
-        now = datetime.now()
+        now = _now_local()
         data = self._stats().get_month_overdue_sections(
             now.month, now.year, sorteo_id=sorteo.id,
             years_top=years_top, years_mid=years_intermedios,
@@ -607,7 +632,7 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         data = self._stats().get_numbers_all_weekdays(sorteo_id=sorteo.id)
-        data['day'] = VALID_DAYS[datetime.now().weekday()]
+        data['day'] = VALID_DAYS[_now_local().weekday()]
         return _json_response(data)
 
     @http.route('/api/lottery/v1/stats/numeros-salidas-semana', type='http',
@@ -618,7 +643,7 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         data = self._stats().get_numbers_all_weeks(sorteo_id=sorteo.id)
-        data['week'] = 'sem_%d' % min((datetime.now().day + 6) // 7, 5)
+        data['week'] = 'sem_%d' % min((_now_local().day + 6) // 7, 5)
         return _json_response(data)
 
     @http.route('/api/lottery/v1/stats/centenas-bolas-salidas', type='http',
@@ -642,9 +667,10 @@ class LotteryAppApi(http.Controller):
                 key=lambda x: x['total_salidas'], reverse=True)
             return {'top': items[:4], 'bottom': list(reversed(items[-4:]))}
 
+        _now = _now_local()
         return _json_response({
-            'day': VALID_DAYS[datetime.now().weekday()],
-            'week': 'sem_%d' % min((datetime.now().day + 6) // 7, 5),
+            'day': VALID_DAYS[_now.weekday()],
+            'week': 'sem_%d' % min((_now.day + 6) // 7, 5),
             'historico': {
                 'centena': historico('hundreds_id'),
                 'bola': historico('fireball_id'),
@@ -698,4 +724,103 @@ class LotteryAppApi(http.Controller):
                 number.id, sorteo_id=sorteo.id),
             'antes': stats.get_salidas_numeros_antes_numero(
                 number.id, sorteo_id=sorteo.id),
+        })
+
+    @http.route('/api/lottery/v1/stats/historial-fechas', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def historial_fechas(self, sorteo_id=None, **kwargs):
+        """Fechas disponibles en el historial de predicciones.
+
+        Devuelve la lista de fechas (más reciente primero) en las que hay una
+        predicción publicada para el sorteo, indicando qué turnos están
+        disponibles por fecha. Respeta la fecha mínima configurada en
+        lottery_api.historial_desde.
+        """
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        since = request.env['ir.config_parameter'].sudo().get_param(
+            'lottery_api.historial_desde')
+
+        domain = [
+            ('sorteo_id', '=', sorteo.id),
+            ('published', '=', True),
+        ]
+        if since:
+            domain.append(('date', '>=', since))
+
+        preds = request.env['lottery.prediction'].sudo().search(
+            domain, order='date desc, id desc')
+
+        by_date = {}
+        for p in preds:
+            key = p.date.isoformat()
+            if key not in by_date:
+                by_date[key] = []
+            if p.turn_day not in by_date[key]:
+                by_date[key].append(p.turn_day)
+
+        return _json_response({
+            'since': since or None,
+            'dates': [{'date': d, 'turns': turns}
+                      for d, turns in by_date.items()],
+        })
+
+    @http.route('/api/lottery/v1/stats/historial-dia', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def historial_dia(self, sorteo_id=None, date=None, turn=None, **kwargs):
+        """Detalle de la predicción de un día y turno concreto.
+
+        Devuelve los 4 sublistas predichas (total, 20, 10, 5), el número
+        ganador real (si ya se jugó) y los 4 booleanos de cumplimiento.
+        """
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not date or not turn:
+            return _json_response({'error': 'date_and_turn_required'}, status=400)
+
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return _json_response({'error': 'invalid_date'}, status=400)
+
+        pred = request.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date),
+            ('turn_day', '=', turn),
+            ('published', '=', True),
+        ], limit=1)
+
+        if not pred:
+            return _json_response({'error': 'not_found'}, status=404)
+
+        output = request.env['lottery.output'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date),
+            ('turn_day', '=', turn),
+        ], limit=1)
+
+        def _nums(field):
+            return [str(n).zfill(2) for n in sorted(field.mapped('name'))]
+
+        return _json_response({
+            'date': date,
+            'weekday': WEEKDAYS_ES[date_obj.weekday()],
+            'turn': turn,
+            'turn_label': TURN_LABELS.get(turn, turn),
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'result_number': (
+                str(output.number_id.name).zfill(2)
+                if output and output.number_id else None
+            ),
+            'cumplida':    pred.cumplida,
+            'cumplida_20': pred.cumplida_20,
+            'cumplida_10': pred.cumplida_10,
+            'cumplida_5':  pred.cumplida_5,
+            'numbers':    _nums(pred.number_ids),
+            'numbers_20': _nums(pred.number_ids_20),
+            'numbers_10': _nums(pred.number_ids_10),
+            'numbers_5':  _nums(pred.number_ids_5),
         })

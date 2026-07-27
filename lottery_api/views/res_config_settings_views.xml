@@ -5,18 +5,23 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//form" position="inside">
-                <app data-string="App LotoAnálisis" string="App LotoAnálisis" name="lottery_api" groups="lottery_base.group_lottery_manager">
-                    <block title="Notificaciones Push (FCM)" id="lottery_api_fcm_settings">
-                        <setting string="Cuenta de servicio Firebase (JSON)"
-                                 help="Pega el JSON completo de la service account descargada de Firebase Console → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada. No incluir en el repositorio.">
-                            <field name="fcm_service_account"
-                                   widget="text"
-                                   placeholder='{"type":"service_account","project_id":"...","private_key":"...",...}'
-                                   style="font-family:monospace;font-size:11px;height:120px;width:100%;"/>
-                        </setting>
-                    </block>
-                </app>
+            <!-- Agrega los bloques de la app LotoAnálisis dentro del <app> "Loterías" de lottery_portal -->
+            <xpath expr="//app[@name='lottery_portal']" position="inside">
+                <block title="Notificaciones Push (FCM)" id="lottery_api_fcm_settings">
+                    <setting string="Cuenta de servicio Firebase (JSON)"
+                             help="Pega el JSON completo de la service account descargada de Firebase Console → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada. No incluir en el repositorio.">
+                        <field name="fcm_service_account"
+                               widget="text"
+                               placeholder='{"type":"service_account","project_id":"...","private_key":"...",...}'
+                               style="font-family:monospace;font-size:11px;height:120px;width:100%;"/>
+                    </setting>
+                </block>
+                <block title="Historial de Predicciones" id="lottery_api_historial_settings">
+                    <setting string="Mostrar predicciones desde"
+                             help="Solo se muestran en la app las predicciones publicadas a partir de esta fecha. Dejá en blanco para mostrar todas.">
+                        <field name="lottery_historial_desde"/>
+                    </setting>
+                </block>
             </xpath>
         </field>
     </record>
