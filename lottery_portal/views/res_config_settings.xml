@@ -5,7 +5,7 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="Loterías" string="Loterías" name="lottery" groups="lottery_base.group_lottery_manager">
+                <app data-string="Loterías" string="Loterías" name="lottery_portal" groups="lottery_base.group_lottery_manager">
                     <block title="Período a consultar" id="consult_period_settings">
                         <setting id="default_portal_calendar_year" string="Año">
                             <field name="portal_calendar_year"/>
