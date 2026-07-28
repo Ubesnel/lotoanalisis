@@ -144,7 +144,10 @@
       "Bash(python -m py_compile lottery_portal/models/tabla_acompanantes_grid.py lottery_portal/models/lottery_tabla_acompanantes.py lottery_portal/models/lottery_tabla_acompanantes_cache.py)",
       "Bash(\"/c/Program Files/PostgreSQL/15/bin/psql.exe\" -h localhost -p 5436 -U odoo17 -d LOTTERY_MULTI -c \"SELECT name, latest_version, state FROM ir_module_module WHERE name = 'lottery_portal';\")",
       "Bash(python -m py_compile lottery_portal/migrations/1.2/pre-migrate.py)",
-      "Bash(python -m py_compile lottery_portal/models/lottery_tabla_acompanantes.py)"
+      "Bash(python -m py_compile lottery_portal/models/lottery_tabla_acompanantes.py)",
+      "Bash(grep -n \"^version\" E:/Trabajo/Flutter/lottery_app/pubspec.yaml)",
+      "Bash(python -c \"import ast,sys; ast.parse\\(open\\('lottery_api/controllers/api.py',encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(grep -n \"didUpdateWidget\" -A 12 \"C:/dev/flutter/packages/flutter/lib/src/widgets/form.dart\" | head -40)"
     ]
   }
 }

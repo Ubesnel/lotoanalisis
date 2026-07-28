@@ -56,6 +56,12 @@ class LotteryPrediction(models.Model):
 
     numbers_count = fields.Integer(
         string='Cantidad', compute='_compute_numbers_count', store=True)
+    numbers_count_20 = fields.Integer(
+        string='Cantidad 20', compute='_compute_numbers_count_20', store=True)
+    numbers_count_10 = fields.Integer(
+        string='Cantidad 10', compute='_compute_numbers_count_10', store=True)
+    numbers_count_5 = fields.Integer(
+        string='Cantidad 5', compute='_compute_numbers_count_5', store=True)
 
     # ── Verificación ───────────────────────────────────────────────────────
     cumplida = fields.Boolean(
@@ -89,6 +95,21 @@ class LotteryPrediction(models.Model):
     def _compute_numbers_count(self):
         for rec in self:
             rec.numbers_count = len(rec.number_ids)
+
+    @api.depends('number_ids_20')
+    def _compute_numbers_count_20(self):
+        for rec in self:
+            rec.numbers_count_20 = len(rec.number_ids_20)
+
+    @api.depends('number_ids_10')
+    def _compute_numbers_count_10(self):
+        for rec in self:
+            rec.numbers_count_10 = len(rec.number_ids_10)
+
+    @api.depends('number_ids_5')
+    def _compute_numbers_count_5(self):
+        for rec in self:
+            rec.numbers_count_5 = len(rec.number_ids_5)
 
     @api.depends('date', 'turn_day', 'sorteo_id.name')
     def _compute_display_name(self):
