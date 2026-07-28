@@ -188,7 +188,7 @@
         <field name="res_model">lottery.output</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('sorteo_id.code', '=', 'florida')]</field>
-        <field name="context">{'search_default_current_month': 1}</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'florida'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
@@ -198,7 +198,7 @@
         <field name="res_model">lottery.output</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('sorteo_id.code', '=', 'new_york')]</field>
-        <field name="context">{'search_default_current_month': 1}</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'new_york'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
@@ -208,7 +208,7 @@
         <field name="res_model">lottery.output</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_1')]</field>
-        <field name="context">{'search_default_current_month': 1}</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_1'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 

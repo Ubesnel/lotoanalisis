@@ -289,60 +289,6 @@ class LotteryAppApi(http.Controller):
         return _json_response(
             self._stats().get_all_group_sequences(sorteo_id=sorteo.id))
 
-    @http.route('/api/lottery/v1/stats/proximo-sorteo', type='http',
-                auth='public', methods=['GET'], csrf=False, cors='*')
-    def proximo_sorteo(self, sorteo_id=None, **kwargs):
-        """Mejores números por líneas para el próximo sorteo.
-
-        La tabla de origen (calientes / restantes / fríos) se configura en la
-        ficha de cada sorteo (campo proximo_tabla_app): cada sorteo puede
-        mostrar una tabla distinta en la app. Vacío = sección oculta.
-        """
-        sorteo = _get_public_sorteo(sorteo_id)
-        if not sorteo:
-            return _json_response({'error': 'sorteo_not_found'}, status=404)
-
-        key_map = {
-            'calientes': 'numbers',
-            'restantes': 'numbers_remaining',
-            'frios': 'numbers_cold',
-        }
-        labels = {'calientes': 'Calientes', 'restantes': 'Restantes',
-                  'frios': 'Fríos'}
-        tabla = sorteo.proximo_tabla_app
-        if not tabla:
-            return _json_response(
-                {'tabla': '', 'numeros': [], 'lines': [], 'turn': None})
-        if tabla not in key_map:
-            tabla = 'restantes'
-
-        date_str, turn = sorteo.get_next_draw()
-        snapshot = sorteo._get_ranking_snapshot() or {}
-        turn_data = snapshot.get(turn) or {}
-        raw_numbers = turn_data.get(key_map[tabla]) or []
-
-        lines = {}
-        for item in raw_numbers:
-            try:
-                n = int(item.get('name'))
-            except (TypeError, ValueError):
-                continue
-            lines.setdefault(n // 10, []).append(str(n).zfill(2))
-
-        return _json_response({
-            'tabla': tabla,
-            'tabla_label': labels[tabla],
-            'turn': turn,
-            'turn_label': TURN_LABELS.get(turn),
-            'next_draw': turn_data.get('next_draw') or date_str,
-            'lines': [{
-                'line': line,
-                'label': f'Línea {line}',
-                'range': f'{line * 10:02d}-{line * 10 + 9:02d}',
-                'numbers': sorted(nums),
-            } for line, nums in sorted(lines.items())],
-        })
-
     @http.route('/api/lottery/v1/stats/numeros-magicos', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def numeros_magicos(self, sorteo_id=None, **kwargs):
@@ -765,6 +711,148 @@ class LotteryAppApi(http.Controller):
             'since': since or None,
             'dates': [{'date': d, 'turns': turns}
                       for d, turns in by_date.items()],
+        })
+
+    @http.route('/api/lottery/v1/stats/historial-resumen', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def historial_resumen(self, sorteo_id=None, year=None, month=None,
+                          solo_aciertos='1', **kwargs):
+        """Dashboard del historial de predicciones.
+
+        Devuelve en una sola llamada: los totales de aciertos por sublista
+        (todos / 20 / 10 / 5), el desglose por año y mes, y la lista de fechas
+        con sus turnos. Los totales y el desglose son SIEMPRE del histórico
+        completo; year/month y solo_aciertos filtran solo la lista de fechas.
+
+        Una predicción cuenta en los totales únicamente si ya se jugó el
+        sorteo, y cada sublista tiene su propio denominador (si no se cargaron
+        los 10 o los 5 de esa fecha, no cuentan como fallo).
+        """
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        try:
+            year = int(year) if year else None
+            month = int(month) if month else None
+        except (TypeError, ValueError):
+            return _json_response({'error': 'invalid_period'}, status=400)
+
+        only_hits = str(solo_aciertos).lower() not in ('0', 'false', 'no')
+
+        since = request.env['ir.config_parameter'].sudo().get_param(
+            'lottery_api.historial_desde')
+
+        domain = [
+            ('sorteo_id', '=', sorteo.id),
+            ('published', '=', True),
+        ]
+        if since:
+            domain.append(('date', '>=', since))
+
+        preds = request.env['lottery.prediction'].sudo().search(
+            domain, order='date desc, turn_day desc')
+
+        # Salidas del rango: dan el número ganador y permiten considerar
+        # "evaluada" una predicción cargada después de registrada la salida
+        # (en ese caso verification_date queda vacío).
+        results = {}
+        if preds:
+            dates = preds.mapped('date')
+            outputs = request.env['lottery.output'].sudo().search([
+                ('sorteo_id', '=', sorteo.id),
+                ('date', '>=', min(dates)),
+                ('date', '<=', max(dates)),
+            ])
+            for out in outputs:
+                results[(out.date, out.turn_day)] = (
+                    str(out.number_id.name).zfill(2) if out.number_id else None)
+
+        levels = (
+            ('total', 'number_ids',    'cumplida'),
+            ('n20',   'number_ids_20', 'cumplida_20'),
+            ('n10',   'number_ids_10', 'cumplida_10'),
+            ('n5',    'number_ids_5',  'cumplida_5'),
+        )
+        bucket_keys = {'total': 'aciertos', 'n20': 'aciertos_20',
+                       'n10': 'aciertos_10', 'n5': 'aciertos_5'}
+
+        totales = {name: {'jugadas': 0, 'aciertos': 0} for name, _, _ in levels}
+        evaluadas = 0
+        periodos = {}
+        by_date = {}
+
+        for pred in preds:
+            key = (pred.date, pred.turn_day)
+            evaluada = bool(pred.verification_date) or key in results
+            counts = {name: len(pred[field]) for name, field, _ in levels}
+
+            if evaluada:
+                evaluadas += 1
+                bucket = periodos.setdefault(
+                    (pred.date.year, pred.date.month),
+                    {'predicciones': 0, 'aciertos': 0, 'aciertos_20': 0,
+                     'aciertos_10': 0, 'aciertos_5': 0})
+                bucket['predicciones'] += 1
+                for name, _field, flag in levels:
+                    if not counts[name]:
+                        continue
+                    totales[name]['jugadas'] += 1
+                    if pred[flag]:
+                        totales[name]['aciertos'] += 1
+                        bucket[bucket_keys[name]] += 1
+
+            if year and pred.date.year != year:
+                continue
+            if month and pred.date.month != month:
+                continue
+            hit = any(pred[flag] for _n, _f, flag in levels)
+            if only_hits and not hit:
+                continue
+
+            by_date.setdefault(pred.date, []).append({
+                'turn': pred.turn_day,
+                'turn_label': TURN_LABELS.get(pred.turn_day, pred.turn_day),
+                'result_number': results.get(key),
+                'evaluada': evaluada,
+                'cumplida':    pred.cumplida,
+                'cumplida_20': pred.cumplida_20,
+                'cumplida_10': pred.cumplida_10,
+                'cumplida_5':  pred.cumplida_5,
+                'counts': counts,
+            })
+
+        def _pct(data):
+            return round(100.0 * data['aciertos'] / data['jugadas'], 1) \
+                if data['jugadas'] else 0.0
+
+        turn_order = {'afternoon': 0, 'evening': 1}
+        by_year = {}
+        for (y, m), data in periodos.items():
+            entry = by_year.setdefault(y, {'year': y, 'predicciones': 0,
+                                           'aciertos': 0, 'meses': []})
+            entry['predicciones'] += data['predicciones']
+            entry['aciertos'] += data['aciertos']
+            entry['meses'].append(
+                dict(data, month=m, month_label=MONTHS_ES[m - 1]))
+
+        for entry in by_year.values():
+            entry['meses'].sort(key=lambda x: x['month'], reverse=True)
+
+        return _json_response({
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'since': since or None,
+            'evaluadas': evaluadas,
+            'totales': {name: dict(data, pct=_pct(data))
+                        for name, data in totales.items()},
+            'periodos': [by_year[y] for y in sorted(by_year, reverse=True)],
+            'filtro': {'year': year, 'month': month, 'solo_aciertos': only_hits},
+            'fechas': [{
+                'date': d.isoformat(),
+                'weekday': WEEKDAYS_ES[d.weekday()],
+                'turnos': sorted(turnos,
+                                 key=lambda t: turn_order.get(t['turn'], 9)),
+            } for d, turnos in sorted(by_date.items(), reverse=True)],
         })
 
     @http.route('/api/lottery/v1/stats/historial-dia', type='http',

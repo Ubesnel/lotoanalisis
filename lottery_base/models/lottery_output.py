@@ -5,17 +5,12 @@ from datetime import date, timedelta
 from .utils import MAPPING_WEEK_DATE, MONTHS
 
 
-def _default_sorteo(self):
-    return self.env.ref('lottery_base.sorteo_florida', raise_if_not_found=False)
-
-
 class LotteryOutput(models.Model):
     _name = 'lottery.output'
     _description = 'Salida de Números'
     _order = 'date desc, id desc'
 
     sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True, index=True,
-                                default=_default_sorteo,
                                 help="A qué sorteo/juego pertenece esta salida (Florida, Quiniela UY - Sorteo N, etc).")
     number_id = fields.Many2one('lottery.number', string='Número', required=True, index=True)
     hundreds_id = fields.Many2one('lottery.number', string='Centena', required=True,
@@ -60,6 +55,17 @@ class LotteryOutput(models.Model):
             'Ya existe una salida registrada para esa fecha, turno y sorteo.'
         )
     ]
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        code = self.env.context.get('codigo_sorteo')
+        if code:
+            sorteo = self.env['lottery.sorteo'].search([('code', '=', code)], limit=1)
+            if sorteo:
+                res['sorteo_id'] = sorteo.id
+
+        return res
 
     @api.depends('date', 'turn_day', 'hundreds_id.name', 'number_id', 'sorteo_id.name')
     def _compute_display_name(self):

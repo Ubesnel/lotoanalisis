@@ -40,6 +40,9 @@
                         <group>
                             <field name="published"/>
                             <field name="numbers_count"/>
+                            <field name="numbers_count_20"/>
+                            <field name="numbers_count_10"/>
+                            <field name="numbers_count_5"/>
                             <field name="verification_date"/>
                         </group>
                     </group>
