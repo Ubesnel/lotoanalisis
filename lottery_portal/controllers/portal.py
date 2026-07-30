@@ -103,6 +103,23 @@ class LotteryPortal(http.Controller):
     def politica_privacidad_page(self, **kwargs):
         return request.render('lottery_portal.politica_privacidad_page')
 
+    # app-ads.txt para AdMob: se sirve en la raíz del dominio declarado como
+    # "Sitio web" en la ficha de Google Play. AdMob lo rastrea para verificar
+    # que esta cuenta de publisher está autorizada a vender el inventario de
+    # la app. El contenido es ajustable sin update via el parámetro de sistema
+    # lottery_portal.app_ads_txt (Ajustes → Técnico → Parámetros del sistema),
+    # por si más adelante se agregan redes de mediación.
+    @http.route('/app-ads.txt', type='http', auth="public", website=False)
+    def app_ads_txt(self, **kwargs):
+        content = request.env['ir.config_parameter'].sudo().get_param(
+            'lottery_portal.app_ads_txt',
+            'google.com, pub-9112696506385807, DIRECT, f08c47fec0942fa0',
+        )
+        return request.make_response(
+            content.strip() + '\n',
+            headers=[('Content-Type', 'text/plain; charset=utf-8')],
+        )
+
     @http.route('/estadisticas', type='http', auth='user', website=True)
     def portal_estadisticas_grupos_page(self, **kw):
         return request.render('lottery_portal.portal_estadisticas_grupos')
