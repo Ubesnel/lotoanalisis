@@ -150,7 +150,10 @@
       "Bash(grep -n \"didUpdateWidget\" -A 12 \"C:/dev/flutter/packages/flutter/lib/src/widgets/form.dart\" | head -40)",
       "Bash(grep -n \"\\\\.text\\\\b\\\\|appLang\\\\|import '\" /e/Trabajo/Flutter/lottery_app/lib/screens/informaciones_screen.dart | head -30)",
       "WebFetch(domain:www.seus-it.com)",
-      "Bash(rm /e/Trabajo/Flutter/lottery_app/lib/widgets/apoya_bar.dart && echo \"apoya_bar.dart eliminado\"; grep -rn \"apoya_bar\\\\|ApoyaBar\" /e/Trabajo/Flutter/lottery_app/lib 2>/dev/null || echo \"sin referencias restantes\")"
+      "Bash(rm /e/Trabajo/Flutter/lottery_app/lib/widgets/apoya_bar.dart && echo \"apoya_bar.dart eliminado\"; grep -rn \"apoya_bar\\\\|ApoyaBar\" /e/Trabajo/Flutter/lottery_app/lib 2>/dev/null || echo \"sin referencias restantes\")",
+      "Read(//c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/7ff1d404-6d4f-4648-886d-a4d21cd47426/tasks/**)",
+      "Bash(rm -rf /c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/7ff1d404-6d4f-4648-886d-a4d21cd47426/scratchpad/aab_v22b)",
+      "Bash(unzip -o -q app-release.aab -d /c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/7ff1d404-6d4f-4648-886d-a4d21cd47426/scratchpad/aab_v22b base/manifest/AndroidManifest.xml)"
     ]
   }
 }
