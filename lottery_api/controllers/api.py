@@ -500,6 +500,106 @@ class LotteryAppApi(http.Controller):
                 now.month, now.year, sorteo_id=sorteo.id),
         })
 
+    @http.route('/api/lottery/v1/consulta-combinaciones', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def consulta_combinaciones(self, sorteo_id=None, date=None, window=15,
+                               top=25, **kwargs):
+        """N números candidatos por combinación de dígitos (versión app del
+        wizard lottery.consulta.combinaciones). Params: sorteo_id, date
+        (YYYY-MM-DD, default hoy), window (default 15), top (default 25,
+        tope 50)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        try:
+            day = (datetime.strptime(date, '%Y-%m-%d').date()
+                   if date else _now_local().date())
+        except (TypeError, ValueError):
+            day = _now_local().date()
+        try:
+            win = max(1, min(int(window), 200))
+        except (TypeError, ValueError):
+            win = 15
+        try:
+            top_n = max(1, min(int(top), 50))
+        except (TypeError, ValueError):
+            top_n = 25
+        data = self._stats().get_combinaciones(sorteo.id, day, win, top_n)
+        return _json_response({
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'date': day.strftime('%d/%m/%Y'),
+            'day_month': day.strftime('%d/%m'),
+            'window_requested': win,
+            'top_requested': top_n,
+            **data,
+        })
+
+    @http.route('/api/lottery/v1/tabla-acompanantes', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tabla_acompanantes(self, sorteo_id=None, turno='general', **kwargs):
+        """Tabla LotoAnálisis 12×12 (versión app del wizard
+        lottery.tabla.acompanantes). La fecha de corte NO es un parámetro: se
+        toma de Ajustes → Loterías (company.tabla_acompanantes_fecha_referencia,
+        o hoy si no hay). Params: sorteo_id, turno (general|afternoon|evening).
+        Los acompañantes (misma fila/columna/diagonal) los resuelve la app
+        sobre la grilla — acá solo se devuelve la matriz de celdas."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if turno not in ('general', 'afternoon', 'evening'):
+            turno = 'general'
+        company = request.env.company.sudo()
+        fecha_corte = (company.tabla_acompanantes_fecha_referencia
+                       or _now_local().date())
+        size = 12
+        grid = request.env['lottery.tabla.acompanantes.cache'].sudo().get_grid(
+            sorteo.id, fecha_corte, turno, str(size))
+        # Matriz de celdas: número (con su línea = decena) o cara decorativa
+        # (mateo/valeria alternadas en orden de lectura, igual que la web).
+        face_i = 0
+        cells = []
+        for r in range(size):
+            row = []
+            for c in range(size):
+                n = grid.get((r, c))
+                if n is not None:
+                    row.append({'number': n, 'line': n // 10})
+                else:
+                    row.append(
+                        {'face': 'mateo' if face_i % 2 == 0 else 'valeria'})
+                    face_i += 1
+            cells.append(row)
+        return _json_response({
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'turno': turno,
+            'size': size,
+            'cells': cells,
+        })
+
+    @http.route('/api/lottery/v1/patron-atraso', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def patron_atraso(self, sorteo_id=None, date=None, patron='cruce',
+                      **kwargs):
+        """Atraso de patrones línea/terminal (versión app del wizard
+        lottery.patron.atraso). Params: sorteo_id, date (YYYY-MM-DD, default
+        hoy — es el corte del historial y define el día de la semana de las
+        categorías por día), patron (cruce|repeticion)."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        try:
+            day = (datetime.strptime(date, '%Y-%m-%d').date()
+                   if date else _now_local().date())
+        except (TypeError, ValueError):
+            day = _now_local().date()
+        data = request.env['lottery.patron.atraso'].sudo() \
+            .compute_patron_atraso(sorteo.id, day, patron)
+        return _json_response({
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'date': day.strftime('%d/%m/%Y'),
+            **data,
+        })
+
     @http.route('/api/lottery/v1/curiosidades', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def curiosidades(self, sorteo_id=None, limit=50, **kwargs):
@@ -526,6 +626,8 @@ class LotteryAppApi(http.Controller):
                 'date': c.date.strftime('%d/%m/%Y'),
                 'weekday': WEEKDAYS_ES[c.date.weekday()],
                 'text': c.text,
+                # Traducción opcional; si está vacía la app cae al español.
+                'text_en': c.text_en or None,
             } for c in curiosities],
         })
 

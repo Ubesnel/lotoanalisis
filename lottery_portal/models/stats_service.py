@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from collections import Counter
+
 from odoo import models, api, tools
 import calendar
 from datetime import date, datetime
@@ -472,6 +474,96 @@ class LotteryStatsService(models.Model):
         """
         self.env.cr.execute(query, {'month': month, 'year': current_year, 'sorteo_id': sorteo_id})
         return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_combinaciones(self, sorteo_id, target_date, window=15, top=25):
+        """N números candidatos por combinación de dígitos (para la app móvil).
+
+        Misma lógica que el wizard lottery.consulta.combinaciones: toma las
+        últimas `window` salidas hasta `target_date` (ambos turnos), cuenta la
+        frecuencia de cada dígito 0-9 sobre el número completo (centena/decena/
+        unidad) y puntúa cada combinación 00-99 como freq(decena)*freq(unidad).
+        Devuelve el TOP `top` (default 25, tope 50). Marca 'directo' (el número
+        salió ese dd/mm en años anteriores) y 'virado' (su invertido salió ese
+        dd/mm). Los grupos de color escalan con el total (~40% hot, ~32% warm,
+        resto cool), así con 25 quedan 1-10/11-18/19-25 como el wizard. Datos
+        estructurados (sin HTML) para el endpoint REST /consulta-combinaciones.
+        NO se cachea a propósito: la ventana cambia con cada salida nueva del
+        día (el proxy_cache de 20s de nginx absorbe la repetición)."""
+        try:
+            window = max(1, min(int(window), 200))
+        except (TypeError, ValueError):
+            window = 15
+        try:
+            top = max(1, min(int(top), 50))
+        except (TypeError, ValueError):
+            top = 25
+
+        # Últimas `window` salidas hasta la fecha, más reciente primero.
+        self.env.cr.execute("""
+            SELECT date, turn_day, complete_number
+            FROM lottery_output
+            WHERE sorteo_id = %s AND date <= %s AND complete_number IS NOT NULL
+            ORDER BY date DESC,
+                     CASE turn_day WHEN 'evening' THEN 1 ELSE 0 END DESC
+            LIMIT %s
+        """, (sorteo_id, target_date, window))
+        outputs = self.env.cr.fetchall()
+        if not outputs:
+            return {'window_used': 0, 'top': [],
+                    'digits_heat': [], 'window_outputs': []}
+
+        completos = [n for _, _, n in outputs]
+        digs = Counter(d for n in completos for d in n)
+        scores = {
+            f'{dd}{uu}': digs.get(dd, 0) * digs.get(uu, 0)
+            for dd in '0123456789' for uu in '0123456789'
+        }
+        orden = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))[:top]
+
+        # Números (2 cifras) salidos el mismo dd/mm en años anteriores.
+        self.env.cr.execute("""
+            SELECT DISTINCT RIGHT(complete_number, 2)
+            FROM lottery_output
+            WHERE sorteo_id = %s
+              AND EXTRACT(MONTH FROM date) = EXTRACT(MONTH FROM %s::date)
+              AND EXTRACT(DAY FROM date) = EXTRACT(DAY FROM %s::date)
+              AND EXTRACT(YEAR FROM date) < EXTRACT(YEAR FROM %s::date)
+              AND complete_number IS NOT NULL
+        """, (sorteo_id, target_date, target_date, target_date))
+        mismos_fecha = {r[0] for r in self.env.cr.fetchall()}
+
+        # Grupos de color proporcionales al total (con 25 → 10/8/7 = wizard).
+        n_total = len(orden)
+        hot_cut = round(n_total * 0.40)
+        warm_cut = round(n_total * 0.72)
+        candidatos = [{
+            'number': n,
+            'score': s,
+            'rank': i + 1,
+            'group': 'hot' if i < hot_cut else 'warm' if i < warm_cut else 'cool',
+            'directo': n in mismos_fecha,
+            'virado': n not in mismos_fecha and n[::-1] in mismos_fecha,
+        } for i, (n, s) in enumerate(orden)]
+
+        digits_heat = sorted(
+            ({'digit': d, 'count': digs.get(d, 0)} for d in '0123456789'),
+            key=lambda x: (-x['count'], x['digit']))
+
+        turn_lbl = {'afternoon': 'Tarde', 'evening': 'Noche'}
+        window_outputs = [{
+            'date': d.strftime('%d/%m'),
+            'turn': t,
+            'turn_label': turn_lbl.get(t, t),
+            'number': n,
+        } for d, t, n in outputs]
+
+        return {
+            'window_used': len(outputs),
+            'top': candidatos,
+            'digits_heat': digits_heat,
+            'window_outputs': window_outputs,
+        }
 
     @api.model
     @tools.ormcache('month', 'current_year', 'sorteo_id', 'years_top', 'years_mid', 'years_bottom')

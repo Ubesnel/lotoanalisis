@@ -147,7 +147,8 @@
       "Bash(python -m py_compile lottery_portal/models/lottery_tabla_acompanantes.py)",
       "Bash(grep -n \"^version\" E:/Trabajo/Flutter/lottery_app/pubspec.yaml)",
       "Bash(python -c \"import ast,sys; ast.parse\\(open\\('lottery_api/controllers/api.py',encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
-      "Bash(grep -n \"didUpdateWidget\" -A 12 \"C:/dev/flutter/packages/flutter/lib/src/widgets/form.dart\" | head -40)"
+      "Bash(grep -n \"didUpdateWidget\" -A 12 \"C:/dev/flutter/packages/flutter/lib/src/widgets/form.dart\" | head -40)",
+      "Bash(grep -n \"\\\\.text\\\\b\\\\|appLang\\\\|import '\" /e/Trabajo/Flutter/lottery_app/lib/screens/informaciones_screen.dart | head -30)"
     ]
   }
 }

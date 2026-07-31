@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 TURN_LABEL = {'afternoon': 'Tarde', 'evening': 'Noche'}
 WEEKDAY_LABEL = {
@@ -72,8 +72,7 @@ class LotteryPatronAtraso(models.TransientModel):
         string='Patrón', required=True, default='cruce')
     result_html = fields.Html(string='Resultado', readonly=True, sanitize=False)
 
-    def _fetch_rows(self):
-        self.ensure_one()
+    def _fetch_rows(self, sorteo_id, target_date):
         self.env.cr.execute("""
             SELECT o.date, o.turn_day, o.week_day, n.name
             FROM lottery_output o
@@ -81,7 +80,7 @@ class LotteryPatronAtraso(models.TransientModel):
             WHERE o.sorteo_id = %s AND o.date <= %s
             ORDER BY o.date,
                      CASE o.turn_day WHEN 'afternoon' THEN 0 ELSE 1 END
-        """, (self.sorteo_id.id, self.date))
+        """, (sorteo_id, target_date))
         return self.env.cr.fetchall()
 
     @staticmethod
@@ -140,9 +139,9 @@ class LotteryPatronAtraso(models.TransientModel):
             'maximo': maximo,
         }
 
-    def _categorias(self, rows):
+    def _categorias(self, rows, target_date):
         """rows: (date, turn_day, week_day, numero) ordenadas cronológicamente."""
-        weekday_target = WEEKDAY_BY_PYTHON_INDEX[self.date.weekday()]
+        weekday_target = WEEKDAY_BY_PYTHON_INDEX[target_date.weekday()]
 
         general = [self._par(rows[i], rows[i + 1]) for i in range(len(rows) - 1)]
 
@@ -172,14 +171,19 @@ class LotteryPatronAtraso(models.TransientModel):
                             for i in range(len(dia_noche) - 1)]
 
         dia_nombre = WEEKDAY_LABEL[weekday_target]
+        # (key estable, nombre ES para el wizard, día de semana ES o None, pares)
         return [
-            ('General (cualquier turno, consecutivos)', general),
-            ('Solo tarde, consecutivos', solo_tarde),
-            ('Solo noche, consecutivos', solo_noche),
-            ('Cruzado: tarde → noche (día siguiente)', cruzado_tn),
-            ('Cruzado: noche → tarde (día siguiente)', cruzado_nt),
-            (f'{dia_nombre}, turno tarde', patron_dia_tarde),
-            (f'{dia_nombre}, turno noche', patron_dia_noche),
+            ('general', 'General (cualquier turno, consecutivos)', None, general),
+            ('solo_tarde', 'Solo tarde, consecutivos', None, solo_tarde),
+            ('solo_noche', 'Solo noche, consecutivos', None, solo_noche),
+            ('cruzado_tn', 'Cruzado: tarde → noche (día siguiente)', None,
+             cruzado_tn),
+            ('cruzado_nt', 'Cruzado: noche → tarde (día siguiente)', None,
+             cruzado_nt),
+            ('dia_tarde', f'{dia_nombre}, turno tarde', dia_nombre,
+             patron_dia_tarde),
+            ('dia_noche', f'{dia_nombre}, turno noche', dia_nombre,
+             patron_dia_noche),
         ]
 
     def _row_html(self, nombre, pares, hit_fn):
@@ -223,9 +227,62 @@ class LotteryPatronAtraso(models.TransientModel):
             </tr>
         """
 
+    @api.model
+    def compute_patron_atraso(self, sorteo_id, target_date, patron='cruce'):
+        """Datos estructurados del atraso de patrones (para el endpoint REST
+        de la app). Misma lógica que action_consultar pero sin HTML."""
+        if patron not in PATRONES:
+            patron = 'cruce'
+        label, desc, hit_fn = PATRONES[patron]
+        rows = self._fetch_rows(sorteo_id, target_date)
+        categorias = []
+        if len(rows) >= 2:
+            for key, nombre, weekday, pares in self._categorias(
+                    rows, target_date):
+                categorias.append(self._serialize_categoria(
+                    key, nombre, weekday, self._analizar(pares, hit_fn)))
+        return {
+            'patron': patron,
+            'patron_label': label,
+            'patron_desc': desc,
+            'categorias': categorias,
+        }
+
+    @api.model
+    def _serialize_categoria(self, key, nombre, weekday, info):
+        if info is None:
+            return {'key': key, 'nombre': nombre, 'weekday': weekday,
+                    'sin_datos': True}
+        ua = info['ultimo_acierto']
+        ultimo = None
+        if ua:
+            dp, tp, np_, dn, tn, nn = ua
+            ultimo = {
+                'prev': {'number': np_, 'date': dp.strftime('%d/%m/%y'),
+                         'turn_label': TURN_LABEL.get(tp, tp)},
+                'next': {'number': nn, 'date': dn.strftime('%d/%m/%y'),
+                         'turn_label': TURN_LABEL.get(tn, tn)},
+            }
+        maximo = info['maximo']
+        record = bool(info['atraso_actual'] > 0 and maximo
+                      and info['atraso_actual'] >= maximo['largo'])
+        return {
+            'key': key,
+            'nombre': nombre,
+            'weekday': weekday,
+            'sin_datos': False,
+            'atraso_actual': info['atraso_actual'],
+            'promedio': info['promedio'],
+            'maximo': maximo['largo'] if maximo else None,
+            'maximo_desde': maximo['desde'].strftime('%d/%m/%y') if maximo else None,
+            'maximo_hasta': maximo['hasta'].strftime('%d/%m/%y') if maximo else None,
+            'record': record,
+            'ultimo_acierto': ultimo,
+        }
+
     def action_consultar(self):
         self.ensure_one()
-        rows = self._fetch_rows()
+        rows = self._fetch_rows(self.sorteo_id.id, self.date)
         if len(rows) < 2:
             self.result_html = (
                 '<div class="alert alert-warning">No hay suficientes '
@@ -236,7 +293,7 @@ class LotteryPatronAtraso(models.TransientModel):
         nombre_patron, descripcion_patron, hit_fn = PATRONES[self.patron]
         rows_html = ''.join(
             self._row_html(nombre, pares, hit_fn)
-            for nombre, pares in self._categorias(rows)
+            for _key, nombre, _wd, pares in self._categorias(rows, self.date)
         )
 
         self.result_html = f"""

@@ -4,7 +4,11 @@ corte) el resultado nunca cambia — la historia hasta esa fecha ya pasó y
 no se altera con salidas futuras — así que una vez calculada se reutiliza
 en vez de recalcularla cada vez que se vuelve a pedir la misma combinación.
 """
-from odoo import fields, models
+import json
+
+from odoo import api, fields, models
+
+from .tabla_acompanantes_grid import build_grid
 
 
 class LotteryTablaAcompanantesCache(models.Model):
@@ -38,3 +42,37 @@ class LotteryTablaAcompanantesCache(models.Model):
          'Ya existe una Tabla LotoAnálisis calculada para ese sorteo, esa '
          'fecha de corte, ese turno y ese tamaño de grilla.'),
     ]
+
+    @api.model
+    def get_grid(self, sorteo_id, fecha_corte, turno='general', grid_size='12'):
+        """Grilla {(fila, col): numero} para la combinación pedida, usando la
+        caché o calculándola y guardándola. Reutilizable por el wizard y por
+        el endpoint REST de la app (misma lógica que
+        lottery.tabla.acompanantes.action_generar)."""
+        rec = self.sudo().search([
+            ('sorteo_id', '=', sorteo_id),
+            ('fecha_corte', '=', fecha_corte),
+            ('turno', '=', turno),
+            ('grid_size', '=', grid_size),
+        ], limit=1)
+        if rec:
+            grid_json = rec.grid_json
+        else:
+            turno_arg = turno if turno != 'general' else False
+            affinity = self.env['lottery.stats.service'].sudo() \
+                .get_companion_affinity(
+                    sorteo_id, fecha_corte=str(fecha_corte), turno=turno_arg)
+            grid, _empty = build_grid(affinity, size=int(grid_size))
+            grid_json = json.dumps(
+                {f'{r},{c}': n for (r, c), n in grid.items()})
+            self.sudo().create({
+                'sorteo_id': sorteo_id,
+                'fecha_corte': fecha_corte,
+                'turno': turno,
+                'grid_size': grid_size,
+                'grid_json': grid_json,
+            })
+        return {
+            tuple(int(x) for x in key.split(',')): n
+            for key, n in json.loads(grid_json).items()
+        }
