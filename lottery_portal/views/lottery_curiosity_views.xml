@@ -31,9 +31,13 @@
                             <field name="published"/>
                         </group>
                     </group>
-                    <group string="Noticia">
+                    <group string="Noticia (español)">
                         <field name="text" nolabel="1" colspan="2"
                                placeholder="Escribí la curiosidad o información a mostrar en la app…"/>
+                    </group>
+                    <group string="Noticia (inglés) — opcional">
+                        <field name="text_en" nolabel="1" colspan="2"
+                               placeholder="English translation (optional). If empty, Spanish is shown to English users too."/>
                     </group>
                 </sheet>
             </form>

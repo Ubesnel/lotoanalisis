@@ -22,6 +22,11 @@ class LotteryCuriosity(models.Model):
     text = fields.Text(
         string='Noticia', required=True,
         help='Texto de la curiosidad/información que se muestra en la app.')
+    text_en = fields.Text(
+        string='Noticia (inglés)',
+        help='Traducción al inglés de la noticia. Opcional: si se deja vacío, '
+             'la app muestra el texto en español también a los usuarios en '
+             'inglés (no queda ninguna noticia en blanco).')
     published = fields.Boolean(
         string='Publicado', default=False, index=True,
         help='Solo las curiosidades publicadas se envían a la app móvil '
