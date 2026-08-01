@@ -22,6 +22,7 @@ class NewsController(http.Controller):
         return request.render('lottery_portal.buscador_publico_page', {
             'facebook_group_url': company.facebook_group_url or '',
             'facebook_page_url': company.facebook_page_url or '',
+            'play_store_url': company.play_store_url or '',
             'sorteos_publicos': sorteos,
         })
 

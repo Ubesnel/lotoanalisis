@@ -34,21 +34,63 @@
                         <t t-else="">Búsqueda de salidas</t>
                     </div>
 
-                    <h1 class="bp-hero-title">
-                        Consultá cualquier<br/>
-                        <span class="bp-hero-title-accent">salida histórica</span>
-                    </h1>
-                    <p class="bp-hero-sub">
-                        Ingresá una fecha y conocé los resultados al instante
-                    </p>
+                    <div class="bp-hero-grid">
+                        <!-- Columna izquierda: buscador histórico -->
+                        <div class="bp-hero-col bp-hero-col--search">
+                            <h1 class="bp-hero-title">
+                                Consultá cualquier<br/>
+                                <span class="bp-hero-title-accent">salida histórica</span>
+                            </h1>
+                            <p class="bp-hero-sub">
+                                Ingresá una fecha y conocé los resultados al instante
+                            </p>
 
-                    <div class="bp-search-card">
-                        <div class="bp-search-header">
-                            <i class="fa fa-search me-2"/>Buscar salida histórica
+                            <div class="bp-search-card">
+                                <div class="bp-search-header">
+                                    <i class="fa fa-search me-2"/>Buscar salida histórica
+                                </div>
+                                <div class="bp-search-body">
+                                    <owl-component name="lottery_portal.BuscadorPublico"/>
+                                </div>
+                            </div>
                         </div>
-                        <div class="bp-search-body">
-                            <owl-component name="lottery_portal.BuscadorPublico"/>
-                        </div>
+
+                        <!-- Columna derecha: descarga de la app (protagonista) -->
+                        <t t-if="play_store_url">
+                            <div class="bp-hero-col bp-hero-col--app">
+                                <div class="bp-app-card">
+                                    <div class="bp-app-badge">
+                                        <i class="fa fa-android me-1"/>¡Ya disponible!
+                                    </div>
+                                    <img src="/lottery_portal/static/src/img/logo.png"
+                                         class="bp-app-logo" alt="LotoAnálisis"/>
+                                    <h2 class="bp-app-title">
+                                        Descargá la app <span>LotoAnálisis</span>
+                                    </h2>
+                                    <p class="bp-app-sub">
+                                        Toda la información que necesitás antes de jugar,
+                                        en tu teléfono.
+                                    </p>
+                                    <ul class="bp-app-features">
+                                        <li><i class="fa fa-check"/>Estadísticas y tendencias actualizadas</li>
+                                        <li><i class="fa fa-check"/>Números calientes, fríos y patrones</li>
+                                        <li><i class="fa fa-check"/>Resultados e histórico completo</li>
+                                    </ul>
+                                    <a t-att-href="play_store_url"
+                                       target="_blank" rel="noopener noreferrer"
+                                       class="bp-app-btn">
+                                        <i class="fa fa-google-play"/>
+                                        <span class="bp-app-btn-txt">
+                                            <small>DISPONIBLE EN</small>
+                                            Google Play
+                                        </span>
+                                    </a>
+                                    <div class="bp-app-hint">
+                                        Buscá: <strong>LOTOANÁLISIS</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
                     </div>
 
                     <!-- Strip Facebook — visible sin bajar -->

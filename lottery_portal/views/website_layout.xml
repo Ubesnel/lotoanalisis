@@ -21,6 +21,7 @@
                     li:has(> a[href="/inicio"]),
                     li:has(> a[href="/estadisticas-generales"]),
                     li:has(> a[href="/estadisticas"]),
+                    li:has(> a[href="/grupos-por-dia"]),
                     li:has(> a[href="/estadisticas-pintas"]),
                     li:has(> a[href="/estadisticas-numeros"]),
                     li:has(> a[href="/faq"]),

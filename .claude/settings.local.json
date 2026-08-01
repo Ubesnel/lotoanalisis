@@ -149,11 +149,9 @@
       "Bash(python -c \"import ast,sys; ast.parse\\(open\\('lottery_api/controllers/api.py',encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
       "Bash(grep -n \"didUpdateWidget\" -A 12 \"C:/dev/flutter/packages/flutter/lib/src/widgets/form.dart\" | head -40)",
       "Bash(grep -n \"\\\\.text\\\\b\\\\|appLang\\\\|import '\" /e/Trabajo/Flutter/lottery_app/lib/screens/informaciones_screen.dart | head -30)",
-      "WebFetch(domain:www.seus-it.com)",
-      "Bash(rm /e/Trabajo/Flutter/lottery_app/lib/widgets/apoya_bar.dart && echo \"apoya_bar.dart eliminado\"; grep -rn \"apoya_bar\\\\|ApoyaBar\" /e/Trabajo/Flutter/lottery_app/lib 2>/dev/null || echo \"sin referencias restantes\")",
-      "Read(//c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/7ff1d404-6d4f-4648-886d-a4d21cd47426/tasks/**)",
-      "Bash(rm -rf /c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/7ff1d404-6d4f-4648-886d-a4d21cd47426/scratchpad/aab_v22b)",
-      "Bash(unzip -o -q app-release.aab -d /c/Users/Ubesnel/AppData/Local/Temp/claude/E--Trabajo-Odoo-Odoo17-lottery/7ff1d404-6d4f-4648-886d-a4d21cd47426/scratchpad/aab_v22b base/manifest/AndroidManifest.xml)"
+      "Bash(python -c \"import xml.dom.minidom as m; [m.parse\\(p\\) for p in ['lottery_portal/views/buscador_publico_template.xml','lottery_portal/views/res_config_settings.xml']]; print\\('XML OK'\\)\")",
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(p,encoding='utf-8'\\).read\\(\\)\\) for p in ['lottery_portal/models/res_company.py','lottery_portal/models/res_config_settings.py','lottery_portal/controllers/news.py']]; print\\('PY OK'\\)\")",
+      "Bash(python -c \"s=open\\('lottery_portal/static/src/scss/buscador_publico.scss',encoding='utf-8'\\).read\\(\\); print\\('open',s.count\\('{'\\),'close',s.count\\('}'\\), 'OK' if s.count\\('{'\\)==s.count\\('}'\\) else 'MISMATCH'\\)\")"
     ]
   }
 }
