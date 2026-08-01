@@ -128,8 +128,28 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    max-width: 520px;
+    max-width: 1080px;
     width: 100%;
+}
+
+/* ── GRID DE DOS COLUMNAS: buscador (izq) + descarga app (der) ── */
+.bp-hero-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 26px;
+    width: 100%;
+    margin-bottom: 26px;
+}
+
+.bp-hero-col {
+    flex: 1 1 380px;
+    max-width: 500px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .bp-hero-badge {
@@ -549,10 +569,138 @@
    RESPONSIVE
 ══════════════════════════════════════════════════════════════ */
 
+/* ── CARD DE DESCARGA DE LA APP (protagonista, columna derecha) ── */
+.bp-app-card {
+    position: relative;
+    width: 100%;
+    border-radius: 22px;
+    padding: 26px 24px 24px;
+    text-align: center;
+    background: linear-gradient(160deg, #ffffff 0%, #f5f0ff 100%);
+    box-shadow:
+        0 20px 60px rgba(76, 29, 149, .40),
+        0 4px 16px rgba(0, 0, 0, .12);
+    border: 1px solid rgba(255, 255, 255, .85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bp-app-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+    color: #fff;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, .35);
+    margin-bottom: 14px;
+}
+
+.bp-app-logo {
+    height: 54px;
+    width: auto;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 4px 10px rgba(76, 29, 149, .25));
+}
+
+.bp-app-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1.15;
+    color: #2d2440;
+    margin-bottom: 8px;
+
+    span {
+        background: linear-gradient(95deg, #7c3aed 0%, #c2410c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+}
+
+.bp-app-sub {
+    color: #6b6480;
+    font-size: .92rem;
+    line-height: 1.5;
+    margin-bottom: 16px;
+}
+
+.bp-app-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 20px;
+    text-align: left;
+    width: 100%;
+    max-width: 320px;
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        color: #2d2440;
+        font-weight: 700;
+        font-size: .9rem;
+        padding: 5px 0;
+
+        .fa { color: #16a34a; font-size: 14px; }
+    }
+}
+
+.bp-app-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #5b21b6 0%, #7c3aed 55%, #c2410c 100%);
+    color: #fff !important;
+    text-decoration: none !important;
+    padding: 13px 30px;
+    border-radius: 50px;
+    box-shadow: 0 10px 26px rgba(124, 58, 237, .45);
+    transition: transform .15s ease, box-shadow .15s ease;
+
+    .fa { font-size: 28px; }
+
+    .bp-app-btn-txt {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        line-height: 1.1;
+        font-size: 1.15rem;
+        font-weight: 800;
+
+        small {
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            opacity: .85;
+        }
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px rgba(124, 58, 237, .55);
+        color: #fff !important;
+    }
+}
+
+.bp-app-hint {
+    margin-top: 12px;
+    color: #6b6480;
+    font-size: .82rem;
+    font-weight: 700;
+
+    strong { color: #7c3aed; letter-spacing: .5px; }
+}
+
 @media (max-width: 1199px) {
     .bp-char          { height: 64%; max-height: 450px; }
     .bp-hero-title    { font-size: 2.3rem; }
-    .bp-hero-center   { max-width: 480px; }
+    .bp-hero-center   { max-width: 960px; }
 }
 
 @media (max-width: 991px) {
@@ -560,7 +708,9 @@
     .bp-char          { height: 44%; max-height: 300px; opacity: .7; }
     .bp-char-eli      { left: -10px; }
     .bp-char-ube      { right: -10px; }
-    .bp-hero-center   { max-width: 100%; }
+    .bp-hero-center   { max-width: 520px; }
+    .bp-hero-grid     { flex-direction: column; align-items: center; gap: 20px; }
+    .bp-hero-col      { max-width: 100%; width: 100%; }
     .bp-hero-title    { font-size: 2rem; }
     .bp-hero-sub      { font-size: .9rem; margin-bottom: 20px; }
 }

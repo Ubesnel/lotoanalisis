@@ -18,6 +18,8 @@ class ResConfigSettings(models.TransientModel):
                                      string='URL Grupo de Facebook')
     facebook_page_url = fields.Char(related='company_id.facebook_page_url', readonly=False,
                                     string='URL Página de Facebook')
+    play_store_url = fields.Char(related='company_id.play_store_url', readonly=False,
+                                 string='URL de la app en Google Play')
 
     maintenance_mode = fields.Boolean(related='company_id.maintenance_mode', readonly=False,
                                       string='Modo mantenimiento')

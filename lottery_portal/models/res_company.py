@@ -20,6 +20,14 @@ class ResCompany(models.Model):
         help="Enlace a la página de Facebook (@LotoAnalisis) que aparece en la página pública.",
         prefetch=False
     )
+    play_store_url = fields.Char(
+        string="URL de la app en Google Play",
+        default="https://play.google.com/store/apps/details?id=com.seusit.lotoanalisis",
+        help="Enlace a la ficha de LotoAnálisis en Google Play. Se usa en el "
+             "botón de descarga de la página pública. Vacío = se oculta la "
+             "sección de descarga.",
+        prefetch=False
+    )
 
     maintenance_mode = fields.Boolean(
         string="Modo mantenimiento",

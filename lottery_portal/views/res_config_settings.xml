@@ -23,6 +23,10 @@
                                  help="URL de la página de Facebook (@LotoAnalisis) que aparece en el card publicitario.">
                             <field name="facebook_page_url" placeholder="https://www.facebook.com/LotoAnalisis"/>
                         </setting>
+                        <setting string="App en Google Play"
+                                 help="URL de la ficha de LotoAnálisis en Google Play. Se usa en el botón de descarga de la página pública. Vacío = se oculta la sección de descarga.">
+                            <field name="play_store_url" placeholder="https://play.google.com/store/apps/details?id=com.seusit.lotoanalisis"/>
+                        </setting>
                     </block>
                     <block title="Modo mantenimiento" id="lottery_maintenance_settings">
                         <setting string="Modo mantenimiento"
