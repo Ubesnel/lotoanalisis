@@ -152,7 +152,10 @@
       "Bash(python -c \"import xml.dom.minidom as m; [m.parse\\(p\\) for p in ['lottery_portal/views/buscador_publico_template.xml','lottery_portal/views/res_config_settings.xml']]; print\\('XML OK'\\)\")",
       "Bash(python -c \"import ast; [ast.parse\\(open\\(p,encoding='utf-8'\\).read\\(\\)\\) for p in ['lottery_portal/models/res_company.py','lottery_portal/models/res_config_settings.py','lottery_portal/controllers/news.py']]; print\\('PY OK'\\)\")",
       "Bash(python -c \"s=open\\('lottery_portal/static/src/scss/buscador_publico.scss',encoding='utf-8'\\).read\\(\\); print\\('open',s.count\\('{'\\),'close',s.count\\('}'\\), 'OK' if s.count\\('{'\\)==s.count\\('}'\\) else 'MISMATCH'\\)\")",
-      "Bash(python -m py_compile lottery_api/models/lottery_output.py lottery_api/models/fcm_service.py)"
+      "Bash(python -m py_compile lottery_api/models/lottery_output.py lottery_api/models/fcm_service.py)",
+      "Bash(find \"C:/Users/Ubesnel\" -maxdepth 4 -iname \"pubspec.yaml\" 2>/dev/null | head -20 ; echo \"---DRIVES---\" ; ls \"E:/Trabajo/\" 2>/dev/null)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('lottery_api/models/api_log.py',encoding='utf-8'\\).read\\(\\)\\); ast.parse\\(open\\('lottery_api/controllers/api.py',encoding='utf-8'\\).read\\(\\)\\); print\\('PY OK'\\)\")",
+      "Bash(python -c \"import xml.dom.minidom as m; [m.parse\\(f\\) for f in ['lottery_api/views/api_log_views.xml','lottery_api/data/ir_cron_api_log.xml']]; print\\('XML OK'\\)\")"
     ]
   }
 }
