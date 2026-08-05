@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Limpieza diaria del log de API: borra registros de más de 90 días
+         para que la tabla no crezca sin control. -->
+    <record id="ir_cron_lottery_api_log_cleanup" model="ir.cron">
+        <field name="name">Lottery API: limpiar log antiguo</field>
+        <field name="model_id" ref="model_lottery_api_log"/>
+        <field name="state">code</field>
+        <field name="code">model._cleanup_old(90)</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

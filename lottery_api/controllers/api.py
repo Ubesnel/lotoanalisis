@@ -25,6 +25,12 @@ VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 
 
 def _json_response(payload, status=200):
+    # Registro liviano de la consulta (IP, endpoint, sorteo, país, status).
+    # Envuelto para que un fallo al loguear jamás afecte la respuesta.
+    try:
+        request.env['lottery.api.log'].sudo()._record(request, status)
+    except Exception:
+        pass
     return request.make_response(
         json.dumps(payload, ensure_ascii=False, default=str),
         headers=[('Content-Type', 'application/json; charset=utf-8')],

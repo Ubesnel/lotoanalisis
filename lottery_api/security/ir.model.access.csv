@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lottery_api_log_manager,lottery_api_log_manager,model_lottery_api_log,lottery_base.group_lottery_manager,1,1,1,1
+access_lottery_api_log_public,lottery_api_log_public,model_lottery_api_log,,0,0,1,0

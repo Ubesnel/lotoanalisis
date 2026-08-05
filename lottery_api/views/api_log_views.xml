@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Vista lista ── -->
+    <record id="view_lottery_api_log_list" model="ir.ui.view">
+        <field name="name">lottery.api.log.tree</field>
+        <field name="model">lottery.api.log</field>
+        <field name="arch" type="xml">
+            <tree string="Consultas API" default_order="create_date desc" create="false"
+                  decoration-danger="status >= 500" decoration-warning="status >= 400 and status &lt; 500">
+                <field name="create_date" string="Fecha"/>
+                <field name="endpoint" string="Endpoint"/>
+                <field name="sorteo_id" string="Sorteo" optional="show"/>
+                <field name="ip" string="IP"/>
+                <field name="country_name" string="País" optional="show"/>
+                <field name="country_code" string="Código" optional="hide"/>
+                <field name="status" string="Status"/>
+                <field name="user_agent" string="User Agent" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Vista formulario ── -->
+    <record id="view_lottery_api_log_form" model="ir.ui.view">
+        <field name="name">lottery.api.log.form</field>
+        <field name="model">lottery.api.log</field>
+        <field name="arch" type="xml">
+            <form string="Consulta API" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group string="Consulta">
+                            <field name="create_date" string="Fecha y hora"/>
+                            <field name="endpoint" string="Endpoint"/>
+                            <field name="sorteo_id" string="Sorteo"/>
+                            <field name="status" string="HTTP status"/>
+                        </group>
+                        <group string="Origen">
+                            <field name="ip" string="IP"/>
+                            <field name="country_name" string="País"/>
+                            <field name="country_code" string="Código país"/>
+                            <field name="user_agent" string="User Agent"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Vista gráfico (endpoint × día) ── -->
+    <record id="view_lottery_api_log_graph" model="ir.ui.view">
+        <field name="name">lottery.api.log.graph</field>
+        <field name="model">lottery.api.log</field>
+        <field name="arch" type="xml">
+            <graph string="Consultas por endpoint" type="bar">
+                <field name="endpoint" type="row"/>
+                <field name="create_date" type="col" interval="day"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ── Vista pivot ── -->
+    <record id="view_lottery_api_log_pivot" model="ir.ui.view">
+        <field name="name">lottery.api.log.pivot</field>
+        <field name="model">lottery.api.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Consultas API">
+                <field name="endpoint" type="row"/>
+                <field name="create_date" type="col" interval="day"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ── Búsqueda ── -->
+    <record id="view_lottery_api_log_search" model="ir.ui.view">
+        <field name="name">lottery.api.log.search</field>
+        <field name="model">lottery.api.log</field>
+        <field name="arch" type="xml">
+            <search string="Buscar consultas">
+                <field name="endpoint" string="Endpoint"/>
+                <field name="ip" string="IP"/>
+                <field name="sorteo_id" string="Sorteo"/>
+                <field name="country_name" string="País"/>
+                <separator/>
+                <filter name="ok" string="OK (2xx)" domain="[('status','&gt;=',200),('status','&lt;',300)]"/>
+                <filter name="errors" string="Errores (4xx/5xx)" domain="[('status','&gt;=',400)]"/>
+                <separator/>
+                <filter name="today" string="Hoy"
+                        domain="[('create_date','&gt;=', datetime.datetime.now().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="this_week" string="Esta semana"
+                        domain="[('create_date','&gt;=', (datetime.datetime.now() - datetime.timedelta(days=7)).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_endpoint" string="Endpoint" context="{'group_by': 'endpoint'}"/>
+                    <filter name="group_sorteo" string="Sorteo" context="{'group_by': 'sorteo_id'}"/>
+                    <filter name="group_country" string="País" context="{'group_by': 'country_name'}"/>
+                    <filter name="group_ip" string="IP" context="{'group_by': 'ip'}"/>
+                    <filter name="group_date" string="Fecha" context="{'group_by': 'create_date:day'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Acción ── -->
+    <record id="action_lottery_api_log" model="ir.actions.act_window">
+        <field name="name">Consultas API (app)</field>
+        <field name="res_model">lottery.api.log</field>
+        <field name="view_mode">tree,graph,pivot,form</field>
+        <field name="context">{'search_default_today': 1}</field>
+    </record>
+
+    <!-- ── Menú (bajo Configuración de Loterías) ── -->
+    <menuitem id="menu_lottery_api_log"
+              name="Consultas API (app)"
+              parent="lottery_base.menu_configuracion_root"
+              action="action_lottery_api_log"
+              groups="lottery_base.group_lottery_manager"
+              sequence="60"/>
+
+</odoo>
