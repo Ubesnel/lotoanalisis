@@ -151,7 +151,8 @@
       "Bash(grep -n \"\\\\.text\\\\b\\\\|appLang\\\\|import '\" /e/Trabajo/Flutter/lottery_app/lib/screens/informaciones_screen.dart | head -30)",
       "Bash(python -c \"import xml.dom.minidom as m; [m.parse\\(p\\) for p in ['lottery_portal/views/buscador_publico_template.xml','lottery_portal/views/res_config_settings.xml']]; print\\('XML OK'\\)\")",
       "Bash(python -c \"import ast; [ast.parse\\(open\\(p,encoding='utf-8'\\).read\\(\\)\\) for p in ['lottery_portal/models/res_company.py','lottery_portal/models/res_config_settings.py','lottery_portal/controllers/news.py']]; print\\('PY OK'\\)\")",
-      "Bash(python -c \"s=open\\('lottery_portal/static/src/scss/buscador_publico.scss',encoding='utf-8'\\).read\\(\\); print\\('open',s.count\\('{'\\),'close',s.count\\('}'\\), 'OK' if s.count\\('{'\\)==s.count\\('}'\\) else 'MISMATCH'\\)\")"
+      "Bash(python -c \"s=open\\('lottery_portal/static/src/scss/buscador_publico.scss',encoding='utf-8'\\).read\\(\\); print\\('open',s.count\\('{'\\),'close',s.count\\('}'\\), 'OK' if s.count\\('{'\\)==s.count\\('}'\\) else 'MISMATCH'\\)\")",
+      "Bash(python -m py_compile lottery_api/models/lottery_output.py lottery_api/models/fcm_service.py)"
     ]
   }
 }
