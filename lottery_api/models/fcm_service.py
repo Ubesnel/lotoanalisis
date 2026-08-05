@@ -130,6 +130,11 @@ class LotteryFcmService(models.AbstractModel):
                     'body': body,
                 },
                 'android': {
+                    # Alta prioridad: despierta el dispositivo aunque esté en
+                    # Doze/segundo plano, clave para que el aviso llegue a
+                    # tiempo (los mensajes 'notification' no siempre van high
+                    # si no se declara explícitamente).
+                    'priority': 'high',
                     'notification': {
                         'sound': 'default',
                         'channel_id': 'lottery_results',

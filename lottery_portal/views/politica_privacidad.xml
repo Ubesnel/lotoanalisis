@@ -16,7 +16,7 @@
                             en el sitio web y en la aplicación móvil LotoAnálisis.
                         </p>
                         <div class="legal-date-badge">
-                            <i class="fa fa-calendar"/> Última actualización: 9 de julio de 2026
+                            <i class="fa fa-calendar"/> Última actualización: 4 de agosto de 2026
                         </div>
                         <div class="legal-hero-line"/>
                     </div>
@@ -48,12 +48,41 @@
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                <strong>La aplicación móvil no recopila, almacena ni comparte datos
-                                personales.</strong> No requiere registro ni inicio de sesión, y no
-                                solicita permisos de acceso a contactos, ubicación, cámara, micrófono
-                                ni archivos del dispositivo.
+                                La aplicación móvil <strong>no requiere registro ni inicio de
+                                sesión</strong> y <strong>no recopila datos que te identifiquen
+                                directamente</strong> (nombre, correo o teléfono). Tampoco solicita
+                                permisos de acceso a contactos, ubicación precisa, cámara, micrófono
+                                ni archivos personales del dispositivo.
+                            </p>
+                            <p>
+                                Para funcionar, mostrar publicidad y entender su uso de forma
+                                agregada, la aplicación utiliza servicios de
+                                <strong>Google / Firebase</strong>, que pueden recopilar de forma
+                                automática información técnica y de uso:
                             </p>
                             <ul class="legal-list">
+                                <li>
+                                    <strong>Firebase Analytics</strong>: estadísticas de uso
+                                    agregadas (pantallas y eventos dentro de la app, sesiones),
+                                    modelo y tipo de dispositivo, sistema operativo, idioma, país
+                                    aproximado (derivado de la dirección IP) e identificadores
+                                    generados por la aplicación. Se usa para saber cuántas personas
+                                    la utilizan y mejorarla; no para identificarte personalmente.
+                                </li>
+                                <li>
+                                    <strong>Firebase Cloud Messaging (notificaciones)</strong>: para
+                                    avisarte de nuevos resultados, la app se suscribe a temas de
+                                    notificación mediante un identificador del dispositivo generado
+                                    por Google. Podés desactivar las notificaciones desde la
+                                    configuración de la app o del sistema.
+                                </li>
+                                <li>
+                                    <strong>Google AdMob (publicidad)</strong>: la aplicación
+                                    muestra anuncios provistos por AdMob, que puede usar el
+                                    identificador de publicidad del dispositivo y datos técnicos
+                                    para mostrar anuncios y medir su rendimiento (ver la sección
+                                    “Publicidad”).
+                                </li>
                                 <li>
                                     Para mostrar resultados y estadísticas, la aplicación consulta
                                     nuestro servidor a través de internet; cada solicitud genera
@@ -62,16 +91,16 @@
                                 </li>
                                 <li>
                                     En el dispositivo solo se guardan preferencias locales de uso
-                                    (por ejemplo, si ya se mostró la pantalla de bienvenida); esta
-                                    información no sale del teléfono y se elimina al desinstalar la
-                                    aplicación.
-                                </li>
-                                <li>
-                                    La aplicación muestra información estadística dirigida a personas
-                                    mayores de 18 años y no permite realizar apuestas ni operaciones
-                                    con dinero real.
+                                    (por ejemplo, idioma, sorteo seleccionado o si ya se mostró la
+                                    pantalla de bienvenida); esta información no sale del teléfono y
+                                    se elimina al desinstalar la aplicación.
                                 </li>
                             </ul>
+                            <p>
+                                La aplicación muestra información estadística dirigida a personas
+                                mayores de 18 años y no permite realizar apuestas ni operaciones
+                                con dinero real.
+                            </p>
                         </div>
                     </div>
 
@@ -110,7 +139,9 @@
                                 <li>Garantizar el correcto funcionamiento del sitio y de la aplicación</li>
                                 <li>Mejorar la experiencia del usuario</li>
                                 <li>Mantener la seguridad del sistema</li>
-                                <li>Analizar el uso del sitio de forma agregada y anónima</li>
+                                <li>Analizar el uso del sitio y de la aplicación de forma agregada y anónima</li>
+                                <li>Enviar notificaciones sobre nuevos resultados de sorteos</li>
+                                <li>Mostrar anuncios y medir su rendimiento en la aplicación</li>
                             </ul>
                         </div>
                     </div>
@@ -140,10 +171,19 @@
                         </div>
                         <div class="legal-card-body">
                             <p>
-                                El sitio web puede utilizar servicios de publicidad como Google AdSense,
-                                que emplean cookies para mostrar anuncios personalizados. La aplicación
-                                móvil no muestra publicidad actualmente; si en el futuro la incorpora,
-                                esta política se actualizará antes de su implementación.
+                                El <strong>sitio web</strong> puede utilizar servicios de publicidad
+                                como Google AdSense, que emplean cookies para mostrar anuncios.
+                            </p>
+                            <p>
+                                La <strong>aplicación móvil</strong> muestra anuncios a través de
+                                <strong>Google AdMob</strong>. Para ello, AdMob puede utilizar el
+                                identificador de publicidad del dispositivo y datos técnicos con el
+                                fin de mostrar anuncios (personalizados o no) y medir su rendimiento.
+                                En los países del Espacio Económico Europeo, el Reino Unido y Suiza se
+                                solicita tu consentimiento antes de mostrar anuncios personalizados,
+                                mediante el mensaje de consentimiento de Google; podés revisar o
+                                cambiar tu elección desde la opción de privacidad de anuncios en la
+                                configuración de la aplicación.
                             </p>
                             <p>
                                 Más información:
@@ -165,6 +205,14 @@
                             <p>
                                 No se venden datos personales. Solo se compartirán en caso de obligación
                                 legal o para proteger la seguridad del sistema.
+                            </p>
+                            <p>
+                                Parte de los datos técnicos y de uso descritos en esta política son
+                                procesados por <strong>Google</strong> (Firebase Analytics, Firebase
+                                Cloud Messaging y Google AdMob) en su carácter de proveedor de estos
+                                servicios, conforme a la
+                                <a href="https://policies.google.com/privacy" target="_blank">Política de
+                                Privacidad de Google</a>.
                             </p>
                         </div>
                     </div>
