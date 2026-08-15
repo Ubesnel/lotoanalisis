@@ -15,9 +15,29 @@
                             string="Importar Pick 4 (Premio 2 y 3)"
                             type="object"
                             icon="fa-refresh"
+                            invisible="game_code != 'pick3'"
                             confirm="Consultará la API de Pick 4 para el rango de fechas definido (o todos si está vacío). ¿Continuar?"/>
                 </header>
                 <sheet>
+                    <div class="alert alert-info" role="alert" invisible="game_code != 'pick2'">
+                        Pick 2: número de 2 dígitos (00-99), sin centena y sin corridos.
+                        La Fireball no se registra acá — Florida sortea una sola y ya queda
+                        guardada en el sorteo Florida (Pick 3).
+                        Histórico disponible desde el 01/08/2016, día del primer sorteo:
+                        para el backfill completo poner "Fecha desde" = 01/08/2016 y dejar
+                        "Fecha hasta" vacío.
+                        <br/>
+                        Ojo: la API tarda cerca de 70 segundos en devolver el histórico
+                        completo (unos 3 MB, 7.332 sorteos) y no permite pedir ventanas
+                        viejas acotadas — cualquier rango que empiece en 2016 descarga todo
+                        igual. Si el servidor corta la petición por tiempo, importar por
+                        tramos de un año.
+                    </div>
+                    <group string="Juego">
+                        <field name="game_code"/>
+                        <field name="sorteo_id" options="{'no_create': True}"/>
+                        <field name="auto_import"/>
+                    </group>
                     <group string="Ventanas horarias (hora ET)">
                         <group string="TARDE ☀ (sorteo ~1:30 PM ET)">
                             <field name="afternoon_start"
@@ -80,6 +100,21 @@
               parent="menu_lottery_scraper_root"
               action="action_lottery_scraper"
               sequence="10"/>
+
+    <record id="action_lottery_scraper_pick2" model="ir.actions.act_window">
+        <field name="name">Importador Pick 2 · Florida</field>
+        <field name="res_model">lottery.scraper</field>
+        <field name="view_mode">form</field>
+        <field name="res_id" ref="scraper_florida_pick2"/>
+        <field name="view_id" ref="view_lottery_scraper_form"/>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_pick2"
+              name="Pick 2 · Florida"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_pick2"
+              sequence="12"/>
 
     <record id="view_lottery_scraper_new_york_form" model="ir.ui.view">
         <field name="name">lottery.scraper.new.york.form</field>

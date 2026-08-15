@@ -12,7 +12,7 @@
                     </div>
                     <div class="lottery-row">
                         <div class="lottery-numbers">
-                            <div class="box-centena-dia">
+                            <div class="box-centena-dia" t-if="state.afternoon.centena != null">
                                 <t t-esc="state.afternoon.centena"/>
                             </div>
                             <div class="box-numero-dia">
@@ -38,7 +38,7 @@
                     </div>
                     <div class="lottery-row">
                         <div class="lottery-numbers">
-                            <div class="box-centena-noche">
+                            <div class="box-centena-noche" t-if="state.evening.centena != null">
                                 <t t-esc="state.evening.centena"/>
                             </div>
                             <div class="box-numero-noche">

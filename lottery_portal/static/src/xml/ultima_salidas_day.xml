@@ -23,7 +23,7 @@
                             </span>
                             <div class="salida-numeros">
                                 <t t-if="us.numero_dia">
-                                    <span class="badge-dia"><t t-esc="us.centena_dia"/></span>
+                                    <span class="badge-dia" t-if="us.centena_dia != null"><t t-esc="us.centena_dia"/></span>
                                     <span class="badge-dia"><t t-esc="us.numero_dia"/></span>
                                 </t>
                                 <t t-else="">
@@ -40,7 +40,7 @@
                             </span>
                             <div class="salida-numeros">
                                 <t t-if="us.numero_noche">
-                                    <span class="badge-noche"><t t-esc="us.centena_noche"/></span>
+                                    <span class="badge-noche" t-if="us.centena_noche != null"><t t-esc="us.centena_noche"/></span>
                                     <span class="badge-noche"><t t-esc="us.numero_noche"/></span>
                                 </t>
                                 <t t-else="">

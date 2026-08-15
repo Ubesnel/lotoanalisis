@@ -38,6 +38,8 @@ export class NumerosCalientes extends Component {
 
     get turnLabel()   { return this.TURN_LABELS[this.state.turn] || ""; }
     get usesFireball() { return !!this.current.uses_fireball; }
+    // Ausente = sorteo con centena (comportamiento histórico de Florida/NY).
+    get usesHundreds() { return this.current.uses_hundreds !== false; }
 
     // Calcula rank (por score) + clase de color de cada ítem según su posición
     // en el ranking original, y luego los ordena de menor a mayor por valor.

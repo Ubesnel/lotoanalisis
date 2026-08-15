@@ -25,7 +25,7 @@
                                 <i class="fa fa-sun-o sun-icon"/>
                             </div>
                             <div class="lottery-numbers">
-                            <div class="box-centena-dia">
+                            <div class="box-centena-dia" t-if="state.resultados.afternoon.centena != null">
                                 <t t-esc="state.resultados.afternoon.centena"/>
                             </div>
                             <div class="box-numero-dia">
@@ -47,7 +47,7 @@
                             </div>
                             <div class="lottery-numbers">
 
-                            <div class="box-centena-noche">
+                            <div class="box-centena-noche" t-if="state.resultados.evening.centena != null">
                                 <t t-esc="state.resultados.evening.centena"/>
                             </div>
                             <div class="box-numero-noche">

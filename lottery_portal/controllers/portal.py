@@ -472,7 +472,7 @@ class LotteryController(http.Controller):
 
         data = {
             r.turn_day: {
-                'centena': r.hundreds_id.name,
+                'centena': r.hundreds_id.name if r.hundreds_id else '-',
                 'numero': str(r.number_id.name).zfill(2),
                 'bola_extra': r.fireball_id.name if r.fireball_id else "-",
                 'premio_2': str(r.premio_2_id.name).zfill(2) if r.premio_2_id else None,

@@ -194,8 +194,11 @@ class LotteryOutput(models.Model):
 
         sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
         uses_fireball = bool(sorteo.uses_fireball)
+        uses_hundreds = bool(sorteo.uses_hundreds)
 
         if uses_fireball and not fireball_id:
+            return {}
+        if uses_hundreds and not hundreds_id:
             return {}
 
         turn_data = sorteo.get_validation_data(turn)
@@ -231,10 +234,17 @@ class LotteryOutput(models.Model):
         cen = int(cen_rec.name) if cen_rec and cen_rec.exists() else -1
 
         h_num = num in hot_nums
-        h_cen = cen in hot_cen
         c_num = num in cold_nums
-        c_cen = cen not in cold_cen
         rest_num = num not in hot_nums and num not in cold_nums
+
+        # Sin centena (sorteos de 2 dígitos) la centena no puede fallar ni
+        # acertar: se neutraliza igual que la bola extra, para que hot_ok /
+        # cold_ok dependan solo de lo que el sorteo sí juega.
+        if uses_hundreds:
+            h_cen = cen in hot_cen
+            c_cen = cen not in cold_cen
+        else:
+            h_cen = c_cen = True
 
         # Bloque dentro de cada lista según la posición en el ranking (score
         # descendente). Los primeros bloques son fijos de 10 posiciones; el
@@ -257,14 +267,14 @@ class LotteryOutput(models.Model):
 
         return {
             'hot_numero_ok':   h_num,
-            'hot_centena_ok':  h_cen,
+            'hot_centena_ok':  h_cen if uses_hundreds else False,
             'hot_extra_ok':    h_be if uses_fireball else False,
             'hot_ok':          h_num and h_cen and h_be,
             'hot_1_ok':        hot_block == 1,
             'hot_2_ok':        hot_block == 2,
             'hot_3_ok':        hot_block == 3,
             'cold_numero_ok':  c_num,
-            'cold_centena_ok': c_cen,
+            'cold_centena_ok': c_cen if uses_hundreds else False,
             'cold_extra_ok':   c_be if uses_fireball else False,
             'cold_ok':         c_num and c_cen and c_be,
             'cold_1_ok':       cold_block == 1,

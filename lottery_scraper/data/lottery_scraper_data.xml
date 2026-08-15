@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Importador de Florida Pick 2.
+
+            Se crea acá (y no de forma perezosa como el de Pick 3) porque el
+            sorteo es nuevo: no puede existir un registro previo con el que
+            duplicarse. El de Pick 3 se sigue creando solo desde _get_singleton
+            para no arriesgar un duplicado en las bases que ya lo tienen.
+
+            Las ventanas horarias quedan en los valores por defecto, los mismos
+            de Pick 3: Florida publica Pick 2 y Pick 3 al mismo tiempo.
+        -->
+        <record id="scraper_florida_pick2" model="lottery.scraper">
+            <field name="name">Florida Pick 2</field>
+            <field name="game_code">pick2</field>
+            <field name="sorteo_id" ref="lottery_base.sorteo_florida_pick2"/>
+            <!-- Arranca con la importación automática APAGADA, igual que los
+                 crones de New York y Quiniela: al actualizar el módulo no debe
+                 empezar a escribir solo. Activarla a mano tras validar el
+                 backfill histórico. -->
+            <field name="auto_import" eval="False"/>
+        </record>
+    </data>
+</odoo>

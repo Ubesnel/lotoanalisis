@@ -113,7 +113,10 @@ class LotteryStatsService(models.Model):
 
         return {
             'date': self._format_date_es(record.date),
-            'centena': str(record.hundreds_id.name),
+            # Ojo: hundreds_id.name sobre un recordset vacío devuelve 0, no
+            # vacío (es un Integer), así que los sorteos sin centena pintaban
+            # un "0". Se muestra "-" igual que la bola extra ausente.
+            'centena': str(record.hundreds_id.name) if record.hundreds_id else '-',
             'extra': str(record.fireball_id.name) if record.fireball_id else '-',
             'numero': str(record.number_id.name).zfill(2),
         }
@@ -3123,22 +3126,25 @@ class LotteryStatsService(models.Model):
             boundary = scores_desc[n - 1]['score']
             return [s for s in scores_desc if s['score'] >= boundary]
 
-        uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
+        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
+        uses_fireball = bool(sorteo.uses_fireball)
+        uses_hundreds = bool(sorteo.uses_hundreds)
         result = {}
         for turn in ('afternoon', 'evening'):
             result[turn] = self._calientes_for_turn(
                 turn, pg_dow, week_seg_num, month, year, today_str,
-                sorteo_id, row.get('next_' + turn), _cut_with_ties, _fmt_date, uses_fireball)
+                sorteo_id, row.get('next_' + turn), _cut_with_ties, _fmt_date,
+                uses_fireball, uses_hundreds)
         result['last_turn'] = row.get('last_turn') or 'afternoon'
         return result
 
     def _calientes_for_turn(self, turn, pg_dow, week_seg_num, month, year,
                             today_str, sorteo_id, next_date, _cut_with_ties, _fmt_date,
-                            uses_fireball=True):
+                            uses_fireball=True, uses_hundreds=True):
         """Calcula caliente/restante/frío (números, centenas, bola extra) de UN
         solo turno. Reutilizado por get_calientes_all (ambos turnos) y por
         get_calientes_next_turn (solo el próximo turno). Si el sorteo no usa
-        bola extra, no la calcula (correcto y más rápido)."""
+        bola extra o no usa centena, no las calcula (correcto y más rápido)."""
         all_scores  = self.get_numeros_calientes(turn, today_str, sorteo_id=sorteo_id)
         cold_scores = self.get_numeros_frios(turn, today_str, sorteo_id=sorteo_id)
 
@@ -3155,16 +3161,23 @@ class LotteryStatsService(models.Model):
         remaining = [s for s in all_scores if s['name'] not in hot_names
                                             and s['name'] not in cold_names]
 
+        # Centena: solo si el sorteo la usa. Los sorteos de número de 2 dígitos
+        # (La Primera, La Suerte, Pick 2) no la tienen, así que se omite.
         # Una sola query por campo: hot/cold/all se puntúan sobre las mismas filas.
-        cen_rows        = self._query_ceb_stats(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
-        centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
-        centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
+        if uses_hundreds:
+            cen_rows        = self._query_ceb_stats(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
+            centenas        = self._get_calientes_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
+            centenas_cold   = self._get_frios_cebs(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
 
-        hot_cen_names  = {c['name'] for c in centenas}
-        cold_cen_names = {c['name'] for c in centenas_cold}
+            hot_cen_names  = {c['name'] for c in centenas}
+            cold_cen_names = {c['name'] for c in centenas_cold}
 
-        # Centenas restantes: no clasificadas como calientes ni frías
-        all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
+            # Centenas restantes: no clasificadas como calientes ni frías
+            all_centenas   = self._get_all_cebs_scored(turn, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
+            centenas_remaining = [c for c in all_centenas
+                                  if c['name'] not in hot_cen_names and c['name'] not in cold_cen_names]
+        else:
+            centenas = centenas_cold = centenas_remaining = []
 
         # Bola extra: solo si el sorteo la usa (ej. Florida Pick 3). El resto
         # (Quiniela UY) no la tiene, así que se omite su cálculo.
@@ -3185,11 +3198,12 @@ class LotteryStatsService(models.Model):
             'numbers_remaining':    remaining,
             'centenas':             centenas,
             'centenas_cold':        centenas_cold,
-            'centenas_remaining':   [c for c in all_centenas   if c['name'] not in hot_cen_names and c['name'] not in cold_cen_names],
+            'centenas_remaining':   centenas_remaining,
             'bola_extra':           bola_extra,
             'bola_extra_cold':      bola_extra_cold,
             'bola_extra_remaining': bola_extra_remaining,
             'uses_fireball':        uses_fireball,
+            'uses_hundreds':        uses_hundreds,
             'next_draw':            _fmt_date(next_date),
         }
 
@@ -3222,13 +3236,16 @@ class LotteryStatsService(models.Model):
 
         if turn not in ('afternoon', 'evening'):
             turn = 'afternoon'
-        uses_fireball = bool(self.env['lottery.sorteo'].browse(sorteo_id).uses_fireball)
+        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
+        uses_fireball = bool(sorteo.uses_fireball)
+        uses_hundreds = bool(sorteo.uses_hundreds)
 
         return {
             'turn':      turn,
             'data':      self._calientes_for_turn(
                 turn, pg_dow, week_seg_num, month, year, today_str,
-                sorteo_id, today, _cut_with_ties, _fmt_date, uses_fireball),
+                sorteo_id, today, _cut_with_ties, _fmt_date,
+                uses_fireball, uses_hundreds),
         }
 
     @api.model

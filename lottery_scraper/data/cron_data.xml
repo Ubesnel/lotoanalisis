@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Corre cada 10 minutos.
+        Corre cada 10 minutos y recorre TODOS los importadores de Florida
+        (Pick 3 y Pick 2), cada uno con su sorteo y sus ventanas. Florida
+        publica los dos juegos al mismo tiempo, así que caen en la misma
+        ventana; que uno falle no frena al otro.
         El método evalúa internamente si estamos dentro de una ventana horaria ET:
           · Tarde  → 2:00 PM – 3:30 PM  ET  (configurable)
           · Noche  → 10:00 PM – 11:30 PM ET  (configurable)
@@ -9,7 +12,7 @@
         Si el sitio aún no publicó el resultado → registra "PENDIENTE" y reintenta en 10 min.
     -->
     <record id="cron_import_lottery_results" model="ir.cron">
-        <field name="name">Pick 3 · Importar resultados diarios</field>
+        <field name="name">Florida · Importar resultados diarios (Pick 3 y Pick 2)</field>
         <field name="model_id" ref="model_lottery_scraper"/>
         <field name="state">code</field>
         <field name="code">model.cron_import_results()</field>

@@ -13,8 +13,11 @@ class LotteryOutput(models.Model):
     sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True, index=True,
                                 help="A qué sorteo/juego pertenece esta salida (Florida, Quiniela UY - Sorteo N, etc).")
     number_id = fields.Many2one('lottery.number', string='Número', required=True, index=True)
-    hundreds_id = fields.Many2one('lottery.number', string='Centena', required=True,
-                                  domain="[('can_use_hundreds','=',True)]", index=True)
+    hundreds_id = fields.Many2one('lottery.number', string='Centena',
+                                  domain="[('can_use_hundreds','=',True)]", index=True,
+                                  help="Obligatoria salvo que el sorteo tenga desactivado 'Usa Centena' "
+                                       "(sorteos de número de 2 dígitos, sin centena).")
+    sorteo_uses_hundreds = fields.Boolean(related='sorteo_id.uses_hundreds', string='Usa Centena')
     date = fields.Date(string='Fecha', default=lambda self: fields.Date.today(), required=True)
     turn_day = fields.Selection([
         ('afternoon', 'Tarde'), ('evening', 'Noche'),
@@ -114,13 +117,24 @@ class LotteryOutput(models.Model):
                         "No se puede registrar una salida de Tarde si no existe previamente una salida de Noche para el día anterior."
                     )
 
+    @api.constrains('sorteo_id', 'hundreds_id')
+    def _check_hundreds_id(self):
+        for record in self:
+            if record.sorteo_id.uses_hundreds and not record.hundreds_id:
+                raise ValidationError(
+                    "Debe registrar un valor para la Centena."
+                )
+
     @api.depends('hundreds_id', 'number_id')
     def _compute_complete_number(self):
         for record in self:
-            if record.hundreds_id and record.number_id:
+            if not record.number_id:
+                record.complete_number = ""
+            elif record.hundreds_id:
                 record.complete_number = f"{record.hundreds_id.name}{record.number_id.name:02d}"
             else:
-                record.complete_number = ""
+                # Sorteos sin centena: el número completo son los 2 dígitos.
+                record.complete_number = f"{record.number_id.name:02d}"
 
     @api.depends('date')
     def _compute_week_day(self):
@@ -161,9 +175,14 @@ class LotteryOutput(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        for record in records:
-            if record.sorteo_id:
-                record.sorteo_id._on_output_registered(record.date, record.turn_day)
+        # skip_next_draw_recompute: lo usa el backfill histórico, que crea miles
+        # de salidas de una. Recalcular el próximo sorteo en cada una cuesta un
+        # search + write por registro y el resultado se pisa enseguida; el
+        # importador lo recalcula una sola vez al terminar.
+        if not self.env.context.get('skip_next_draw_recompute'):
+            for record in records:
+                if record.sorteo_id:
+                    record.sorteo_id._on_output_registered(record.date, record.turn_day)
         return records
 
     def write(self, vals):

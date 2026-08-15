@@ -20,6 +20,22 @@
             <field name="is_pick3" eval="True"/>
             <field name="source_code">new_york</field>
         </record>
+        <!-- Florida Pick 2: número de 2 dígitos (00-99), SIN centena.
+             Nació el 01/08/2016 y comparte la Fireball con Pick 3 / Pick 4,
+             por eso no se registra acá (ya está en el sorteo Florida). -->
+        <record id="sorteo_florida_pick2" model="lottery.sorteo">
+            <field name="name">Florida Pick 2</field>
+            <field name="code">florida_pick2</field>
+            <field name="sequence">3</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <!-- En False a propósito: el primer sorteo del histórico (01/08/2016)
+                 es de Tarde, y la continuidad exige una Noche del día anterior
+                 que no existe → rompería el backfill en el primer registro. -->
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">florida_pick2</field>
+        </record>
         <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
             <field name="name">Quiniela UY - Sorteo 1</field>
             <field name="code">quiniela_uy_1</field>
