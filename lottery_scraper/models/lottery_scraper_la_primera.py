@@ -100,16 +100,11 @@ class LotteryScraperLaPrimera(models.Model):
                 _logger.exception('Scraper La Primera: error en la corrida automática.')
 
     def action_import_now(self):
+        # Sin retorno a propósito: devolver un act_window hace que Odoo apile
+        # una entrada nueva en el breadcrumb en cada clic, y este botón se
+        # aprieta muchas veces seguidas durante el backfill.
         self.ensure_one()
         self._run()
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'views': [[False, 'form']],
-            'target': 'current',
-        }
 
     # ── Núcleo ────────────────────────────────────────────────────
 
