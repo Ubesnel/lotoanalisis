@@ -20,6 +20,64 @@
             <field name="is_pick3" eval="True"/>
             <field name="source_code">new_york</field>
         </record>
+        <!-- Florida Pick 2: número de 2 dígitos (00-99), SIN centena.
+             Nació el 01/08/2016 y comparte la Fireball con Pick 3 / Pick 4,
+             por eso no se registra acá (ya está en el sorteo Florida). -->
+        <record id="sorteo_florida_pick2" model="lottery.sorteo">
+            <field name="name">Florida Pick 2</field>
+            <field name="code">florida_pick2</field>
+            <field name="sequence">3</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <!-- En False a propósito: el primer sorteo del histórico (01/08/2016)
+                 es de Tarde, y la continuidad exige una Noche del día anterior
+                 que no existe → rompería el backfill en el primer registro. -->
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">florida_pick2</field>
+        </record>
+        <!-- La Primera (Rep. Dominicana): quiniela de 3 números de 2 dígitos.
+             Premio 1 = fijo (number_id), premios 2 y 3 = corridos. Sin centena
+             y sin bola extra. Turnos 12:00pm y 07:00pm (hora RD). -->
+        <record id="sorteo_la_primera" model="lottery.sorteo">
+            <field name="name">La Primera</field>
+            <field name="code">la_primera</field>
+            <field name="sequence">4</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <!-- En False: el histórico oficial arranca el 18/02/2023 y puede
+                 tener días incompletos; la continuidad rompería el backfill. -->
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">la_primera</field>
+        </record>
+        <!-- La Suerte Dominicana: misma mecánica que La Primera.
+             Turnos 12:30 ("Día") y 18:00 (que la fuente llama "Tarde"). -->
+        <record id="sorteo_la_suerte" model="lottery.sorteo">
+            <field name="name">La Suerte</field>
+            <field name="code">la_suerte</field>
+            <field name="sequence">5</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">conectate</field>
+        </record>
+        <!-- King Lottery (Sint Maarten, no dominicana). Mismo formato que las
+             quinielas: 3 números de 2 dígitos = premios 1, 2 y 3. En la fuente
+             los campos se llaman "2&amp;3 Pick 3", "1&amp;2 Pick 4" y "3&amp;4 Pick 4"
+             porque los arman con dígitos de un Pick 3 y un Pick 4, pero el dato
+             que llega y se guarda es idéntico. -->
+        <record id="sorteo_king_lottery" model="lottery.sorteo">
+            <field name="name">King Lottery</field>
+            <field name="code">king_lottery</field>
+            <field name="sequence">6</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">conectate</field>
+        </record>
         <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
             <field name="name">Quiniela UY - Sorteo 1</field>
             <field name="code">quiniela_uy_1</field>

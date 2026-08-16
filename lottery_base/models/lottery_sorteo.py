@@ -40,6 +40,12 @@ class LotterySorteo(models.Model):
 
     uses_fireball = fields.Boolean(string='Usa Bola Extra', default=False,
                                    help="Indica si este sorteo registra número de Bola Extra.")
+    uses_hundreds = fields.Boolean(string='Usa Centena', default=True,
+                                   help="Indica si este sorteo registra Centena. Desactivalo para sorteos "
+                                        "cuyo número es de 2 dígitos (00-99) y no tienen centena, como "
+                                        "La Primera, La Suerte o los Pick 2. Con el campo desactivado la "
+                                        "centena no se pide al registrar la salida ni se muestra en el "
+                                        "portal ni en la app.")
     enforce_turn_continuity = fields.Boolean(string='Exigir continuidad entre turnos', default=False,
                                              help="Si está activo, no se puede registrar el turno Noche sin "
                                                   "Tarde el mismo día, ni Tarde sin Noche del día anterior. "

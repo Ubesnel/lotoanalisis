@@ -13,6 +13,35 @@ SCRAPER_URL    = 'https://floridalottery.com/es/games/draw-games/pick-3'
 FLORIDA_API    = 'https://apim-website-prod-eastus.azure-api.net/drawgamesapp/searchgames'
 PICK3_GAME_ID  = 104
 PICK4_GAME_ID  = 108
+PICK2_GAME_ID  = 127
+
+# Qué game id de la API le corresponde a cada juego soportado por este importador.
+GAME_IDS = {
+    'pick3': PICK3_GAME_ID,
+    'pick2': PICK2_GAME_ID,
+}
+
+# La API de Florida devuelve JSON SINTÁCTICAMENTE INVÁLIDO cuando un número no
+# existe: emite  {"NumberPick": ,"NumberType": "fb"}  sin valor. Pasa en todos
+# los sorteos anteriores al 18/01/2021, fecha en que se incorporó la Fireball
+# (3.262 casos solo en el histórico de Pick 2). json.loads revienta con eso, así
+# que hay que rellenar el hueco con null antes de parsear.
+_EMPTY_NUMBER_RE = re.compile(r'"NumberPick":\s*,')
+
+# A partir de esta cantidad de sorteos, la importación manual usa el camino
+# masivo en vez de crear de a uno (ver _import_draws_bulk).
+_BULK_THRESHOLD = 200
+
+# La API rechaza con 400 los endDate de más de 2 años atrás. Se usa un margen
+# holgado sobre los ~730 días reales para no quedar pegado al borde.
+API_END_MAX_AGE_DAYS = 700
+
+# Un rango histórico ancho devuelve varios MB y la API tarda más de un minuto
+# (el histórico completo de Pick 2 son ~3 MB). El timeout configurado sirve
+# para el cron diario, que pide un solo día y conviene que falle rápido; para
+# rangos largos se usa este, más holgado.
+HISTORIC_SPAN_DAYS = 400
+HISTORIC_TIMEOUT   = 300
 
 _HEADERS = {
     'User-Agent': (
@@ -76,6 +105,21 @@ class LotteryScraper(models.Model):
     _description = 'Importador automático Florida Pick 3'
 
     name = fields.Char(default='Florida Pick 3', readonly=True)
+    auto_import = fields.Boolean(
+        string='Importación automática', default=True,
+        help="Si está desactivado, el cron ignora este importador y solo se puede "
+             "importar a mano con el botón. Pensado para dejar un importador nuevo "
+             "en observación hasta validarlo, sin frenar a los demás.")
+    game_code = fields.Selection([
+        ('pick3', 'Pick 3 (+ Pick 4 para los corridos)'),
+        ('pick2', 'Pick 2 (2 dígitos, sin centena)'),
+    ], string='Juego', default='pick3', required=True,
+        help="Qué juego de Florida consulta este importador. Define el id que se le pide "
+             "a la API y cómo se arma el número:\n"
+             "· Pick 3 → centena + número de 2 dígitos + bola extra, y se enriquece con "
+             "Pick 4 para los corridos (Premio 2 y 3).\n"
+             "· Pick 2 → solo el número de 2 dígitos. Sin centena, sin corridos y sin bola "
+             "extra (Florida sortea una sola Fireball, que ya queda registrada en Pick 3).")
     sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True, index=True,
                                 default=lambda self: self.env.ref('lottery_base.sorteo_florida').id,
                                 help="A qué lottery.sorteo se le asignan las salidas importadas por este "
@@ -120,8 +164,26 @@ class LotteryScraper(models.Model):
 
     @api.model
     def cron_import_results(self):
-        scraper = self._get_singleton()
-        et_tz    = timezone(timedelta(hours=scraper.et_offset))
+        """Corre los importadores de Florida con la automática habilitada, no
+        solo el de Pick 3. Cada registro tiene su propio sorteo y sus propias
+        ventanas horarias, así que se evalúan por separado y que uno falle no
+        frena a los demás. Pick 2 y Pick 3 publican a la misma hora, así que en
+        la práctica corren juntos."""
+        # Si la base no tiene ningún importador todavía, crear el de Pick 3
+        # (comportamiento histórico). Después se corren solo los habilitados.
+        if not self.search_count([]):
+            self._get_singleton()
+        for scraper in self.search([('auto_import', '=', True)]):
+            try:
+                scraper._cron_import_one()
+            except Exception:
+                _logger.exception('Scraper %s (%s): error en la corrida automática.',
+                                  scraper.name, scraper.game_code)
+
+    def _cron_import_one(self):
+        """Corrida automática de UN importador, respetando su ventana horaria."""
+        self.ensure_one()
+        et_tz    = timezone(timedelta(hours=self.et_offset))
         now_et   = datetime.now(tz=et_tz)
         hour_et  = now_et.hour + now_et.minute / 60.0
         today_et = now_et.date()
@@ -129,29 +191,30 @@ class LotteryScraper(models.Model):
         Output    = self.env['lottery.output']
         log_lines = []
 
-        if scraper.afternoon_start <= hour_et <= scraper.afternoon_end:
+        if self.afternoon_start <= hour_et <= self.afternoon_end:
             if Output.search([('date', '=', today_et), ('turn_day', '=', 'afternoon'),
-                              ('sorteo_id', '=', scraper.sorteo_id.id)], limit=1):
-                _logger.debug('Scraper Tarde %s: ya registrada.', today_et)
+                              ('sorteo_id', '=', self.sorteo_id.id)], limit=1):
+                _logger.debug('Scraper %s Tarde %s: ya registrada.', self.game_code, today_et)
                 return
-            _logger.info('Scraper: ventana Tarde activa.')
-            log_lines += scraper._run_for_turn('afternoon', today_et)
+            _logger.info('Scraper %s: ventana Tarde activa.', self.game_code)
+            log_lines += self._run_for_turn('afternoon', today_et)
 
-        elif scraper.evening_start <= hour_et <= scraper.evening_end:
+        elif self.evening_start <= hour_et <= self.evening_end:
             if Output.search([('date', '=', today_et), ('turn_day', '=', 'evening'),
-                              ('sorteo_id', '=', scraper.sorteo_id.id)], limit=1):
-                _logger.debug('Scraper Noche %s: ya registrada.', today_et)
+                              ('sorteo_id', '=', self.sorteo_id.id)], limit=1):
+                _logger.debug('Scraper %s Noche %s: ya registrada.', self.game_code, today_et)
                 return
-            _logger.info('Scraper: ventana Noche activa.')
-            log_lines += scraper._run_for_turn('evening', today_et)
+            _logger.info('Scraper %s: ventana Noche activa.', self.game_code)
+            log_lines += self._run_for_turn('evening', today_et)
 
         else:
-            _logger.debug('Scraper: %02d:%02d ET fuera de ventanas.', now_et.hour, now_et.minute)
+            _logger.debug('Scraper %s: %02d:%02d ET fuera de ventanas.',
+                          self.game_code, now_et.hour, now_et.minute)
             return
 
-        scraper.write({
+        self.write({
             'last_run':    fields.Datetime.now(),
-            'last_result': scraper._build_result_html(log_lines),
+            'last_result': self._build_result_html(log_lines),
         })
 
     def action_import_now(self):
@@ -183,8 +246,11 @@ class LotteryScraper(models.Model):
                 # Ordenar por fecha y turno (tarde antes que noche)
                 draws.sort(key=lambda d: (d['date'], _TURN_ORDER.get(d['turn'], 0)))
                 log_lines.append(f'{len(draws)} sorteo(s) encontrado(s) — importando …')
-                for draw in draws:
-                    log_lines.append(self._import_draw(draw))
+                if len(draws) > _BULK_THRESHOLD:
+                    log_lines += self._import_draws_bulk(draws)
+                else:
+                    for draw in draws:
+                        log_lines.append(self._import_draw(draw))
 
         except Exception as exc:
             log_lines.append(f'[ERROR] {exc}')
@@ -254,15 +320,18 @@ class LotteryScraper(models.Model):
             draws = self._fetch_florida_api(session, timeout,
                                             date_from=date_from, date_to=date_to)
             if draws:
-                _logger.info('Scraper: %d sorteos obtenidos via API oficial.', len(draws))
-                # Enriquecer con datos de Pick 4 (Premio 2 y Premio 3)
-                ef = date_from or draws[0]['date']
-                et = date_to or draws[-1]['date']
-                pick4_index = self._fetch_pick4_index(session, timeout, ef, et)
-                for draw in draws:
-                    p4 = pick4_index.get((draw['date'], draw['turn']), {})
-                    draw['premio2'] = p4.get('premio2')
-                    draw['premio3'] = p4.get('premio3')
+                _logger.info('Scraper %s: %d sorteos obtenidos via API oficial.',
+                             self.game_code, len(draws))
+                # Enriquecer con datos de Pick 4 (Premio 2 y Premio 3).
+                # Solo Pick 3: Pick 2 no tiene corridos.
+                if self.game_code == 'pick3':
+                    ef = date_from or draws[0]['date']
+                    et = date_to or draws[-1]['date']
+                    pick4_index = self._fetch_pick4_index(session, timeout, ef, et)
+                    for draw in draws:
+                        p4 = pick4_index.get((draw['date'], draw['turn']), {})
+                        draw['premio2'] = p4.get('premio2')
+                        draw['premio3'] = p4.get('premio3')
                 return draws
             errors.append('API oficial: no retornó sorteos para la fecha consultada.')
         except Exception as exc:
@@ -302,6 +371,17 @@ class LotteryScraper(models.Model):
 
         raise UserError('No se pudieron obtener los sorteos:\n\n' + '\n'.join(errors))
 
+    @staticmethod
+    def _api_json(resp):
+        """json de la API de Florida, reparando los "NumberPick" vacíos.
+
+        No se usa resp.json() a propósito: la API emite JSON inválido para los
+        sorteos sin Fireball (anteriores al 18/01/2021) y el parser estándar
+        falla con 'Expecting value'. Ver _EMPTY_NUMBER_RE.
+        """
+        data = json.loads(_EMPTY_NUMBER_RE.sub('"NumberPick": null,', resp.text))
+        return data if isinstance(data, list) else [data]
+
     def _fetch_pick4_index(self, session, timeout, date_from, date_to):
         """
         Consulta la API de Pick 4 (ID=108) para el rango de fechas indicado.
@@ -318,9 +398,7 @@ class LotteryScraper(models.Model):
                 timeout=timeout,
             )
             resp.raise_for_status()
-            data = resp.json()
-            if not isinstance(data, list):
-                data = [data]
+            data = self._api_json(resp)
         except Exception as exc:
             _logger.warning('Scraper Pick4: API falló: %s', exc)
             return {}
@@ -353,8 +431,15 @@ class LotteryScraper(models.Model):
         """
         Llama a la API oficial de Florida Lottery para el rango de fechas indicado.
         URL: https://apim-website-prod-eastus.azure-api.net/drawgamesapp/searchgames
-        Params: id=104 (Pick 3), startDate/endDate en formato DD-MMM-YYYY (ej: 29-APR-2026)
+        Params: id según el juego (104 Pick 3 · 127 Pick 2), startDate/endDate en
+        formato DD-MMM-YYYY (ej: 29-APR-2026).
         Si no se indican fechas usa la ET de hoy para ambas.
+
+        OJO con el endDate: la API rechaza con 400 cualquier endDate de más de
+        dos años atrás ("endDate cannot be before 2 years"). El límite es SOLO
+        del endDate: el startDate puede ser tan viejo como se quiera. Por eso,
+        cuando se pide un rango histórico cerrado (ej. agosto de 2016), se le
+        pide a la API hasta HOY y el rango se recorta acá.
         """
         et_tz = timezone(timedelta(hours=self.et_offset))
         today = datetime.now(tz=et_tz).date()
@@ -364,26 +449,45 @@ class LotteryScraper(models.Model):
         if date_to is None:
             date_to = date_from
 
+        # endDate seguro: si el pedido cae fuera de la ventana que acepta la API,
+        # se consulta hasta hoy y después se filtra al rango real.
+        api_end = date_to
+        if api_end < today - timedelta(days=API_END_MAX_AGE_DAYS):
+            _logger.info('Scraper %s: endDate %s excede la ventana de la API; '
+                         'se consulta hasta hoy (%s) y se recorta localmente.',
+                         self.game_code, date_to, today)
+            api_end = today
+
         start_str = date_from.strftime('%d-%b-%Y').upper()
-        end_str   = date_to.strftime('%d-%b-%Y').upper()
-        _logger.info('Scraper: consultando API Florida %s → %s', start_str, end_str)
+        end_str   = api_end.strftime('%d-%b-%Y').upper()
+        game_id   = GAME_IDS.get(self.game_code, PICK3_GAME_ID)
+
+        # Rango ancho = varios MB y más de un minuto de espera: el timeout del
+        # cron diario (30 s por defecto) no alcanza.
+        if (api_end - date_from).days > HISTORIC_SPAN_DAYS:
+            timeout = max(timeout, HISTORIC_TIMEOUT)
+
+        _logger.info('Scraper %s (id=%s): consultando API Florida %s → %s (timeout %ss)',
+                     self.game_code, game_id, start_str, end_str, timeout)
 
         resp = session.get(
             FLORIDA_API,
-            params={'id': PICK3_GAME_ID, 'startDate': start_str, 'endDate': end_str},
+            params={'id': game_id, 'startDate': start_str, 'endDate': end_str},
             headers=_API_HEADERS,
             timeout=timeout,
         )
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            # El cuerpo trae el motivo real (ej. "endDate cannot be before 2
+            # years"); raise_for_status solo deja el código y no se ve nunca.
+            raise UserError('La API de Florida respondió %s: %s'
+                            % (resp.status_code, (resp.text or '').strip()[:300]))
 
-        data = resp.json()
-        if not isinstance(data, list):
-            data = [data]
+        data = self._api_json(resp)
 
         draws = []
         for item in data:
             draw = self._parse_florida_api_item(item)
-            if draw:
+            if draw and date_from <= draw['date'] <= date_to:
                 draws.append(draw)
         return draws
 
@@ -415,7 +519,22 @@ class LotteryScraper(models.Model):
         wn = {n['NumberType']: n['NumberPick']
               for n in numbers if isinstance(n, dict) and 'NumberType' in n}
 
-        if not all(k in wn for k in ('wn1', 'wn2', 'wn3', 'fb')):
+        # Pick 2: solo wn1 y wn2 → número de 2 dígitos. Sin centena y sin bola
+        # extra (la Fireball que trae la API es la misma de Pick 3, ya registrada
+        # en ese sorteo; guardarla acá sería duplicar el dato).
+        if self.game_code == 'pick2':
+            if wn.get('wn1') is None or wn.get('wn2') is None:
+                _logger.warning('Scraper API Pick2: números incompletos: %s', wn)
+                return None
+            try:
+                numero = int(str(wn['wn1']) + str(wn['wn2']))
+            except (ValueError, TypeError) as exc:
+                _logger.warning('Scraper API Pick2: error convirtiendo números: %s', exc)
+                return None
+            _logger.info('Scraper API Pick2: %s %s → N=%02d', draw_date, turn, numero)
+            return {'date': draw_date, 'turn': turn, 'numero': numero}
+
+        if any(wn.get(k) is None for k in ('wn1', 'wn2', 'wn3', 'fb')):
             _logger.warning('Scraper API: números incompletos: %s', wn)
             return None
 
@@ -749,15 +868,20 @@ class LotteryScraper(models.Model):
         if not number_rec:
             return f'[ERROR] {label} – número {draw["numero"]:02d} no existe'
 
-        hundreds_rec = LottoNum.search([
-            ('name', '=', draw['centena']), ('can_use_hundreds', '=', True)], limit=1)
-        if not hundreds_rec:
-            return f'[ERROR] {label} – centena {draw["centena"]} no existe'
+        # Centena y bola extra solo si el juego las trae (Pick 2 no).
+        hundreds_rec = False
+        if draw.get('centena') is not None:
+            hundreds_rec = LottoNum.search([
+                ('name', '=', draw['centena']), ('can_use_hundreds', '=', True)], limit=1)
+            if not hundreds_rec:
+                return f'[ERROR] {label} – centena {draw["centena"]} no existe'
 
-        fireball_rec = LottoNum.search([
-            ('name', '=', draw['extra']), ('can_use_hundreds', '=', True)], limit=1)
-        if not fireball_rec:
-            return f'[ERROR] {label} – bola extra {draw["extra"]} no existe'
+        fireball_rec = False
+        if draw.get('extra') is not None:
+            fireball_rec = LottoNum.search([
+                ('name', '=', draw['extra']), ('can_use_hundreds', '=', True)], limit=1)
+            if not fireball_rec:
+                return f'[ERROR] {label} – bola extra {draw["extra"]} no existe'
 
         premio2_rec = False
         premio3_rec = False
@@ -775,14 +899,123 @@ class LotteryScraper(models.Model):
             'turn_day':    draw['turn'],
             'sorteo_id':   self.sorteo_id.id,
             'number_id':   number_rec.id,
-            'hundreds_id': hundreds_rec.id,
-            'fireball_id': fireball_rec.id,
+            'hundreds_id': hundreds_rec.id if hundreds_rec else False,
+            'fireball_id': fireball_rec.id if fireball_rec else False,
             'premio_2_id': premio2_rec.id if premio2_rec else False,
             'premio_3_id': premio3_rec.id if premio3_rec else False,
         })
         p2_str = f' | P2:{draw["premio2"]:02d}' if draw.get('premio2') is not None else ''
         p3_str = f' P3:{draw["premio3"]:02d}' if draw.get('premio3') is not None else ''
-        return f'[OK] {label} – {draw["centena"]}{draw["numero"]:02d} extra:{draw["extra"]}{p2_str}{p3_str}'
+        cen_str = f'{draw["centena"]}' if draw.get('centena') is not None else ''
+        fb_str  = f' extra:{draw["extra"]}' if draw.get('extra') is not None else ''
+        return f'[OK] {label} – {cen_str}{draw["numero"]:02d}{fb_str}{p2_str}{p3_str}'
+
+    def _import_draws_bulk(self, draws):
+        """Alta masiva para el backfill histórico.
+
+        Con el camino de a uno (_import_draw) cada sorteo cuesta un search de
+        duplicado + uno a tres search de lottery.number + el recálculo del
+        próximo sorteo: con el histórico completo de Pick 2 (7.332 sorteos) son
+        decenas de miles de consultas y el botón se pasa del timeout del worker.
+        Acá se resuelve con dos consultas de contexto, creates por lotes y un
+        único recálculo al final.
+        """
+        self.ensure_one()
+        Output   = self.env['lottery.output']
+        LottoNum = self.env['lottery.number']
+
+        # Mapas nombre → id, una sola lectura.
+        by_name, by_name_hundreds = {}, {}
+        for n in LottoNum.search_read([], ['name', 'can_use_hundreds']):
+            by_name.setdefault(n['name'], n['id'])
+            if n['can_use_hundreds']:
+                by_name_hundreds.setdefault(n['name'], n['id'])
+
+        # Claves ya registradas para este sorteo, una sola lectura.
+        existing = {
+            (fields.Date.to_date(r['date']), r['turn_day'])
+            for r in Output.search_read([('sorteo_id', '=', self.sorteo_id.id)],
+                                        ['date', 'turn_day'])
+        }
+
+        vals_list, omitidos, errores = [], 0, []
+        importadas = set()   # claves (fecha, turno) efectivamente creadas
+        for draw in draws:
+            key = (draw['date'], draw['turn'])
+            if key in existing:
+                omitidos += 1
+                continue
+
+            turn_label = 'Tarde' if draw['turn'] == 'afternoon' else 'Noche'
+            label = f"{draw['date']} {turn_label}"
+
+            number_id = by_name.get(draw['numero'])
+            if not number_id:
+                errores.append(f'[ERROR] {label} – número {draw["numero"]:02d} no existe')
+                continue
+
+            vals = {
+                'date':      draw['date'],
+                'turn_day':  draw['turn'],
+                'sorteo_id': self.sorteo_id.id,
+                'number_id': number_id,
+            }
+
+            if draw.get('centena') is not None:
+                hundreds_id = by_name_hundreds.get(draw['centena'])
+                if not hundreds_id:
+                    errores.append(f'[ERROR] {label} – centena {draw["centena"]} no existe')
+                    continue
+                vals['hundreds_id'] = hundreds_id
+
+            if draw.get('extra') is not None:
+                fireball_id = by_name_hundreds.get(draw['extra'])
+                if not fireball_id:
+                    errores.append(f'[ERROR] {label} – bola extra {draw["extra"]} no existe')
+                    continue
+                vals['fireball_id'] = fireball_id
+
+            for src, dest in (('premio2', 'premio_2_id'), ('premio3', 'premio_3_id')):
+                if draw.get(src) is not None:
+                    pid = by_name.get(draw[src])
+                    if pid:
+                        vals[dest] = pid
+                    else:
+                        _logger.warning('Scraper: %s %02d no existe en lottery.number',
+                                        src, draw[src])
+
+            vals_list.append(vals)
+            existing.add(key)
+            importadas.add(key)
+
+        creados = 0
+        if vals_list:
+            Out = Output.with_context(skip_next_draw_recompute=True,
+                                      skip_prediction_validation=True)
+            for i in range(0, len(vals_list), 500):
+                Out.create(vals_list[i:i + 500])
+                creados += len(vals_list[i:i + 500])
+
+            # Cierre del próximo sorteo, una sola vez y con todo cargado.
+            # Replica lo que _on_output_registered hace por registro: si alguna
+            # de las salidas importadas es la que estaba definida a mano, se
+            # consume esa marca; si no, _recompute_next_draw no haría nada.
+            sorteo = self.sorteo_id
+            if sorteo.next_draw_manual and \
+                    (sorteo.next_draw_date, sorteo.next_draw_turn) in importadas:
+                sorteo.next_draw_manual = False
+            sorteo._recompute_next_draw()
+
+        fechas = [v['date'] for v in vals_list]
+        log = [f'[OK] {creados} salida(s) creada(s)'
+               + (f' — de {min(fechas)} a {max(fechas)}' if fechas else '')]
+        if omitidos:
+            log.append(f'[OMITIDO] {omitidos} ya estaban registradas')
+        # Solo las primeras, para no generar un HTML gigante
+        log += errores[:20]
+        if len(errores) > 20:
+            log.append(f'[ERROR] … y {len(errores) - 20} error(es) más (ver el log del servidor)')
+        return log
 
     # ── Formato HTML del resultado ────────────────────────────────
 
@@ -954,8 +1187,11 @@ class LotteryScraper(models.Model):
 
     @api.model
     def _get_singleton(self):
+        """Importador de Pick 3. Solo se usa como respaldo: el cron recorre
+        todos los registros (ver cron_import_results)."""
         florida = self.env.ref('lottery_base.sorteo_florida')
         rec = self.search([('sorteo_id', '=', florida.id)], limit=1)
         if not rec:
-            rec = self.create({'name': 'Florida Pick 3', 'sorteo_id': florida.id})
+            rec = self.create({'name': 'Florida Pick 3', 'sorteo_id': florida.id,
+                               'game_code': 'pick3'})
         return rec

@@ -47,7 +47,7 @@ def _serialize_output(record):
         'weekday': WEEKDAYS_ES[record.date.weekday()],
         'turn': record.turn_day,
         'turn_label': TURN_LABELS.get(record.turn_day, record.turn_day),
-        'centena': str(record.hundreds_id.name),
+        'centena': str(record.hundreds_id.name) if record.hundreds_id else None,
         'numero': str(record.number_id.name).zfill(2),
         'extra': str(record.fireball_id.name) if record.fireball_id else None,
         # Números corridos (Premio 2 y 3, solo sorteos Pick3 con dato cargado)
@@ -92,6 +92,7 @@ class LotteryAppApi(http.Controller):
                 'name': s.name,
                 'code': s.code,
                 'uses_fireball': s.uses_fireball,
+                'uses_hundreds': s.uses_hundreds,
             } for s in sorteos],
             'default_id': sorteos[0].id if sorteos else None,
         })
@@ -114,7 +115,8 @@ class LotteryAppApi(http.Controller):
         next_date, next_turn = sorteo.get_next_draw()
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name, 'code': sorteo.code,
-                       'uses_fireball': sorteo.uses_fireball},
+                       'uses_fireball': sorteo.uses_fireball,
+                       'uses_hundreds': sorteo.uses_hundreds},
             'afternoon': latest['afternoon'],
             'evening': latest['evening'],
             'next_draw': {'date': next_date, 'turn': next_turn,
@@ -266,7 +268,13 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         stats = self._stats()
+        if not sorteo.uses_hundreds:
+            return _json_response({
+                'uses_hundreds': False,
+                'general': [], 'afternoon': [], 'evening': [],
+            })
         return _json_response({
+            'uses_hundreds': True,
             'general': stats.get_top5_centenas_general(sorteo_id=sorteo.id)[:4],
             'afternoon': stats.get_top5_centenas_afternoon(sorteo_id=sorteo.id)[:4],
             'evening': stats.get_top5_centenas_evening(sorteo_id=sorteo.id)[:4],
@@ -721,10 +729,14 @@ class LotteryAppApi(http.Controller):
                 key=lambda x: x['total_salidas'], reverse=True)
             return {'top': items[:4], 'bottom': list(reversed(items[-4:]))}
 
+        # Sin centena las consultas ya devuelven vacío solas (no hay filas con
+        # hundreds_id), y estos dicts traen también la bola extra: se llaman
+        # igual para no alterar la forma del JSON ni perder la bola.
         _now = _now_local()
         return _json_response({
             'day': VALID_DAYS[_now.weekday()],
             'week': 'sem_%d' % min((_now.day + 6) // 7, 5),
+            'uses_hundreds': bool(sorteo.uses_hundreds),
             'historico': {
                 'centena': historico('hundreds_id'),
                 'bola': historico('fireball_id'),

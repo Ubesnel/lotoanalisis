@@ -95,8 +95,8 @@
                                 </div>
                             </t>
                             <!-- Centenas + Bola Extra calientes -->
-                            <div class="nc-cebs-row mt-2">
-                                <div class="nc-cebs-col">
+                            <div class="nc-cebs-row mt-2" t-if="usesHundreds or usesFireball">
+                                <div class="nc-cebs-col" t-if="usesHundreds">
                                     <div class="nc-section-head">
                                         <span class="nc-section-title"><i class="fa fa-th"/> Centenas</span>
                                         <span class="nc-section-badge">Top 4</span>
@@ -113,7 +113,7 @@
                                     </div>
                                 </div>
                                 <t t-if="usesFireball">
-                                <div class="nc-cebs-divider"/>
+                                <div class="nc-cebs-divider" t-if="usesHundreds"/>
                                 <div class="nc-cebs-col">
                                     <div class="nc-section-head">
                                         <span class="nc-section-title"><i class="fa fa-star"/> Bola Extra</span>
@@ -169,8 +169,8 @@
                                 </div>
                             </t>
                             <!-- Centenas + Bola Extra restantes -->
-                            <div class="nc-cebs-row mt-2">
-                                <div class="nc-cebs-col">
+                            <div class="nc-cebs-row mt-2" t-if="usesHundreds or usesFireball">
+                                <div class="nc-cebs-col" t-if="usesHundreds">
                                     <div class="nc-section-head">
                                         <span class="nc-section-title nc-section-title--remaining"><i class="fa fa-th"/> Centenas</span>
                                         <span class="nc-section-badge">Restantes</span>
@@ -187,7 +187,7 @@
                                     </div>
                                 </div>
                                 <t t-if="usesFireball">
-                                <div class="nc-cebs-divider"/>
+                                <div class="nc-cebs-divider" t-if="usesHundreds"/>
                                 <div class="nc-cebs-col">
                                     <div class="nc-section-head">
                                         <span class="nc-section-title nc-section-title--remaining"><i class="fa fa-star"/> Bola Extra</span>
@@ -242,8 +242,8 @@
                                 </div>
                             </t>
                             <!-- Centenas + Bola Extra frías -->
-                            <div class="nc-cebs-row mt-2">
-                                <div class="nc-cebs-col">
+                            <div class="nc-cebs-row mt-2" t-if="usesHundreds or usesFireball">
+                                <div class="nc-cebs-col" t-if="usesHundreds">
                                     <div class="nc-section-head">
                                         <span class="nc-section-title nc-section-title--cold"><i class="fa fa-th"/> Centenas frías</span>
                                         <span class="nc-section-badge">Top 4</span>
@@ -260,7 +260,7 @@
                                     </div>
                                 </div>
                                 <t t-if="usesFireball">
-                                <div class="nc-cebs-divider"/>
+                                <div class="nc-cebs-divider" t-if="usesHundreds"/>
                                 <div class="nc-cebs-col">
                                     <div class="nc-section-head">
                                         <span class="nc-section-title nc-section-title--cold"><i class="fa fa-star"/> Bola Extra fría</span>

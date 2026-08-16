@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--
+            Importador de Florida Pick 2.
+
+            Se crea acá (y no de forma perezosa como el de Pick 3) porque el
+            sorteo es nuevo: no puede existir un registro previo con el que
+            duplicarse. El de Pick 3 se sigue creando solo desde _get_singleton
+            para no arriesgar un duplicado en las bases que ya lo tienen.
+
+            Las ventanas horarias quedan en los valores por defecto, los mismos
+            de Pick 3: Florida publica Pick 2 y Pick 3 al mismo tiempo.
+        -->
+        <record id="scraper_florida_pick2" model="lottery.scraper">
+            <field name="name">Florida Pick 2</field>
+            <field name="game_code">pick2</field>
+            <field name="sorteo_id" ref="lottery_base.sorteo_florida_pick2"/>
+            <!-- Arranca con la importación automática APAGADA, igual que los
+                 crones de New York y Quiniela: al actualizar el módulo no debe
+                 empezar a escribir solo. Activarla a mano tras validar el
+                 backfill histórico. -->
+            <field name="auto_import" eval="False"/>
+        </record>
+
+        <!--
+            Importadores de conectate. Los gameId se descubrieron capturando la
+            petición que dispara el selector de fecha del sitio; cada TURNO es
+            un gameId distinto. Todos arrancan con la automática apagada.
+
+            Profundidad del histórico verificada (agosto 2026):
+              · La Primera  → Día desde ene-2020, Noche desde ~mediados 2022
+              · La Suerte   → Día desde ~fines 2020, Tarde desde ~fines 2022
+              · King        → ambos desde ~mediados 2021
+        -->
+        <record id="scraper_cx_la_primera" model="lottery.scraper.conectate">
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_primera"/>
+            <field name="game_id_afternoon">69fd98475e76585b60269614</field>
+            <field name="game_id_evening">69fd98475e76585b60269618</field>
+            <!-- Solo para extender hacia atrás: el día a día lo trae el
+                 importador oficial (laprimera.do), que es más autoritativo. -->
+            <field name="date_floor" eval="False"/>
+        </record>
+
+        <record id="scraper_cx_la_suerte" model="lottery.scraper.conectate">
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_suerte"/>
+            <field name="game_id_afternoon">69fd98475e76585b6026962c</field>
+            <field name="game_id_evening">69fd98475e76585b60269630</field>
+        </record>
+
+        <record id="scraper_cx_king_lottery" model="lottery.scraper.conectate">
+            <field name="sorteo_id" ref="lottery_base.sorteo_king_lottery"/>
+            <field name="game_id_afternoon">69fd98475e76585b6026967c</field>
+            <field name="game_id_evening">69fd98475e76585b60269680</field>
+        </record>
+    </data>
+</odoo>

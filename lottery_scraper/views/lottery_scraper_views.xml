@@ -15,9 +15,29 @@
                             string="Importar Pick 4 (Premio 2 y 3)"
                             type="object"
                             icon="fa-refresh"
+                            invisible="game_code != 'pick3'"
                             confirm="Consultará la API de Pick 4 para el rango de fechas definido (o todos si está vacío). ¿Continuar?"/>
                 </header>
                 <sheet>
+                    <div class="alert alert-info" role="alert" invisible="game_code != 'pick2'">
+                        Pick 2: número de 2 dígitos (00-99), sin centena y sin corridos.
+                        La Fireball no se registra acá — Florida sortea una sola y ya queda
+                        guardada en el sorteo Florida (Pick 3).
+                        Histórico disponible desde el 01/08/2016, día del primer sorteo:
+                        para el backfill completo poner "Fecha desde" = 01/08/2016 y dejar
+                        "Fecha hasta" vacío.
+                        <br/>
+                        Ojo: la API tarda cerca de 70 segundos en devolver el histórico
+                        completo (unos 3 MB, 7.332 sorteos) y no permite pedir ventanas
+                        viejas acotadas — cualquier rango que empiece en 2016 descarga todo
+                        igual. Si el servidor corta la petición por tiempo, importar por
+                        tramos de un año.
+                    </div>
+                    <group string="Juego">
+                        <field name="game_code"/>
+                        <field name="sorteo_id" options="{'no_create': True}"/>
+                        <field name="auto_import"/>
+                    </group>
                     <group string="Ventanas horarias (hora ET)">
                         <group string="TARDE ☀ (sorteo ~1:30 PM ET)">
                             <field name="afternoon_start"
@@ -81,6 +101,21 @@
               action="action_lottery_scraper"
               sequence="10"/>
 
+    <record id="action_lottery_scraper_pick2" model="ir.actions.act_window">
+        <field name="name">Importador Pick 2 · Florida</field>
+        <field name="res_model">lottery.scraper</field>
+        <field name="view_mode">form</field>
+        <field name="res_id" ref="scraper_florida_pick2"/>
+        <field name="view_id" ref="view_lottery_scraper_form"/>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_pick2"
+              name="Pick 2 · Florida"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_pick2"
+              sequence="12"/>
+
     <record id="view_lottery_scraper_new_york_form" model="ir.ui.view">
         <field name="name">lottery.scraper.new.york.form</field>
         <field name="model">lottery.scraper.new.york</field>
@@ -136,6 +171,161 @@
               parent="menu_lottery_scraper_root"
               action="action_lottery_scraper_new_york"
               sequence="15"/>
+
+    <record id="view_lottery_scraper_la_primera_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.la.primera.form</field>
+        <field name="model">lottery.scraper.la.primera</field>
+        <field name="arch" type="xml">
+            <form string="Importador La Primera">
+                <header>
+                    <button name="action_import_now"
+                            string="Importar ahora"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Fuente: sitio <strong>oficial</strong> de La Primera (laprimera.do).
+                        Quiniela de 3 números de 2 dígitos: Premio 1 es el fijo y los
+                        Premios 2 y 3 son los corridos. Sin centena ni bola extra.
+                        <br/>
+                        <strong>Histórico continuo desde el 11/05/2023</strong>. Tiene huecos
+                        reales (por ejemplo el 13/05/2023 está vacío): un día sin datos no
+                        significa que la fuente falle.
+                        <br/>
+                        La fuente entrega <strong>un día por petición</strong>, así que el
+                        backfill completo son ~1.200 consultas. Cada corrida procesa como
+                        mucho "Máx. días por corrida", avanza el cursor de abajo y avisa
+                        cuántos quedan: hay que apretar "Importar ahora" varias veces hasta
+                        que diga "Backfill terminado". Dejando las fechas vacías sigue solo
+                        desde donde quedó.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sorteo_id" options="{'no_create': True}"/>
+                            <field name="auto_import"/>
+                        </group>
+                        <group>
+                            <field name="max_days_per_run"/>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                            <field name="rd_offset"/>
+                        </group>
+                    </group>
+                    <group string="Importación manual por rango">
+                        <group>
+                            <field name="date_from" string="Fecha desde"/>
+                            <field name="date_to" string="Fecha hasta"/>
+                        </group>
+                        <group>
+                            <field name="backfill_until"/>
+                        </group>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                    </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper_la_primera" model="ir.actions.act_window">
+        <field name="name">Importador La Primera</field>
+        <field name="res_model">lottery.scraper.la.primera</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_la_primera"
+              name="La Primera · RD"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_la_primera"
+              sequence="18"/>
+
+    <record id="view_lottery_scraper_conectate_tree" model="ir.ui.view">
+        <field name="name">lottery.scraper.conectate.tree</field>
+        <field name="model">lottery.scraper.conectate</field>
+        <field name="arch" type="xml">
+            <tree string="Importadores conectate">
+                <field name="sorteo_id"/>
+                <field name="auto_import" widget="boolean_toggle"/>
+                <field name="backfill_oldest"/>
+                <field name="backfill_done" widget="boolean_toggle"/>
+                <field name="last_run"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_scraper_conectate_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.conectate.form</field>
+        <field name="model">lottery.scraper.conectate</field>
+        <field name="arch" type="xml">
+            <form string="Importador conectate">
+                <header>
+                    <button name="action_import_now" string="Importar últimos"
+                            type="object" class="btn-primary" icon="fa-download"/>
+                    <button name="action_backfill" string="Seguir backfill"
+                            type="object" icon="fa-history"
+                            invisible="backfill_done"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Fuente: conectate.com.do (agregador, <strong>no oficial</strong>).
+                        Cada petición trae los <strong>10 sorteos</strong> anteriores a una
+                        fecha, y cada turno es un juego distinto.
+                        <br/>
+                        "Importar últimos" trae lo más reciente. "Seguir backfill" recorre
+                        hacia atrás y hay que apretarlo varias veces hasta que se marque
+                        "Backfill terminado".
+                        <br/>
+                        Los dos turnos de una misma lotería no siempre arrancan el mismo
+                        año, así que el tramo más viejo puede tener un solo sorteo por día.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sorteo_id" options="{'no_create': True}"/>
+                            <field name="auto_import"/>
+                            <field name="rd_offset"/>
+                        </group>
+                        <group>
+                            <field name="game_id_afternoon"/>
+                            <field name="game_id_evening"/>
+                        </group>
+                    </group>
+                    <group string="Backfill hacia atrás">
+                        <group>
+                            <field name="date_to"/>
+                            <field name="date_floor"/>
+                            <field name="max_calls_per_run"/>
+                        </group>
+                        <group>
+                            <field name="backfill_oldest"/>
+                            <field name="backfill_done"/>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                        </group>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                    </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper_conectate" model="ir.actions.act_window">
+        <field name="name">Quinielas RD · conectate</field>
+        <field name="res_model">lottery.scraper.conectate</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_conectate"
+              name="Quinielas RD · conectate"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_conectate"
+              sequence="19"/>
 
     <record id="view_lottery_scraper_quiniela_uy_form" model="ir.ui.view">
         <field name="name">lottery.scraper.quiniela.uy.form</field>

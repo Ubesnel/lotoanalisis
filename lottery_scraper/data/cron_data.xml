@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!--
-        Corre cada 10 minutos.
+        Corre cada 10 minutos y recorre TODOS los importadores de Florida
+        (Pick 3 y Pick 2), cada uno con su sorteo y sus ventanas. Florida
+        publica los dos juegos al mismo tiempo, así que caen en la misma
+        ventana; que uno falle no frena al otro.
         El método evalúa internamente si estamos dentro de una ventana horaria ET:
           · Tarde  → 2:00 PM – 3:30 PM  ET  (configurable)
           · Noche  → 10:00 PM – 11:30 PM ET  (configurable)
@@ -9,7 +12,7 @@
         Si el sitio aún no publicó el resultado → registra "PENDIENTE" y reintenta en 10 min.
     -->
     <record id="cron_import_lottery_results" model="ir.cron">
-        <field name="name">Pick 3 · Importar resultados diarios</field>
+        <field name="name">Florida · Importar resultados diarios (Pick 3 y Pick 2)</field>
         <field name="model_id" ref="model_lottery_scraper"/>
         <field name="state">code</field>
         <field name="code">model.cron_import_results()</field>
@@ -47,6 +50,41 @@
         <field name="code">model.cron_import_results()</field>
         <field name="interval_number">1</field>
         <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <!--
+        La Primera (RD): la fuente oficial entrega un día por petición, así que
+        no se usan ventanas horarias — se piden los últimos días y se importa lo
+        que falte. Corre cada 30 minutos; si el día ya está completo no hace
+        ninguna petición. Arranca inactivo y además el importador tiene su
+        propio auto_import apagado: hay que habilitar los dos.
+    -->
+    <record id="cron_import_la_primera_results" model="ir.cron">
+        <field name="name">La Primera · Importar resultados diarios</field>
+        <field name="model_id" ref="model_lottery_scraper_la_primera"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <!--
+        Quinielas dominicanas vía conectate (La Suerte, King Lottery y el
+        respaldo de La Primera). Una petición por turno trae los últimos 10
+        sorteos, así que no hacen falta ventanas horarias. Arranca inactivo y
+        cada importador tiene además su propio auto_import apagado.
+    -->
+    <record id="cron_import_conectate_results" model="ir.cron">
+        <field name="name">Quinielas RD (conectate) · Importar resultados</field>
+        <field name="model_id" ref="model_lottery_scraper_conectate"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
         <field name="numbercall">-1</field>
         <field name="active" eval="False"/>
     </record>

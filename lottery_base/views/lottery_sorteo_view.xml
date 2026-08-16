@@ -8,6 +8,7 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
+                <field name="uses_hundreds"/>
                 <field name="uses_fireball"/>
                 <field name="enforce_turn_continuity"/>
                 <field name="source_code"/>
@@ -32,6 +33,7 @@
                             <field name="active"/>
                         </group>
                         <group>
+                            <field name="uses_hundreds"/>
                             <field name="uses_fireball"/>
                             <field name="enforce_turn_continuity"/>
                             <field name="is_pick3"/>

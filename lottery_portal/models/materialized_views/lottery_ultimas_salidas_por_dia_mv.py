@@ -27,7 +27,9 @@ class LotteryUltimaSalidaPorDiaMV(models.Model):
             MAX(CASE WHEN lo.turn_day = 'evening' THEN be.name END) AS bola_extra_noche
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.number_id
-            JOIN lottery_number c ON c.id = lo.hundreds_id
+            -- LEFT JOIN: los sorteos sin centena (uses_hundreds = False) tienen
+            -- hundreds_id nulo; con INNER JOIN desaparecían todas sus filas.
+            LEFT JOIN lottery_number c ON c.id = lo.hundreds_id
             LEFT JOIN lottery_number be ON be.id = lo.fireball_id
             GROUP BY lo.sorteo_id, lo.week_day, lo.date;
         """)

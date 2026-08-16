@@ -102,17 +102,27 @@ class LotteryOutput(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        # skip_prediction_validation: lo usan los backfills históricos. La
+        # validación compara el número contra el ranking_snapshot VIGENTE, así
+        # que evaluar una salida de 2020 la marcaría como acierto o fallo de una
+        # predicción de hoy: banderas sin sentido que ensucian el análisis de
+        # aciertos del backend. Y _check_predictions sería una búsqueda por
+        # registro que nunca va a encontrar nada para fechas viejas.
+        historico = self.env.context.get('skip_prediction_validation')
+
         # Validar contra el ranking PRE-CALCULADO (lectura instantánea de JSON)
         # y persistirlo en el mismo INSERT: evita el write() posterior con su
         # ciclo completo de overrides.
-        vals_list = [dict(vals, **self._snapshot_validation(vals)) for vals in vals_list]
+        if not historico:
+            vals_list = [dict(vals, **self._snapshot_validation(vals)) for vals in vals_list]
 
         # El cron disparado por lottery_delays_number se encarga de:
         #   - recomputar stats incrementales
         #   - recalcular ranking_snapshot para el próximo sorteo
         #   - limpiar cachés
         records = super().create(vals_list)
-        records._check_predictions()
+        if not historico:
+            records._check_predictions()
         return records
 
     def _check_predictions(self):
@@ -171,6 +181,23 @@ class LotteryOutput(models.Model):
     def _after_change(self):
         self.env['lottery.stats.service'].clear_caches()
 
+    def action_clear_prediction_validation(self):
+        """Borra las banderas de validación de las salidas seleccionadas.
+
+        Sirve para limpiar lo que dejaron los backfills históricos antes de
+        que existiera skip_prediction_validation: salidas viejas evaluadas
+        contra el ranking_snapshot del día de la importación, que figuran como
+        aciertos o fallos de predicciones que nunca existieron.
+        """
+        if not self:
+            return
+        vacios = dict.fromkeys(_VALIDATION_FIELDS, False)
+        vacios['validation_date'] = False
+        # El write de este modelo ya evita _after_change cuando solo se tocan
+        # campos de validación, así que no dispara recálculos innecesarios.
+        self.write(vacios)
+        _logger.info('Validaciones borradas en %d salidas.', len(self))
+
     def refresh_materialized_views(self):
         for view in self._MATERIALIZED_VIEWS:
             self.env.cr.execute(f"REFRESH MATERIALIZED VIEW {view}")
@@ -194,8 +221,11 @@ class LotteryOutput(models.Model):
 
         sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
         uses_fireball = bool(sorteo.uses_fireball)
+        uses_hundreds = bool(sorteo.uses_hundreds)
 
         if uses_fireball and not fireball_id:
+            return {}
+        if uses_hundreds and not hundreds_id:
             return {}
 
         turn_data = sorteo.get_validation_data(turn)
@@ -231,10 +261,17 @@ class LotteryOutput(models.Model):
         cen = int(cen_rec.name) if cen_rec and cen_rec.exists() else -1
 
         h_num = num in hot_nums
-        h_cen = cen in hot_cen
         c_num = num in cold_nums
-        c_cen = cen not in cold_cen
         rest_num = num not in hot_nums and num not in cold_nums
+
+        # Sin centena (sorteos de 2 dígitos) la centena no puede fallar ni
+        # acertar: se neutraliza igual que la bola extra, para que hot_ok /
+        # cold_ok dependan solo de lo que el sorteo sí juega.
+        if uses_hundreds:
+            h_cen = cen in hot_cen
+            c_cen = cen not in cold_cen
+        else:
+            h_cen = c_cen = True
 
         # Bloque dentro de cada lista según la posición en el ranking (score
         # descendente). Los primeros bloques son fijos de 10 posiciones; el
@@ -257,14 +294,14 @@ class LotteryOutput(models.Model):
 
         return {
             'hot_numero_ok':   h_num,
-            'hot_centena_ok':  h_cen,
+            'hot_centena_ok':  h_cen if uses_hundreds else False,
             'hot_extra_ok':    h_be if uses_fireball else False,
             'hot_ok':          h_num and h_cen and h_be,
             'hot_1_ok':        hot_block == 1,
             'hot_2_ok':        hot_block == 2,
             'hot_3_ok':        hot_block == 3,
             'cold_numero_ok':  c_num,
-            'cold_centena_ok': c_cen,
+            'cold_centena_ok': c_cen if uses_hundreds else False,
             'cold_extra_ok':   c_be if uses_fireball else False,
             'cold_ok':         c_num and c_cen and c_be,
             'cold_1_ok':       cold_block == 1,

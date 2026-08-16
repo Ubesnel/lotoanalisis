@@ -32,9 +32,29 @@
               action="lottery_base.action_lottery_output_florida" sequence="10"
               groups="lottery_base.group_lottery_user"/>
 
+    <menuitem id="menu_lottery_output_florida_pick2_item" name="Florida Pick2"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_florida_pick2" sequence="12"
+              groups="lottery_base.group_lottery_user"/>
+
     <menuitem id="menu_lottery_output_new_york_item" name="New York"
               parent="lottery_base.menu_lottery_output"
               action="lottery_base.action_lottery_output_new_york" sequence="15"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_output_la_primera_item" name="La Primera"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_la_primera" sequence="18"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_output_la_suerte_item" name="La Suerte"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_la_suerte" sequence="19"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_output_king_lottery_item" name="King Lottery"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_king_lottery" sequence="20"
               groups="lottery_base.group_lottery_user"/>
 
     <menuitem id="menu_lottery_output_quiniela_uy_1_item" name="Quiniela UY Premio 1"
