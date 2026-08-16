@@ -183,6 +183,16 @@
                             type="object"
                             class="btn-primary"
                             icon="fa-download"/>
+                    <button name="action_reset_backfill"
+                            string="Reiniciar backfill"
+                            type="object"
+                            icon="fa-refresh"
+                            confirm="Vuelve a recorrer desde el 11/05/2023. No borra nada de lo importado: las salidas existentes se saltean. Sirve para completar huecos que otra fuente rellenó después. ¿Continuar?"/>
+                    <button name="action_purge_phantoms"
+                            string="Limpiar salidas fantasma"
+                            type="object"
+                            icon="fa-eraser"
+                            confirm="BORRA salidas de este sorteo. Para los días sin sorteo, esta fuente devuelve los números del sorteo siguiente con la fecha pedida. Se eliminan esas copias y se conserva la última de cada racha, que es la real. Conviene tener backup. ¿Continuar?"/>
                 </header>
                 <sheet>
                     <div class="alert alert-info" role="alert">
