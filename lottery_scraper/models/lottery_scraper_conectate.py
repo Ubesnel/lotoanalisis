@@ -74,10 +74,18 @@ class LotteryScraperConectate(models.Model):
         help="Fecha desde la cual arranca el recorrido hacia atrás. "
              "Vacío = hoy. Solo se usa si el cursor está vacío.")
 
-    backfill_oldest = fields.Date(
-        'Backfill llegó hasta', readonly=True,
-        help="Sorteo más viejo alcanzado por el recorrido hacia atrás. La "
-             "próxima corrida sigue desde ahí. Vaciar para rehacerlo.")
+    # UN CURSOR POR TURNO, y no uno solo compartido. Cada turno trae 10
+    # sorteos por petición, así que el que tiene más huecos abarca más días de
+    # calendario y retrocede más rápido. Con un cursor único (se guardaba el
+    # mínimo de los dos) el turno rápido lo arrastraba y el lento se salteaba
+    # todo el rango que aún no había recorrido: así se perdieron 58 tardes de
+    # King Lottery, en rangos distintos en cada base.
+    backfill_oldest_afternoon = fields.Date(
+        'Backfill Tarde llegó hasta', readonly=True,
+        help="Sorteo de Tarde más viejo alcanzado. Vaciar para rehacer ese turno.")
+    backfill_oldest_evening = fields.Date(
+        'Backfill Noche llegó hasta', readonly=True,
+        help="Sorteo de Noche más viejo alcanzado. Vaciar para rehacer ese turno.")
     backfill_done = fields.Boolean(
         'Backfill terminado', readonly=True,
         help="Se marca cuando la fuente dejó de devolver sorteos más viejos "
@@ -99,27 +107,33 @@ class LotteryScraperConectate(models.Model):
                 _logger.exception('Scraper conectate (%s): error en la corrida automática.',
                                   scraper.sorteo_id.display_name)
 
+    # Los botones NO devuelven una acción a propósito: al retornar un
+    # act_window, Odoo apila una entrada nueva en el breadcrumb en cada clic y
+    # después de varias corridas quedan diez "King Lottery" encadenados.
+    # Sin retorno, el cliente recarga el registro en su lugar.
+
     def action_import_now(self):
         """Trae los últimos sorteos, sin tocar el backfill."""
         self.ensure_one()
         self._run_recientes()
-        return self._reload()
 
     def action_backfill(self):
         """Sigue el recorrido hacia atrás desde donde quedó."""
         self.ensure_one()
         self._run_backfill()
-        return self._reload()
 
-    def _reload(self):
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': self._name,
-            'res_id': self.id,
-            'view_mode': 'form',
-            'views': [[False, 'form']],
-            'target': 'current',
-        }
+    def action_reset_backfill(self):
+        """Vuelve a empezar el recorrido desde hoy.
+
+        No borra nada de lo ya importado: el alta saltea las salidas que ya
+        existen, así que sirve para rellenar huecos sin duplicar. Es la forma
+        de recuperarse de un recorrido que se salteó días.
+        """
+        self.write({
+            'backfill_oldest_afternoon': False,
+            'backfill_oldest_evening': False,
+            'backfill_done': False,
+        })
 
     # ── Corridas ──────────────────────────────────────────────────
 
@@ -147,37 +161,35 @@ class LotteryScraperConectate(models.Model):
         try:
             if self.backfill_done:
                 log.append('El backfill ya está terminado. '
-                           'Vaciá "Backfill llegó hasta" para rehacerlo.')
+                           'Vaciá los cursores de abajo para rehacerlo.')
             else:
                 session = self._session()
-                desde = (self.backfill_oldest - timedelta(days=1)
-                         if self.backfill_oldest else (self.date_to or self._today_rd()))
-                draws, mas_viejo, agotado = [], None, True
-
-                # El presupuesto de peticiones se reparte entre los dos turnos.
+                draws, agotados = [], 0
+                # Cada turno avanza con SU cursor: mezclarlos hace que el turno
+                # con más huecos arrastre al otro y le saltee días.
                 por_turno = max(1, (self.max_calls_per_run or 40) // 2)
-                for turn, gid in self._turnos():
+                for turn, gid, campo in (
+                        ('afternoon', self.game_id_afternoon, 'backfill_oldest_afternoon'),
+                        ('evening',   self.game_id_evening,   'backfill_oldest_evening')):
+                    cursor = self[campo]
+                    desde = (cursor - timedelta(days=1) if cursor
+                             else (self.date_to or self._today_rd()))
                     d, viejo, sigue = self._walk_back(session, gid, desde, por_turno)
                     draws += [dict(x, turn=turn) for x in d]
-                    if viejo and (mas_viejo is None or viejo < mas_viejo):
-                        mas_viejo = viejo
-                    if sigue:
-                        agotado = False
+                    etiqueta = 'Tarde' if turn == 'afternoon' else 'Noche'
+                    if viejo:
+                        self[campo] = viejo
+                        log.append(f'{etiqueta}: desde {desde}, alcanzado hasta {viejo}.')
+                    else:
+                        log.append(f'{etiqueta}: sin sorteos más viejos desde {desde}.')
+                    if not sigue:
+                        agotados += 1
 
-                log.append(f'Recorriendo hacia atrás desde {desde} …')
                 log += self._import_draws(draws)
 
-                if mas_viejo:
-                    self.backfill_oldest = mas_viejo
-                    log.append(f'Alcanzado hasta {mas_viejo}.')
-                if agotado:
+                if agotados == 2:
                     self.backfill_done = True
-                    log.append('La fuente no devolvió sorteos más viejos: '
-                               'backfill terminado.')
-                elif self.date_floor and mas_viejo and mas_viejo <= self.date_floor:
-                    self.backfill_done = True
-                    log.append(f'Alcanzado el piso configurado ({self.date_floor}): '
-                               'backfill terminado.')
+                    log.append('Los dos turnos llegaron al final: backfill terminado.')
                 else:
                     log.append('Volvé a apretar "Seguir backfill" para continuar.')
         except Exception as exc:

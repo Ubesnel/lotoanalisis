@@ -266,7 +266,8 @@
             <tree string="Importadores conectate">
                 <field name="sorteo_id"/>
                 <field name="auto_import" widget="boolean_toggle"/>
-                <field name="backfill_oldest"/>
+                <field name="backfill_oldest_afternoon"/>
+                <field name="backfill_oldest_evening"/>
                 <field name="backfill_done" widget="boolean_toggle"/>
                 <field name="last_run"/>
             </tree>
@@ -284,6 +285,9 @@
                     <button name="action_backfill" string="Seguir backfill"
                             type="object" icon="fa-history"
                             invisible="backfill_done"/>
+                    <button name="action_reset_backfill" string="Reiniciar backfill"
+                            type="object" icon="fa-refresh"
+                            confirm="Vuelve a recorrer desde hoy hacia atrás. No borra nada de lo ya importado: las salidas existentes se saltean. Sirve para rellenar huecos. ¿Continuar?"/>
                 </header>
                 <sheet>
                     <div class="alert alert-info" role="alert">
@@ -316,7 +320,8 @@
                             <field name="max_calls_per_run"/>
                         </group>
                         <group>
-                            <field name="backfill_oldest"/>
+                            <field name="backfill_oldest_afternoon"/>
+                            <field name="backfill_oldest_evening"/>
                             <field name="backfill_done"/>
                             <field name="page_load_timeout" string="Timeout (seg)"/>
                         </group>
