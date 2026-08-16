@@ -215,6 +215,16 @@
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
+    <record id="action_lottery_output_la_primera" model="ir.actions.act_window">
+        <field name="name">La Primera</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'la_primera')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'la_primera'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
     <record id="action_lottery_output_quiniela_uy_1" model="ir.actions.act_window">
         <field name="name">Quiniela UY Premio 1</field>
         <field name="type">ir.actions.act_window</field>

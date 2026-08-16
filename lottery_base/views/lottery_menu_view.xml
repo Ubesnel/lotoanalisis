@@ -42,6 +42,11 @@
               action="lottery_base.action_lottery_output_new_york" sequence="15"
               groups="lottery_base.group_lottery_user"/>
 
+    <menuitem id="menu_lottery_output_la_primera_item" name="La Primera"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_output_la_primera" sequence="18"
+              groups="lottery_base.group_lottery_user"/>
+
     <menuitem id="menu_lottery_output_quiniela_uy_1_item" name="Quiniela UY Premio 1"
               parent="lottery_base.menu_lottery_output"
               action="lottery_base.action_lottery_output_quiniela_uy_1" sequence="20"

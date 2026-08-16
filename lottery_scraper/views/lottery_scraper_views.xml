@@ -172,6 +172,77 @@
               action="action_lottery_scraper_new_york"
               sequence="15"/>
 
+    <record id="view_lottery_scraper_la_primera_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.la.primera.form</field>
+        <field name="model">lottery.scraper.la.primera</field>
+        <field name="arch" type="xml">
+            <form string="Importador La Primera">
+                <header>
+                    <button name="action_import_now"
+                            string="Importar ahora"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Fuente: sitio <strong>oficial</strong> de La Primera (laprimera.do).
+                        Quiniela de 3 números de 2 dígitos: Premio 1 es el fijo y los
+                        Premios 2 y 3 son los corridos. Sin centena ni bola extra.
+                        <br/>
+                        <strong>Histórico continuo desde el 11/05/2023</strong>. Tiene huecos
+                        reales (por ejemplo el 13/05/2023 está vacío): un día sin datos no
+                        significa que la fuente falle.
+                        <br/>
+                        La fuente entrega <strong>un día por petición</strong>, así que el
+                        backfill completo son ~1.200 consultas. Cada corrida procesa como
+                        mucho "Máx. días por corrida", avanza el cursor de abajo y avisa
+                        cuántos quedan: hay que apretar "Importar ahora" varias veces hasta
+                        que diga "Backfill terminado". Dejando las fechas vacías sigue solo
+                        desde donde quedó.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sorteo_id" options="{'no_create': True}"/>
+                            <field name="auto_import"/>
+                        </group>
+                        <group>
+                            <field name="max_days_per_run"/>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                            <field name="rd_offset"/>
+                        </group>
+                    </group>
+                    <group string="Importación manual por rango">
+                        <group>
+                            <field name="date_from" string="Fecha desde"/>
+                            <field name="date_to" string="Fecha hasta"/>
+                        </group>
+                        <group>
+                            <field name="backfill_until"/>
+                        </group>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                    </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper_la_primera" model="ir.actions.act_window">
+        <field name="name">Importador La Primera</field>
+        <field name="res_model">lottery.scraper.la.primera</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_la_primera"
+              name="La Primera · RD"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_la_primera"
+              sequence="18"/>
+
     <record id="view_lottery_scraper_quiniela_uy_form" model="ir.ui.view">
         <field name="name">lottery.scraper.quiniela.uy.form</field>
         <field name="model">lottery.scraper.quiniela.uy</field>

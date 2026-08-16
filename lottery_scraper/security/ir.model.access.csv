@@ -5,3 +5,5 @@ access_lottery_scraper_quiniela_uy_admin,lottery.scraper.quiniela.uy admin,model
 access_lottery_scraper_quiniela_uy_user,lottery.scraper.quiniela.uy user,model_lottery_scraper_quiniela_uy,base.group_user,1,0,0,0
 access_lottery_scraper_new_york_admin,lottery.scraper.new.york admin,model_lottery_scraper_new_york,base.group_system,1,1,1,1
 access_lottery_scraper_new_york_user,lottery.scraper.new.york user,model_lottery_scraper_new_york,base.group_user,1,0,0,0
+access_lottery_scraper_la_primera_admin,lottery.scraper.la.primera admin,model_lottery_scraper_la_primera,base.group_system,1,1,1,1
+access_lottery_scraper_la_primera_user,lottery.scraper.la.primera user,model_lottery_scraper_la_primera,base.group_user,1,0,0,0

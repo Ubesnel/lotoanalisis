@@ -54,6 +54,24 @@
         <field name="active" eval="False"/>
     </record>
 
+    <!--
+        La Primera (RD): la fuente oficial entrega un día por petición, así que
+        no se usan ventanas horarias — se piden los últimos días y se importa lo
+        que falte. Corre cada 30 minutos; si el día ya está completo no hace
+        ninguna petición. Arranca inactivo y además el importador tiene su
+        propio auto_import apagado: hay que habilitar los dos.
+    -->
+    <record id="cron_import_la_primera_results" model="ir.cron">
+        <field name="name">La Primera · Importar resultados diarios</field>
+        <field name="model_id" ref="model_lottery_scraper_la_primera"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
     <record id="cron_import_quiniela_uy_results" model="ir.cron">
         <field name="name">Quiniela UY · Importar resultados diarios</field>
         <field name="model_id" ref="model_lottery_scraper_quiniela_uy"/>

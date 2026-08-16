@@ -36,6 +36,21 @@
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">florida_pick2</field>
         </record>
+        <!-- La Primera (Rep. Dominicana): quiniela de 3 números de 2 dígitos.
+             Premio 1 = fijo (number_id), premios 2 y 3 = corridos. Sin centena
+             y sin bola extra. Turnos 12:00pm y 07:00pm (hora RD). -->
+        <record id="sorteo_la_primera" model="lottery.sorteo">
+            <field name="name">La Primera</field>
+            <field name="code">la_primera</field>
+            <field name="sequence">4</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <!-- En False: el histórico oficial arranca el 18/02/2023 y puede
+                 tener días incompletos; la continuidad rompería el backfill. -->
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">la_primera</field>
+        </record>
         <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
             <field name="name">Quiniela UY - Sorteo 1</field>
             <field name="code">quiniela_uy_1</field>
