@@ -230,10 +230,26 @@
         </field>
     </record>
 
+    <record id="view_lottery_scraper_la_primera_tree" model="ir.ui.view">
+        <field name="name">lottery.scraper.la.primera.tree</field>
+        <field name="model">lottery.scraper.la.primera</field>
+        <field name="arch" type="xml">
+            <tree string="Importador La Primera">
+                <field name="sorteo_id"/>
+                <field name="auto_import" widget="boolean_toggle"/>
+                <field name="backfill_until"/>
+                <field name="last_run"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- tree,form y no form solo: con "form" a secas la acción abre siempre un
+         registro NUEVO en blanco, y es fácil terminar creando importadores
+         duplicados que corren por su cuenta con cursores independientes. -->
     <record id="action_lottery_scraper_la_primera" model="ir.actions.act_window">
         <field name="name">Importador La Primera</field>
         <field name="res_model">lottery.scraper.la.primera</field>
-        <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
         <field name="target">current</field>
     </record>
 
