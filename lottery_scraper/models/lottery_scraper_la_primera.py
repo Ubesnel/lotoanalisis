@@ -106,6 +106,55 @@ class LotteryScraperLaPrimera(models.Model):
         self.ensure_one()
         self._run()
 
+    def action_purge_phantoms(self):
+        """Borra de la base las salidas fantasma que dejó esta fuente.
+
+        Misma regla que _descartar_fantasmas, pero aplicada a lo ya importado:
+        en una racha de valores idénticos consecutivos del mismo turno, la
+        ÚLTIMA fecha es la real y las anteriores son inventos de la fuente.
+        """
+        self.ensure_one()
+        Output = self.env['lottery.output']
+        registros = Output.search([('sorteo_id', '=', self.sorteo_id.id)],
+                                  order='date desc, id desc')
+
+        por_turno, a_borrar, detalle = {}, Output, []
+        for rec in registros:      # ya viene de más nuevo a más viejo
+            firma = (rec.turn_day, rec.number_id.id,
+                     rec.premio_2_id.id, rec.premio_3_id.id)
+            if por_turno.get(rec.turn_day) == firma:
+                a_borrar |= rec
+                detalle.append(
+                    f'[OK] {rec.date} '
+                    f'{"Tarde" if rec.turn_day == "afternoon" else "Noche"} – '
+                    f'{rec.number_id.name:02d} (repetía el sorteo siguiente)')
+            else:
+                por_turno[rec.turn_day] = firma
+
+        log = [f'{len(registros)} salida(s) revisada(s).']
+        if a_borrar:
+            log.append(f'{len(a_borrar)} fantasma(s) encontrada(s) y borrada(s):')
+            log += detalle
+            a_borrar.unlink()
+            self.sorteo_id._recompute_next_draw()
+        else:
+            log.append('No se encontraron salidas fantasma.')
+
+        self.write({
+            'last_run':    fields.Datetime.now(),
+            'last_result': build_result_html(self._summarize_log(log)),
+        })
+
+    def action_reset_backfill(self):
+        """Vuelve a recorrer desde el principio.
+
+        Hace falta porque el cursor avanza y los días que quedan detrás no se
+        vuelven a mirar: si otra fuente rellenó huecos después de que el cursor
+        pasó por ahí, sin reiniciar no se completarían nunca. No borra nada de
+        lo importado — el alta saltea las salidas que ya existen.
+        """
+        self.write({'backfill_until': False})
+
     # ── Núcleo ────────────────────────────────────────────────────
 
     def _today_rd(self):
@@ -233,7 +282,39 @@ class LotteryScraperLaPrimera(models.Model):
                 fallos.append(f'[ERROR] {dia} – no se pudo consultar: {exc}')
                 _logger.warning('Scraper La Primera: %s falló: %s', dia, exc)
         draws.sort(key=lambda d: (d['date'], 0 if d['turn'] == 'afternoon' else 1))
-        return draws, fallos
+        return self._descartar_fantasmas(draws), fallos
+
+    @staticmethod
+    def _descartar_fantasmas(draws):
+        """Saca los resultados inventados por la fuente.
+
+        Para un día SIN sorteo la API no devuelve vacío: devuelve los números
+        del PRÓXIMO sorteo, estampados con la fecha que se pidió (el campo
+        'fecha' del registro también repite la fecha pedida, así que no sirve
+        para detectarlo). Verificado contra dos fuentes independientes en
+        agosto y noviembre de 2023, julio de 2024 y octubre de 2025.
+
+        Como el fantasma siempre queda ANTES del real, en una racha de valores
+        idénticos consecutivos del mismo turno se conserva solo la última
+        fecha. Que una quiniela repita los tres números de un día al siguiente
+        tiene probabilidad ~1 en un millón, así que el riesgo de descartar un
+        resultado legítimo es despreciable frente al de meter datos falsos.
+        """
+        limpias, por_turno = [], {}
+        # De más nuevo a más viejo: el primero que se ve de cada racha es el real.
+        for draw in sorted(draws, key=lambda d: d['date'], reverse=True):
+            firma = (draw['numero'], draw.get('premio2'), draw.get('premio3'))
+            anterior = por_turno.get(draw['turn'])
+            if anterior == firma:
+                _logger.warning(
+                    'Scraper La Primera: descartado %s %s por repetir los números '
+                    'del sorteo siguiente (%s) — día sin sorteo en la fuente.',
+                    draw['date'], draw['turn'], firma)
+                continue
+            por_turno[draw['turn']] = firma
+            limpias.append(draw)
+        limpias.sort(key=lambda d: (d['date'], 0 if d['turn'] == 'afternoon' else 1))
+        return limpias
 
     def _fetch_day(self, session, nonce, dia):
         resp = session.post(
@@ -333,6 +414,25 @@ class LotteryScraperLaPrimera(models.Model):
             if not number_id:
                 log_lines.append(
                     f'[ERROR] {label} – número {draw["numero"]:02d} no existe en el catálogo')
+                continue
+
+            # Segundo cerrojo contra los fantasmas: el filtro del lote solo ve
+            # los días que se pidieron, y el importador pide únicamente los
+            # incompletos. Si el sorteo real ya está en la base (y por eso no
+            # se pidió), el fantasma pasaba igual. Acá se compara contra el
+            # PRÓXIMO sorteo ya registrado de ese turno.
+            siguiente = Output.search([
+                ('sorteo_id', '=', self.sorteo_id.id),
+                ('turn_day', '=', draw['turn']),
+                ('date', '>', draw['date']),
+            ], order='date asc', limit=1)
+            if siguiente and (
+                    siguiente.number_id.id == number_id
+                    and siguiente.premio_2_id.id == (by_name.get(draw.get('premio2')) or False)
+                    and siguiente.premio_3_id.id == (by_name.get(draw.get('premio3')) or False)):
+                log_lines.append(
+                    f'[OMITIDO] {label} – repite el sorteo del {siguiente.date} '
+                    f'(día sin sorteo en la fuente)')
                 continue
 
             vals = {
