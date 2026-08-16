@@ -40,6 +40,13 @@ class LotterySorteo(models.Model):
 
     uses_fireball = fields.Boolean(string='Usa Bola Extra', default=False,
                                    help="Indica si este sorteo registra número de Bola Extra.")
+    country_id = fields.Many2one(
+        'res.country', string='País',
+        help="País de la lotería. La app agrupa los sorteos por país en el "
+             "selector. Se envía solo el código ISO: el nombre y la bandera "
+             "los resuelve la app, que ya es bilingüe.")
+    country_code = fields.Char(related='country_id.code', string='Código ISO', store=False)
+
     uses_hundreds = fields.Boolean(string='Usa Centena', default=True,
                                    help="Indica si este sorteo registra Centena. Desactivalo para sorteos "
                                         "cuyo número es de 2 dígitos (00-99) y no tienen centena, como "

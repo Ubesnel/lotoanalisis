@@ -14,6 +14,7 @@ Configuraciones iniciales
         'security/ir.model.access.csv',
         'security/lottery_rules.xml',
         'data/lottery_sorteo_data.xml',
+        'data/lottery_sorteo_country_data.xml',
         'data/lottery_number_data.xml',
         'data/lottery_output_sorteo_filters_data.xml',
         'data/lottery_output_1988_data.xml',
