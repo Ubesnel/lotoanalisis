@@ -72,6 +72,23 @@
         <field name="active" eval="False"/>
     </record>
 
+    <!--
+        Quinielas dominicanas vía conectate (La Suerte, King Lottery y el
+        respaldo de La Primera). Una petición por turno trae los últimos 10
+        sorteos, así que no hacen falta ventanas horarias. Arranca inactivo y
+        cada importador tiene además su propio auto_import apagado.
+    -->
+    <record id="cron_import_conectate_results" model="ir.cron">
+        <field name="name">Quinielas RD (conectate) · Importar resultados</field>
+        <field name="model_id" ref="model_lottery_scraper_conectate"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
     <record id="cron_import_quiniela_uy_results" model="ir.cron">
         <field name="name">Quiniela UY · Importar resultados diarios</field>
         <field name="model_id" ref="model_lottery_scraper_quiniela_uy"/>

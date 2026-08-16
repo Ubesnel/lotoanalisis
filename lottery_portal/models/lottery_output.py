@@ -102,17 +102,27 @@ class LotteryOutput(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        # skip_prediction_validation: lo usan los backfills históricos. La
+        # validación compara el número contra el ranking_snapshot VIGENTE, así
+        # que evaluar una salida de 2020 la marcaría como acierto o fallo de una
+        # predicción de hoy: banderas sin sentido que ensucian el análisis de
+        # aciertos del backend. Y _check_predictions sería una búsqueda por
+        # registro que nunca va a encontrar nada para fechas viejas.
+        historico = self.env.context.get('skip_prediction_validation')
+
         # Validar contra el ranking PRE-CALCULADO (lectura instantánea de JSON)
         # y persistirlo en el mismo INSERT: evita el write() posterior con su
         # ciclo completo de overrides.
-        vals_list = [dict(vals, **self._snapshot_validation(vals)) for vals in vals_list]
+        if not historico:
+            vals_list = [dict(vals, **self._snapshot_validation(vals)) for vals in vals_list]
 
         # El cron disparado por lottery_delays_number se encarga de:
         #   - recomputar stats incrementales
         #   - recalcular ranking_snapshot para el próximo sorteo
         #   - limpiar cachés
         records = super().create(vals_list)
-        records._check_predictions()
+        if not historico:
+            records._check_predictions()
         return records
 
     def _check_predictions(self):
@@ -170,6 +180,23 @@ class LotteryOutput(models.Model):
 
     def _after_change(self):
         self.env['lottery.stats.service'].clear_caches()
+
+    def action_clear_prediction_validation(self):
+        """Borra las banderas de validación de las salidas seleccionadas.
+
+        Sirve para limpiar lo que dejaron los backfills históricos antes de
+        que existiera skip_prediction_validation: salidas viejas evaluadas
+        contra el ranking_snapshot del día de la importación, que figuran como
+        aciertos o fallos de predicciones que nunca existieron.
+        """
+        if not self:
+            return
+        vacios = dict.fromkeys(_VALIDATION_FIELDS, False)
+        vacios['validation_date'] = False
+        # El write de este modelo ya evita _after_change cuando solo se tocan
+        # campos de validación, así que no dispara recálculos innecesarios.
+        self.write(vacios)
+        _logger.info('Validaciones borradas en %d salidas.', len(self))
 
     def refresh_materialized_views(self):
         for view in self._MATERIALIZED_VIEWS:

@@ -366,7 +366,10 @@ class LotteryScraperLaPrimera(models.Model):
         if vals_list:
             # skip_next_draw_recompute: el próximo sorteo se recalcula una sola
             # vez al final; por registro serían miles de writes pisándose.
-            Output.with_context(skip_next_draw_recompute=True).create(vals_list)
+            # skip_prediction_validation: son salidas históricas, evaluarlas
+            # contra la predicción vigente daría aciertos inventados.
+            Output.with_context(skip_next_draw_recompute=True,
+                                skip_prediction_validation=True).create(vals_list)
             self.sorteo_id._recompute_next_draw()
             _logger.info('Scraper La Primera: %d salidas creadas.', len(vals_list))
 

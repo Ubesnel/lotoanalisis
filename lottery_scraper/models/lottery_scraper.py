@@ -990,7 +990,8 @@ class LotteryScraper(models.Model):
 
         creados = 0
         if vals_list:
-            Out = Output.with_context(skip_next_draw_recompute=True)
+            Out = Output.with_context(skip_next_draw_recompute=True,
+                                      skip_prediction_validation=True)
             for i in range(0, len(vals_list), 500):
                 Out.create(vals_list[i:i + 500])
                 creados += len(vals_list[i:i + 500])
