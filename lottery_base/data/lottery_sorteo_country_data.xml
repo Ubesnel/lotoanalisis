@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        País de cada sorteo, en un archivo SIN noupdate a propósito.
+
+        lottery_sorteo_data.xml es noupdate="1", así que agregarle el país a
+        los sorteos que ya existen no tendría efecto. Acá cada registro trae
+        SOLO country_id: al actualizar el módulo se reescribe ese campo y
+        ningún otro, así que es idempotente y no pisa nada que se haya
+        configurado a mano (calendarios, show_in_app, etc.).
+    -->
+    <record id="sorteo_florida" model="lottery.sorteo">
+        <field name="country_id" ref="base.us"/>
+    </record>
+    <record id="sorteo_florida_pick2" model="lottery.sorteo">
+        <field name="country_id" ref="base.us"/>
+    </record>
+    <record id="sorteo_new_york" model="lottery.sorteo">
+        <field name="country_id" ref="base.us"/>
+    </record>
+
+    <record id="sorteo_la_primera" model="lottery.sorteo">
+        <field name="country_id" ref="base.do"/>
+    </record>
+    <record id="sorteo_la_suerte" model="lottery.sorteo">
+        <field name="country_id" ref="base.do"/>
+    </record>
+
+    <!-- King Lottery es de Sint Maarten (parte neerlandesa), no dominicana. -->
+    <record id="sorteo_king_lottery" model="lottery.sorteo">
+        <field name="country_id" ref="base.sx"/>
+    </record>
+
+    <record id="sorteo_quiniela_uy_1"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_2"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_3"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_4"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_5"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_6"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_7"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_8"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_9"  model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_10" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_11" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_12" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_13" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_14" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_15" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_16" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_17" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_18" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_19" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+    <record id="sorteo_quiniela_uy_20" model="lottery.sorteo"><field name="country_id" ref="base.uy"/></record>
+</odoo>

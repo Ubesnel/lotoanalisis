@@ -93,6 +93,9 @@ class LotteryAppApi(http.Controller):
                 'code': s.code,
                 'uses_fireball': s.uses_fireball,
                 'uses_hundreds': s.uses_hundreds,
+                # Solo el ISO: el nombre del país y la bandera los resuelve la
+                # app, que ya es bilingüe y arma el emoji desde el código.
+                'country_code': s.country_id.code or None,
             } for s in sorteos],
             'default_id': sorteos[0].id if sorteos else None,
         })
