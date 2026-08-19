@@ -26,6 +26,11 @@ class ConsultaCombinaciones(models.TransientModel):
     window = fields.Integer(
         string='Ventana de salidas', default=15, required=True,
         help='Cantidad de salidas hacia atrás a considerar.')
+    top_n = fields.Integer(
+        string='Candidatos a mostrar', default=25, required=True,
+        help='Cuántos números devuelve el ranking (1 a 50, igual que la app '
+             'móvil). Los grupos de color se reparten proporcionalmente: '
+             '~40% violeta, ~32% naranja, el resto gris.')
     result_html = fields.Html(string='Resultado', readonly=True, sanitize=False)
 
     def _get_window_outputs(self):
@@ -60,6 +65,10 @@ class ConsultaCombinaciones(models.TransientModel):
     @api.model
     def _top_candidatos(self, completos, top=25):
         """Ranking de números 00-99 por producto de frecuencia de dígitos."""
+        try:
+            top = max(1, min(int(top), 50))
+        except (TypeError, ValueError):
+            top = 25
         digs = Counter(d for n in completos for d in n)
         scores = {
             f'{dd}{uu}': digs.get(dd, 0) * digs.get(uu, 0)
@@ -78,7 +87,7 @@ class ConsultaCombinaciones(models.TransientModel):
             return self._reopen()
 
         completos = [n for _, _, n in outputs]
-        top, digs = self._top_candidatos(completos)
+        top, digs = self._top_candidatos(completos, top=self.top_n)
         mismos_fecha = self._get_same_date_numbers()
 
         turn_lbl = {'afternoon': 'Tarde', 'evening': 'Noche'}
@@ -91,8 +100,16 @@ class ConsultaCombinaciones(models.TransientModel):
             f'<span class="badge bg-secondary me-1">{d} ×{c}</span>'
             for d, c in digs.most_common())
 
+        # Grupos de color proporcionales al total, igual que el endpoint
+        # de la app (get_combinaciones): con 25 dan 10/8/7, los mismos
+        # cortes que tenía cableados esta vista.
+        n_total = len(top)
+        hot_cut = round(n_total * 0.40)
+        warm_cut = round(n_total * 0.72)
+
         def bola(i, n, s):
-            color = '#7B2FF7' if i < 10 else '#FF8A00' if i < 18 else '#6c757d'
+            color = ('#7B2FF7' if i < hot_cut
+                     else '#FF8A00' if i < warm_cut else '#6c757d')
             directo = n in mismos_fecha
             virado = n[::-1] in mismos_fecha
             # anillo dorado = salió esa fecha; punteado = su virado salió
@@ -134,11 +151,13 @@ class ConsultaCombinaciones(models.TransientModel):
 
         self.result_html = f"""
             <div>
-                <h5>TOP 25 candidatos</h5>
+                <h5>TOP {n_total} candidatos</h5>
                 <div class="mb-2">{bolas}</div>
                 <p class="text-muted small mb-3">
                     Para copiar: <code>{numeros_txt}</code><br/>
-                    Violeta: puestos 1-10 · Naranja: 11-18 · Gris: 19-25.<br/>
+                    Violeta: puestos 1-{hot_cut} ·
+                    Naranja: {hot_cut + 1}-{warm_cut} ·
+                    Gris: {warm_cut + 1}-{n_total}.<br/>
                     Anillo dorado ●: salió un {dd_mm} de años anteriores ·
                     Punteado ◐: su virado salió un {dd_mm}.
                 </p>
