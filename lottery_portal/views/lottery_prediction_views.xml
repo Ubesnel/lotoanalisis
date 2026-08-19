@@ -29,6 +29,13 @@
         <field name="model">lottery.prediction</field>
         <field name="arch" type="xml">
             <form string="Predicción">
+                <header>
+                    <button name="action_completar_numeros" type="object"
+                            string="Completar números" class="btn-primary"
+                            invisible="not number_ids"
+                            confirm="Se van a reemplazar las listas de 20, 10 y 5 con el resultado del cálculo. ¿Seguimos?"
+                            help="Ordena los números a predecir por combinaciones, acompañantes de las tablas LotoAnálisis (general y del turno) y grupos y pintas más atrasados, y con ese orden llena las listas de 20, 10 y 5."/>
+                </header>
                 <sheet>
                     <group>
                         <group>
@@ -36,6 +43,7 @@
                             <field name="turn_day"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                             <field name="temperature"/>
+                            <field name="combinaciones_window"/>
                         </group>
                         <group>
                             <field name="published"/>
@@ -87,6 +95,10 @@
                                        widget="many2many_tags"
                                        options="{'no_open': True, 'no_create': True}"/>
                             </group>
+                        </page>
+                        <page string="Puntajes" name="puntajes"
+                              invisible="not score_html">
+                            <field name="score_html" nolabel="1" colspan="2"/>
                         </page>
                     </notebook>
                 </sheet>

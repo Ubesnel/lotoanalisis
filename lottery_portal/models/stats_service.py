@@ -479,6 +479,48 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
+    def get_combinaciones_scores(self, sorteo_id, target_date, window=15):
+        """Puntaje de combinación de los 100 números 00-99, sin recortar.
+
+        Núcleo compartido: `get_combinaciones` lo usa para devolver el TOP N
+        al wizard y a la app, y el botón "Completar números" de
+        lottery.prediction lo usa para ordenar todo el conjunto de candidatos
+        (que puede pasar el tope de 50 del TOP).
+
+        Toma las últimas `window` salidas hasta `target_date` (ambos turnos),
+        cuenta la frecuencia de cada dígito 0-9 sobre el número completo
+        (centena/decena/unidad) y puntúa cada combinación 00-99 como
+        freq(decena) * freq(unidad).
+
+        Devuelve {'outputs': [(fecha, turno, completo), ...] de más reciente
+        a más viejo, 'digits': Counter de dígitos, 'scores': {'00': n, ...}}.
+        Sin ormcache a propósito: la ventana cambia con cada salida nueva."""
+        try:
+            window = max(1, min(int(window), 200))
+        except (TypeError, ValueError):
+            window = 15
+
+        # Últimas `window` salidas hasta la fecha, más reciente primero.
+        self.env.cr.execute("""
+            SELECT date, turn_day, complete_number
+            FROM lottery_output
+            WHERE sorteo_id = %s AND date <= %s AND complete_number IS NOT NULL
+            ORDER BY date DESC,
+                     CASE turn_day WHEN 'evening' THEN 1 ELSE 0 END DESC
+            LIMIT %s
+        """, (sorteo_id, target_date, window))
+        outputs = self.env.cr.fetchall()
+        if not outputs:
+            return {'outputs': [], 'digits': Counter(), 'scores': {}}
+
+        digs = Counter(d for _, _, n in outputs for d in n)
+        scores = {
+            f'{dd}{uu}': digs.get(dd, 0) * digs.get(uu, 0)
+            for dd in '0123456789' for uu in '0123456789'
+        }
+        return {'outputs': outputs, 'digits': digs, 'scores': scores}
+
+    @api.model
     def get_combinaciones(self, sorteo_id, target_date, window=15, top=25):
         """N números candidatos por combinación de dígitos (para la app móvil).
 
@@ -494,35 +536,19 @@ class LotteryStatsService(models.Model):
         NO se cachea a propósito: la ventana cambia con cada salida nueva del
         día (el proxy_cache de 20s de nginx absorbe la repetición)."""
         try:
-            window = max(1, min(int(window), 200))
-        except (TypeError, ValueError):
-            window = 15
-        try:
             top = max(1, min(int(top), 50))
         except (TypeError, ValueError):
             top = 25
 
-        # Últimas `window` salidas hasta la fecha, más reciente primero.
-        self.env.cr.execute("""
-            SELECT date, turn_day, complete_number
-            FROM lottery_output
-            WHERE sorteo_id = %s AND date <= %s AND complete_number IS NOT NULL
-            ORDER BY date DESC,
-                     CASE turn_day WHEN 'evening' THEN 1 ELSE 0 END DESC
-            LIMIT %s
-        """, (sorteo_id, target_date, window))
-        outputs = self.env.cr.fetchall()
+        base = self.get_combinaciones_scores(sorteo_id, target_date, window)
+        outputs = base['outputs']
         if not outputs:
             return {'window_used': 0, 'top': [],
                     'digits_heat': [], 'window_outputs': []}
 
-        completos = [n for _, _, n in outputs]
-        digs = Counter(d for n in completos for d in n)
-        scores = {
-            f'{dd}{uu}': digs.get(dd, 0) * digs.get(uu, 0)
-            for dd in '0123456789' for uu in '0123456789'
-        }
-        orden = sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))[:top]
+        digs = base['digits']
+        orden = sorted(base['scores'].items(),
+                       key=lambda kv: (-kv[1], kv[0]))[:top]
 
         # Números (2 cifras) salidos el mismo dd/mm en años anteriores.
         self.env.cr.execute("""
