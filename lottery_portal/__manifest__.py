@@ -39,6 +39,8 @@
         "views/consulta_combinaciones_views.xml",
         "views/patron_atraso_views.xml",
         "views/lottery_tabla_acompanantes_views.xml",
+        "views/quiniela_uy_resultados_views.xml",
+        "views/quiniela_uy_tombola_views.xml",
         "views/lottery_curiosity_views.xml",
         "views/lottery_sorteo_views.xml",
     ],

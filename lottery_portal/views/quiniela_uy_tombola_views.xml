@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Tree ──────────────────────────────────────────────────── -->
+    <record id="view_quiniela_uy_tombola_tree" model="ir.ui.view">
+        <field name="name">lottery.prediction.tombola.uy.tree</field>
+        <field name="model">lottery.prediction.tombola.uy</field>
+        <field name="arch" type="xml">
+            <tree string="Tómbola Quiniela Uruguay">
+                <field name="date"/>
+                <field name="turn_day"/>
+                <field name="temperature"/>
+                <field name="combinaciones_window" optional="hide"/>
+                <field name="published" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form ──────────────────────────────────────────────────── -->
+    <record id="view_quiniela_uy_tombola_form" model="ir.ui.view">
+        <field name="name">lottery.prediction.tombola.uy.form</field>
+        <field name="model">lottery.prediction.tombola.uy</field>
+        <field name="arch" type="xml">
+            <form string="Tómbola Quiniela Uruguay">
+                <header>
+                    <button name="action_evaluar" type="object"
+                            string="Evaluar los 20 premios" class="btn-primary"
+                            confirm="Se van a puntear los 20 premios con la misma lógica que la predicción individual. La primera corrida tarda un rato porque arma las tablas LotoAnálisis que falten. ¿Seguimos?"
+                            help="Corre para cada uno de los 20 sorteos de la quiniela el mismo cálculo que el botón Completar números y se queda con los 5 mejores."/>
+                    <button name="action_generar_combinaciones" type="object"
+                            string="Generar combinaciones Tómbola"
+                            class="btn-secondary"
+                            help="Arma 10 combinaciones de 7 números al azar, dando más chance a los que se repiten en varios premios y a los que comparten decena o unidad con las últimas 6 salidas de su premio. Cada vez que se aprieta sale una tanda distinta."/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="turn_day"/>
+                        </group>
+                        <group>
+                            <field name="temperature"/>
+                            <field name="combinaciones_window"/>
+                            <field name="published"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Los 5 de cada premio" name="grupos">
+                            <field name="groups_html" nolabel="1"
+                                   readonly="1"/>
+                        </page>
+                        <page string="5 probables · primeros 5"
+                              name="probables_primeros">
+                            <field name="probables_primeros_html" nolabel="1"
+                                   readonly="1"/>
+                        </page>
+                        <page string="2 probables · 20 premios"
+                              name="probables_veinte">
+                            <field name="probables_veinte_html" nolabel="1"
+                                   readonly="1"/>
+                        </page>
+                        <page string="Combinaciones Tómbola" name="combos">
+                            <field name="combos_html" nolabel="1"
+                                   readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_quiniela_uy_tombola" model="ir.actions.act_window">
+        <field name="name">Tómbola</field>
+        <field name="res_model">lottery.prediction.tombola.uy</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_quiniela_uy_tombola" name="Tómbola"
+              parent="menu_quiniela_uy_root"
+              action="action_quiniela_uy_tombola" sequence="20"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>

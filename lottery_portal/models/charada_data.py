@@ -127,6 +127,18 @@ DECADE_COLORS = [
 ]
 
 
+def decade_gradient(number):
+    """(claro, oscuro) del degradé de la bolita de un número 00-99.
+
+    Vive acá, al lado de DECADE_COLORS, porque la usan la Tabla LotoAnálisis
+    y el informe de Resultados de la Quiniela: una sola definición del color
+    de la bola para que las dos piezas se vean iguales.
+    """
+    color = DECADE_COLORS[number // 10]
+    return ('rgb(%d,%d,%d)' % tuple(min(255, v + 35) for v in color),
+            'rgb(%d,%d,%d)' % tuple(max(0, v - 35) for v in color))
+
+
 def charada_terms(number):
     """Set de términos (nombre + alias, normalizados) de un número 00-99."""
     entry = CHARADA.get(number)

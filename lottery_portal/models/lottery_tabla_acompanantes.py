@@ -10,7 +10,7 @@ import json
 from odoo import fields, models, api
 from odoo.exceptions import UserError
 
-from .charada_data import DECADE_COLORS
+from .charada_data import decade_gradient
 from .tabla_acompanantes_grid import build_grid
 from .tabla_acompanantes_png import render_png
 
@@ -145,9 +145,7 @@ class LotteryTablaAcompanantes(models.TransientModel):
         """Celda <td> de una bola numerada, mismo estilo (degradé + brillo)
         que usa la tabla completa — para no duplicar el diseño entre la
         grilla y la consulta por número."""
-        color = DECADE_COLORS[n // 10]
-        light = 'rgb(%d,%d,%d)' % tuple(min(255, v + 35) for v in color)
-        dark = 'rgb(%d,%d,%d)' % tuple(max(0, v - 35) for v in color)
+        light, dark = decade_gradient(n)
         return f'''
             <td style="width:{cell}px;height:{cell}px;padding:2px;">
                 <div style="position:relative;width:100%;height:100%;

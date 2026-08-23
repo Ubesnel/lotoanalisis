@@ -6,6 +6,16 @@ def _default_sorteo(self):
     return self.env.ref('lottery_base.sorteo_florida', raise_if_not_found=False)
 
 
+def _default_hour(self):
+    """Hora local actual como float, que es lo que espera el widget
+    float_time: 13.5 se muestra como 13:30.
+
+    Se pasa por context_timestamp porque fields.Datetime.now() devuelve UTC;
+    sin eso, a las 21:00 en Uruguay se propondría 00:00."""
+    ahora = fields.Datetime.context_timestamp(self, fields.Datetime.now())
+    return ahora.hour + ahora.minute / 60.0
+
+
 class LotteryCuriosity(models.Model):
     _name = 'lottery.curiosity'
     _description = 'Curiosidad (LotoAnálisis informa)'
@@ -19,6 +29,12 @@ class LotteryCuriosity(models.Model):
         string='Fecha publicación', required=True, index=True,
         default=lambda self: fields.Date.today(),
         help='Fecha de la curiosidad; la app la muestra como fecha de la noticia.')
+    hour = fields.Float(
+        string='Hora publicación', default=_default_hour,
+        help='Hora de la noticia, en hora local. Se edita con el widget de '
+             'horas (13.5 = 13:30). Todavía NO viaja en la API: el endpoint '
+             '/api/lottery/v1/curiosidades sigue mandando solo la fecha, y la '
+             'hora se agrega cuando salga la próxima versión de la app.')
     text = fields.Text(
         string='Noticia', required=True,
         help='Texto de la curiosidad/información que se muestra en la app.')
