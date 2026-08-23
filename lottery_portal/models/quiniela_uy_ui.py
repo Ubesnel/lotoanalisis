@@ -13,8 +13,11 @@ Las bolas siguen la misma receta que el widget `Ball` de la app
 reflejo especular arriba a la izquierda.
 """
 
-# En la quiniela uruguaya los turnos no se llaman Tarde/Noche.
-TURN_LABEL = {'afternoon': 'Vespertina', 'evening': 'Nocturna'}
+# En la quiniela uruguaya los turnos no se llaman Tarde/Noche. 'general' no
+# es un turno: lo usan los informes que mezclan los dos (ternas), y está acá
+# para que el cabezal y las bolas no necesiten un caso aparte.
+TURN_LABEL = {'general': 'General',
+              'afternoon': 'Vespertina', 'evening': 'Nocturna'}
 
 DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado',
         'Domingo']
@@ -34,6 +37,9 @@ DORADO = '#FFC93C'
 # Los mismos de lib/theme.dart, para que una bola de Vespertina se vea igual
 # acá que en Últimas salidas de la app.
 COLOR_TURNO = {
+    # Violeta para el General: no es ninguno de los dos turnos y no se puede
+    # confundir con ellos ni con el verde del cabezal.
+    'general': (0x5B, 0x3E, 0x96),
     'afternoon': (0xF5, 0x9E, 0x0B),   # AppColors.tarde
     'evening': (0x23, 0x39, 0x5B),     # AppColors.noche
 }

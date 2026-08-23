@@ -18,5 +18,6 @@ from . import lottery_tabla_acompanantes_cache
 from . import lottery_tabla_acompanantes
 from . import quiniela_uy_resultados
 from . import quiniela_uy_tombola
+from . import quiniela_uy_ternas
 from . import lottery_sorteo
 from . import website_menu

@@ -41,6 +41,7 @@
         "views/lottery_tabla_acompanantes_views.xml",
         "views/quiniela_uy_resultados_views.xml",
         "views/quiniela_uy_tombola_views.xml",
+        "views/quiniela_uy_ternas_views.xml",
         "views/lottery_curiosity_views.xml",
         "views/lottery_sorteo_views.xml",
     ],
