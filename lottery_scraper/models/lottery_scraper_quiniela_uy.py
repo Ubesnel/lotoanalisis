@@ -210,7 +210,21 @@ class LotteryScraperQuinielaUy(models.Model):
         return log_lines
 
     def _import_turn(self, draw_date, turn_day, numeros):
+        # Una salida que no es la del día NO se puede validar contra el
+        # ranking_snapshot del sorteo, porque ese snapshot es siempre el del
+        # PRÓXIMO sorteo: sellarla con las banderas de hoy deja aciertos y
+        # fallos que no significan nada y ensucian la vista de Validación.
+        # Los importadores de Florida, La Primera y Conectate ya usan este
+        # contexto para sus backfills; acá hace falta cada vez que se rellena
+        # un hueco con el rango manual (date_from / date_to) o cuando el cron
+        # se pone al día con una fecha vieja.
+        #
+        # Los atrasos y los totales no dependen de esto: se recalculan enteros
+        # desde lottery_output ordenando por fecha, así que rellenar huecos
+        # viejos los deja bien igual.
         Output = self.env['lottery.output']
+        if draw_date != date.today():
+            Output = Output.with_context(skip_prediction_validation=True)
         LottoNum = self.env['lottery.number']
         sorteo_by_premio = self._sorteo_by_premio()
         log_lines = []
