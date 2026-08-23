@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <tree decoration-muted="not published">
                 <field name="date"/>
+                <field name="hour" widget="float_time" optional="show"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="text"/>
                 <field name="published" widget="boolean_toggle"/>
@@ -25,6 +26,7 @@
                     <group>
                         <group>
                             <field name="date"/>
+                            <field name="hour" widget="float_time"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                         </group>
                         <group>
