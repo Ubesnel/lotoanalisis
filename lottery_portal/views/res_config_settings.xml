@@ -48,6 +48,12 @@
                             <field name="tabla_acompanantes_fecha_referencia"/>
                         </setting>
                     </block>
+                    <block title="Tómbola" id="lottery_tombola_stats_settings">
+                        <setting string="Estadísticas desde"
+                                 help="Los sorteos de Tómbola anteriores a esta fecha se pueden seguir consultando, pero no se usan para calcular atrasos ni frecuencias (los primeros meses publicados, ago-dic 2006, tienen varios sorteos con un número repetido en vez de uno distinto). Vacío = usa todo el historial.">
+                            <field name="tombola_stats_start_date"/>
+                        </setting>
+                    </block>
                     <block title="Estado de las estadísticas" id="lottery_stats_status_settings">
                         <setting string="Estado de las estadísticas"
                                  help="Las vistas de atrasos/tops se refrescan en segundo plano (cron cada 1 minuto) cuando se registran o editan salidas.">

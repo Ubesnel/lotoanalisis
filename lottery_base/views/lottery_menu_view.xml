@@ -62,6 +62,11 @@
               action="lottery_base.action_lottery_output_quiniela_uy_1" sequence="20"
               groups="lottery_base.group_lottery_user"/>
 
+    <menuitem id="menu_lottery_tombola_output_item" name="Tómbola"
+              parent="lottery_base.menu_lottery_output"
+              action="lottery_base.action_lottery_tombola_output" sequence="25"
+              groups="lottery_base.group_lottery_user"/>
+
     <!-- 5) CONFIGURACIÓN -->
     <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
               parent="lottery_base.home_lottery"
