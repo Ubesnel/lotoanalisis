@@ -5,6 +5,8 @@ from odoo.addons.lottery_delays_number.models.lottery_output import (
     MV_DIRTY_PARAM, MV_LAST_REFRESH_PARAM,
 )
 
+_TOMBOLA_STATS_START_PARAM = 'lottery_portal.tombola_stats_start_date'
+
 
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
@@ -28,6 +30,14 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.tabla_acompanantes_fecha_referencia', readonly=False,
         string='Fecha de referencia')
 
+    tombola_stats_start_date = fields.Date(
+        string='Tómbola: estadísticas desde',
+        help='Los sorteos de Tómbola anteriores a esta fecha se pueden '
+             'seguir consultando, pero no se usan para calcular atrasos ni '
+             'frecuencias (los primeros meses publicados, ago-dic 2006, '
+             'tienen varios sorteos con un número repetido en vez de uno '
+             'distinto). Vacío = usa todo el historial.')
+
     # ── Estado de las estadísticas (vistas materializadas) ────────────────
     # Campos simples (no computados): se poblan en get_values() en cada apertura
     # de Ajustes leyendo directo de la BD, evitando el ormcache por proceso de
@@ -46,7 +56,16 @@ class ResConfigSettings(models.TransientModel):
             lottery_stats_up_to_date=params.get(MV_DIRTY_PARAM) != '1',
             lottery_stats_last_refresh=params.get(MV_LAST_REFRESH_PARAM) or False,
         )
+        val = self.env['ir.config_parameter'].sudo().get_param(_TOMBOLA_STATS_START_PARAM)
+        res['tombola_stats_start_date'] = fields.Date.from_string(val) if val else False
         return res
+
+    def set_values(self):
+        super().set_values()
+        self.env['ir.config_parameter'].sudo().set_param(
+            _TOMBOLA_STATS_START_PARAM,
+            self.tombola_stats_start_date.isoformat() if self.tombola_stats_start_date else '',
+        )
 
     def action_force_refresh_materialized_views(self):
         self.env['lottery.output'].action_force_refresh_materialized_views()

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_tombola_output_tree" model="ir.ui.view">
+        <field name="name">view.lottery.tombola.output.tree</field>
+        <field name="model">lottery.tombola.output</field>
+        <field name="arch" type="xml">
+            <tree string="Salidas Tómbola" decoration-warning="turn_day == 'afternoon'"
+                  decoration-success="turn_day == 'evening'">
+                <field name="date"/>
+                <field name="week_day"/>
+                <field name="turn_day"/>
+                <field name="number_id"/>
+                <field name="month" optional="hide"/>
+                <field name="year" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_tombola_output_form" model="ir.ui.view">
+        <field name="name">lottery.tombola.output.form</field>
+        <field name="model">lottery.tombola.output</field>
+        <field name="arch" type="xml">
+            <form string="Salida Tómbola">
+                <sheet>
+                    <group>
+                        <field name="date"/>
+                        <field name="week_day"/>
+                        <field name="turn_day"/>
+                        <field name="number_id" options="{'no_open': True, 'no_create': True}"/>
+                        <field name="month" invisible="1"/>
+                        <field name="year" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lottery_tombola_output_search" model="ir.ui.view">
+        <field name="name">lottery.tombola.output.search</field>
+        <field name="model">lottery.tombola.output</field>
+        <field name="arch" type="xml">
+            <search string="Salidas Tómbola">
+                <field name="number_id"/>
+                <field name="date"/>
+                <filter string="Tarde" name="tombola_output_afternoon"
+                        domain="[('turn_day', '=', 'afternoon')]"/>
+                <filter string="Noche" name="tombola_output_evening"
+                        domain="[('turn_day', '=', 'evening')]"/>
+                <separator/>
+                <filter string="Mes Actual"
+                        name="current_month"
+                        domain="[
+                            ('date', '&gt;=', context_today().strftime('%%Y-%%m-01')),
+                            ('date', '&lt;', (context_today() + relativedelta(months=1)).strftime('%%Y-%%m-01'))
+                        ]"/>
+                <filter string="Mes Anterior"
+                        name="previous_month"
+                        domain="[
+                            ('date', '&gt;=', (context_today() - relativedelta(months=1)).strftime('%%Y-%%m-01')),
+                            ('date', '&lt;', context_today().strftime('%%Y-%%m-01'))
+                        ]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Fecha" name="group_date" domain="[]" context="{'group_by': 'date'}"/>
+                    <filter string="Número" name="group_number_id" domain="[]" context="{'group_by': 'number_id'}"/>
+                    <filter string="Año" name="group_year" domain="[]" context="{'group_by': 'year'}"/>
+                    <filter string="Mes" name="group_month" domain="[]" context="{'group_by': 'month'}"/>
+                    <filter string="Turno" name="group_turn_day" domain="[]" context="{'group_by': 'turn_day'}"/>
+                    <filter string="Día de la semana" name="group_week_day" domain="[]"
+                            context="{'group_by': 'week_day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lottery_tombola_output" model="ir.actions.act_window">
+        <field name="name">Tómbola</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.tombola.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_current_month': 1, 'group_by': ['date', 'turn_day']}</field>
+    </record>
+</odoo>

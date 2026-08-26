@@ -126,7 +126,13 @@ class LotteryScraperQuinielaUy(models.Model):
         precede en el HTML (cabezal_quinielas_vespertina.png / _nocturno.png),
         en vez de inferir el turno por la cantidad total de números encontrados.
         Esto cubre correctamente los 3 casos reales: solo vespertina (días con
-        sorteo nocturno suspendido), solo nocturno (ej. sábado) o ambos."""
+        sorteo nocturno suspendido), solo nocturno (ej. sábado) o ambos.
+
+        Dentro de cada turno, la página trae además los 20 números de la
+        Tómbola (dos dígitos, ya ordenados de menor a mayor) justo después de
+        los 20 de la Quiniela, bajo el mismo cabezal de turno. Se identifican
+        por el largo del texto (2 dígitos vs. 3), así que no hace falta un
+        marcador de imagen aparte ni tocar la detección de turno."""
         try:
             import requests
             from bs4 import BeautifulSoup
@@ -146,6 +152,7 @@ class LotteryScraperQuinielaUy(models.Model):
         soup = BeautifulSoup(resp.text, 'html.parser')
 
         blocks = {'afternoon': [], 'evening': []}
+        tombola_blocks = {'afternoon': [], 'evening': []}
         current_turn = None
 
         for el in soup.descendants:
@@ -157,9 +164,13 @@ class LotteryScraperQuinielaUy(models.Model):
                     current_turn = 'evening'
             elif isinstance(el, str):
                 text = el.strip()
-                if (current_turn and re.fullmatch(r'\d{3}', text)
-                        and len(blocks[current_turn]) < 20):
+                if not current_turn:
+                    continue
+                if re.fullmatch(r'\d{3}', text) and len(blocks[current_turn]) < 20:
                     blocks[current_turn].append(text)
+                elif (re.fullmatch(r'\d{2}', text)
+                        and len(tombola_blocks[current_turn]) < 20):
+                    tombola_blocks[current_turn].append(text)
 
         result = {}
         for turn, raw in blocks.items():
@@ -173,10 +184,27 @@ class LotteryScraperQuinielaUy(models.Model):
             else:
                 result[turn] = []
 
+        tombola_result = {}
+        for turn, raw in tombola_blocks.items():
+            if len(raw) == 20:
+                tombola_result[turn] = raw
+            elif raw:
+                _logger.warning(
+                    'Scraper Quiniela UY: bloque Tómbola %s incompleto (%d/20 números) para %02d/%02d/%04d',
+                    turn, len(raw), dia, mes, anio)
+                tombola_result[turn] = []
+            else:
+                tombola_result[turn] = []
+
         if not result['afternoon'] and not result['evening']:
             return None
 
-        return {'vespertina': result['afternoon'], 'nocturna': result['evening']}
+        return {
+            'vespertina': result['afternoon'],
+            'nocturna': result['evening'],
+            'vespertina_tombola': tombola_result['afternoon'],
+            'nocturna_tombola': tombola_result['evening'],
+        }
 
     # ── Importación ──────────────────────────────────────────────
 
@@ -207,6 +235,11 @@ class LotteryScraperQuinielaUy(models.Model):
             log_lines += self._import_turn(draw_date, 'afternoon', data['vespertina'])
         if data['nocturna'] and self.import_turns in ('both', 'evening'):
             log_lines += self._import_turn(draw_date, 'evening', data['nocturna'])
+
+        if data.get('vespertina_tombola') and self.import_turns in ('both', 'afternoon'):
+            log_lines += self._import_tombola_turn(draw_date, 'afternoon', data['vespertina_tombola'])
+        if data.get('nocturna_tombola') and self.import_turns in ('both', 'evening'):
+            log_lines += self._import_tombola_turn(draw_date, 'evening', data['nocturna_tombola'])
         return log_lines
 
     def _import_turn(self, draw_date, turn_day, numeros):
@@ -266,6 +299,38 @@ class LotteryScraperQuinielaUy(models.Model):
             log_lines.append(f'[OK] {label} – {numero_str}')
 
         return log_lines
+
+    def _import_tombola_turn(self, draw_date, turn_day, numeros):
+        """20 registros `lottery.tombola.output`, uno por número, para ese
+        turno. A diferencia de la Quiniela no hay premios: los 20 números
+        salen de un solo sorteo, y una fila por número es lo que después
+        permite calcular atrasos y salidas por día/mes con una consulta
+        directa (número, fecha), igual que ya se hace con lottery.output."""
+        label = f'{draw_date} {turn_day} Tómbola'
+        Tombola = self.env['lottery.tombola.output']
+
+        if Tombola.search([('date', '=', draw_date), ('turn_day', '=', turn_day)], limit=1):
+            return [f'[OMITIDO] {label} – ya registrado']
+
+        LottoNum = self.env['lottery.number']
+        vals_list = []
+        for numero_str in numeros:
+            try:
+                numero_val = int(numero_str)
+            except ValueError:
+                return [f'[ERROR] {label} – número inválido: {numero_str}']
+
+            number_rec = LottoNum.search([('name', '=', numero_val)], limit=1)
+            if not number_rec:
+                return [f'[ERROR] {label} – número {numero_str} no existe en el catálogo']
+            vals_list.append({
+                'date': draw_date,
+                'turn_day': turn_day,
+                'number_id': number_rec.id,
+            })
+
+        Tombola.create(vals_list)
+        return [f'[OK] {label} – {len(vals_list)} números']
 
     # ── Singleton ─────────────────────────────────────────────────
 

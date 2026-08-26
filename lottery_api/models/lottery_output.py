@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Envío de push FCM al registrarse una salida nueva reciente."""
+"""Envío manual de push FCM al confirmar una salida desde el formulario.
+
+El envío es manual (botón) y no automático al crear la salida: un error de
+carga con un número ganador inválido ya generó falsas expectativas entre los
+jugadores dos veces, así que se prefiere depender de una confirmación humana
+antes de notificar.
+"""
 
 import logging
 import threading
-from datetime import date, timedelta
 
-from odoo import SUPERUSER_ID, api, models, registry
+from odoo import SUPERUSER_ID, api, fields, models, registry
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -39,37 +45,33 @@ def _push_worker(dbname, messages):
 class LotteryOutput(models.Model):
     _inherit = 'lottery.output'
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        self._send_fcm_for_new_outputs(records)
-        return records
+    push_sent = fields.Boolean(string='Notificación enviada', default=False, readonly=True, copy=False)
+    push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
 
-    def _send_fcm_for_new_outputs(self, records):
-        today = date.today()
-        yesterday = today - timedelta(days=1)
-        recent = records.filtered(
-            lambda r: r.date >= yesterday and r.sorteo_id.show_in_app
-        )
-        if not recent:
-            return
+    def action_send_push_notification(self):
+        self.ensure_one()
+        if self.push_sent:
+            raise UserError('Ya se envió la notificación push para esta salida.')
+        if not self.sorteo_id.show_in_app:
+            raise UserError('Este sorteo no está habilitado para mostrarse en la app.')
 
-        # Los mensajes se arman ahora (necesitan datos ORM) pero el envío HTTP
-        # se difiere: al hacer commit, se lanza un hilo que hace la llamada a
-        # FCM. Así la creación de la salida no bloquea esperando la red y solo
-        # se notifica si el create realmente commitea.
-        messages = [
-            (out.sorteo_id.id, *self._build_push_message(out))
-            for out in recent
-        ]
+        title, body = self._build_push_message(self)
+        sorteo_id = self.sorteo_id.id
+
+        # El envío HTTP se difiere: al hacer commit, se lanza un hilo que hace
+        # la llamada a FCM, para no bloquear la UI esperando la red.
         dbname = self.env.cr.dbname
         self.env.cr.postcommit.add(
             lambda: threading.Thread(
                 target=_push_worker,
-                args=(dbname, messages),
+                args=(dbname, [(sorteo_id, title, body)]),
                 daemon=True,
             ).start()
         )
+        self.write({
+            'push_sent': True,
+            'push_sent_date': fields.Datetime.now(),
+        })
 
     def _build_push_message(self, out):
         turn_label = TURN_LABELS.get(out.turn_day, out.turn_day.capitalize())
