@@ -69,19 +69,23 @@ class LotteryQuinielaUyResultados(models.TransientModel):
 
     # ── Lectura de los 20 premios ─────────────────────────────────────────
 
-    def _premios(self):
+    @api.model
+    def get_premios(self, date, turn_day):
         """[(premio, '410'), …] ordenado por premio, sólo los que existen.
 
         El número de premio sale del sufijo del código del sorteo
         (`quiniela_uy_7` → 7), igual que hace el importador: es más robusto
         que confiar en el `sequence`, que es un dato de presentación y se
         puede reordenar desde la interfaz.
+
+        Método de modelo (no requiere un registro del wizard) para poder
+        reusarlo también desde el endpoint público de la app
+        (`lottery_api`, histórico de Quiniela UY).
         """
-        self.ensure_one()
         outputs = self.env['lottery.output'].sudo().search([
             ('sorteo_id.source_code', '=', SOURCE_CODE),
-            ('date', '=', self.date),
-            ('turn_day', '=', self.turn_day),
+            ('date', '=', date),
+            ('turn_day', '=', turn_day),
         ])
         premios = []
         for out in outputs:
@@ -92,6 +96,10 @@ class LotteryQuinielaUyResultados(models.TransientModel):
             centena = out.hundreds_id.name if out.hundreds_id else 0
             premios.append((premio, '%d%02d' % (centena, out.number_id.name)))
         return sorted(premios)
+
+    def _premios(self):
+        self.ensure_one()
+        return self.get_premios(self.date, self.turn_day)
 
     # ── Acción ────────────────────────────────────────────────────────────
 

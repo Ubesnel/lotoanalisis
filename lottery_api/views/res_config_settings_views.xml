@@ -22,6 +22,12 @@
                         <field name="lottery_historial_desde"/>
                     </setting>
                 </block>
+                <block title="Actualización obligatoria" id="lottery_api_min_build_settings">
+                    <setting string="Build mínimo requerido"
+                             help="Versión mínima (versionCode/buildNumber de Android) que debe tener la app instalada. Un usuario con una versión menor ve una pantalla de actualización obligatoria hasta que actualice desde Play Store. 0 = no exigir ninguna versión mínima.">
+                        <field name="lottery_min_build_number"/>
+                    </setting>
+                </block>
             </xpath>
         </field>
     </record>

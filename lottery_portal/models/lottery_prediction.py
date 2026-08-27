@@ -2,7 +2,7 @@
 import json
 
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 WEEKDAY_CODES = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 MESES_ES = ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -118,6 +118,18 @@ def _default_sorteo(self):
     return self.env.ref('lottery_base.sorteo_florida', raise_if_not_found=False)
 
 
+def _default_hour(self):
+    """Hora local actual como float, que es lo que espera el widget
+    float_time: 13.5 se muestra como 13:30.
+
+    Se pasa por context_timestamp porque fields.Datetime.now() devuelve UTC;
+    sin eso, a las 21:00 en Uruguay se propondría 00:00. Mismo helper que
+    lottery.curiosity: acá se duplica (no hay un módulo de utils compartido
+    en lottery_portal.models) en vez de importarlo desde ese archivo."""
+    ahora = fields.Datetime.context_timestamp(self, fields.Datetime.now())
+    return ahora.hour + ahora.minute / 60.0
+
+
 class LotteryPrediction(models.Model):
     _name = 'lottery.prediction'
     _description = 'Predicción de números'
@@ -139,6 +151,11 @@ class LotteryPrediction(models.Model):
         help='Solo las predicciones publicadas se envían a la app móvil '
              '(Números Mágicos). Permite prepararlas con anticipación y '
              'publicarlas cuando estén listas.')
+    hour = fields.Float(
+        string='Hora publicación', default=_default_hour,
+        help='Hora en que se publica la predicción, en hora local (Uruguay). '
+             'Se edita con el widget de horas (13.5 = 13:30). La app la '
+             'muestra en Números Mágicos rotulada "Hora de Uruguay".')
 
     temperature = fields.Selection([
         ('hot',       'Calientes'),
@@ -176,6 +193,11 @@ class LotteryPrediction(models.Model):
         'prediction_id', 'number_id',
         string='5 Números a predecir')
 
+    super_magico_id = fields.Many2one(
+        'lottery.number', string='Súper Mágico',
+        help='La apuesta más fuerte de la predicción: uno de los 5 Números '
+             'a predecir, destacado aparte. Se carga a mano.')
+
     numbers_count = fields.Integer(
         string='Cantidad', compute='_compute_numbers_count', store=True)
     numbers_count_20 = fields.Integer(
@@ -200,6 +222,9 @@ class LotteryPrediction(models.Model):
     cumplida_5 = fields.Boolean(
         'Cumplida en 5?', default=False, index=True,
         help='El número salido estaba entre los 5 Números a predecir.')
+    cumplida_super_magico = fields.Boolean(
+        '¿Se acertó el Súper Mágico?', default=False, index=True,
+        help='El número salido fue el Súper Mágico de esta predicción.')
     verification_date = fields.Datetime(
         'Verificada el', readonly=True,
         help='Momento en que se registró la salida y se verificó la '
@@ -212,6 +237,15 @@ class LotteryPrediction(models.Model):
             'Ya existe una predicción registrada para esa fecha, turno y sorteo.'
         )
     ]
+
+    @api.constrains('super_magico_id', 'number_ids_5')
+    def _check_super_magico_en_5(self):
+        for rec in self:
+            if (rec.super_magico_id
+                    and rec.super_magico_id not in rec.number_ids_5):
+                raise ValidationError(
+                    'El Súper Mágico tiene que ser uno de los 5 Números a '
+                    'predecir.')
 
     @api.depends('number_ids')
     def _compute_numbers_count(self):

@@ -142,6 +142,9 @@ class LotteryOutput(models.Model):
                     'cumplida_20': num_id in prediction.number_ids_20.ids,
                     'cumplida_10': num_id in prediction.number_ids_10.ids,
                     'cumplida_5':  num_id in prediction.number_ids_5.ids,
+                    'cumplida_super_magico': (
+                        bool(prediction.super_magico_id)
+                        and num_id == prediction.super_magico_id.id),
                     'verification_date': fields.Datetime.now(),
                 })
 

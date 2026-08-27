@@ -106,11 +106,20 @@ class LotteryFcmService(models.AbstractModel):
     @api.model
     def send_push(self, sorteo_id, title, body):
         """Envía una notificación push al topic del sorteo."""
+        return self.send_push_to_topic(f'sorteo_{sorteo_id}', title, body)
+
+    @api.model
+    def send_push_to_topic(self, topic, title, body):
+        """Envía una notificación push a un topic de FCM cualquiera.
+
+        `send_push` (por sorteo) y los avisos generales
+        (lottery.push.announcement, topic fijo 'anuncios') comparten esta
+        misma llamada — lo único que cambia entre uno y otro es el topic."""
         sa = self._get_service_account()
         if not sa:
             _logger.info(
                 'lottery_api: FCM no configurado (sin service account), '
-                'omitiendo push para sorteo %s', sorteo_id
+                'omitiendo push para topic %s', topic
             )
             return False
 
@@ -119,7 +128,6 @@ class LotteryFcmService(models.AbstractModel):
             return False
 
         project_id = sa.get('project_id', '')
-        topic = f'sorteo_{sorteo_id}'
         url = FCM_URL.format(project_id=project_id)
 
         payload = {
