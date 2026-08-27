@@ -102,44 +102,6 @@ class LotteryScraperQuinielon(models.Model):
         self.ensure_one()
         self._run()
 
-    def action_purge_phantoms(self):
-        """Borra de la base las salidas fantasma que dejó esta fuente.
-
-        Misma regla que _descartar_fantasmas, pero aplicada a lo ya
-        importado: en una racha de números idénticos consecutivos del mismo
-        turno, la ÚLTIMA fecha es la real y las anteriores son inventos.
-        """
-        self.ensure_one()
-        Output = self.env['lottery.output']
-        registros = Output.search([('sorteo_id', '=', self.sorteo_id.id)],
-                                  order='date desc, id desc')
-
-        por_turno, a_borrar, detalle = {}, Output, []
-        for rec in registros:
-            firma = rec.number_id.id
-            if por_turno.get(rec.turn_day) == firma:
-                a_borrar |= rec
-                detalle.append(
-                    f'[OK] {rec.date} '
-                    f'{"Tarde" if rec.turn_day == "afternoon" else "Noche"} – '
-                    f'{rec.number_id.name:02d} (repetía el sorteo siguiente)')
-            else:
-                por_turno[rec.turn_day] = firma
-
-        log = [f'{len(registros)} salida(s) revisada(s).']
-        if a_borrar:
-            log.append(f'{len(a_borrar)} fantasma(s) encontrada(s) y borrada(s):')
-            log += detalle
-            a_borrar.unlink()
-            self.sorteo_id._recompute_next_draw()
-        else:
-            log.append('No se encontraron salidas fantasma.')
-
-        self.write({
-            'last_run':    fields.Datetime.now(),
-            'last_result': build_result_html(self._summarize_log(log)),
-        })
-
     def action_reset_backfill(self):
         self.write({'backfill_until': False})
 
@@ -243,6 +205,20 @@ class LotteryScraperQuinielon(models.Model):
         return session, match.group(1)
 
     def _fetch_days(self, dias):
+        """A diferencia de lottery.scraper.la.primera (misma fuente), acá NO
+        se descartan valores repetidos en días consecutivos como "fantasmas".
+        Esa lógica solo tiene sentido cuando la firma es una combinación de
+        varios números (para La Primera, 3 números → repetirlos juntos por
+        azar es ~1 en un millón); acá la firma es UN SOLO número de 2 dígitos
+        (00-99), así que un mismo turno puede repetir valor de un día para el
+        otro por pura casualidad con frecuencia real (~1 en 100) — de hecho
+        pasa: el 03/06/2024 y el 04/06/2024 dieron 70 en el turno Día, los
+        dos verificados como reales contra la web pública. Además, en el
+        histórico revisado (ver HISTORY_START) el contador `sorteo_numero`
+        de la fuente sube de a uno todos los días sin huecos, así que este
+        juego no parece tener "días sin sorteo" que la fuente rellene con
+        datos inventados — el problema que resolvía _descartar_fantasmas en
+        La Primera no está confirmado que exista acá."""
         session, nonce = self._session_and_nonce()
         draws, fallos = [], []
         for i, dia in enumerate(dias):
@@ -254,28 +230,7 @@ class LotteryScraperQuinielon(models.Model):
                 fallos.append(f'[ERROR] {dia} – no se pudo consultar: {exc}')
                 _logger.warning('Scraper Quinielón: %s falló: %s', dia, exc)
         draws.sort(key=lambda d: (d['date'], 0 if d['turn'] == 'afternoon' else 1))
-        return self._descartar_fantasmas(draws), fallos
-
-    @staticmethod
-    def _descartar_fantasmas(draws):
-        """Saca los resultados inventados por la fuente para días sin
-        sorteo: repite el PRÓXIMO sorteo real con la fecha pedida. Mismo
-        mecanismo que lottery.scraper.la.primera (misma fuente), pero acá la
-        firma es solo el número (no hay corridos)."""
-        limpias, por_turno = [], {}
-        for draw in sorted(draws, key=lambda d: d['date'], reverse=True):
-            firma = draw['numero']
-            anterior = por_turno.get(draw['turn'])
-            if anterior == firma:
-                _logger.warning(
-                    'Scraper Quinielón: descartado %s %s por repetir el número '
-                    'del sorteo siguiente (%02d) — día sin sorteo en la fuente.',
-                    draw['date'], draw['turn'], firma)
-                continue
-            por_turno[draw['turn']] = firma
-            limpias.append(draw)
-        limpias.sort(key=lambda d: (d['date'], 0 if d['turn'] == 'afternoon' else 1))
-        return limpias
+        return draws, fallos
 
     def _fetch_day(self, session, nonce, dia):
         resp = session.post(
@@ -364,19 +319,6 @@ class LotteryScraperQuinielon(models.Model):
             if not number_id:
                 log_lines.append(
                     f'[ERROR] {label} – número {draw["numero"]:02d} no existe en el catálogo')
-                continue
-
-            # Segundo cerrojo contra los fantasmas (ver la_primera.py): compara
-            # contra el PRÓXIMO sorteo ya registrado de ese turno.
-            siguiente = Output.search([
-                ('sorteo_id', '=', self.sorteo_id.id),
-                ('turn_day', '=', draw['turn']),
-                ('date', '>', draw['date']),
-            ], order='date asc', limit=1)
-            if siguiente and siguiente.number_id.id == number_id:
-                log_lines.append(
-                    f'[OMITIDO] {label} – repite el sorteo del {siguiente.date} '
-                    f'(día sin sorteo en la fuente)')
                 continue
 
             vals_list.append({
