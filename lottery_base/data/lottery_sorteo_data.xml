@@ -78,6 +78,24 @@
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">conectate</field>
         </record>
+        <!-- Quinielón (Rep. Dominicana): mismo formato que Florida Pick 2 —
+             un número de 2 dígitos (00-99), sin centena y sin bola extra.
+             Misma fuente que La Primera (laprimera.do), pero el juego
+             recién aparece en el feed desde el 20/05/2024, así que su
+             histórico empieza más tarde que el de La Primera. Turnos
+             12:00pm y 07:00pm (hora RD). -->
+        <record id="sorteo_quinielon" model="lottery.sorteo">
+            <field name="name">Quinielón</field>
+            <field name="code">quinielon</field>
+            <field name="sequence">7</field>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <!-- En False: el histórico de este juego tiene huecos (ver
+                 lottery_scraper_quinielon.py) que romperían la continuidad. -->
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">quinielon</field>
+        </record>
         <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
             <field name="name">Quiniela UY - Sorteo 1</field>
             <field name="code">quiniela_uy_1</field>

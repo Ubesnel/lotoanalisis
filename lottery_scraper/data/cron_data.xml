@@ -73,6 +73,23 @@
     </record>
 
     <!--
+        Quinielón (RD): mismo sitio y mismo mecanismo que La Primera (un día
+        por petición), pero es un importador aparte con su propio cursor.
+        Arranca inactivo y además el importador tiene su propio auto_import
+        apagado: hay que habilitar los dos.
+    -->
+    <record id="cron_import_quinielon_results" model="ir.cron">
+        <field name="name">Quinielón · Importar resultados diarios</field>
+        <field name="model_id" ref="model_lottery_scraper_quinielon"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_import_results()</field>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="False"/>
+    </record>
+
+    <!--
         Quinielas dominicanas vía conectate (La Suerte, King Lottery y el
         respaldo de La Primera). Una petición por turno trae los últimos 10
         sorteos, así que no hacen falta ventanas horarias. Arranca inactivo y
