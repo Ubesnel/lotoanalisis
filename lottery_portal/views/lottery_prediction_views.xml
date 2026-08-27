@@ -9,6 +9,7 @@
             <tree decoration-success="cumplida" decoration-muted="not verification_date">
                 <field name="date"/>
                 <field name="turn_day"/>
+                <field name="hour" widget="float_time" optional="hide"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="temperature" optional="show"/>
                 <field name="numbers_count"/>
@@ -18,6 +19,8 @@
                 <field name="cumplida_20" widget="boolean_toggle" readonly="1" optional="show"/>
                 <field name="cumplida_10" widget="boolean_toggle" readonly="1" optional="show"/>
                 <field name="cumplida_5" widget="boolean_toggle" readonly="1" optional="show"/>
+                <field name="super_magico_id" optional="hide"/>
+                <field name="cumplida_super_magico" widget="boolean_toggle" readonly="1" optional="hide"/>
                 <field name="verification_date" optional="hide"/>
             </tree>
         </field>
@@ -41,6 +44,7 @@
                         <group>
                             <field name="date"/>
                             <field name="turn_day"/>
+                            <field name="hour" widget="float_time"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                             <field name="temperature"/>
                             <field name="combinaciones_window"/>
@@ -94,6 +98,12 @@
                                 <field name="number_ids_5" nolabel="1" colspan="2"
                                        widget="many2many_tags"
                                        options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                            <group string="Súper Mágico">
+                                <field name="super_magico_id"
+                                       domain="[('id', 'in', number_ids_5)]"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                                <field name="cumplida_super_magico" readonly="1"/>
                             </group>
                         </page>
                         <page string="Puntajes" name="puntajes"

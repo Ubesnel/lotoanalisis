@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_prediction_form_api" model="ir.ui.view">
+        <field name="name">lottery.prediction.form.api</field>
+        <field name="model">lottery.prediction</field>
+        <field name="inherit_id" ref="lottery_portal.view_lottery_prediction_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_send_push_notification" type="object"
+                        string="Enviar notificación push" class="btn-primary"
+                        icon="fa-bell" invisible="not id or push_sent or not published"
+                        confirm="Se enviará una notificación push a los usuarios de la app avisando que ya están disponibles los Números Mágicos de esta predicción. ¿Confirma el envío?"/>
+                <field name="push_sent" invisible="1"/>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="before">
+                <div class="alert alert-success" role="alert" invisible="not push_sent">
+                    Notificación enviada el <field name="push_sent_date" readonly="1" nolabel="1"/>.
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

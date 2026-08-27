@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Tree ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_push_announcement_tree" model="ir.ui.view">
+        <field name="name">lottery.push.announcement.tree</field>
+        <field name="model">lottery.push.announcement</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="not sent">
+                <field name="create_date"/>
+                <field name="title"/>
+                <field name="sent" widget="boolean_toggle"/>
+                <field name="sent_date" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_push_announcement_form" model="ir.ui.view">
+        <field name="name">lottery.push.announcement.form</field>
+        <field name="model">lottery.push.announcement</field>
+        <field name="arch" type="xml">
+            <form string="Aviso general">
+                <header>
+                    <button name="action_send_push_notification" type="object"
+                            string="Enviar notificación push" class="btn-primary"
+                            icon="fa-bell" invisible="not id or sent"
+                            confirm="Se enviará esta notificación a TODOS los usuarios de la app, sin importar qué lotería sigan. Revisá el texto antes de continuar. ¿Confirma el envío?"/>
+                    <field name="sent" invisible="1"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-success" role="alert" invisible="not sent">
+                        Notificación enviada el <field name="sent_date" readonly="1" nolabel="1"/>.
+                    </div>
+                    <group>
+                        <field name="title"/>
+                    </group>
+                    <group string="Mensaje">
+                        <field name="body" nolabel="1" colspan="2"
+                               placeholder="Escribí el mensaje del aviso…"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search ────────────────────────────────────────────────── -->
+    <record id="view_lottery_push_announcement_search" model="ir.ui.view">
+        <field name="name">lottery.push.announcement.search</field>
+        <field name="model">lottery.push.announcement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="title"/>
+                <filter string="Enviados" name="sent"
+                        domain="[('sent', '=', True)]"/>
+                <filter string="Sin enviar" name="not_sent"
+                        domain="[('sent', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Acción y menú ─────────────────────────────────────────── -->
+    <record id="action_lottery_push_announcement" model="ir.actions.act_window">
+        <field name="name">Avisos generales</field>
+        <field name="res_model">lottery.push.announcement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Creá tu primer aviso general
+            </p>
+            <p>
+                Mandá una notificación push a TODOS los usuarios de la app —
+                mantenimiento programado, nueva versión disponible, etc. —
+                sin importar qué lotería sigan.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lottery_push_announcement" name="Avisos generales"
+              parent="lottery_base.home_lottery"
+              action="action_lottery_push_announcement" sequence="30"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>

@@ -92,6 +92,42 @@ class LotteryOutput(models.Model):
         if out.fireball_id:
             partes.append(f'Bola extra: {out.fireball_id.name}')
 
+        tabla_magicos = self._tabla_numeros_magicos(out)
+        if tabla_magicos == 'general':
+            partes.append('🔮 El fijo estuvo en el total de Números Mágicos')
+        elif tabla_magicos:
+            partes.append(f'🔮 El fijo estuvo en la tabla de {tabla_magicos} Números Mágicos')
+
         title = f'🎯 Resultado {out.sorteo_id.name} disponible'
         body = ' · '.join(partes) + '\n📈 Consulta el análisis actualizado para el próximo sorteo'
         return title, body
+
+    def _tabla_numeros_magicos(self, out):
+        """En qué lista de Números Mágicos estaba el número salido — siempre
+        la más chica (más específica) en la que estaba, ya que 5 ⊂ 10 ⊂ 20 ⊂
+        Total por construcción (ver lottery.prediction.action_completar_numeros).
+
+        Devuelve '5', '10', '20', 'general' (solo en la lista completa de
+        Números a predecir, sin llegar al 20) o None.
+
+        Lee los booleanos `cumplida*` que `_check_predictions()` (lottery_portal)
+        ya dejó marcados en la predicción al registrar esta salida — no
+        recalcula nada. None si no hay predicción publicada para esa fecha/
+        turno/sorteo, o si el número no estaba en ninguna lista."""
+        prediction = self.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', out.sorteo_id.id),
+            ('date', '=', out.date),
+            ('turn_day', '=', out.turn_day),
+            ('published', '=', True),
+        ], limit=1)
+        if not prediction:
+            return None
+        if prediction.cumplida_5:
+            return '5'
+        if prediction.cumplida_10:
+            return '10'
+        if prediction.cumplida_20:
+            return '20'
+        if prediction.cumplida:
+            return 'general'
+        return None

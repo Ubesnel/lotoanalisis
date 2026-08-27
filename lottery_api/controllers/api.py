@@ -68,6 +68,17 @@ def _get_public_sorteo(sorteo_id):
     return sorteo
 
 
+def _fmt_hour(value):
+    """Float de Odoo (13.5) → 'HH:MM' ('13:30'), o None. Usado por
+    /numeros-magicos y /curiosidades para mandar la hora de publicación
+    (hora local, Uruguay) tal como la app la muestra."""
+    if value is None:
+        return None
+    total_minutes = round(value * 60) % (24 * 60)
+    h, m = divmod(total_minutes, 60)
+    return '%02d:%02d' % (h, m)
+
+
 def _now_local():
     """Hora actual en la zona horaria de la empresa.
 
@@ -86,6 +97,8 @@ class LotteryAppApi(http.Controller):
     def sorteos(self, **kwargs):
         sorteos = request.env['lottery.sorteo'].sudo().search(
             [('show_in_app', '=', True)], order='sequence, id')
+        min_build = request.env['ir.config_parameter'].sudo().get_param(
+            'lottery_api.min_build_number')
         return _json_response({
             'sorteos': [{
                 'id': s.id,
@@ -98,6 +111,12 @@ class LotteryAppApi(http.Controller):
                 'country_code': s.country_id.code or None,
             } for s in sorteos],
             'default_id': sorteos[0].id if sorteos else None,
+            # Build mínimo requerido (versionCode de Android); 0 = sin
+            # exigencia. La app lo compara contra su propio PackageInfo y
+            # bloquea con una pantalla de actualización obligatoria si está
+            # por debajo. Ajustable en Ajustes → Loterías → Actualización
+            # obligatoria.
+            'min_build_number': int(min_build or 0),
         })
 
     @http.route('/api/lottery/v1/results/latest', type='http', auth='public',
@@ -344,6 +363,7 @@ class LotteryAppApi(http.Controller):
             return _json_response(dict(
                 base, found=False,
                 numbers=[], numbers_20=[], numbers_10=[], numbers_5=[],
+                super_magico=None, hour=None,
             ))
 
         return _json_response(dict(
@@ -352,6 +372,12 @@ class LotteryAppApi(http.Controller):
             numbers_20=_nums(prediction.number_ids_20),
             numbers_10=_nums(prediction.number_ids_10),
             numbers_5=_nums(prediction.number_ids_5),
+            super_magico=(
+                str(prediction.super_magico_id.name).zfill(2)
+                if prediction.super_magico_id else None),
+            # Hora de publicación (hora local, Uruguay): la app la rotula
+            # "Hora de Uruguay" en el header de Números Mágicos.
+            hour=_fmt_hour(prediction.hour),
         ))
 
     @http.route('/api/lottery/v1/stats/grupos-dia', type='http',
@@ -642,6 +668,9 @@ class LotteryAppApi(http.Controller):
                 'id': c.id,
                 'date': c.date.strftime('%d/%m/%Y'),
                 'weekday': WEEKDAYS_ES[c.date.weekday()],
+                # Hora de publicación (hora local, Uruguay): la app la
+                # rotula "Hora de Uruguay" junto a la fecha de la noticia.
+                'hour': _fmt_hour(c.hour),
                 'text': c.text,
                 # Traducción opcional; si está vacía la app cae al español.
                 'text_en': c.text_en or None,
@@ -978,6 +1007,62 @@ class LotteryAppApi(http.Controller):
             } for d, turnos in sorted(by_date.items(), reverse=True)],
         })
 
+    QUINIELA_UY_TOTAL_PREMIOS = 20
+    TOMBOLA_UY_TOTAL_NUMEROS = 20
+
+    @http.route('/api/lottery/v1/stats/quiniela-uy-historico', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def quiniela_uy_historico(self, date=None, turn=None, **kwargs):
+        """Los 20 premios de la Quiniela Uruguay de una fecha y turno
+        puntuales (buscador histórico de la app; ver
+        lottery.quiniela.uy.resultados.get_premios, mismo dato que usa el
+        wizard de Odoo)."""
+        if not date or turn not in ('afternoon', 'evening'):
+            return _json_response({'error': 'date_and_turn_required'}, status=400)
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return _json_response({'error': 'invalid_date'}, status=400)
+
+        premios = request.env['lottery.quiniela.uy.resultados'].sudo() \
+            .get_premios(date, turn)
+        return _json_response({
+            'date': date,
+            'weekday': WEEKDAYS_ES[date_obj.weekday()],
+            'turn': turn,
+            'turn_label': TURN_LABELS.get(turn, turn),
+            'premios': [{'premio': p, 'numero': n} for p, n in premios],
+            'total_esperado': self.QUINIELA_UY_TOTAL_PREMIOS,
+            'completo': len(premios) == self.QUINIELA_UY_TOTAL_PREMIOS,
+        })
+
+    @http.route('/api/lottery/v1/stats/tombola-uy-historico', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_uy_historico(self, date=None, turn=None, **kwargs):
+        """Los números de la Tómbola de la Quiniela Uruguay de una fecha y
+        turno puntuales, ordenados de menor a mayor (buscador histórico de
+        la app; juego aparte de la Quiniela, ver lottery.tombola.output)."""
+        if not date or turn not in ('afternoon', 'evening'):
+            return _json_response({'error': 'date_and_turn_required'}, status=400)
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return _json_response({'error': 'invalid_date'}, status=400)
+
+        outputs = request.env['lottery.tombola.output'].sudo().search([
+            ('date', '=', date), ('turn_day', '=', turn),
+        ])
+        numeros = sorted(str(o.number_id.name).zfill(2) for o in outputs)
+        return _json_response({
+            'date': date,
+            'weekday': WEEKDAYS_ES[date_obj.weekday()],
+            'turn': turn,
+            'turn_label': TURN_LABELS.get(turn, turn),
+            'numeros': numeros,
+            'total_esperado': self.TOMBOLA_UY_TOTAL_NUMEROS,
+            'completo': len(numeros) == self.TOMBOLA_UY_TOTAL_NUMEROS,
+        })
+
     @http.route('/api/lottery/v1/stats/historial-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def historial_dia(self, sorteo_id=None, date=None, turn=None, **kwargs):
@@ -1034,4 +1119,11 @@ class LotteryAppApi(http.Controller):
             'numbers_20': _nums(pred.number_ids_20),
             'numbers_10': _nums(pred.number_ids_10),
             'numbers_5':  _nums(pred.number_ids_5),
+            # Para resaltar en el tab "5" cuál de esos 5 números era la
+            # apuesta fuerte (aro de estrellitas en la app); no agrega un
+            # nivel nuevo al historial, sólo decora la lista de 5 que ya
+            # existe.
+            'super_magico': (
+                str(pred.super_magico_id.name).zfill(2)
+                if pred.super_magico_id else None),
         })
