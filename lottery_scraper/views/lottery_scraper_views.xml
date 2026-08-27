@@ -358,6 +358,98 @@
               action="action_lottery_scraper_conectate"
               sequence="19"/>
 
+    <record id="view_lottery_scraper_quinielon_form" model="ir.ui.view">
+        <field name="name">lottery.scraper.quinielon.form</field>
+        <field name="model">lottery.scraper.quinielon</field>
+        <field name="arch" type="xml">
+            <form string="Importador Quinielón">
+                <header>
+                    <button name="action_import_now"
+                            string="Importar ahora"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-download"/>
+                    <button name="action_reset_backfill"
+                            string="Reiniciar backfill"
+                            type="object"
+                            icon="fa-refresh"
+                            confirm="Vuelve a recorrer desde el 20/05/2024. No borra nada de lo importado: las salidas existentes se saltean. ¿Continuar?"/>
+                    <button name="action_purge_phantoms"
+                            string="Limpiar salidas fantasma"
+                            type="object"
+                            icon="fa-eraser"
+                            confirm="BORRA salidas de este sorteo. Para los días sin sorteo, esta fuente devuelve el número del sorteo siguiente con la fecha pedida. Se eliminan esas copias y se conserva la última de cada racha, que es la real. Conviene tener backup. ¿Continuar?"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Fuente: sitio <strong>oficial</strong> de La Primera (laprimera.do) —
+                        mismo sitio que el importador "La Primera", el Quinielón es otro
+                        juego de la misma lotería. Un solo número de 2 dígitos por turno,
+                        sin centena ni corridos.
+                        <br/>
+                        <strong>Histórico desde el 20/05/2024</strong> (a diferencia de La
+                        Primera, este juego no aparece antes en la fuente).
+                        <br/>
+                        La fuente entrega <strong>un día por petición</strong>. Cada corrida
+                        procesa como mucho "Máx. días por corrida", avanza el cursor de abajo
+                        y avisa cuántos quedan: hay que apretar "Importar ahora" varias veces
+                        hasta que diga "Backfill terminado".
+                    </div>
+                    <group>
+                        <group>
+                            <field name="sorteo_id" options="{'no_create': True}"/>
+                            <field name="auto_import"/>
+                        </group>
+                        <group>
+                            <field name="max_days_per_run"/>
+                            <field name="page_load_timeout" string="Timeout (seg)"/>
+                            <field name="rd_offset"/>
+                        </group>
+                    </group>
+                    <group string="Importación manual por rango">
+                        <group>
+                            <field name="date_from" string="Fecha desde"/>
+                            <field name="date_to" string="Fecha hasta"/>
+                        </group>
+                        <group>
+                            <field name="backfill_until"/>
+                        </group>
+                    </group>
+                    <group string="Estado">
+                        <field name="last_run" string="Última ejecución"/>
+                    </group>
+                    <field name="last_result" nolabel="1" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lottery_scraper_quinielon_tree" model="ir.ui.view">
+        <field name="name">lottery.scraper.quinielon.tree</field>
+        <field name="model">lottery.scraper.quinielon</field>
+        <field name="arch" type="xml">
+            <tree string="Importador Quinielón">
+                <field name="sorteo_id"/>
+                <field name="auto_import" widget="boolean_toggle"/>
+                <field name="backfill_until"/>
+                <field name="last_run"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_lottery_scraper_quinielon" model="ir.actions.act_window">
+        <field name="name">Importador Quinielón</field>
+        <field name="res_model">lottery.scraper.quinielon</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_lottery_scraper_quinielon"
+              name="Quinielón · RD"
+              parent="menu_lottery_scraper_root"
+              action="action_lottery_scraper_quinielon"
+              sequence="20"/>
+
     <record id="view_lottery_scraper_quiniela_uy_form" model="ir.ui.view">
         <field name="name">lottery.scraper.quiniela.uy.form</field>
         <field name="model">lottery.scraper.quiniela.uy</field>
