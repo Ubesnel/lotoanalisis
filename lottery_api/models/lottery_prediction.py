@@ -37,9 +37,16 @@ class LotteryPrediction(models.Model):
                 daemon=True,
             ).start()
         )
+        # 'hour' se pisa con la hora real de envío: es lo que la app muestra
+        # como "Hora de Uruguay" en Números Mágicos, y hasta ahora se quedaba
+        # con la hora en que se había creado/editado el registro, no con la
+        # del push. Mismo cálculo que _default_hour en lottery_portal
+        # (duplicado acá por lo mismo: no hay utils compartido).
+        ahora = fields.Datetime.context_timestamp(self, fields.Datetime.now())
         self.write({
             'push_sent': True,
             'push_sent_date': fields.Datetime.now(),
+            'hour': ahora.hour + ahora.minute / 60.0,
         })
 
     def _build_push_message(self, pred):
