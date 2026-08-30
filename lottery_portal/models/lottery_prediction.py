@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import re
 
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
@@ -187,13 +188,13 @@ class LotteryPrediction(models.Model):
         string='Ternas a predecir',
         help='Números de 3 cifras (000-999) que se predicen para este '
              'sorteo (fecha y turno), sin importar el premio.')
-    tombola_number_ids = fields.Many2many(
-        'lottery.number', 'lottery_prediction_tombola_number_rel',
-        'prediction_id', 'number_id',
-        string='Números de Tómbola a predecir',
-        help='Combinación de números (00-99) que se predicen para la '
-             'Tómbola de este mismo sorteo (fecha y turno): un juego '
-             'aparte de la Quiniela, ver lottery.tombola.output.')
+    tombola_linea_ids = fields.One2many(
+        'lottery.prediction.tombola.linea', 'prediction_id',
+        string='Líneas de Tómbola a predecir',
+        help='Cada línea son los 7 números (00-99) de una combinación '
+             'completa a jugar en la Tómbola de este mismo sorteo (fecha y '
+             'turno): un juego aparte de la Quiniela, ver '
+             'lottery.tombola.output.')
 
     # ── Números a predecir (listas independientes) ─────────────────────────
     number_ids = fields.Many2many(
@@ -782,18 +783,55 @@ class LotteryPredictionTerna(models.Model):
     prediction_id = fields.Many2one(
         'lottery.prediction', string='Predicción',
         required=True, ondelete='cascade', index=True)
-    terna = fields.Integer(
-        string='Terna', required=True,
-        help='Número de 3 cifras (000-999) que se predice.')
+    # Char, no Integer: un Integer se come el 0 a la izquierda (098 → 98) y
+    # la terna deja de mostrarse como se cargó.
+    terna = fields.Char(
+        string='Terna', required=True, size=3,
+        help='Número de 3 cifras (000-999) que se predice, con el 0 a la '
+             'izquierda si hace falta (ej. 098).')
 
     _sql_constraints = [
-        ('terna_range', 'CHECK(terna >= 0 AND terna <= 999)',
-         'La terna tiene que ser un número de 3 cifras, entre 000 y 999.'),
         ('terna_unique_por_prediccion', 'unique(prediction_id, terna)',
          'Esa terna ya está cargada en esta predicción.'),
     ]
 
+    @api.constrains('terna')
+    def _check_terna_formato(self):
+        for rec in self:
+            if not rec.terna or not re.fullmatch(r'\d{3}', rec.terna):
+                raise ValidationError(
+                    'La terna tiene que ser un número de 3 cifras, entre '
+                    '000 y 999 (con el 0 a la izquierda si hace falta).')
+
     @api.depends('terna')
     def _compute_display_name(self):
         for rec in self:
-            rec.display_name = '%03d' % rec.terna if rec.terna is not None else ''
+            rec.display_name = rec.terna or ''
+
+
+class LotteryPredictionTombolaLinea(models.Model):
+    """Línea de 7 números de Tómbola a predecir, colgada de
+    lottery.prediction. Ver el comentario junto a tombola_linea_ids: cada
+    línea es una combinación completa a jugar, no una lista suelta de
+    números sueltos como sería con un many2many."""
+    _name = 'lottery.prediction.tombola.linea'
+    _description = 'Línea de Tómbola a predecir'
+
+    prediction_id = fields.Many2one(
+        'lottery.prediction', string='Predicción',
+        required=True, ondelete='cascade', index=True)
+    numero_1 = fields.Many2one('lottery.number', string='Número 1', required=True)
+    numero_2 = fields.Many2one('lottery.number', string='Número 2', required=True)
+    numero_3 = fields.Many2one('lottery.number', string='Número 3', required=True)
+    numero_4 = fields.Many2one('lottery.number', string='Número 4', required=True)
+    numero_5 = fields.Many2one('lottery.number', string='Número 5', required=True)
+    numero_6 = fields.Many2one('lottery.number', string='Número 6', required=True)
+    numero_7 = fields.Many2one('lottery.number', string='Número 7', required=True)
+
+    @api.depends('numero_1.name', 'numero_2.name', 'numero_3.name',
+                'numero_4.name', 'numero_5.name', 'numero_6.name', 'numero_7.name')
+    def _compute_display_name(self):
+        for rec in self:
+            numeros = (rec.numero_1, rec.numero_2, rec.numero_3, rec.numero_4,
+                      rec.numero_5, rec.numero_6, rec.numero_7)
+            rec.display_name = ' - '.join('%02d' % n.name for n in numeros if n)
