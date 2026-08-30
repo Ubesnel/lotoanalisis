@@ -1101,12 +1101,12 @@ class LotteryAppApi(http.Controller):
     @http.route('/api/lottery/v1/stats/quiniela-uy-ternas-tombola', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def quiniela_uy_ternas_tombola(self, **kwargs):
-        """Predicción de ternas y de la combinación de números de Tómbola
-        para el próximo sorteo de la Quiniela Uruguay (lottery.prediction,
-        campos terna_ids / tombola_number_ids). Se cargan siempre en la
-        predicción del premio 1: el dato es del sorteo completo (fecha y
-        turno), no de un premio en particular, así que no hace falta
-        pedirle `premio` al cliente."""
+        """Predicción de ternas y de las líneas de Tómbola (7 números cada
+        una) para el próximo sorteo de la Quiniela Uruguay
+        (lottery.prediction, campos terna_ids / tombola_linea_ids). Se
+        cargan siempre en la predicción del premio 1: el dato es del sorteo
+        completo (fecha y turno), no de un premio en particular, así que no
+        hace falta pedirle `premio` al cliente."""
         sorteo = request.env['lottery.sorteo'].sudo().search([
             ('source_code', '=', 'quiniela_uy'),
             ('code', '=', 'quiniela_uy_1'),
@@ -1129,14 +1129,18 @@ class LotteryAppApi(http.Controller):
             ('published', '=', True),
         ], limit=1)
 
-        if not prediction or not (prediction.terna_ids or prediction.tombola_number_ids):
-            return _json_response(dict(base, found=False, ternas=[], tombola_numeros=[]))
+        if not prediction or not (prediction.terna_ids or prediction.tombola_linea_ids):
+            return _json_response(dict(base, found=False, ternas=[], tombola_lineas=[]))
+
+        def _linea_numeros(linea):
+            campos = (linea.numero_1, linea.numero_2, linea.numero_3, linea.numero_4,
+                      linea.numero_5, linea.numero_6, linea.numero_7)
+            return sorted(str(n.name).zfill(2) for n in campos if n)
 
         return _json_response(dict(
             base, found=True,
-            ternas=['%03d' % t for t in sorted(prediction.terna_ids.mapped('terna'))],
-            tombola_numeros=[str(n).zfill(2)
-                             for n in sorted(prediction.tombola_number_ids.mapped('name'))],
+            ternas=sorted(prediction.terna_ids.mapped('terna')),
+            tombola_lineas=[_linea_numeros(l) for l in prediction.tombola_linea_ids],
         ))
 
     @http.route('/api/lottery/v1/stats/tombola-uy-historico', type='http',
@@ -1230,27 +1234,6 @@ class LotteryAppApi(http.Controller):
             'intermedios': stats.get_tombola_remaining_numbers_month(now.month, now.year),
             'bottom': stats.get_tombola_bottom_numbers_month(now.month, now.year),
         })
-
-    @http.route('/api/lottery/v1/stats/tombola-numeros-mes-atrasados', type='http',
-                auth='public', methods=['GET'], csrf=False, cors='*')
-    def tombola_numeros_mes_atrasados(self, years_top=2, years_intermedios=2,
-                                      years_bottom=4, **kwargs):
-        """Números de Tómbola atrasados del mes actual. Mismo patrón que
-        /numeros-mes-atrasados de las loterías con sorteo."""
-        try:
-            years_top = max(int(years_top), 0)
-            years_intermedios = max(int(years_intermedios), 0)
-            years_bottom = max(int(years_bottom), 0)
-        except (TypeError, ValueError):
-            return _json_response({'error': 'invalid_years_param'}, status=400)
-
-        now = _now_local()
-        data = self._stats().get_tombola_month_overdue_sections(
-            now.month, now.year,
-            years_top=years_top, years_mid=years_intermedios, years_bottom=years_bottom)
-        return _json_response(dict(
-            data, month=now.month, month_label=MONTHS_ES[now.month - 1], year=now.year,
-        ))
 
     @http.route('/api/lottery/v1/stats/historial-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

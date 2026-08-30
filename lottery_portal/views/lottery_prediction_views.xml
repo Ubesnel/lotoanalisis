@@ -118,10 +118,18 @@
                                     </tree>
                                 </field>
                             </group>
-                            <group string="Números de Tómbola a predecir">
-                                <field name="tombola_number_ids" nolabel="1" colspan="2"
-                                       widget="many2many_tags"
-                                       options="{'no_open': True, 'no_create': True}"/>
+                            <group string="Líneas de Tómbola a predecir">
+                                <field name="tombola_linea_ids" nolabel="1" colspan="2">
+                                    <tree editable="bottom">
+                                        <field name="numero_1" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="numero_2" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="numero_3" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="numero_4" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="numero_5" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="numero_6" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="numero_7" options="{'no_open': True, 'no_create': True}"/>
+                                    </tree>
+                                </field>
                             </group>
                         </page>
                     </notebook>

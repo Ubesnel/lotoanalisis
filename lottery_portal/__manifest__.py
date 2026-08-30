@@ -1,6 +1,6 @@
 {
     "name": "Portal",
-    "version": "1.2",
+    "version": "1.3",
     "author": "SeuS IT",
     "category": "Website",
     "summary": "Estadísticas de Lotería",
