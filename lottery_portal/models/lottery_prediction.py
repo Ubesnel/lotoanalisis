@@ -3,6 +3,7 @@ import json
 
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
+from odoo.addons.lottery_base.models.utils import default_today_local
 
 WEEKDAY_CODES = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 MESES_ES = ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -141,7 +142,7 @@ class LotteryPrediction(models.Model):
         help='Sorteo/juego para el que se hace la predicción.')
     date = fields.Date(
         string='Fecha de predicción', required=True, index=True,
-        default=lambda self: fields.Date.today(),
+        default=default_today_local,
         help='Fecha del sorteo para el que se predicen los números.')
     turn_day = fields.Selection([
         ('afternoon', 'Tarde'), ('evening', 'Noche'),
@@ -174,6 +175,25 @@ class LotteryPrediction(models.Model):
         string='Puntajes', readonly=True, sanitize=False, copy=False,
         help='Desglose de la última corrida de "Completar números": qué '
              'puntaje sacó cada candidato y por qué.')
+
+    # ── Ternas y Tómbola ─────────────────────────────────────────────────
+    # Se cuelgan de la misma predicción (normalmente la del premio 1) porque
+    # comparten fecha y turno: la Tómbola sale del mismo sorteo físico que
+    # los 20 premios, y las ternas se leen igual sin importar en qué premio
+    # de ese sorteo salieron. No tiene sentido cargarlas de nuevo en la
+    # predicción de cada premio.
+    terna_ids = fields.One2many(
+        'lottery.prediction.terna', 'prediction_id',
+        string='Ternas a predecir',
+        help='Números de 3 cifras (000-999) que se predicen para este '
+             'sorteo (fecha y turno), sin importar el premio.')
+    tombola_number_ids = fields.Many2many(
+        'lottery.number', 'lottery_prediction_tombola_number_rel',
+        'prediction_id', 'number_id',
+        string='Números de Tómbola a predecir',
+        help='Combinación de números (00-99) que se predicen para la '
+             'Tómbola de este mismo sorteo (fecha y turno): un juego '
+             'aparte de la Quiniela, ver lottery.tombola.output.')
 
     # ── Números a predecir (listas independientes) ─────────────────────────
     number_ids = fields.Many2many(
@@ -750,3 +770,30 @@ class LotteryPrediction(models.Model):
                salida(ctx['last_turno']),
                ''.join(detalle(t, d) for t, d in ctx['detalles']),
                mes_txt, cabeza, ''.join(cuerpo))
+
+
+class LotteryPredictionTerna(models.Model):
+    """Terna (número de 3 cifras) a predecir, colgada de lottery.prediction.
+    Ver el comentario junto a terna_ids: se cargan sin importar el premio."""
+    _name = 'lottery.prediction.terna'
+    _description = 'Terna a predecir'
+    _order = 'terna'
+
+    prediction_id = fields.Many2one(
+        'lottery.prediction', string='Predicción',
+        required=True, ondelete='cascade', index=True)
+    terna = fields.Integer(
+        string='Terna', required=True,
+        help='Número de 3 cifras (000-999) que se predice.')
+
+    _sql_constraints = [
+        ('terna_range', 'CHECK(terna >= 0 AND terna <= 999)',
+         'La terna tiene que ser un número de 3 cifras, entre 000 y 999.'),
+        ('terna_unique_por_prediccion', 'unique(prediction_id, terna)',
+         'Esa terna ya está cargada en esta predicción.'),
+    ]
+
+    @api.depends('terna')
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = '%03d' % rec.terna if rec.terna is not None else ''

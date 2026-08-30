@@ -2,7 +2,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 from datetime import date, timedelta
-from .utils import MAPPING_WEEK_DATE, MONTHS
+from .utils import MAPPING_WEEK_DATE, MONTHS, default_today_local
 
 
 class LotteryOutput(models.Model):
@@ -18,7 +18,7 @@ class LotteryOutput(models.Model):
                                   help="Obligatoria salvo que el sorteo tenga desactivado 'Usa Centena' "
                                        "(sorteos de número de 2 dígitos, sin centena).")
     sorteo_uses_hundreds = fields.Boolean(related='sorteo_id.uses_hundreds', string='Usa Centena')
-    date = fields.Date(string='Fecha', default=lambda self: fields.Date.today(), required=True)
+    date = fields.Date(string='Fecha', default=default_today_local, required=True)
     turn_day = fields.Selection([
         ('afternoon', 'Tarde'), ('evening', 'Noche'),
     ], string='Turno del día', required=True, index=True)

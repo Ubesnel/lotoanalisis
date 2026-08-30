@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú propio de Tómbola, separado de "Números" (que son estadísticas
+         por sorteo de las demás loterías). -->
+    <menuitem name="Tómbola" id="menu_tombola_root" sequence="12"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_tombola_number_stat_item" name="Atrasos de números"
+              parent="menu_tombola_root"
+              action="action_lottery_tombola_number_stat" sequence="1"
+              groups="lottery_base.group_lottery_user"/>
+</odoo>

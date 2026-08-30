@@ -110,6 +110,20 @@
                               invisible="not score_html">
                             <field name="score_html" nolabel="1" colspan="2"/>
                         </page>
+                        <page string="Ternas y Tómbola" name="ternas_tombola">
+                            <group string="Ternas a predecir">
+                                <field name="terna_ids" nolabel="1" colspan="2">
+                                    <tree editable="bottom">
+                                        <field name="terna"/>
+                                    </tree>
+                                </field>
+                            </group>
+                            <group string="Números de Tómbola a predecir">
+                                <field name="tombola_number_ids" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
             </form>

@@ -25,7 +25,7 @@ en Ajustes, que define desde cuándo se calculan las estadísticas.
 
 from odoo import api, fields, models
 
-from .utils import MAPPING_WEEK_DATE, MONTHS
+from .utils import MAPPING_WEEK_DATE, MONTHS, default_today_local
 
 
 class LotteryTombolaOutput(models.Model):
@@ -33,7 +33,7 @@ class LotteryTombolaOutput(models.Model):
     _description = 'Salida de la Tómbola (Quiniela Uruguay)'
     _order = 'date desc, turn_day desc, id desc'
 
-    date = fields.Date(string='Fecha', default=lambda self: fields.Date.today(), required=True)
+    date = fields.Date(string='Fecha', default=default_today_local, required=True)
     turn_day = fields.Selection([
         ('afternoon', 'Tarde'), ('evening', 'Noche'),
     ], string='Turno del día', required=True, index=True)

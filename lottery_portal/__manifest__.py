@@ -8,7 +8,9 @@
         "website",
         "portal",
         "lottery_delays_number",
-        "lottery_fireball"
+        "lottery_fireball",
+        "lottery_tombola_delays",
+        "lottery_groups"
     ],
     "data": [
         'security/ir.model.access.csv',

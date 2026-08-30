@@ -22,6 +22,8 @@ TURN_LABELS = {'afternoon': 'Tarde', 'evening': 'Noche'}
 
 
 VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
+# La Tómbola de Quiniela UY no sortea los domingos.
+TOMBOLA_VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa')
 
 
 def _json_response(payload, status=200):
@@ -180,6 +182,12 @@ class LotteryAppApi(http.Controller):
         if day in VALID_DAYS:
             return day
         return VALID_DAYS[_now_local().weekday()]
+
+    def _resolve_tombola_day(self):
+        """Día de hoy en código 'lu'..'sa' para Tómbola. Los domingos no hay
+        sorteo, así que ese día se informa como el lunes (próximo sorteo)."""
+        code = VALID_DAYS[_now_local().weekday()]
+        return code if code in TOMBOLA_VALID_DAYS else 'lu'
 
     @http.route('/api/lottery/v1/stats/atrasos-numeros', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -1036,6 +1044,101 @@ class LotteryAppApi(http.Controller):
             'completo': len(premios) == self.QUINIELA_UY_TOTAL_PREMIOS,
         })
 
+    def _quiniela_uy_sorteo_ids(self, premio):
+        """(sorteo_ids, premio_int, error) para el ámbito Quiniela UY: los 20
+        premios juntos (General) sin `premio`, o uno puntual (1-20) con
+        `premio`. `error` es el dict de _json_response si `premio` vino
+        inválido o no existe; en ese caso los otros dos son None."""
+        Sorteo = request.env['lottery.sorteo'].sudo()
+        if not premio:
+            return tuple(Sorteo.search([('source_code', '=', 'quiniela_uy')]).ids), None, None
+        try:
+            premio = int(premio)
+        except (TypeError, ValueError):
+            return None, None, {'error': 'invalid_premio'}
+        sorteo = Sorteo.search([
+            ('source_code', '=', 'quiniela_uy'),
+            ('code', '=', 'quiniela_uy_%d' % premio),
+        ], limit=1)
+        if not sorteo:
+            return None, None, {'error': 'premio_not_found'}
+        return (sorteo.id,), premio, None
+
+    @http.route('/api/lottery/v1/stats/quiniela-uy-ternas-atrasadas', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def quiniela_uy_ternas_atrasadas(self, premio=None, **kwargs):
+        """Top 20 ternas (números de 3 cifras, 000-999) más atrasadas de la
+        Quiniela Uruguay. Sin `premio`: ámbito General, los 20 premios
+        juntos (una terna "sale" si salió en cualquiera). Con `premio`
+        (1-20): solo ese premio. Reusa el cálculo del wizard de Odoo
+        lottery.quiniela.uy.ternas (get_ternas_atrasadas), ya cacheado e
+        invalidado junto con las demás stats de lottery.output."""
+        sorteo_ids, premio, error = self._quiniela_uy_sorteo_ids(premio)
+        if error:
+            return _json_response(error, status=404 if error['error'] == 'premio_not_found' else 400)
+
+        Ternas = request.env['lottery.quiniela.uy.ternas'].sudo()
+        fecha_corte = str(_now_local().date())
+        ternas = Ternas.get_ternas_atrasadas(sorteo_ids, 'general', fecha_corte)[:20]
+        return _json_response({
+            'premio': premio,
+            'ternas': [dict(t, rank=i + 1) for i, t in enumerate(ternas)],
+        })
+
+    @http.route('/api/lottery/v1/stats/quiniela-uy-centenas-numero', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def quiniela_uy_centenas_numero(self, premio=None, **kwargs):
+        """Top 3 / bottom 3 centenas que más y menos acompañan a cada número
+        00-99 de la Quiniela Uruguay. Sin `premio`: ámbito General (los 20
+        premios juntos). Con `premio` (1-20): solo ese premio."""
+        sorteo_ids, premio, error = self._quiniela_uy_sorteo_ids(premio)
+        if error:
+            return _json_response(error, status=404 if error['error'] == 'premio_not_found' else 400)
+
+        data = self._stats().get_quiniela_uy_centenas_top_bottom(sorteo_ids)
+        return _json_response({'premio': premio, 'numeros': data})
+
+    @http.route('/api/lottery/v1/stats/quiniela-uy-ternas-tombola', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def quiniela_uy_ternas_tombola(self, **kwargs):
+        """Predicción de ternas y de la combinación de números de Tómbola
+        para el próximo sorteo de la Quiniela Uruguay (lottery.prediction,
+        campos terna_ids / tombola_number_ids). Se cargan siempre en la
+        predicción del premio 1: el dato es del sorteo completo (fecha y
+        turno), no de un premio en particular, así que no hace falta
+        pedirle `premio` al cliente."""
+        sorteo = request.env['lottery.sorteo'].sudo().search([
+            ('source_code', '=', 'quiniela_uy'),
+            ('code', '=', 'quiniela_uy_1'),
+        ], limit=1)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+
+        date_str, turn = sorteo.get_next_draw()
+        base = {
+            'date': date_str,
+            'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
+            'turn': turn,
+            'turn_label': TURN_LABELS.get(turn, turn),
+        }
+
+        prediction = request.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date_str),
+            ('turn_day', '=', turn),
+            ('published', '=', True),
+        ], limit=1)
+
+        if not prediction or not (prediction.terna_ids or prediction.tombola_number_ids):
+            return _json_response(dict(base, found=False, ternas=[], tombola_numeros=[]))
+
+        return _json_response(dict(
+            base, found=True,
+            ternas=['%03d' % t for t in sorted(prediction.terna_ids.mapped('terna'))],
+            tombola_numeros=[str(n).zfill(2)
+                             for n in sorted(prediction.tombola_number_ids.mapped('name'))],
+        ))
+
     @http.route('/api/lottery/v1/stats/tombola-uy-historico', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def tombola_uy_historico(self, date=None, turn=None, **kwargs):
@@ -1062,6 +1165,92 @@ class LotteryAppApi(http.Controller):
             'total_esperado': self.TOMBOLA_UY_TOTAL_NUMEROS,
             'completo': len(numeros) == self.TOMBOLA_UY_TOTAL_NUMEROS,
         })
+
+    @http.route('/api/lottery/v1/stats/tombola-atrasos-numeros', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_atrasos_numeros(self, **kwargs):
+        """Top 10 números más atrasados de la Tómbola: general, tarde y
+        noche. Juego aparte de la Quiniela (sin sorteo_id), ver
+        lottery.tombola.number.stat."""
+        stats = self._stats()
+        return _json_response({
+            'general': stats.get_tombola_top_10_general(),
+            'afternoon': stats.get_tombola_top_10_dia(),
+            'evening': stats.get_tombola_top_10_noche(),
+        })
+
+    @http.route('/api/lottery/v1/stats/tombola-numeros-salidas-dia', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_numeros_salidas_dia(self, **kwargs):
+        """Top/bottom 15 números que más/menos salen en la Tómbola por día
+        de la semana (lu..sa; sin domingo, no hay sorteo ese día)."""
+        data = self._stats().get_tombola_numbers_all_weekdays()
+        data['day'] = self._resolve_tombola_day()
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/tombola-numeros-salidas-semana', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_numeros_salidas_semana(self, **kwargs):
+        """Top/bottom 15 números que más/menos salen en la Tómbola por
+        semana del mes (sem_1..sem_5)."""
+        data = self._stats().get_tombola_numbers_all_weeks()
+        data['week'] = 'sem_%d' % min((_now_local().day + 6) // 7, 5)
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/tombola-grupos-salidas-dia', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_grupos_salidas_dia(self, **kwargs):
+        """Líneas y terminales de Tómbola que más salen, por día de semana
+        (lu..sa; sin domingo, no hay sorteo ese día)."""
+        data = self._stats().get_tombola_groups_all_weekdays()
+        data['day'] = self._resolve_tombola_day()
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/tombola-grupos-salidas-semana', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_grupos_salidas_semana(self, **kwargs):
+        """Líneas y terminales de Tómbola que más salen, por semana del mes
+        (sem_1..sem_5)."""
+        data = self._stats().get_tombola_groups_all_weeks()
+        data['week'] = 'sem_%d' % min((_now_local().day + 6) // 7, 5)
+        return _json_response(data)
+
+    @http.route('/api/lottery/v1/stats/tombola-numeros-mes', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_numeros_mes(self, **kwargs):
+        """Números de Tómbola del mes actual: más salen / intermedios / menos
+        salen. Mismo patrón que /numeros-mes de las loterías con sorteo."""
+        stats = self._stats()
+        now = _now_local()
+        return _json_response({
+            'month': now.month,
+            'month_label': MONTHS_ES[now.month - 1],
+            'year': now.year,
+            'top': stats.get_tombola_top_numbers_month(now.month, now.year),
+            'intermedios': stats.get_tombola_remaining_numbers_month(now.month, now.year),
+            'bottom': stats.get_tombola_bottom_numbers_month(now.month, now.year),
+        })
+
+    @http.route('/api/lottery/v1/stats/tombola-numeros-mes-atrasados', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def tombola_numeros_mes_atrasados(self, years_top=2, years_intermedios=2,
+                                      years_bottom=4, **kwargs):
+        """Números de Tómbola atrasados del mes actual. Mismo patrón que
+        /numeros-mes-atrasados de las loterías con sorteo."""
+        try:
+            years_top = max(int(years_top), 0)
+            years_intermedios = max(int(years_intermedios), 0)
+            years_bottom = max(int(years_bottom), 0)
+        except (TypeError, ValueError):
+            return _json_response({'error': 'invalid_years_param'}, status=400)
+
+        now = _now_local()
+        data = self._stats().get_tombola_month_overdue_sections(
+            now.month, now.year,
+            years_top=years_top, years_mid=years_intermedios, years_bottom=years_bottom)
+        return _json_response(dict(
+            data, month=now.month, month_label=MONTHS_ES[now.month - 1], year=now.year,
+        ))
 
     @http.route('/api/lottery/v1/stats/historial-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

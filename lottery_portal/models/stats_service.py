@@ -479,6 +479,69 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('sorteo_ids')
+    def get_quiniela_uy_centenas_top_bottom(self, sorteo_ids):
+        """Top 3 / bottom 3 centenas que más y menos acompañan a cada número
+        00-99 de la Quiniela Uruguay. `sorteo_ids`: tupla de 1 (un premio
+        puntual) o de los 20 (ámbito General, los 20 premios juntos).
+
+        Universo completo 100 números x 10 centenas (CROSS JOIN) para que
+        una combinación que nunca salió pueda aparecer en "bottom" con 0
+        salidas, en vez de quedar afuera por no tener fila en los datos.
+
+        Comparte criterio con lottery.quiniela.uy.ternas.get_centenas_por_numero
+        (wizard de Odoo), que solo trae el top; acá se agrega el bottom para
+        la app, siguiendo el propio comentario de ese archivo de que el SQL
+        se muda a este servicio cuando esto se expone a la app."""
+        if not sorteo_ids:
+            return {}
+        self.env.cr.execute("""
+            WITH universo AS (
+                SELECT nums.numero, cents.centena
+                FROM (SELECT LPAD(g::text, 2, '0') AS numero FROM generate_series(0, 99) g) nums
+                CROSS JOIN (SELECT g::text AS centena FROM generate_series(0, 9) g) cents
+            ),
+            conteo AS (
+                SELECT RIGHT(o.complete_number, 2) AS numero,
+                       LEFT(o.complete_number, 1) AS centena,
+                       COUNT(*) AS veces
+                FROM lottery_output o
+                WHERE o.sorteo_id IN %(sorteo_ids)s
+                  AND o.complete_number IS NOT NULL
+                GROUP BY 1, 2
+            ),
+            combinado AS (
+                SELECT u.numero, u.centena, COALESCE(c.veces, 0) AS veces
+                FROM universo u
+                LEFT JOIN conteo c ON c.numero = u.numero AND c.centena = u.centena
+            ),
+            ranked AS (
+                SELECT numero, centena, veces,
+                       ROW_NUMBER() OVER (PARTITION BY numero ORDER BY veces DESC, centena) AS puesto_top,
+                       ROW_NUMBER() OVER (PARTITION BY numero ORDER BY veces ASC, centena) AS puesto_bottom
+                FROM combinado
+            )
+            SELECT numero, centena, veces, puesto_top, puesto_bottom
+            FROM ranked
+            WHERE puesto_top <= 3 OR puesto_bottom <= 3
+            ORDER BY numero;
+        """, {'sorteo_ids': tuple(sorteo_ids)})
+
+        result = {}
+        for row in self.env.cr.dictfetchall():
+            entry = result.setdefault(row['numero'], {'top': [], 'bottom': []})
+            if row['puesto_top'] <= 3:
+                entry['top'].append(
+                    {'centena': row['centena'], 'veces': row['veces'], 'rank': row['puesto_top']})
+            if row['puesto_bottom'] <= 3:
+                entry['bottom'].append(
+                    {'centena': row['centena'], 'veces': row['veces'], 'rank': row['puesto_bottom']})
+        for entry in result.values():
+            entry['top'].sort(key=lambda x: x['rank'])
+            entry['bottom'].sort(key=lambda x: x['rank'])
+        return result
+
+    @api.model
     def get_combinaciones_scores(self, sorteo_id, target_date, window=15):
         """Puntaje de combinación de los 100 números 00-99, sin recortar.
 
@@ -750,6 +813,338 @@ class LotteryStatsService(models.Model):
             asc = sorted(rows, key=lambda x: (x[field] or 0, -x['id']))[:15]
             result['top'][week] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(desc)]
             result['bottom'][week] = [{'name': r['name'], 'total': r[field], 'rank': i + 1} for i, r in enumerate(asc)]
+        return result
+
+    # ── Tómbola de Quiniela Uruguay (juego aparte, sin sorteo_id) ─────────
+    # Sin @tools.ormcache: la tabla lottery_tombola_number_stat tiene 100
+    # filas y no hay una MV detrás, así que la query en sí ya es barata; el
+    # proxy_cache de nginx delante de estos endpoints (~20s) cubre la
+    # repetición sin necesitar que este módulo invalide el ormcache de
+    # lottery.stats.service cuando cambian las salidas de Tómbola.
+
+    # Solo líneas y terminales (no pintas/sumas/etc.): son los únicos grupos
+    # que interesan para Tómbola. Se reusa el catálogo lottery.group que ya
+    # carga lottery_groups (números 0-99, fijo, no depende de sorteo).
+    TOMBOLA_GROUP_CODES = ['line_%d' % i for i in range(10)] + ['terminal_%d' % i for i in range(10)]
+
+    def _tombola_top_10(self, order_field, turn_day=None):
+        turn_filter = "AND o.turn_day = %(turn_day)s" if turn_day else ""
+        self.env.cr.execute(f"""
+            SELECT
+                lts.number_id AS id,
+                LPAD(ln.name::text, 2, '0') AS name,
+                TO_CHAR(lo.date, 'DD/MM/YYYY') AS ultima_fecha,
+                lo.turn_day AS ultimo_turno,
+                lts.{order_field} AS total_atrasadas
+            FROM lottery_tombola_number_stat lts
+            JOIN lottery_number ln ON ln.id = lts.number_id
+            LEFT JOIN LATERAL (
+                SELECT date, turn_day FROM lottery_tombola_output o
+                WHERE o.number_id = lts.number_id {turn_filter}
+                ORDER BY date DESC, turn_day DESC
+                LIMIT 1
+            ) lo ON TRUE
+            ORDER BY lts.{order_field} DESC, lts.number_id
+            LIMIT 10
+        """, {'turn_day': turn_day})
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_tombola_top_10_general(self):
+        return self._tombola_top_10('total_atrasadas')
+
+    @api.model
+    def get_tombola_top_10_dia(self):
+        return self._tombola_top_10('total_atrasadas_dia', turn_day='afternoon')
+
+    @api.model
+    def get_tombola_top_10_noche(self):
+        return self._tombola_top_10('total_atrasadas_noche', turn_day='evening')
+
+    @api.model
+    def get_tombola_numbers_all_weekdays(self):
+        """Top 10 números que más salen en Tómbola, por día de semana
+        (lu..sa; sin domingo, no hay sorteo ese día)."""
+        day_fields = [
+            ('lu', 'total_lunes'), ('ma', 'total_martes'), ('mi', 'total_miercoles'),
+            ('ju', 'total_jueves'), ('vi', 'total_viernes'), ('sa', 'total_sabado'),
+        ]
+        result = {}
+        for day, field in day_fields:
+            self.env.cr.execute(f"""
+                SELECT LPAD(ln.name::text, 2, '0') AS name, lts.{field} AS total
+                FROM lottery_tombola_number_stat lts
+                JOIN lottery_number ln ON ln.id = lts.number_id
+                ORDER BY lts.{field} DESC, lts.number_id
+                LIMIT 10
+            """)
+            result[day] = [dict(r, rank=i + 1) for i, r in enumerate(self.env.cr.dictfetchall())]
+        return result
+
+    @api.model
+    def get_tombola_numbers_all_weeks(self):
+        """Top 10 números que más salen en Tómbola, por semana del mes
+        (sem_1..sem_5)."""
+        week_fields = [
+            ('sem_1', 'total_semana_1'), ('sem_2', 'total_semana_2'), ('sem_3', 'total_semana_3'),
+            ('sem_4', 'total_semana_4'), ('sem_5', 'total_semana_5'),
+        ]
+        result = {}
+        for week, field in week_fields:
+            self.env.cr.execute(f"""
+                SELECT LPAD(ln.name::text, 2, '0') AS name, lts.{field} AS total
+                FROM lottery_tombola_number_stat lts
+                JOIN lottery_number ln ON ln.id = lts.number_id
+                ORDER BY lts.{field} DESC, lts.number_id
+                LIMIT 10
+            """)
+            result[week] = [dict(r, rank=i + 1) for i, r in enumerate(self.env.cr.dictfetchall())]
+        return result
+
+    TOMBOLA_GROUPS_TOP_N = 4
+
+    def _tombola_groups_ranking(self, field):
+        """Top 4 líneas y top 4 terminales de Tómbola ordenadas por salidas
+        (SUMA de sus números), separadas por categoría (no se mezclan entre
+        sí: son conjuntos de igual tamaño -10- pero de naturaleza distinta)."""
+        self.env.cr.execute(f"""
+            SELECT g.code, g.name, SUM(lts.{field}) AS total
+            FROM lottery_group_number_rel rel
+            JOIN lottery_group g ON g.id = rel.group_id
+            JOIN lottery_tombola_number_stat lts ON lts.number_id = rel.number_id
+            WHERE g.code = ANY(%(codes)s)
+            GROUP BY g.id, g.code, g.name
+        """, {'codes': self.TOMBOLA_GROUP_CODES})
+        rows = self.env.cr.dictfetchall()
+        top_n = self.TOMBOLA_GROUPS_TOP_N
+        lineas = sorted((r for r in rows if r['code'].startswith('line_')),
+                        key=lambda r: (-r['total'], r['code']))[:top_n]
+        terminales = sorted((r for r in rows if r['code'].startswith('terminal_')),
+                            key=lambda r: (-r['total'], r['code']))[:top_n]
+        return (
+            [dict(r, rank=i + 1) for i, r in enumerate(lineas)],
+            [dict(r, rank=i + 1) for i, r in enumerate(terminales)],
+        )
+
+    @api.model
+    def get_tombola_groups_all_weekdays(self):
+        """Líneas y terminales de Tómbola que más salen, por día de semana
+        (lu..sa; sin domingo, no hay sorteo ese día)."""
+        day_fields = [
+            ('lu', 'total_lunes'), ('ma', 'total_martes'), ('mi', 'total_miercoles'),
+            ('ju', 'total_jueves'), ('vi', 'total_viernes'), ('sa', 'total_sabado'),
+        ]
+        result = {'lineas': {}, 'terminales': {}}
+        for day, field in day_fields:
+            lineas, terminales = self._tombola_groups_ranking(field)
+            result['lineas'][day] = lineas
+            result['terminales'][day] = terminales
+        return result
+
+    @api.model
+    def get_tombola_groups_all_weeks(self):
+        """Líneas y terminales de Tómbola que más salen, por semana del mes
+        (sem_1..sem_5)."""
+        week_fields = [
+            ('sem_1', 'total_semana_1'), ('sem_2', 'total_semana_2'), ('sem_3', 'total_semana_3'),
+            ('sem_4', 'total_semana_4'), ('sem_5', 'total_semana_5'),
+        ]
+        result = {'lineas': {}, 'terminales': {}}
+        for week, field in week_fields:
+            lineas, terminales = self._tombola_groups_ranking(field)
+            result['lineas'][week] = lineas
+            result['terminales'][week] = terminales
+        return result
+
+    def _tombola_month_numbers_cte(self, field):
+        """Copia de _month_numbers_cte para Tómbola: mismo criterio (total =
+        histórico del mes en todos los años - lo ya salido este año en el
+        mes, ranking global 1-100), sin sorteo_id."""
+        return f"""
+            WITH base AS (
+                SELECT
+                    ln.id,
+                    LPAD(ln.name::text, 2, '0') AS name,
+                    lts.{field} AS total_historico,
+                    COALESCE((
+                        SELECT COUNT(*) FROM lottery_tombola_output lo
+                        WHERE lo.number_id = ln.id
+                          AND lo.month = %(month)s::text
+                          AND lo.year = %(year)s
+                    ), 0) AS salidas_mes_anio,
+                    last_info.last_month_date,
+                    last_info.last_month_turn,
+                    last_info.last_month_week_day
+                FROM lottery_tombola_number_stat lts
+                JOIN lottery_number ln ON ln.id = lts.number_id
+                LEFT JOIN LATERAL (
+                    SELECT
+                        TO_CHAR(lo2.date, 'DD/MM/YYYY') AS last_month_date,
+                        lo2.turn_day AS last_month_turn,
+                        CASE lo2.week_day
+                            WHEN 'lu' THEN 'Lun'
+                            WHEN 'ma' THEN 'Mar'
+                            WHEN 'mi' THEN 'Mié'
+                            WHEN 'ju' THEN 'Jue'
+                            WHEN 'vi' THEN 'Vie'
+                            WHEN 'sa' THEN 'Sáb'
+                            WHEN 'do' THEN 'Dom'
+                            ELSE lo2.week_day
+                        END AS last_month_week_day
+                    FROM lottery_tombola_output lo2
+                    WHERE lo2.number_id = ln.id
+                      AND lo2.month = %(month)s::text
+                    ORDER BY lo2.date DESC
+                    LIMIT 1
+                ) last_info ON true
+            ),
+            ranked AS (
+                SELECT
+                    id, name, total_historico, salidas_mes_anio,
+                    last_month_date, last_month_turn, last_month_week_day,
+                    (total_historico - salidas_mes_anio) AS total,
+                    ROW_NUMBER() OVER (
+                        ORDER BY (total_historico - salidas_mes_anio) DESC, id DESC
+                    ) AS global_rank
+                FROM base
+            )
+        """
+
+    @api.model
+    def get_tombola_top_numbers_month(self, month=None, current_year=None):
+        field = MONTH_FIELD_MAP.get(month)
+        if not field:
+            return []
+        query = self._tombola_month_numbers_cte(field) + """
+            SELECT
+                id, name, total, salidas_mes_anio,
+                last_month_date, last_month_turn, last_month_week_day,
+                global_rank AS rank
+            FROM ranked
+            WHERE global_rank <= 30
+            ORDER BY global_rank;
+        """
+        self.env.cr.execute(query, {'month': month, 'year': current_year})
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_tombola_remaining_numbers_month(self, month=None, current_year=None):
+        field = MONTH_FIELD_MAP.get(month)
+        if not field:
+            return []
+        query = self._tombola_month_numbers_cte(field) + """
+            SELECT
+                id, name, total, salidas_mes_anio,
+                last_month_date, last_month_turn, last_month_week_day,
+                global_rank AS rank
+            FROM ranked
+            WHERE global_rank > 30 AND global_rank <= 70
+            ORDER BY global_rank;
+        """
+        self.env.cr.execute(query, {'month': month, 'year': current_year})
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_tombola_bottom_numbers_month(self, month=None, current_year=None):
+        field = MONTH_FIELD_MAP.get(month)
+        if not field:
+            return []
+        # rank local 1-30 donde 1 = menos frecuente (compatible con getBallFriosClass)
+        query = self._tombola_month_numbers_cte(field) + """
+            SELECT
+                id, name, total, salidas_mes_anio,
+                last_month_date, last_month_turn, last_month_week_day,
+                ROW_NUMBER() OVER (ORDER BY total ASC, id DESC) AS rank
+            FROM ranked
+            WHERE global_rank > 70
+            ORDER BY total ASC, id DESC;
+        """
+        self.env.cr.execute(query, {'month': month, 'year': current_year})
+        return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_tombola_month_overdue_sections(self, month=None, current_year=None,
+                                           years_top=2, years_mid=2, years_bottom=4):
+        """Copia de get_month_overdue_sections para Tómbola, sin sorteo_id."""
+        categories = {
+            'top': (self.get_tombola_top_numbers_month(month, current_year), years_top),
+            'intermedios': (self.get_tombola_remaining_numbers_month(month, current_year), years_mid),
+            'bottom': (self.get_tombola_bottom_numbers_month(month, current_year), years_bottom),
+        }
+
+        # Última salida en este mes en años ANTERIORES al actual, por número
+        self.env.cr.execute("""
+            SELECT DISTINCT ON (lo.number_id)
+                lo.number_id,
+                TO_CHAR(lo.date, 'DD/MM/YYYY') AS last_month_date,
+                lo.year AS last_month_year,
+                lo.turn_day AS last_month_turn,
+                CASE lo.week_day
+                    WHEN 'lu' THEN 'Lun'
+                    WHEN 'ma' THEN 'Mar'
+                    WHEN 'mi' THEN 'Mié'
+                    WHEN 'ju' THEN 'Jue'
+                    WHEN 'vi' THEN 'Vie'
+                    WHEN 'sa' THEN 'Sáb'
+                    WHEN 'do' THEN 'Dom'
+                    ELSE lo.week_day
+                END AS last_month_week_day
+            FROM lottery_tombola_output lo
+            WHERE lo.month = %(month)s::text AND lo.year < %(year)s
+            ORDER BY lo.number_id, lo.date DESC
+        """, {'month': month, 'year': current_year})
+        prev = {r['number_id']: r for r in self.env.cr.dictfetchall()}
+
+        # Última salida del año ACTUAL en el MES ACTUAL, por número
+        self.env.cr.execute("""
+            SELECT DISTINCT ON (lo.number_id)
+                lo.number_id,
+                TO_CHAR(lo.date, 'DD/MM/YYYY') AS last_year_date,
+                lo.turn_day AS last_year_turn
+            FROM lottery_tombola_output lo
+            WHERE lo.year = %(year)s AND lo.month = %(month)s::text
+            ORDER BY lo.number_id, lo.date DESC
+        """, {'year': current_year, 'month': month})
+        curr = {r['number_id']: r for r in self.env.cr.dictfetchall()}
+
+        result = {}
+        for key, (numbers, threshold) in categories.items():
+            section_all = []
+            for n in numbers:
+                p = prev.get(n['id'])
+                if p:
+                    missed_years = current_year - p['last_month_year'] - 1
+                    if missed_years < threshold:
+                        continue
+                else:
+                    missed_years = None  # nunca salió en este mes
+                c = curr.get(n['id'])
+                section_all.append({
+                    'id': n['id'],
+                    'name': n['name'],
+                    'rank': n['rank'],
+                    'total': n['total'],
+                    'salidas_mes_anio': n['salidas_mes_anio'],
+                    'last_month_date': p['last_month_date'] if p else None,
+                    'last_month_turn': p['last_month_turn'] if p else None,
+                    'last_month_week_day': p['last_month_week_day'] if p else None,
+                    'years_sin_salir_mes': missed_years,
+                    'nunca_salio_mes': p is None,
+                    'salio_anio_actual': bool(c),
+                    'last_year_date': c['last_year_date'] if c else None,
+                    'last_year_turn': c['last_year_turn'] if c else None,
+                })
+            # Más atrasados primero; "nunca salió" encabeza la lista
+            section_all.sort(key=lambda i: (
+                -(i['years_sin_salir_mes'] if i['years_sin_salir_mes'] is not None else 9999),
+                i['rank'],
+            ))
+            result[key] = {
+                'years_threshold': threshold,
+                'all': section_all,
+                'salieron_anio': [i for i in section_all if i['salio_anio_actual']],
+                'sin_salir_anio': [i for i in section_all if not i['salio_anio_actual']],
+            }
         return result
 
     @api.model
