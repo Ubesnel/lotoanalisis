@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.addons.lottery_base.models.utils import default_today_local
 
 
 def _default_sorteo(self):
@@ -27,7 +28,7 @@ class LotteryCuriosity(models.Model):
         help='Sorteo/juego al que corresponde esta curiosidad.')
     date = fields.Date(
         string='Fecha publicación', required=True, index=True,
-        default=lambda self: fields.Date.today(),
+        default=default_today_local,
         help='Fecha de la curiosidad; la app la muestra como fecha de la noticia.')
     hour = fields.Float(
         string='Hora publicación', default=_default_hour,

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Atrasos de números -->
+    <record id="view_lottery_tombola_number_stat_tree" model="ir.ui.view">
+        <field name="name">view.lottery.tombola.number.stat.tree</field>
+        <field name="model">lottery.tombola.number.stat</field>
+        <field name="arch" type="xml">
+            <tree string="Atrasos de números (Tómbola)" create="0" edit="0" delete="0" default_order="number_name">
+                <field name="number_name"/>
+                <field name="total_salidas" optional="hide"/>
+                <field name="total_salidas_dia" optional="hide"/>
+                <field name="total_salidas_noche" optional="hide"/>
+                <field name="total_atrasadas"/>
+                <field name="total_atrasadas_dia"/>
+                <field name="total_atrasadas_noche"/>
+                <field name="salidas_atrasadas_lunes" optional="hide"/>
+                <field name="salidas_atrasadas_martes" optional="hide"/>
+                <field name="salidas_atrasadas_miercoles" optional="hide"/>
+                <field name="salidas_atrasadas_jueves" optional="hide"/>
+                <field name="salidas_atrasadas_viernes" optional="hide"/>
+                <field name="salidas_atrasadas_sabado" optional="hide"/>
+                <field name="cant_salidas_enero" optional="hide"/>
+                <field name="cant_salidas_febrero" optional="hide"/>
+                <field name="cant_salidas_marzo" optional="hide"/>
+                <field name="cant_salidas_abril" optional="hide"/>
+                <field name="cant_salidas_mayo" optional="hide"/>
+                <field name="cant_salidas_junio" optional="hide"/>
+                <field name="cant_salidas_julio" optional="hide"/>
+                <field name="cant_salidas_agosto" optional="hide"/>
+                <field name="cant_salidas_septiembre" optional="hide"/>
+                <field name="cant_salidas_octubre" optional="hide"/>
+                <field name="cant_salidas_noviembre" optional="hide"/>
+                <field name="cant_salidas_diciembre" optional="hide"/>
+                <field name="total_semana_1" optional="hide"/>
+                <field name="total_semana_2" optional="hide"/>
+                <field name="total_semana_3" optional="hide"/>
+                <field name="total_semana_4" optional="hide"/>
+                <field name="total_semana_5" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_lottery_tombola_number_stat" model="ir.actions.act_window">
+        <field name="name">Atrasos de números</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.tombola.number.stat</field>
+        <field name="view_mode">tree</field>
+    </record>
+</odoo>
