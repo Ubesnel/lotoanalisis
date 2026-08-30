@@ -1224,16 +1224,11 @@ class LotteryAppApi(http.Controller):
     def tombola_numeros_mes(self, **kwargs):
         """Números de Tómbola del mes actual: más salen / intermedios / menos
         salen. Mismo patrón que /numeros-mes de las loterías con sorteo."""
-        stats = self._stats()
         now = _now_local()
-        return _json_response({
-            'month': now.month,
-            'month_label': MONTHS_ES[now.month - 1],
-            'year': now.year,
-            'top': stats.get_tombola_top_numbers_month(now.month, now.year),
-            'intermedios': stats.get_tombola_remaining_numbers_month(now.month, now.year),
-            'bottom': stats.get_tombola_bottom_numbers_month(now.month, now.year),
-        })
+        data = self._stats().get_tombola_numbers_month_all(now.month, now.year)
+        return _json_response(dict(
+            data, month=now.month, month_label=MONTHS_ES[now.month - 1], year=now.year,
+        ))
 
     @http.route('/api/lottery/v1/stats/historial-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

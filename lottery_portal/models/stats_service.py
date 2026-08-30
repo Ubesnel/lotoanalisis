@@ -1011,56 +1011,48 @@ class LotteryStatsService(models.Model):
         """
 
     @api.model
-    def get_tombola_top_numbers_month(self, month=None, current_year=None):
+    def get_tombola_numbers_month_all(self, month=None, current_year=None):
+        """Números de Tómbola del mes: más salen / intermedios / menos
+        salen, en UNA sola pasada por la base.
+
+        Antes había 3 métodos (uno por categoría) que volvían a armar la
+        misma consulta pesada cada uno -100 números x 2 subconsultas
+        correlacionadas contra lottery_tombola_output por número- solo para
+        cambiar el recorte de posiciones al final; el endpoint terminaba
+        pegándole a la base 3 veces por request. Acá se arma una vez y el
+        recorte en top/intermedios/bottom se hace en Python, igual criterio
+        que ya usa lottery.quiniela.uy.ternas (cargar todo una vez y
+        recortar después)."""
         field = MONTH_FIELD_MAP.get(month)
         if not field:
-            return []
+            return {'top': [], 'intermedios': [], 'bottom': []}
         query = self._tombola_month_numbers_cte(field) + """
             SELECT
                 id, name, total, salidas_mes_anio,
                 last_month_date, last_month_turn, last_month_week_day,
-                global_rank AS rank
+                global_rank
             FROM ranked
-            WHERE global_rank <= 30
             ORDER BY global_rank;
         """
         self.env.cr.execute(query, {'month': month, 'year': current_year})
-        return self.env.cr.dictfetchall()
+        rows = self.env.cr.dictfetchall()
 
-    @api.model
-    def get_tombola_remaining_numbers_month(self, month=None, current_year=None):
-        field = MONTH_FIELD_MAP.get(month)
-        if not field:
-            return []
-        query = self._tombola_month_numbers_cte(field) + """
-            SELECT
-                id, name, total, salidas_mes_anio,
-                last_month_date, last_month_turn, last_month_week_day,
-                global_rank AS rank
-            FROM ranked
-            WHERE global_rank > 30 AND global_rank <= 70
-            ORDER BY global_rank;
-        """
-        self.env.cr.execute(query, {'month': month, 'year': current_year})
-        return self.env.cr.dictfetchall()
+        def _sin_rank_global(row):
+            row = dict(row)
+            row.pop('global_rank')
+            return row
 
-    @api.model
-    def get_tombola_bottom_numbers_month(self, month=None, current_year=None):
-        field = MONTH_FIELD_MAP.get(month)
-        if not field:
-            return []
+        top = [dict(_sin_rank_global(r), rank=r['global_rank'])
+               for r in rows if r['global_rank'] <= 30]
+        intermedios = [dict(_sin_rank_global(r), rank=r['global_rank'])
+                       for r in rows if 30 < r['global_rank'] <= 70]
         # rank local 1-30 donde 1 = menos frecuente (compatible con getBallFriosClass)
-        query = self._tombola_month_numbers_cte(field) + """
-            SELECT
-                id, name, total, salidas_mes_anio,
-                last_month_date, last_month_turn, last_month_week_day,
-                ROW_NUMBER() OVER (ORDER BY total ASC, id DESC) AS rank
-            FROM ranked
-            WHERE global_rank > 70
-            ORDER BY total ASC, id DESC;
-        """
-        self.env.cr.execute(query, {'month': month, 'year': current_year})
-        return self.env.cr.dictfetchall()
+        bottom_rows = sorted(
+            (r for r in rows if r['global_rank'] > 70),
+            key=lambda r: (r['total'], -r['id']))
+        bottom = [dict(_sin_rank_global(r), rank=i + 1)
+                 for i, r in enumerate(bottom_rows)]
+        return {'top': top, 'intermedios': intermedios, 'bottom': bottom}
 
     @api.model
     @tools.ormcache('sorteo_id')
