@@ -158,6 +158,12 @@ class LotteryPrediction(models.Model):
         help='Hora en que se publica la predicción, en hora local (Uruguay). '
              'Se edita con el widget de horas (13.5 = 13:30). La app la '
              'muestra en Números Mágicos rotulada "Hora de Uruguay".')
+    published_date = fields.Datetime(
+        string='Publicada el', readonly=True, copy=False,
+        help='Fecha y hora reales en que se marcó "Publicado" (se completa '
+             'sola). No confundir con "Fecha de predicción", que es la del '
+             'sorteo: si se carga de noche una predicción para el turno '
+             'siguiente, esta fecha puede ser un día anterior a esa.')
 
     temperature = fields.Selection([
         ('hot',       'Calientes'),
@@ -258,6 +264,22 @@ class LotteryPrediction(models.Model):
             'Ya existe una predicción registrada para esa fecha, turno y sorteo.'
         )
     ]
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('published'):
+                vals.setdefault('published_date', fields.Datetime.now())
+        return super().create(vals_list)
+
+    def write(self, vals):
+        recien_publicadas = self.browse()
+        if vals.get('published'):
+            recien_publicadas = self.filtered(lambda r: not r.published)
+        res = super().write(vals)
+        if recien_publicadas:
+            recien_publicadas.write({'published_date': fields.Datetime.now()})
+        return res
 
     @api.constrains('super_magico_id', 'number_ids_5')
     def _check_super_magico_en_5(self):
