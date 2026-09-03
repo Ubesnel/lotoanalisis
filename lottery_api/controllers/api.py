@@ -81,6 +81,23 @@ def _fmt_hour(value):
     return '%02d:%02d' % (h, m)
 
 
+def _fmt_published(value):
+    """Datetime UTC (lottery.prediction.published_date) → 'DD/MM HH:MM' en
+    hora local (Uruguay), o None.
+
+    A diferencia de `hour` (solo la hora), esto incluye la fecha real en
+    que se tocó "Publicado": una predicción cargada de noche para el
+    sorteo del turno siguiente queda con `date` (fecha del sorteo) un día
+    después de la fecha en que efectivamente se publicó, y mostrar solo la
+    hora sin la fecha genera dudas sobre cuándo se publicó de verdad.
+    """
+    if not value:
+        return None
+    tz_name = request.env.company.partner_id.tz or 'America/Montevideo'
+    local = pytz.utc.localize(value).astimezone(pytz.timezone(tz_name))
+    return local.strftime('%d/%m %H:%M')
+
+
 def _now_local():
     """Hora actual en la zona horaria de la empresa.
 
@@ -383,9 +400,14 @@ class LotteryAppApi(http.Controller):
             super_magico=(
                 str(prediction.super_magico_id.name).zfill(2)
                 if prediction.super_magico_id else None),
-            # Hora de publicación (hora local, Uruguay): la app la rotula
-            # "Hora de Uruguay" en el header de Números Mágicos.
-            hour=_fmt_hour(prediction.hour),
+            # La app arma "Publicado {hour} (hora de Uruguay)" con este
+            # valor. Se manda fecha + hora reales de publicación
+            # (published_date) para no confundir con la fecha del sorteo
+            # (arriba, `date`), que puede ser un día distinto; si el
+            # registro es viejo y no tiene published_date (anterior a este
+            # campo), se cae a la hora sola como antes.
+            hour=(_fmt_published(prediction.published_date)
+                  or _fmt_hour(prediction.hour)),
         ))
 
     @http.route('/api/lottery/v1/stats/grupos-dia', type='http',
