@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import json
+import random
 import re
 
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 from odoo.addons.lottery_base.models.utils import default_today_local
+from .patron_atraso import _hit_cruce
 
 WEEKDAY_CODES = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
-MESES_ES = ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre',
-            'diciembre')
 
 # Qué lista del ranking_snapshot del sorteo mira cada temperatura.
 TEMPERATURE_KEY = {
@@ -18,30 +17,34 @@ TEMPERATURE_KEY = {
     'remaining': 'numbers_remaining',
 }
 
-# ── Pesos del botón "Completar números" ───────────────────────────────────
-# Jerarquía pedida (21/08/2026): mandan los atrasos, y se miden por cantidad
-# real de salidas atrasadas, no por puesto en la lista.
-#   grupos > pintas > combinaciones > tabla general > tabla del turno.
-# Cada señal tiene un máximo menor que la de arriba, así ninguna sola da
-# vuelta a la anterior; entre varias sí pueden mover a un número.
+# ── Completar números (07/09/2026) ─────────────────────────────────────────
+# La lista de 20 ya no sale de sumar puntajes: sale de "tandas" de recencia.
+# Se camina el historial de salidas de este sorteo (los dos turnos
+# mezclados, de la más reciente hacia atrás) y en cada paso entran los
+# candidatos que todavía no habían entrado y comparten decena o unidad con
+# el número de esa salida. Se sigue retrocediendo hasta juntar 20 (o agotar
+# candidatos). Ver `_seleccionar_veinte`.
 #
-# Grupos y pintas ya NO se separan en "general" y "turno": se unen los dos
-# top en una sola lista y se ordena por atraso. Los dos contadores son
-# comparables — ambos cuentan sorteos relevantes sin acierto y ambos tienen
-# la misma esperanza (un grupo de 10 números sale 1 de cada 10 sorteos, se
-# mire el general o se mire un turno). Así, si Terminal 8 lleva 45 atrasos de
-# tarde y Terminal 6 lleva 30 generales, para predecir la tarde manda
-# Terminal 8; y cuando el general trepe a 45-50 pasa a mandar él.
-PESO_GRUPOS = 50.0
-PESO_PINTAS = 28.0
-PESO_COMBINACIONES = 16.0
-PESO_TABLA_GENERAL = 11.0
-PESO_TABLA_TURNO = 8.0
+# Cuántas salidas hacia atrás se traen para esa caminata. Con una salida por
+# turno y por día alcanza de sobra para juntar 20 números aunque los
+# candidatos sean pocos; si el historial se agotara antes, el resto se
+# completa con la cascada de abajo sobre los candidatos que quedaron afuera.
+MAX_SALIDAS_HISTORIAL = 120
 
-# El puntaje de grupos y pintas es proporcional al atraso: el más atrasado de
-# la unión se lleva el peso entero y el resto la parte que le toca
-# (atraso / atraso_del_puntero). Un grupo con la mitad de atrasos que el
-# puntero vale la mitad, que es justo lo que se quiere que se note.
+# Cuando una tanda trae más candidatos nuevos de los que hacen falta para
+# llegar a 20 hay que elegir cuáles entran, y ese mismo criterio es el que
+# arma el orden final de los 20 (del que salen los 10, los 5 y el Súper
+# Mágico, siempre por recorte: 10 ⊂ 20, 5 ⊂ 10, Súper Mágico = el 1º de los
+# 5). Es una cascada estricta, no una suma de puntos: cada señal sólo
+# desempata a la anterior.
+#   1) Tabla LotoAnálisis (unificada general+turno)
+#   2) Grupos más atrasados (unión general+turno)
+#   3) Pintas más atrasadas (unión general+turno)
+#   4) Combinaciones (score crudo de la Consulta de números)
+#   5) Cruce línea/terminal contra la última salida general
+#   6) Mayoría ≥50/<50 de los últimos 10 sorteos ganadores
+#   7) Al azar
+# Ver `_clave_cascada`.
 
 # Un número puede caer en varios grupos atrasados a la vez, y no son señales
 # repetidas: cada familia (terminal, suma, resta, línea...) reparte los 100
@@ -61,6 +64,12 @@ PESO_TABLA_TURNO = 8.0
 # menos 1; de ahí en adelante se mantiene el último.
 APORTE_GRUPOS_EXTRA = (0.0, 0.12, 0.30, 0.40)
 
+# Escala interna para el valor de grupos/pintas (ya no es una suma de puntos
+# junto a otras señales, así que el número en sí no importa, sólo el orden
+# que genera). Se mantiene en 100 nada más que para que el desglose se lea
+# como un porcentaje del más atrasado de la unión.
+ESCALA_ATRASO = 100.0
+
 # Tabla LotoAnálisis: un acompañante no vale lo mismo pegado que lejos, pero
 # es una ponderación suave, NO una regla de "gana el más lejos" — el que sale
 # a veces es justo un vecino. El índice es la distancia en casillas (1 =
@@ -68,13 +77,21 @@ APORTE_GRUPOS_EXTRA = (0.0, 0.12, 0.30, 0.40)
 # que en una tirada puede no haber ningún acompañante que llegue al tope y
 # está bien. El pegadito arranca en 0.40, no en cero.
 #
-# Toda la señal vale 11 puntos (8 la del turno), así que entre el más cercano
-# y el más lejano hay 6.6 puntos de diferencia: mueve el orden entre números
-# parejos, nunca decide por sí sola.
+# La tabla general y la del turno ya no se suman por separado: un candidato
+# se queda con la mejor (más alta) de las dos, igual que grupos y pintas se
+# quedan con el atraso más alto entre general y turno.
 CURVA_DISTANCIA_TABLA = (0.40, 0.55, 0.68, 0.78, 0.85, 0.90, 0.93, 0.96,
                          0.98, 0.99, 1.00)
 
-# ── Atraso del mes: criterio EXTRA, sólo para las listas de 10 y 5 ────────
+# Últimos N sorteos ganadores (ambos turnos) sobre los que se cuenta la
+# mayoría ≥50/<50 del anteúltimo escalón de la cascada.
+VENTANA_MAYORIA = 10
+
+# ── Atraso del mes ─────────────────────────────────────────────────────────
+# Ya NO se usa para elegir los 10 y los 5 de "Completar números" (eso ahora
+# lo decide la cascada de arriba); sigue viva porque la Tómbola de la
+# Quiniela Uruguay la usa como una de sus señales propias.
+#
 # Son los mismos números que la app muestra en "Números del mes atrasados"
 # (endpoint /api/lottery/v1/stats/numeros-mes-atrasados): los que llevan años
 # sin salir en el mes en curso. Umbrales de la app: 2 años entre los que más
@@ -90,15 +107,6 @@ ANIOS_MES_NUNCA = 99
 # un solo número que nunca salió aplastaría a todos los demás (2 años pasaría
 # a valer 0.02) y dos corridas no se podrían comparar.
 TOPE_ANIOS_MES = 8
-# Cuánto puede mover el atraso del mes al elegir los 10 y los 5. Queda entre
-# la tabla del turno (8) y la general (11): reordena números parejos y no
-# alcanza para dar vuelta una diferencia de grupos o de pintas, que es lo que
-# tiene que seguir mandando.
-#
-# OJO: esto NO toca la lista de 20 ni el puntaje de _score_candidatos. Los 20
-# salen del mismo orden de siempre; los 10 y los 5 se sacan de esos 20
-# re-ordenados sumando este puntaje.
-PESO_MES_10_5 = 10.0
 
 # Campo de lottery_group_stat que mide el atraso de cada lista.
 CAMPO_ATRASO = {
@@ -114,6 +122,20 @@ def _factor_distancia(dist):
     vara y nadie se lleva el tope sólo por ser el más lejano de su cruz."""
     tope = len(CURVA_DISTANCIA_TABLA)
     return CURVA_DISTANCIA_TABLA[min(max(int(dist), 1), tope) - 1]
+
+
+def _digitos(numero):
+    """(línea, terminal) = (decena, unidad) de un número 00-99."""
+    return divmod(numero, 10)
+
+
+def _comparte_digito(candidato, salida):
+    """True si `candidato` tiene, en línea o en terminal, algún dígito que
+    también aparece en `salida` (en cualquiera de sus dos posiciones).
+
+    Ej: salida 25 → dígitos {2, 5}. Comparten 02, 12, 20-29, 52-59, 32, 42,
+    72... cualquier número con un 2 o un 5 en la línea o en el terminal."""
+    return bool(set(_digitos(candidato)) & set(_digitos(salida)))
 
 
 def _default_sorteo(self):
@@ -512,111 +534,212 @@ class LotteryPrediction(models.Model):
             puntos[n] = round(valores[0] + coef * sum(valores[1:]), 2)
         return puntos, detalle
 
-    def _score_candidatos(self):
-        """Puntúa los números de `number_ids` con todas las señales y los
-        devuelve ordenados de mejor a peor, con el contexto que se usó."""
+    def _valor_tabla(self, candidatos, last_general, last_turno):
+        """{número: (factor, distancia, origen)} de la Tabla LotoAnálisis,
+        uniendo la general y la del turno: cada candidato se queda con la
+        que le da mejor (más alto) factor, igual que grupos y pintas se
+        quedan con el atraso más alto entre las dos uniones."""
         self.ensure_one()
-        stats = self.env['lottery.stats.service'].sudo()
-        candidatos = sorted(self.number_ids.mapped('name'))
-
-        # 1) Grupos y pintas más atrasados: las señales que mandan el orden.
-        #    Cada una une su top general con el del turno a predecir y ordena
-        #    por cantidad de atrasos, no por puesto.
-        day = WEEKDAY_CODES[self.date.weekday()]
-        gr_pts, gr_det = self._puntos_por_atraso(
-            stats.get_top_6_groups, day, PESO_GRUPOS)
-        pi_pts, pi_det = self._puntos_por_atraso(
-            stats.get_top_3_pintas, day, PESO_PINTAS)
-
-        # 2) Combinaciones — desempate fino: los 10 números de un mismo grupo
-        #    atrasado empatan entre sí y acá se decide cuál va primero.
-        base = stats.get_combinaciones_scores(
-            self.sorteo_id.id, self.date, self.combinaciones_window)
-        crudos = {n: base['scores'].get('%02d' % n, 0) for n in candidatos}
-        # Se estira el puntaje crudo del conjunto al rango 0-PESO_COMBINACIONES:
-        # el mejor se lleva todo y el peor nada, proporcional a la distancia
-        # real entre puntajes. La normalización proporcional se mantiene (con
-        # rank por posición se perdía: todos los escalones medían igual); lo
-        # que cambió es el recorrido, que ahora es chico y no alcanza para dar
-        # vuelta un atraso.
-        peor, mejor = min(crudos.values()), max(crudos.values())
-        rango = mejor - peor
-        comb_pts = {n: (PESO_COMBINACIONES * (v - peor) / rango if rango
-                        else PESO_COMBINACIONES)
-                    for n, v in crudos.items()}
-
-        # 3) Tablas LotoAnálisis — acompañantes del último número salido,
-        #    pesados por la distancia a la que están en la grilla.
-        last_general = self._last_output()
-        last_turno = self._last_output(turn=self.turn_day)
         acomp_general = (self._acompanantes('general', last_general.number_id.name)
                          if last_general else {})
         acomp_turno = (self._acompanantes(self.turn_day, last_turno.number_id.name)
                        if last_turno else {})
+        turno_lbl = dict(self._fields['turn_day'].selection).get(
+            self.turn_day, self.turn_day).lower()
 
-        def pts_tabla(acomp, peso, n):
-            """(puntos, distancia) del número n en esa tabla."""
-            dist = acomp.get(n)
-            if not dist:
-                return 0.0, 0
-            return round(peso * _factor_distancia(dist), 2), dist
-
-        filas = []
+        valores = {}
         for n in candidatos:
-            tg, tg_dist = pts_tabla(acomp_general, PESO_TABLA_GENERAL, n)
-            tt, tt_dist = pts_tabla(acomp_turno, PESO_TABLA_TURNO, n)
-            fila = {
-                'numero': n,
-                'gr': gr_pts.get(n, 0.0),
-                'pi': pi_pts.get(n, 0.0),
-                'comb_score': crudos[n],
-                'comb': comb_pts[n],
-                'tg': tg, 'tg_dist': tg_dist,
-                'tt': tt, 'tt_dist': tt_dist,
-            }
-            fila['total'] = round(
-                fila['gr'] + fila['pi'] + fila['comb']
-                + fila['tg'] + fila['tt'], 2)
-            filas.append(fila)
+            opciones = []
+            if acomp_general.get(n):
+                d = acomp_general[n]
+                opciones.append((_factor_distancia(d), d, 'general'))
+            if acomp_turno.get(n):
+                d = acomp_turno[n]
+                opciones.append((_factor_distancia(d), d, turno_lbl))
+            valores[n] = max(opciones, default=(0.0, 0, None))
+        return valores
 
-        # Desempates: puntaje crudo de combinaciones y después número más
-        # chico, para que dos corridas con los mismos datos den lo mismo.
-        filas.sort(key=lambda f: (-f['total'], -f['comb_score'], f['numero']))
+    def _rango_preferido_mayoria(self, ultimos):
+        """None si los últimos `VENTANA_MAYORIA` sorteos ganadores no tienen
+        mayoría clara; 'bajo' si conviene <50 (porque salieron más ≥50), o
+        'alto' si conviene ≥50 (porque salieron más <50)."""
+        if not ultimos:
+            return None
+        altos = sum(1 for o in ultimos if o.number_id.name >= 50)
+        bajos = len(ultimos) - altos
+        if altos > bajos:
+            return 'bajo'
+        if bajos > altos:
+            return 'alto'
+        return None
+
+    def _valores_cascada(self, candidatos):
+        """{número: {señal: valor}} con las 6 señales de la cascada (más el
+        desempate al azar) para cada candidato, y el contexto para el
+        desglose. El orden de las claves del dict es el orden de prioridad;
+        `_clave_cascada` lo usa tal cual para ordenar."""
+        self.ensure_one()
+        stats = self.env['lottery.stats.service'].sudo()
+        day = WEEKDAY_CODES[self.date.weekday()]
+
+        last_general = self._last_output()
+        last_turno = self._last_output(turn=self.turn_day)
+        tabla = self._valor_tabla(candidatos, last_general, last_turno)
+
+        gr_pts, gr_det = self._puntos_por_atraso(
+            stats.get_top_6_groups, day, ESCALA_ATRASO)
+        pi_pts, pi_det = self._puntos_por_atraso(
+            stats.get_top_3_pintas, day, ESCALA_ATRASO)
+
+        base = stats.get_combinaciones_scores(
+            self.sorteo_id.id, self.date, self.combinaciones_window)
+        comb = {n: base['scores'].get('%02d' % n, 0) for n in candidatos}
+
+        # Cruce línea/terminal: contra la última salida general (ver
+        # `_hit_cruce` en patron_atraso.py — mismo patrón que ya se usa en
+        # la Consulta de atraso de patrones).
+        ref_cruce = last_general.number_id.name if last_general else None
+
+        ultimos = self._last_output(limit=VENTANA_MAYORIA)
+        rango_mayoria = self._rango_preferido_mayoria(ultimos)
+
+        valores = {}
+        for n in candidatos:
+            tf, td, torigen = tabla[n]
+            if rango_mayoria == 'bajo':
+                mayoria = n < 50
+            elif rango_mayoria == 'alto':
+                mayoria = n >= 50
+            else:
+                mayoria = False
+            valores[n] = {
+                'tabla': tf, 'tabla_dist': td, 'tabla_origen': torigen,
+                'grupos': gr_pts.get(n, 0.0),
+                'pintas': pi_pts.get(n, 0.0),
+                'comb': comb[n],
+                'cruce': bool(ref_cruce is not None
+                             and _hit_cruce(ref_cruce, n)),
+                'mayoria': mayoria,
+                'azar': random.random(),
+            }
 
         ctx = {
             'window_used': len(base['outputs']),
             'window_asked': self.combinaciones_window,
             'last_general': last_general,
             'last_turno': last_turno,
+            'ref_cruce': ref_cruce,
+            'rango_mayoria': rango_mayoria,
+            'ultimos_mayoria': ultimos,
             'detalles': [
                 ('Grupos atrasados', gr_det),
                 ('Pintas atrasadas', pi_det),
             ],
         }
-        return filas, ctx
+        return valores, ctx
+
+    @staticmethod
+    def _clave_cascada(valores, n):
+        """Tupla de comparación para ordenar por la cascada: cada posición
+        sólo desempata si todas las anteriores dieron igual. Se usa tanto
+        para cortar una tanda de recencia como para el orden final de los
+        20 (del que salen 10, 5 y Súper Mágico por recorte)."""
+        v = valores[n]
+        return (v['tabla'], v['grupos'], v['pintas'], v['comb'],
+                v['cruce'], v['mayoria'], v['azar'])
+
+    def _seleccionar_veinte(self, candidatos, valores):
+        """Arma el conjunto de hasta 20 candidatos caminando el historial de
+        salidas de este sorteo (los dos turnos mezclados) de la más reciente
+        hacia atrás: en cada paso entran los candidatos que comparten línea
+        o terminal con esa salida y todavía no habían entrado por una salida
+        más reciente. Cuando una salida trae más candidatos nuevos de los
+        que faltan para 20, se cortan con `_clave_cascada`.
+
+        Si el historial se agota antes de llegar a 20 (sorteo con poco
+        historial, o muchos candidatos), lo que falta se completa con los
+        candidatos que quedaron afuera, ordenados también por la cascada.
+
+        Devuelve (orden_final, origen): `orden_final` son los números en el
+        orden que van a tener los 20 (y de ahí salen 10 y 5), y `origen` es
+        {número: salida que lo trajo (o None si entró por la cascada al
+        agotarse el historial)}, para mostrarlo en el desglose."""
+        self.ensure_one()
+        objetivo = min(20, len(candidatos))
+        outputs = self._last_output(limit=MAX_SALIDAS_HISTORIAL)
+
+        def clave(n):
+            return self._clave_cascada(valores, n)
+
+        seleccionados, vistos, origen = [], set(), {}
+        for output in outputs:
+            if len(seleccionados) >= objetivo:
+                break
+            ref = output.number_id.name
+            nuevos = sorted(
+                (n for n in candidatos
+                 if n not in vistos and _comparte_digito(n, ref)),
+                key=clave, reverse=True)
+            if not nuevos:
+                continue
+            lugar = objetivo - len(seleccionados)
+            elegidos = nuevos[:lugar]
+            for n in elegidos:
+                origen[n] = output
+            seleccionados.extend(elegidos)
+            vistos.update(elegidos)
+
+        if len(seleccionados) < objetivo:
+            restantes = sorted(
+                (n for n in candidatos if n not in vistos),
+                key=clave, reverse=True)
+            faltan = objetivo - len(seleccionados)
+            seleccionados.extend(restantes[:faltan])
+
+        orden_final = sorted(seleccionados, key=clave, reverse=True)
+        return orden_final, origen
+
+    def _orden_completar_numeros(self):
+        """Los números de `number_ids` en el mismo orden que arma el botón
+        "Completar números": primero los 20 (o menos, ver
+        `_seleccionar_veinte`) y detrás el resto de los candidatos, ambos
+        tramos ordenados por la cascada de desempate.
+
+        Es el método que reusa la Tómbola de la Quiniela Uruguay para
+        puntear sus 20 premios exactamente igual que una predicción
+        individual, sin tener que grabar 20 `lottery.prediction` de más."""
+        self.ensure_one()
+        candidatos = sorted(self.number_ids.mapped('name'))
+        valores, _ctx = self._valores_cascada(candidatos)
+        veinte, _origen = self._seleccionar_veinte(candidatos, valores)
+        if len(veinte) >= len(candidatos):
+            return veinte
+        vistos = set(veinte)
+        resto = sorted(
+            (n for n in candidatos if n not in vistos),
+            key=lambda n: self._clave_cascada(valores, n), reverse=True)
+        return veinte + resto
 
     def action_completar_numeros(self):
-        """Completa las listas de 20, 10 y 5 en cascada a partir de los
-        números a predecir: los 20 salen del conjunto entero, los 10 de esos
-        20 y los 5 de esos 10 (es un único orden, así el anidamiento se
-        cumple solo).
+        """Completa las listas de 20, 10, 5 y el Súper Mágico a partir de
+        los números a predecir.
 
-        El orden lo da la suma ponderada de: grupos más atrasados y pintas
-        más atrasadas — cada una uniendo su top general con el del turno a
-        predecir y ordenando por cantidad de atrasos —, después
-        combinaciones y, por último, los acompañantes del último número
-        salido en la tabla LotoAnálisis general y en la del turno, pesados
-        por la distancia a la que están en la grilla.
+        Los 20 se arman caminando el historial de salidas de este sorteo
+        (los dos turnos mezclados, de la más reciente hacia atrás): en cada
+        paso entran los candidatos que comparten línea o terminal con esa
+        salida y todavía no habían entrado por una más reciente, hasta
+        juntar 20 (ver `_seleccionar_veinte`).
 
-        Los 10 y los 5 llevan un criterio más: dentro de esos 20 se prioriza
-        a los que llevan más tiempo sin salir en el mes de la predicción (los
-        "Números del mes atrasados" de la app). La lista de 20 no lo usa: sale
-        del mismo orden de siempre, así que el anidamiento 5 ⊂ 10 ⊂ 20 se
-        sigue cumpliendo.
+        Los 10 y los 5 salen de recortar esos 20, y el Súper Mágico es el
+        primero de los 5 — todo un único orden, dado por la cascada de
+        desempate (tabla LotoAnálisis → grupos atrasados → pintas atrasadas
+        → combinaciones → cruce línea/terminal → mayoría ≥50/<50 → al azar),
+        que también es la que corta una tanda de recencia cuando trae más
+        candidatos de los que hacen falta para llegar a 20.
 
         Los atrasos de grupos y pintas son los de HOY, no los de la fecha de
         la predicción: está pensado para correrlo antes de cada salida. Las
-        tres listas quedan editables, el botón sólo las precarga."""
+        cuatro listas quedan editables, el botón sólo las precarga."""
         self.ensure_one()
         if len(self.number_ids) < 5:
             raise UserError(
@@ -624,36 +747,30 @@ class LotteryPrediction(models.Model):
                 'Temperatura o a mano): hacen falta al menos 5 para armar '
                 'las listas de 20, 10 y 5.')
 
-        filas, ctx = self._score_candidatos()
-        orden = [f['numero'] for f in filas]
+        candidatos = sorted(self.number_ids.mapped('name'))
+        valores, ctx = self._valores_cascada(candidatos)
+        veinte, origen = self._seleccionar_veinte(candidatos, valores)
 
-        # Los 20 quedan como siempre. Para los 10 y los 5 se re-ordenan esos
-        # mismos 20 sumándoles el atraso del mes, así el criterio nuevo elige
-        # adentro de la lista de siempre y no cambia quién entra a los 20.
-        atrasos = self.atrasos_del_mes(self.sorteo_id, self.date)
-        for fila in filas[:20]:
-            fila['mes_anios'] = atrasos.get(fila['numero'])
-            fila['mes'] = self.puntos_por_atraso_mes(
-                fila['mes_anios'], PESO_MES_10_5)
-            fila['total_mes'] = round(fila['total'] + fila['mes'], 2)
-        # Mismos desempates que el orden de siempre, para que dos corridas con
-        # los mismos datos den lo mismo.
-        orden_mes = [f['numero'] for f in sorted(
-            filas[:20],
-            key=lambda f: (-f['total_mes'], -f['comb_score'], f['numero']))]
+        orden_10 = veinte[:10]
+        orden_5 = orden_10[:5]
+        super_magico = orden_5[0] if orden_5 else False
 
         Number = self.env['lottery.number']
 
         def ids(numeros):
             return Number.search([('name', 'in', numeros)]).ids
 
-        listas = {20: orden[:20], 10: orden_mes[:10], 5: orden_mes[:5]}
-        self.write({
+        listas = {20: veinte, 10: orden_10, 5: orden_5}
+        vals = {
             'number_ids_20': [(6, 0, ids(listas[20]))],
             'number_ids_10': [(6, 0, ids(listas[10]))],
             'number_ids_5': [(6, 0, ids(listas[5]))],
-            'score_html': self._render_scores_html(filas, ctx, listas),
-        })
+            'score_html': self._render_scores_html(
+                candidatos, valores, ctx, listas, origen),
+        }
+        if super_magico:
+            vals['super_magico_id'] = ids([super_magico])[0]
+        self.write(vals)
         return True
 
     # ── Render del desglose ────────────────────────────────────────────────
@@ -662,11 +779,11 @@ class LotteryPrediction(models.Model):
     def _fmt_pts(valor):
         return ('%.1f' % valor).rstrip('0').rstrip('.') or '0'
 
-    def _render_scores_html(self, filas, ctx, listas):
-        """`listas` es {20: [...], 10: [...], 5: [...]} con los
-        números que quedaron en cada una: el fondo de cada fila sale
-        de ahí y no del puesto, porque los 10 y los 5 ya no siguen el
-        orden de la tabla."""
+    def _render_scores_html(self, candidatos, valores, ctx, listas, origen):
+        """`listas` es {20: [...], 10: [...], 5: [...]} en el orden final de
+        la cascada. `origen` es {número: salida que lo trajo a los 20} —
+        los que faltan ahí entraron por la cascada al agotarse el
+        historial."""
         self.ensure_one()
         turn_lbl = dict(self._fields['turn_day'].selection)
         fmt = self._fmt_pts
@@ -683,104 +800,114 @@ class LotteryPrediction(models.Model):
                 return ('<p class="small text-muted mb-1">%s: sin datos</p>'
                         % titulo)
             items = ' · '.join(
-                '%s <span class="text-muted">(%d atrasos, %s)</span> '
-                '<b>+%s</b>' % (d['name'], d['atraso'], d['origen'],
-                                fmt(d['valor'])) for d in det)
+                '%s <span class="text-muted">(%d atrasos, %s)</span>'
+                % (d['name'], d['atraso'], d['origen']) for d in det)
             return ('<p class="small mb-1"><span class="text-muted">%s:</span> '
                     '%s</p>' % (titulo, items))
 
-        def celda(valor):
-            return ('<td class="text-center">%s</td>' % fmt(valor) if valor
-                    else '<td class="text-center text-muted">·</td>')
-
-        def celda_tabla(valor, dist):
-            """Puntos de la tabla con la distancia que los justifica."""
-            if not valor:
+        def celda_tabla(v):
+            if not v['tabla']:
                 return '<td class="text-center text-muted">·</td>'
             return ('<td class="text-center">%s <span class="text-muted" '
-                    'style="font-size:10px;">(d%d)</span></td>'
-                    % (fmt(valor), dist))
+                    'style="font-size:10px;">(d%d, %s)</span></td>'
+                    % (fmt(v['tabla']), v['tabla_dist'], v['tabla_origen']))
 
-        def celda_mes(fila):
-            """Puntos del atraso del mes con los años que los justifican."""
-            if 'mes' not in fila:
-                return '<td class="text-center text-muted">·</td>'
-            anios = fila['mes_anios']
-            if anios is None:
-                return '<td class="text-center text-muted">·</td>'
-            etiqueta = ('nunca' if anios >= ANIOS_MES_NUNCA
-                        else '%da' % anios)
-            return ('<td class="text-center">%s <span class="text-muted" '
-                    'style="font-size:10px;">(%s)</span></td>'
-                    % (fmt(fila['mes']), etiqueta))
+        def celda_bool(valor):
+            return ('<td class="text-center">%s</td>'
+                    % ('✓' if valor else '<span class="text-muted">·</span>'))
+
+        def celda_origen(n):
+            o = origen.get(n)
+            if o is None:
+                return ('<td class="text-center text-muted" '
+                        'style="font-size:11px;">cascada</td>')
+            return ('<td class="text-center" style="font-size:11px;">'
+                    '%02d <span class="text-muted">(%s %s)</span></td>'
+                    % (o.number_id.name, o.date.strftime('%d/%m'),
+                       turn_lbl.get(o.turn_day, o.turn_day)[:1]))
 
         aviso = ''
-        if len(filas) < 20:
+        if len(candidatos) < 20:
             aviso = ('<div class="alert alert-warning py-2 small">Sólo hay %d '
                      'números a predecir: las listas se llenaron con los que '
-                     'había.</div>' % len(filas))
-
-        cabeza = ''.join(
-            '<th class="text-center" style="font-size:11px;">%s</th>' % h
-            for h in ('#', 'Nº', 'Total', 'Grupos', 'Pintas', 'Comb.',
-                      'Tabla gral.', 'Tabla turno', 'Mes', 'Total 10/5'))
+                     'había.</div>' % len(candidatos))
 
         en_5, en_10, en_20 = (set(listas[5]), set(listas[10]),
                               set(listas[20]))
-        cuerpo = []
-        for i, f in enumerate(filas):
-            if f['numero'] in en_5:
+        fuera = sorted(
+            (n for n in candidatos if n not in en_20),
+            key=lambda n: self._clave_cascada(valores, n), reverse=True)
+
+        cabeza = ''.join(
+            '<th class="text-center" style="font-size:11px;">%s</th>' % h
+            for h in ('#', 'Nº', 'Entró por', 'Tabla', 'Grupos', 'Pintas',
+                      'Comb.', 'Cruce', 'Mayoría'))
+
+        def fila_html(i, n, mostrar_origen):
+            v = valores[n]
+            if n in en_5:
                 fondo, corte = '#f3e8ff', ' · 5'
-            elif f['numero'] in en_10:
+            elif n in en_10:
                 fondo, corte = '#fff1e0', ' · 10'
-            elif f['numero'] in en_20:
+            elif n in en_20:
                 fondo, corte = '#f1f3f5', ' · 20'
             else:
                 fondo, corte = '', ''
-            total_mes = (('<td class="text-center"><b>%s</b></td>'
-                          % fmt(f['total_mes'])) if 'total_mes' in f
-                         else '<td class="text-center text-muted">·</td>')
-            cuerpo.append(
+            origen_html = (celda_origen(n) if mostrar_origen else
+                          '<td class="text-center text-muted">—</td>')
+            return (
                 '<tr style="background:%s;">'
                 '<td class="text-center text-muted" style="font-size:11px;">'
                 '%d%s</td>'
                 '<td class="text-center"><b>%02d</b></td>'
-                '<td class="text-center"><b>%s</b></td>'
                 '%s%s'
-                '<td class="text-center">%s <span class="text-muted" '
-                'style="font-size:10px;">(%d)</span></td>'
-                '%s%s%s%s</tr>' % (
-                    fondo, i + 1, corte, f['numero'], fmt(f['total']),
-                    celda(f['gr']), celda(f['pi']),
-                    fmt(f['comb']), f['comb_score'],
-                    celda_tabla(f['tg'], f['tg_dist']),
-                    celda_tabla(f['tt'], f['tt_dist']),
-                    celda_mes(f), total_mes))
+                '<td class="text-center">%s</td>'
+                '<td class="text-center">%s</td>'
+                '<td class="text-center">%d</td>'
+                '%s%s</tr>' % (
+                    fondo, i, corte, n, origen_html, celda_tabla(v),
+                    fmt(v['grupos']), fmt(v['pintas']), v['comb'],
+                    celda_bool(v['cruce']), celda_bool(v['mayoria'])))
+
+        cuerpo = [fila_html(i + 1, n, True) for i, n in enumerate(listas[20])]
+        if fuera:
+            cuerpo.append(
+                '<tr><td colspan="9" class="text-center text-muted small">'
+                '— fuera de los 20: no compartieron dígito con el historial '
+                'reciente — </td></tr>')
+            cuerpo += [fila_html(i + 1, n, False)
+                      for i, n in enumerate(fuera, len(listas[20]))]
 
         turno_txt = turn_lbl.get(self.turn_day, self.turn_day)
-        mes_txt = MESES_ES[self.date.month - 1] if self.date else 'el mes'
+        rango_txt = {'bajo': 'sí, a favor de los <50',
+                    'alto': 'sí, a favor de los ≥50'}.get(
+            ctx['rango_mayoria'], 'no (empate o sin datos)')
         return """
             <div>
                 %s
                 <p class="small mb-1">
                     <span class="text-muted">Ventana de combinaciones:</span>
                     %d salidas usadas (pedidas %d) ·
-                    <span class="text-muted">Último número (general):</span> %s ·
-                    <span class="text-muted">Último de %s:</span> %s
+                    <span class="text-muted">Último número (general, usado
+                    también para el cruce línea/terminal):</span> %s ·
+                    <span class="text-muted">Último de %s:</span> %s ·
+                    <span class="text-muted">Mayoría últimos %d:</span> %s
                 </p>
                 %s
                 <p class="text-muted small mb-2">
-                    Fondo violeta: los 5 · naranja: los 10 · gris: los 20. La
-                    tabla va ordenada por Total, que es lo que define los 20.
-                    Los 10 y los 5 salen de esos 20 re-ordenados por
-                    <b>Total 10/5</b>, que le suma el atraso del mes (columna
-                    Mes: puntos y, entre paréntesis, los años sin salir en %s
-                    — "nunca" si nunca salió ese mes), así que pueden no ser
-                    los primeros de la tabla. En Comb., entre paréntesis, el
-                    puntaje crudo (producto de frecuencias de dígitos); en las
-                    tablas, la distancia en casillas al último número salido.
-                    Los atrasos de grupos y pintas son los del momento en que
-                    se apretó el botón.
+                    Fondo violeta: los 5 · naranja: los 10 · gris: los 20.
+                    Los 20 salen de caminar el historial de salidas (columna
+                    <b>Entró por</b>: la salida que trajo a ese número
+                    compartiendo línea o terminal con ella; "cascada" si
+                    entró porque el historial se agotó antes de llegar a 20).
+                    Dentro de eso, y para ordenar los 20 (de donde salen 10,
+                    5 y Súper Mágico por recorte), manda la cascada Tabla →
+                    Grupos → Pintas → Comb. → Cruce → Mayoría → azar: cada
+                    columna sólo desempata a la anterior. Tabla muestra la
+                    distancia en casillas a la tabla que le dio mejor factor
+                    (general o el turno); Cruce y Mayoría son sí/no. Los
+                    atrasos de grupos y pintas son los del momento en que se
+                    apretó el botón.
                 </p>
                 <table class="table table-sm table-bordered"
                        style="font-size:12px;">
@@ -790,9 +917,10 @@ class LotteryPrediction(models.Model):
             </div>
         """ % (aviso, ctx['window_used'], ctx['window_asked'],
                salida(ctx['last_general']), turno_txt,
-               salida(ctx['last_turno']),
+               salida(ctx['last_turno']), len(ctx['ultimos_mayoria']),
+               rango_txt,
                ''.join(detalle(t, d) for t, d in ctx['detalles']),
-               mes_txt, cabeza, ''.join(cuerpo))
+               cabeza, ''.join(cuerpo))
 
 
 class LotteryPredictionTerna(models.Model):
