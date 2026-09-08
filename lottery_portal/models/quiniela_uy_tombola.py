@@ -5,9 +5,11 @@ Es un agrupador de `lottery.prediction`. La quiniela uruguaya tiene 20
 premios y cada uno es su propio `lottery.sorteo` (`quiniela_uy_1` …
 `quiniela_uy_20`), así que predecirlos a mano serían 20 predicciones
 individuales. Acá se corre para los 20 la MISMA lógica que el botón
-"Completar números" de la predicción individual — grupos y pintas atrasados,
-combinaciones y acompañantes de las tablas LotoAnálisis — y se toman los 5
-mejores de cada uno: 20 grupos de 5.
+"Completar números" de la predicción individual — la selección de 20 por
+recencia de dígitos y la cascada Tabla → Grupos → Pintas → Combinaciones →
+Cruce → Mayoría → azar (ver `_orden_completar_numeros` en
+lottery_prediction.py) — y se toman los 5 mejores de cada uno: 20 grupos de
+5.
 
 Con esos 100 números (muchos repetidos entre premios) se arman 10
 combinaciones de 7 para jugar a la tómbola. El sorteo es al azar pero
@@ -229,11 +231,11 @@ class LotteryPredictionTombolaUy(models.Model):
     def _prediccion(self, sorteo, candidatos):
         """Una `lottery.prediction` en memoria (`new`) para ese premio.
 
-        No se graba nada: sólo se usa para llamar a `_score_candidatos`, que
-        es la lógica del botón "Completar números". Así la tómbola y la
-        predicción individual puntean exactamente igual, y no quedan 20
-        predicciones basura en la base ni choca la constraint de fecha +
-        turno + sorteo."""
+        No se graba nada: sólo se usa para llamar a
+        `_orden_completar_numeros`, que es la lógica del botón "Completar
+        números". Así la tómbola y la predicción individual puntean
+        exactamente igual, y no quedan 20 predicciones basura en la base ni
+        choca la constraint de fecha + turno + sorteo."""
         self.ensure_one()
         return self.env['lottery.prediction'].new({
             'sorteo_id': sorteo.id,
@@ -261,8 +263,7 @@ class LotteryPredictionTombolaUy(models.Model):
                 sin_datos.append(premio)
                 continue
             pred = self._prediccion(sorteo, candidatos)
-            filas, _ctx = pred._score_candidatos()
-            top = [fila['numero'] for fila in filas[:TOP_POR_PREMIO]]
+            top = pred._orden_completar_numeros()[:TOP_POR_PREMIO]
             # Los mismos "interesantes del mes" que la app muestra y que el
             # botón Completar números usa para los 10 y los 5, pero mirando
             # el mes de la fecha que se predice y el premio de este sorteo.
