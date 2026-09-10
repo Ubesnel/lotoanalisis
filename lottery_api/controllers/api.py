@@ -1016,6 +1016,20 @@ class LotteryAppApi(http.Controller):
             return {name: dict(data, pct=_pct(data))
                     for name, data in niveles.items()}
 
+        # Compatibilidad hacia atrás con la app 1.3.0 (versionCode 35) y
+        # anteriores, que leen los aciertos del período con los nombres
+        # planos que este endpoint usaba antes de incorporar `niveles`.
+        # Se mandan ADEMÁS del desglose nuevo: si se quitan, esas versiones
+        # muestran el historial entero en ceros hasta que el usuario
+        # actualice, y una actualización no se puede forzar. Se pueden
+        # borrar cuando ya no queden instalaciones por debajo de la 1.4.0.
+        legacy_keys = {'total': 'aciertos', 'n20': 'aciertos_20',
+                       'n10': 'aciertos_10', 'n5': 'aciertos_5'}
+
+        def _legacy(niveles):
+            return {clave: niveles[name]['aciertos']
+                    for name, clave in legacy_keys.items()}
+
         # Los meses y años ahora llevan el mismo desglose {jugadas, aciertos,
         # pct} por sublista que `totales`: la app lo usa para que las tarjetas
         # de arriba del historial muestren el % del período elegido (mes/año/
@@ -1035,11 +1049,14 @@ class LotteryAppApi(http.Controller):
                 'month': m, 'month_label': MONTHS_ES[m - 1],
                 'predicciones': data['predicciones'],
                 'niveles': _con_pct(data['niveles']),
+                **_legacy(data['niveles']),
             })
 
         for entry in by_year.values():
             entry['meses'].sort(key=lambda x: x['month'], reverse=True)
             entry['niveles'] = _con_pct(entry['niveles'])
+            # El año sólo llevaba 'aciertos' en el formato viejo.
+            entry['aciertos'] = entry['niveles']['total']['aciertos']
 
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
