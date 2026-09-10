@@ -38,6 +38,11 @@
                             invisible="not number_ids"
                             confirm="Se van a reemplazar las listas de 20, 10 y 5 con el resultado del cálculo. ¿Seguimos?"
                             help="Ordena los números a predecir por combinaciones, acompañantes de las tablas LotoAnálisis (general y del turno) y grupos y pintas más atrasados, y con ese orden llena las listas de 20, 10 y 5."/>
+                    <button name="action_completar_ternas" type="object"
+                            string="Completar ternas" class="btn-secondary"
+                            invisible="sorteo_source_code != 'quiniela_uy' or not number_ids_5"
+                            confirm="Se van a reemplazar las ternas cargadas con las 7 que salen del cálculo. ¿Seguimos?"
+                            help="Cruza los 5 Números a predecir con las centenas del mismo bloque de temperatura: dos ternas para el Súper Mágico y dos para el 2º (con las dos centenas más importantes), y una para cada uno de los otros tres (con la más importante)."/>
                 </header>
                 <sheet>
                     <group>
@@ -47,6 +52,8 @@
                             <field name="hour" widget="float_time"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                             <field name="temperature"/>
+                            <!-- Sólo para el invisible del botón de ternas. -->
+                            <field name="sorteo_source_code" invisible="1"/>
                             <field name="combinaciones_window"/>
                         </group>
                         <group>
