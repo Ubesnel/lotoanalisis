@@ -902,9 +902,12 @@ class LotteryAppApi(http.Controller):
         """Dashboard del historial de predicciones.
 
         Devuelve en una sola llamada: los totales de aciertos por sublista
-        (todos / 20 / 10 / 5), el desglose por año y mes, y la lista de fechas
-        con sus turnos. Los totales y el desglose son SIEMPRE del histórico
-        completo; year/month y solo_aciertos filtran solo la lista de fechas.
+        (todos / 20 / 10 / 5), el desglose por año y mes —cada uno con el
+        mismo detalle {jugadas, aciertos, pct} por sublista que los
+        totales, para que la app pueda mostrar el % del período elegido—, y
+        la lista de fechas con sus turnos. Los totales y el desglose son
+        SIEMPRE del histórico completo; year/month y solo_aciertos filtran
+        solo la lista de fechas.
 
         Una predicción cuenta en los totales únicamente si ya se jugó el
         sorteo, y cada sublista tiene su propio denominador (si no se cargaron
@@ -956,10 +959,11 @@ class LotteryAppApi(http.Controller):
             ('n10',   'number_ids_10', 'cumplida_10'),
             ('n5',    'number_ids_5',  'cumplida_5'),
         )
-        bucket_keys = {'total': 'aciertos', 'n20': 'aciertos_20',
-                       'n10': 'aciertos_10', 'n5': 'aciertos_5'}
 
-        totales = {name: {'jugadas': 0, 'aciertos': 0} for name, _, _ in levels}
+        def _niveles_vacios():
+            return {name: {'jugadas': 0, 'aciertos': 0} for name, _, _ in levels}
+
+        totales = _niveles_vacios()
         evaluadas = 0
         periodos = {}
         by_date = {}
@@ -973,16 +977,16 @@ class LotteryAppApi(http.Controller):
                 evaluadas += 1
                 bucket = periodos.setdefault(
                     (pred.date.year, pred.date.month),
-                    {'predicciones': 0, 'aciertos': 0, 'aciertos_20': 0,
-                     'aciertos_10': 0, 'aciertos_5': 0})
+                    {'predicciones': 0, 'niveles': _niveles_vacios()})
                 bucket['predicciones'] += 1
                 for name, _field, flag in levels:
                     if not counts[name]:
                         continue
                     totales[name]['jugadas'] += 1
+                    bucket['niveles'][name]['jugadas'] += 1
                     if pred[flag]:
                         totales[name]['aciertos'] += 1
-                        bucket[bucket_keys[name]] += 1
+                        bucket['niveles'][name]['aciertos'] += 1
 
             if year and pred.date.year != year:
                 continue
@@ -1008,25 +1012,40 @@ class LotteryAppApi(http.Controller):
             return round(100.0 * data['aciertos'] / data['jugadas'], 1) \
                 if data['jugadas'] else 0.0
 
+        def _con_pct(niveles):
+            return {name: dict(data, pct=_pct(data))
+                    for name, data in niveles.items()}
+
+        # Los meses y años ahora llevan el mismo desglose {jugadas, aciertos,
+        # pct} por sublista que `totales`: la app lo usa para que las tarjetas
+        # de arriba del historial muestren el % del período elegido (mes/año/
+        # todos) en vez de siempre el histórico completo.
         turn_order = {'afternoon': 0, 'evening': 1}
         by_year = {}
         for (y, m), data in periodos.items():
-            entry = by_year.setdefault(y, {'year': y, 'predicciones': 0,
-                                           'aciertos': 0, 'meses': []})
+            entry = by_year.setdefault(y, {
+                'year': y, 'predicciones': 0,
+                'niveles': _niveles_vacios(), 'meses': [],
+            })
             entry['predicciones'] += data['predicciones']
-            entry['aciertos'] += data['aciertos']
-            entry['meses'].append(
-                dict(data, month=m, month_label=MONTHS_ES[m - 1]))
+            for name in entry['niveles']:
+                entry['niveles'][name]['jugadas'] += data['niveles'][name]['jugadas']
+                entry['niveles'][name]['aciertos'] += data['niveles'][name]['aciertos']
+            entry['meses'].append({
+                'month': m, 'month_label': MONTHS_ES[m - 1],
+                'predicciones': data['predicciones'],
+                'niveles': _con_pct(data['niveles']),
+            })
 
         for entry in by_year.values():
             entry['meses'].sort(key=lambda x: x['month'], reverse=True)
+            entry['niveles'] = _con_pct(entry['niveles'])
 
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
             'since': since or None,
             'evaluadas': evaluadas,
-            'totales': {name: dict(data, pct=_pct(data))
-                        for name, data in totales.items()},
+            'totales': _con_pct(totales),
             'periodos': [by_year[y] for y in sorted(by_year, reverse=True)],
             'filtro': {'year': year, 'month': month, 'solo_aciertos': only_hits},
             'fechas': [{

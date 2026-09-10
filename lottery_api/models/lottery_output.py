@@ -92,11 +92,21 @@ class LotteryOutput(models.Model):
         if out.fireball_id:
             partes.append(f'Bola extra: {out.fireball_id.name}')
 
+        # Los aciertos fuertes (Súper Mágico, tabla de 5 y de 10) se
+        # festejan; el 20 y el total se informan sin celebración.
         tabla_magicos = self._tabla_numeros_magicos(out)
-        if tabla_magicos == 'general':
-            partes.append('🔮 El fijo estuvo en el total de Números Mágicos')
+        if tabla_magicos == 'super':
+            partes.append(
+                '🎉 ¡Felicitaciones! El Premio 1 fue el Súper Mágico')
+        elif tabla_magicos in ('5', '10'):
+            partes.append(
+                f'🎉 ¡Felicitaciones! El Premio 1 estuvo en la tabla de '
+                f'{tabla_magicos} Números Mágicos')
+        elif tabla_magicos == 'general':
+            partes.append(
+                '🔮 El Premio 1 estuvo en la tabla general de Números Mágicos')
         elif tabla_magicos:
-            partes.append(f'🔮 El fijo estuvo en la tabla de {tabla_magicos} Números Mágicos')
+            partes.append(f'🔮 El Premio 1 estuvo en la tabla de {tabla_magicos} Números Mágicos')
 
         title = f'🎯 Resultado {out.sorteo_id.name} disponible'
         body = ' · '.join(partes) + '\n📈 Consulta el análisis actualizado para el próximo sorteo'
@@ -104,11 +114,16 @@ class LotteryOutput(models.Model):
 
     def _tabla_numeros_magicos(self, out):
         """En qué lista de Números Mágicos estaba el número salido — siempre
-        la más chica (más específica) en la que estaba, ya que 5 ⊂ 10 ⊂ 20 ⊂
-        Total por construcción (ver lottery.prediction.action_completar_numeros).
+        la más chica (más específica) en la que estaba, ya que
+        Súper Mágico ⊂ 5 ⊂ 10 ⊂ 20 ⊂ Total por construcción (ver
+        lottery.prediction.action_completar_numeros y la restricción
+        _check_super_magico_en_5).
 
-        Devuelve '5', '10', '20', 'general' (solo en la lista completa de
-        Números a predecir, sin llegar al 20) o None.
+        Devuelve 'super', '5', '10', '20', 'general' (solo en la lista
+        completa de Números a predecir, sin llegar al 20) o None. El caso
+        'super' va primero justamente porque el Súper Mágico es uno de los
+        5: sin ese chequeo el aviso decía "tabla de 5" y se perdía el
+        acierto más fuerte de la predicción.
 
         Lee los booleanos `cumplida*` que `_check_predictions()` (lottery_portal)
         ya dejó marcados en la predicción al registrar esta salida — no
@@ -122,6 +137,8 @@ class LotteryOutput(models.Model):
         ], limit=1)
         if not prediction:
             return None
+        if prediction.cumplida_super_magico:
+            return 'super'
         if prediction.cumplida_5:
             return '5'
         if prediction.cumplida_10:
