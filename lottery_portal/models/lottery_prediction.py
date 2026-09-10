@@ -17,6 +17,22 @@ TEMPERATURE_KEY = {
     'remaining': 'numbers_remaining',
 }
 
+# La columna de centenas del MISMO bloque, en paralelo a TEMPERATURE_KEY: el
+# snapshot guarda calientes/restantes/fríos por separado para números y para
+# centenas, y una predicción usa siempre las dos mitades del mismo bloque (si
+# los números son los restantes, las centenas son las de restantes).
+CENTENA_TEMPERATURE_KEY = {
+    'hot': 'centenas',
+    'cold': 'centenas_cold',
+    'remaining': 'centenas_remaining',
+}
+
+# Cómo se reparten las 7 ternas entre los 5 números, por orden de
+# importancia: los dos primeros se llevan dos ternas cada uno (con las dos
+# centenas más importantes) y los otros tres una sola (con la más
+# importante). 2+2+1+1+1 = 7.
+TERNAS_POR_PUESTO = (2, 2, 1, 1, 1)
+
 # ── Completar números (07/09/2026) ─────────────────────────────────────────
 # La lista de 20 ya no sale de sumar puntajes: sale de "tandas" de recencia.
 # Se camina el historial de salidas de este sorteo (los dos turnos
@@ -195,6 +211,11 @@ class LotteryPrediction(models.Model):
         help='Al seleccionar, carga automáticamente los números calientes, '
              'restantes o fríos del último artículo generado para este turno.')
 
+    sorteo_source_code = fields.Char(
+        related='sorteo_id.source_code', string='Código de origen del sorteo',
+        help='Sólo para condicionar la vista: las ternas existen únicamente '
+             'en los sorteos de Quiniela Uruguay.')
+
     combinaciones_window = fields.Integer(
         string='Ventana de combinaciones', default=50, required=True,
         help='Cuántas salidas hacia atrás mira el puntaje de combinaciones '
@@ -368,6 +389,34 @@ class LotteryPrediction(models.Model):
             except (ValueError, TypeError):
                 pass
         return Number.search([('name', 'in', names)]) if names else Number
+
+    @api.model
+    def centenas_by_temperature(self, sorteo, turn_day, temperature):
+        """Centenas calientes / restantes / frías de ese sorteo y turno, tal
+        como las dejó el último artículo generado (`ranking_snapshot`).
+
+        Es el equivalente de `numbers_by_temperature` para la otra mitad del
+        mismo bloque. Devuelve una LISTA de strings de un dígito y no un
+        recordset justamente porque acá el orden es el dato: la primera es la
+        centena más importante.
+
+        Lista vacía si el sorteo no usa centena o todavía no tiene snapshot."""
+        if not (sorteo and turn_day and temperature):
+            return []
+        try:
+            snapshot = json.loads(sorteo.ranking_snapshot or '{}')
+        except (ValueError, TypeError):
+            return []
+        items = snapshot.get(turn_day, {}).get(
+            CENTENA_TEMPERATURE_KEY.get(temperature), []) or []
+        centenas = []
+        for item in items:
+            raw = item.get('name') if isinstance(item, dict) else item
+            try:
+                centenas.append(str(int(raw)))
+            except (ValueError, TypeError):
+                continue
+        return centenas
 
     @api.onchange('temperature', 'turn_day', 'sorteo_id')
     def _onchange_temperature(self):
@@ -771,6 +820,87 @@ class LotteryPrediction(models.Model):
         if super_magico:
             vals['super_magico_id'] = ids([super_magico])[0]
         self.write(vals)
+        return True
+
+    # ── Completar ternas ────────────────────────────────────────
+
+    def _orden_de_los_cinco(self):
+        """Los 5 Números a predecir ordenados por importancia decreciente.
+
+        El 1º es SIEMPRE el Súper Mágico guardado, no el que daría un cálculo
+        de hoy: es un dato ya escrito en la predicción y el puesto que más
+        pesa en el reparto de ternas, así que no puede moverse porque se
+        corra el botón otro día. Del 2º al 5º se reconstruye el orden con la
+        misma cascada que usó `action_completar_numeros` (`_clave_cascada`),
+        que no se guarda en ningún lado porque `number_ids_5` es un
+        Many2many y pierde el orden.
+
+        Ojo: los atrasos de esa cascada son los de HOY, así que si esto se
+        corre días después de completar los números, los puestos 2 a 5 pueden
+        salir permutados respecto de la corrida original. Las ternas quedan
+        editables, igual que las listas de números."""
+        self.ensure_one()
+        cinco = self.number_ids_5.mapped('name')
+        # La cascada se evalúa sobre TODOS los candidatos, como en la corrida
+        # original: algunos valores dependen del conjunto, y puntuar sólo
+        # sobre los 5 podría dar otro orden.
+        candidatos = sorted(set(self.number_ids.mapped('name')) | set(cinco))
+        valores, _ctx = self._valores_cascada(candidatos)
+        super_magico = self.super_magico_id.name
+        resto = sorted(
+            (n for n in cinco if n != super_magico),
+            key=lambda n: self._clave_cascada(valores, n), reverse=True)
+        return [super_magico] + resto
+
+    def action_completar_ternas(self):
+        """Completa las 7 ternas a predecir cruzando los 5 Números con las
+        centenas del mismo bloque de temperatura.
+
+        Reparto (ver TERNAS_POR_PUESTO): el Súper Mágico y el 2º llevan dos
+        ternas cada uno, con las dos centenas más importantes; el 3º, 4º y
+        5º una sola, con la más importante. Siempre dan 7 ternas distintas:
+        los cinco números son distintos entre sí y las dos ternas de un
+        mismo número usan centenas distintas.
+
+        Las centenas salen del bloque que marca la Temperatura de la
+        predicción — restantes con restantes, calientes con calientes,
+        fríos con fríos — y ese snapshot ya viene por sorteo y por turno.
+
+        Como el de números, el botón sólo precarga: las ternas quedan
+        editables."""
+        self.ensure_one()
+        # Import local para no adelantar la carga de quiniela_uy_ternas, que
+        # en models/__init__.py va después de este archivo.
+        from .quiniela_uy_ternas import SOURCE_CODE as QUINIELA_UY
+
+        if self.sorteo_id.source_code != QUINIELA_UY:
+            raise UserError(
+                'Las ternas son sólo para los sorteos de Quiniela Uruguay.')
+        if not self.temperature:
+            raise UserError(
+                'Elegí primero la Temperatura: las centenas de la terna salen '
+                'del mismo bloque (calientes, restantes o fríos) del que '
+                'salieron los números.')
+        if len(self.number_ids_5) < 5 or not self.super_magico_id:
+            raise UserError(
+                'Completá primero los 5 Números a predecir y el Súper Mágico '
+                'con el botón "Completar números".')
+
+        centenas = self.centenas_by_temperature(
+            self.sorteo_id, self.turn_day, self.temperature)
+        if len(centenas) < 2:
+            raise UserError(
+                'El sorteo no tiene al menos dos centenas en el bloque '
+                '"%s" de ese turno. Regenerá el artículo de calientes/'
+                'restantes/fríos y volvé a intentar.'
+                % dict(self._fields['temperature'].selection)[self.temperature])
+
+        ternas = []
+        for puesto, numero in enumerate(self._orden_de_los_cinco()):
+            for centena in centenas[:TERNAS_POR_PUESTO[puesto]]:
+                ternas.append('%s%02d' % (centena, numero))
+
+        self.terna_ids = [(5, 0, 0)] + [(0, 0, {'terna': t}) for t in ternas]
         return True
 
     # ── Render del desglose ────────────────────────────────────────────────
