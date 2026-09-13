@@ -6,6 +6,12 @@ import { jsonrpc } from "@web/core/network/rpc_service";
 import { sorteoState, ensureSorteoLoaded, onSorteoChange } from "./sorteo_state";
 
 
+// Claves de los baldes del histograma, en el mismo orden que las barras
+// (pintas). El servidor solo manda el detalle de fechas de los altos.
+const BUCKET_KEYS = ["r_10_20", "r_21_30", "r_31_40", "r_41_45", "r_45_plus"];
+// Tope de tramos por tooltip, para que no tape el gráfico en el celular
+const MAX_TRAMOS = 6;
+
 export class LotteryDashboardPintas extends Component {
     setup() {
         const todayIndex = new Date().getDay();
@@ -130,7 +136,7 @@ export class LotteryDashboardPintas extends Component {
         this.state.data_noche = result;
     }
 
-    _buildChartOptions(tooltipBg, labelColor) {
+    _buildChartOptions(tooltipBg, labelColor, getData) {
         return {
             responsive: true,
             maintainAspectRatio: false,
@@ -145,7 +151,30 @@ export class LotteryDashboardPintas extends Component {
                     cornerRadius: 8,
                     callbacks: {
                         title: (items) => `Intervalo: ${items[0].label}`,
-                        label: (ctx) => ` ${ctx.parsed.y} veces`
+                        label: (ctx) => ` ${ctx.parsed.y} veces`,
+                        // Detalle de fechas de los intervalos altos: cada vez
+                        // que estuvo en ese intervalo, desde que entró hasta
+                        // que salió (o hasta que terminó la racha, en el
+                        // último). El servidor solo manda los intervalos
+                        // altos; en los bajos el tooltip queda como siempre.
+                        afterBody: (items) => {
+                            const data = getData ? getData() : null;
+                            const clave = BUCKET_KEYS[items[0].dataIndex];
+                            const lista = (data && data.tramos && data.tramos[clave]) || [];
+                            if (!lista.length) return [];
+                            // Cada tramo arranca donde empezó la sequía y
+                            // cierra en el último sorteo del intervalo (o
+                            // donde la racha terminó, si murió dentro). El
+                            // largo total aclara cuando una misma sequía
+                            // aparece en varios intervalos seguidos.
+                            const lineas = lista.slice(0, MAX_TRAMOS).map(
+                                (t) => `• ${t.desde} al ${t.hasta} · racha de ${t.atraso}`
+                            );
+                            if (lista.length > MAX_TRAMOS) {
+                                lineas.push(`… y ${lista.length - MAX_TRAMOS} más`);
+                            }
+                            return ["", ...lineas];
+                        }
                     }
                 },
                 datalabels: {
@@ -202,7 +231,7 @@ export class LotteryDashboardPintas extends Component {
                 this.chart = new Chart(ctx, {
                     type: "bar",
                     data: { labels, datasets: [{ label: "Atrasos", data: values, backgroundColor: grad, borderColor: "#6f4a8e", borderWidth: 1.5, borderRadius: 8, borderSkipped: false }] },
-                    options: this._buildChartOptions("rgba(74,44,110,0.92)", "#6f4a8e")
+                    options: this._buildChartOptions("rgba(74,44,110,0.92)", "#6f4a8e", () => this.state.data_general)
                 });
     }
 
@@ -228,7 +257,7 @@ export class LotteryDashboardPintas extends Component {
                 this.chart_tarde = new Chart(ctx, {
                     type: "bar",
                     data: { labels, datasets: [{ label: "Atrasos", data: values, backgroundColor: grad, borderColor: "#d97706", borderWidth: 1.5, borderRadius: 8, borderSkipped: false }] },
-                    options: this._buildChartOptions("rgba(180,90,0,0.92)", "#b45309")
+                    options: this._buildChartOptions("rgba(180,90,0,0.92)", "#b45309", () => this.state.data_tarde)
                 });
     }
 
@@ -254,7 +283,7 @@ export class LotteryDashboardPintas extends Component {
                 this.chart_noche = new Chart(ctx, {
                     type: "bar",
                     data: { labels, datasets: [{ label: "Atrasos", data: values, backgroundColor: grad, borderColor: "#1e3a5f", borderWidth: 1.5, borderRadius: 8, borderSkipped: false }] },
-                    options: this._buildChartOptions("rgba(20,40,70,0.92)", "#1e3a5f")
+                    options: this._buildChartOptions("rgba(20,40,70,0.92)", "#1e3a5f", () => this.state.data_noche)
                 });
     }
 

@@ -349,3 +349,38 @@
     white-space: nowrap;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
+
+/* ── Pico histórico de atraso ─────────────────────────────────────
+   Banda bajo el buscador de "Consultar Históricos", con la racha
+   seca más larga del grupo y sus fechas. Vive acá pero la usan los
+   dos dashboards (grupos y pintas): ambos css van al mismo bundle. */
+.peak-atraso {
+    max-width: 400px;
+    padding: 0.45rem 0.7rem;
+    border-radius: 8px;
+    border-left: 4px solid #6f4a8e;
+    background: rgba(111, 74, 142, 0.07);
+    color: #4a2c6e;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.peak-atraso .fa {
+    opacity: 0.75;
+}
+
+.peak-atraso__fechas {
+    opacity: 0.85;
+}
+
+.peak-atraso--tarde {
+    border-left-color: #d97706;
+    background: rgba(245, 158, 11, 0.09);
+    color: #8a4b06;
+}
+
+.peak-atraso--noche {
+    border-left-color: #2d5a8e;
+    background: rgba(45, 90, 142, 0.09);
+    color: #1e3a5f;
+}

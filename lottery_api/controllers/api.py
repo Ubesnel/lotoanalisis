@@ -543,11 +543,23 @@ class LotteryAppApi(http.Controller):
         stats = self._stats()
         method = (stats.get_group_delay_intervals_pintas if tipo == 'pintas'
                   else stats.get_group_delay_intervals)
+
+        # El pico histórico (peak_*) y el detalle de fechas por intervalo
+        # (tramos) hoy solo los pinta la web; acá se descartan para que la
+        # app siga recibiendo exactamente las 5 claves de siempre. Cuando la
+        # APK los muestre, basta con sacarlos de este filtro.
+        _solo_web = ('peak_', 'tramos')
+
+        def _buckets(*args):
+            row = method(*args, sorteo_id=sorteo.id) or {}
+            return {k: v for k, v in row.items()
+                    if not k.startswith(_solo_web)}
+
         return _json_response({
             'group': {'id': group.id, 'name': group.name},
-            'general': method(group.id, sorteo_id=sorteo.id),
-            'afternoon': method(group.id, 'afternoon', sorteo_id=sorteo.id),
-            'evening': method(group.id, 'evening', sorteo_id=sorteo.id),
+            'general': _buckets(group.id),
+            'afternoon': _buckets(group.id, 'afternoon'),
+            'evening': _buckets(group.id, 'evening'),
         })
 
     @http.route('/api/lottery/v1/stats/numeros-mes', type='http',
