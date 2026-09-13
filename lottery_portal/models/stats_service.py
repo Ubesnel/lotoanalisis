@@ -2,7 +2,7 @@
 
 from collections import Counter
 
-from odoo import models, api, tools
+from odoo import models, api, tools, fields
 import calendar
 from datetime import date, datetime
 from odoo.addons.lottery_base.models.utils import MONTHS_DICT
@@ -1728,6 +1728,38 @@ class LotteryStatsService(models.Model):
             LIMIT 10
         """, (sorteo_id, number_id,))
         return self.env.cr.dictfetchall()
+
+    @api.model
+    def get_grid_companions(self, sorteo_id, numero, turno='general',
+                            fecha_corte=None):
+        """{número: distancia en casillas} de los que comparten fila, columna
+        o diagonal con `numero` en la Tabla LotoAnálisis 12×12 (fecha de corte
+        de Ajustes → Loterías, reusando la caché).
+
+        Como cada acompañante cae en una sola de las cuatro rectas (fila,
+        columna y las dos diagonales se cruzan únicamente en el propio
+        número), la distancia es única y el máximo de las dos coordenadas la
+        mide bien en los cuatro casos.
+
+        Lo usa la fase B del pronóstico de líneas/terminales, que solo
+        cuenta números (la distancia la devuelve igual por si hiciera falta
+        pesar). lottery.prediction tiene su propia copia de la regla en
+        _acompanantes: son equivalentes, pero se mantienen separadas a
+        propósito para no tocar el motor de Números Mágicos."""
+        if fecha_corte is None:
+            fecha_corte = (self.env.company.tabla_acompanantes_fecha_referencia
+                           or fields.Date.context_today(self))
+        grid = self.env['lottery.tabla.acompanantes.cache'].sudo().get_grid(
+            sorteo_id, fecha_corte, turno=turno or 'general', grid_size='12')
+        pos = {n: rc for rc, n in grid.items()}
+        if numero not in pos:
+            return {}
+        r0, c0 = pos[numero]
+        return {n: max(abs(r - r0), abs(c - c0))
+                for (r, c), n in grid.items()
+                if n != numero and (r == r0 or c == c0
+                                    or (r - c) == (r0 - c0)
+                                    or (r + c) == (r0 + c0))}
 
     @api.model
     def get_companion_affinity(self, sorteo_id, fecha_corte=False, turno=False):
@@ -3787,13 +3819,33 @@ class LotteryStatsService(models.Model):
     def get_lineas_terminales_probables(self, turn_day, today_str, sorteo_id=False):
         """
         Top 3 líneas y top 3 terminales más probables para el próximo sorteo
-        (fecha/turno vienen de sorteo.get_next_draw()). Adaptación a nivel de
-        grupo de los criterios de get_numeros_calientes: con solo 10 entidades
-        por lado, los criterios puntúan de forma continua por ranking (no por
-        magnitud) para que ningún atraso extremo domine el pronóstico.
+        (fecha/turno vienen de sorteo.get_next_draw()).
 
-        ── Criterios (máx ~159 pts, ningún criterio > ~9% del total) ────────
-        G1   15 pts  Frecuencia del mes actual (rank 1-10 continuo)
+        El pronóstico sale en tres fases:
+
+        FASE A — candidatos. No compiten las 10 líneas y los 10 terminales,
+        sino los que salen de los dígitos de las últimas salidas: cada salida
+        XY aporta sus dos dígitos y cada dígito entra a la vez como línea y
+        como terminal. Se retrocede sorteo a sorteo hasta juntar 5; si la
+        salida que completa aporta dos dígitos nuevos entran los dos y el
+        pool cierra en 6.
+
+        FASE B — corte a 3. Se toman los acompañantes (fila/columna/diagonal
+        en la Tabla LotoAnálisis 12×12) de la última salida en la tabla
+        general y de la última salida del turno a predecir en la tabla de ese
+        turno, se unen los dos conjuntos y se cuenta cuántos de esos números
+        caen en cada candidato. Pasan los 3 de cada lado con más números.
+
+        FASE C — orden. Los criterios de abajo se aplican SOLO a los
+        candidatos de la fase A (los rankings se calculan dentro de ese pool
+        de 5 o 6, no sobre las 10 líneas / 10 terminales): rompen los empates
+        de la fase B y ordenan los 3 que quedan. Adaptación a nivel de grupo
+        de los criterios de get_numeros_calientes: puntúan de forma continua
+        por ranking (no por magnitud) para que ningún atraso extremo domine
+        el pronóstico.
+
+        ── Criterios de la fase C (máx ~149 pts, ninguno > ~10%) ───────────
+        G1   15 pts  Frecuencia del mes actual (rank continuo)
         G2   13 pts  Seguimiento directo: top 5 que siguen a la última del
                      mismo tipo (línea→línea / terminal→terminal)
              +10 pts pendiente: no cumplido en los últimos 4 ciclos
@@ -3804,16 +3856,14 @@ class LotteryStatsService(models.Model):
         G5    9 pts  Cobertura: % de sus números en top-5 grupos/pintas
                      atrasados (general)
         G6    8 pts  Semana del mes: 40% frecuencia + 60% atraso en esa semana
-        G7    7 pts  Día de la semana: solo top 5 salidoras del día,
-                     40% freq + 60% atraso del día
+        G7    7 pts  Día de la semana: solo top 3 salidoras del día
+                     dentro del pool, 40% freq + 60% atraso del día
         G8   12 pts  Atraso del turno del próximo sorteo (rank)
         G9    9 pts  Salidor del mes × atraso del turno (rank)
         G10  10 pts  Dígitos de últimos 3 sorteos (exacto 1.0 / vecino ±1 0.5)
-        G11 −10 pts  Recencia: salió en el último sorteo (−10) o en los
-                     2 anteriores (−5)
-        G12   8 pts  Fin de semana (solo sáb/dom): top 5 weekend,
+        G12   8 pts  Fin de semana (solo sáb/dom): top 3 weekend del pool,
                      40% freq + 60% atraso weekend
-        G13   6 pts  Turno cruzado: top-5 atrasada del turno próximo Y activa
+        G13   6 pts  Turno cruzado: top-3 atrasada del turno próximo Y activa
                      en el turno contrario (2+ salidas en últimas 6 → 2/4/6)
         G14   8 pts  Ritmo propio: atraso actual vs MEDIANA histórica de sus
                      intervalos en el turno (pico en ventana 0.9–1.3,
@@ -3881,7 +3931,7 @@ class LotteryStatsService(models.Model):
         if not stats['line'] or not stats['terminal']:
             return empty
 
-        # ── 2. Últimos sorteos (señales G10/G11/G13/G15/G16) ─────────────────
+        # ── 2. Últimos sorteos (fases A-B y G10/G13/G15/G16) ────────────────
         cr.execute("""
             SELECT ln.name::int AS num, lo.turn_day
             FROM lottery_output lo
@@ -3894,6 +3944,50 @@ class LotteryStatsService(models.Model):
         """, (sorteo_id,))
         recent = cr.dictfetchall()          # más reciente primero
 
+        # ── 2.b FASE A: candidatos por dígitos de las últimas salidas ────────
+        # Cada salida XY aporta sus dos dígitos, y cada dígito entra a la vez
+        # como línea y como terminal. Se retrocede sorteo a sorteo hasta
+        # juntar 5; si la salida que completa aporta dos dígitos nuevos entran
+        # los dos y el pool cierra en 6 (el corte a 3 lo hace la fase B).
+        cand = []
+        for d in recent:
+            nuevos = []
+            for x in (d['num'] // 10, d['num'] % 10):
+                # una pareja (55) aporta un solo dígito, no dos veces el mismo
+                if x not in cand and x not in nuevos:
+                    nuevos.append(x)
+            if not nuevos:
+                continue
+            cand.extend(nuevos)
+            if len(cand) >= 5:
+                break
+        cand_line = [i for i in cand if i in stats['line']]
+        cand_term = [i for i in cand if i in stats['terminal']]
+        if not cand_line or not cand_term:
+            return empty
+
+        # ── 2.c FASE B: conteo sobre la Tabla LotoAnálisis ───────────────────
+        # Números que acompañan (fila/columna/diagonal) a la última salida en
+        # la tabla general y a la última salida del turno a predecir en la
+        # tabla de ese turno. Se unen los dos conjuntos y se cuenta cuántos
+        # caen en cada candidato: ganan las 3 líneas y los 3 terminales con
+        # más números. Empate → lo rompe el score de los criterios (fase C).
+        last_general = recent[0]['num'] if recent else None
+        last_turno = next((d['num'] for d in recent
+                           if d['turn_day'] == turn_day), None)
+        tabla_nums = set()
+        if last_general is not None:
+            tabla_nums |= set(self.get_grid_companions(
+                sorteo_id, last_general, turno='general'))
+        if last_turno is not None:
+            tabla_nums |= set(self.get_grid_companions(
+                sorteo_id, last_turno, turno=turn_day))
+        cov_tabla_line = {i: sum(1 for n in tabla_nums if n // 10 == i)
+                          for i in cand_line}
+        cov_tabla_term = {i: sum(1 for n in tabla_nums if n % 10 == i)
+                          for i in cand_term}
+
+
         # G10: dígitos de últimos 3 sorteos — exacto 1.0, vecino ±1 0.5
         w_line, w_term = {}, {}
         for d in recent[:3]:
@@ -3902,12 +3996,6 @@ class LotteryStatsService(models.Model):
                 for nb in (digit - 1, digit + 1):
                     if 0 <= nb <= 9:
                         wmap[nb] = wmap.get(nb, 0) + 0.5
-
-        # G11: recencia
-        last_line = recent[0]['num'] // 10 if recent else None
-        last_term = recent[0]['num'] % 10 if recent else None
-        near_lines = {d['num'] // 10 for d in recent[1:3]}
-        near_terms = {d['num'] % 10 for d in recent[1:3]}
 
         # G15: dígitos dominantes en últimos 12 sorteos (ambas posiciones)
         digit_count = {}
@@ -4086,7 +4174,7 @@ class LotteryStatsService(models.Model):
             return {i: pos + 1 for pos, i in enumerate(ordered)}
 
         def _score_side(idx_stats, direct, cross, seg, wk, rhythm, cov,
-                        w_dig, pend, opp_cnt, last_g, near_g):
+                        w_dig, pend, opp_cnt):
             n_ent = max(len(idx_stats), 1)
             rank_mes = _rank_map(idx_stats, 'freq_mes')
             rank_gen = _rank_map(idx_stats, 'atraso_gen')
@@ -4097,23 +4185,25 @@ class LotteryStatsService(models.Model):
             rank_combo = {i: pos + 1 for pos, i in enumerate(
                 sorted(combo, key=lambda i: combo[i], reverse=True))}
 
-            dow_top5 = sorted(idx_stats,
+            dow_top3 = sorted(idx_stats,
                               key=lambda i: idx_stats[i].get('freq_dow') or 0,
-                              reverse=True)[:5]
-            dow_rank = {i: pos + 1 for pos, i in enumerate(dow_top5)}
+                              reverse=True)[:3]
+            dow_rank = {i: pos + 1 for pos, i in enumerate(dow_top3)}
             max_atr_dow = max((idx_stats[i].get('atraso_dow') or 0
-                               for i in dow_top5), default=1) or 1
+                               for i in dow_top3), default=1) or 1
 
             rank_sem = _rank_map(idx_stats, 'freq_semana')
             max_seg_delay = max((seg.get(i, {}).get('delay') or 0
                                  for i in idx_stats), default=1) or 1
 
-            wk_top5 = sorted(wk, key=lambda i: wk[i]['freq'] or 0, reverse=True)[:5]
-            wk_rank = {i: pos + 1 for pos, i in enumerate(wk_top5)}
-            max_wk_delay = max((wk[i]['delay'] or 0 for i in wk_top5),
+            # dentro del pool, igual que el resto de los rankings
+            wk_top3 = sorted((i for i in idx_stats if i in wk),
+                             key=lambda i: wk[i]['freq'] or 0, reverse=True)[:3]
+            wk_rank = {i: pos + 1 for pos, i in enumerate(wk_top3)}
+            max_wk_delay = max((wk[i]['delay'] or 0 for i in wk_top3),
                                default=1) or 1
 
-            top5_turn = {i for i, rk in rank_turn.items() if rk <= 5}
+            top3_turn = {i for i, rk in rank_turn.items() if rk <= 3}
 
             results = []
             for i in sorted(idx_stats):
@@ -4150,13 +4240,13 @@ class LotteryStatsService(models.Model):
 
                 # G7: día de la semana — solo top 5 salidoras del día
                 if i in dow_rank:
-                    f_dow = 1 - (dow_rank[i] - 1) / 5
+                    f_dow = 1 - (dow_rank[i] - 1) / 3
                     d_dow = (st.get('atraso_dow') or 0) / max_atr_dow
                     b['dia_semana'] = 7.0 * (0.4 * f_dow + 0.6 * d_dow)
 
                 # G12: fin de semana (solo sáb/dom)
                 if i in wk_rank:
-                    f_wk = 1 - (wk_rank[i] - 1) / 5
+                    f_wk = 1 - (wk_rank[i] - 1) / 3
                     d_wk = (wk[i]['delay'] or 0) / max_wk_delay
                     b['weekend'] = 8.0 * (0.4 * f_wk + 0.6 * d_wk)
 
@@ -4173,7 +4263,7 @@ class LotteryStatsService(models.Model):
                     b['espejo'] = min(3.5 * pend[i], 7.0)
 
                 # G13: turno cruzado — atrasada aquí, calentando en el otro
-                if i in top5_turn:
+                if i in top3_turn:
                     k = opp_cnt.get(i, 0)
                     if k >= 4:
                         b['turno_cruzado'] = 6.0
@@ -4204,12 +4294,6 @@ class LotteryStatsService(models.Model):
                 if cov.get(i):
                     b['cobertura'] = 9.0 * cov[i]
 
-                # G11: penalización por recencia
-                if i == last_g:
-                    b['recencia'] = -10.0
-                elif i in near_g:
-                    b['recencia'] = -5.0
-
                 b = {k: round(v, 1) for k, v in b.items()}
                 results.append({
                     'idx': i,
@@ -4219,20 +4303,41 @@ class LotteryStatsService(models.Model):
             results.sort(key=lambda x: x['score'], reverse=True)
             return results
 
-        line_scores = _score_side(stats['line'], line_direct, line_cross,
+        # El motor solo evalúa a los candidatos de la fase A (5, o 6 si la
+        # última salida incorporada aportó dos dígitos nuevos): los rankings
+        # se calculan dentro de ese pool, no sobre las 10 líneas / 10
+        # terminales.
+        line_scores = _score_side({i: stats['line'][i] for i in cand_line},
+                                  line_direct, line_cross,
                                   seg_line, wk_line, rhythm_line, cov_line,
-                                  w_line, pend_line, opp_line,
-                                  last_line, near_lines)
-        term_scores = _score_side(stats['terminal'], term_direct, term_cross,
+                                  w_line, pend_line, opp_line)
+        term_scores = _score_side({i: stats['terminal'][i] for i in cand_term},
+                                  term_direct, term_cross,
                                   seg_term, wk_term, rhythm_term, cov_term,
-                                  w_term, pend_term, opp_term,
-                                  last_term, near_terms)
+                                  w_term, pend_term, opp_term)
+
+        # ── 8. Selección final: fase B corta a 3, fase C los ordena ──────────
+        # Manda la cantidad de números en las tablas; el score de los
+        # criterios solo rompe empates y da el orden final de los 3.
+        def _pick(scores, cov_tabla):
+            by_idx = {r['idx']: r for r in scores}
+            ganadores = sorted(
+                by_idx,
+                key=lambda i: (-cov_tabla.get(i, 0), -by_idx[i]['score']))[:3]
+            for i in ganadores:
+                by_idx[i]['tabla'] = cov_tabla.get(i, 0)
+            return sorted((by_idx[i] for i in ganadores),
+                          key=lambda r: r['score'], reverse=True)
+
+        line_scores = _pick(line_scores, cov_tabla_line)
+        term_scores = _pick(term_scores, cov_tabla_term)
 
         top_lineas = [{
             'idx': r['idx'],
             'name': f"Línea {r['idx']}",
             'range': f"{r['idx'] * 10:02d} al {r['idx'] * 10 + 9:02d}",
             'score': r['score'],
+            'tabla': r.get('tabla', 0),
             'numbers': [f"{r['idx'] * 10 + u:02d}" for u in range(10)],
             'breakdown': r['breakdown'],
         } for r in line_scores[:3]]
@@ -4242,6 +4347,7 @@ class LotteryStatsService(models.Model):
             'name': f"Terminal {r['idx']}",
             'range': f"{r['idx']:02d} al {90 + r['idx']:02d}",
             'score': r['score'],
+            'tabla': r.get('tabla', 0),
             'numbers': [f"{d * 10 + r['idx']:02d}" for d in range(10)],
             'breakdown': r['breakdown'],
         } for r in term_scores[:3]]
