@@ -1730,6 +1730,75 @@ class LotteryStatsService(models.Model):
         return self.env.cr.dictfetchall()
 
     @api.model
+    @tools.ormcache('sorteo_id', 'day', 'top')
+    def get_atrasados_dia_semana(self, sorteo_id, day, top=2):
+        """Los `top` más atrasados de cada familia según el atraso del DÍA DE
+        LA SEMANA (no el general ni el del turno): grupos, líneas y
+        terminales, cada uno con sus números.
+
+        Las líneas y los terminales se rankean aparte de los grupos aunque
+        vivan en la misma tabla: si compitieran juntos, "Terminal 6" podría
+        entrar como grupo atrasado y contaría dos veces. Las pintas quedan
+        fuera, tienen su propio ranking.
+
+        Devuelve {'grupos': [...], 'lineas': [...], 'terminales': [...]} con
+        {'id', 'code', 'name', 'atraso', 'numeros'} en cada entrada.
+        """
+        campo = {
+            'lu': 'salidas_atrasadas_lunes', 'ma': 'salidas_atrasadas_martes',
+            'mi': 'salidas_atrasadas_miercoles', 'ju': 'salidas_atrasadas_jueves',
+            'vi': 'salidas_atrasadas_viernes', 'sa': 'salidas_atrasadas_sabado',
+            'do': 'salidas_atrasadas_domingo',
+        }.get(day)
+        if not campo:
+            return {'grupos': [], 'lineas': [], 'terminales': []}
+
+        self.env.cr.execute(f"""
+            WITH familias AS (
+                SELECT lg.id, lg.code, lg.name,
+                       COALESCE(lgs.{campo}, 0) AS atraso,
+                       CASE WHEN lg.code LIKE 'line_%%'     THEN 'lineas'
+                            WHEN lg.code LIKE 'terminal_%%' THEN 'terminales'
+                            WHEN lg.code LIKE 'pinta_%%'    THEN 'pintas'
+                            ELSE 'grupos' END AS familia
+                FROM lottery_group_stat lgs
+                JOIN lottery_group lg ON lg.id = lgs.group_id
+                WHERE lgs.sorteo_id = %s
+            ),
+            ranking AS (
+                SELECT *, ROW_NUMBER() OVER (PARTITION BY familia
+                                             ORDER BY atraso DESC, id) AS rn
+                FROM familias
+                WHERE familia <> 'pintas'
+            )
+            SELECT familia, id, code, name, atraso
+            FROM ranking WHERE rn <= %s
+            ORDER BY familia, rn
+        """, (sorteo_id, top))
+        filas = self.env.cr.dictfetchall()
+        if not filas:
+            return {'grupos': [], 'lineas': [], 'terminales': []}
+
+        self.env.cr.execute("""
+            SELECT rel.group_id, ln.name::int AS numero
+            FROM lottery_group_number_rel rel
+            JOIN lottery_number ln ON ln.id = rel.number_id
+            WHERE rel.group_id = ANY(%s)
+        """, ([f['id'] for f in filas],))
+        numeros = {}
+        for r in self.env.cr.dictfetchall():
+            numeros.setdefault(r['group_id'], []).append(r['numero'])
+
+        salida = {'grupos': [], 'lineas': [], 'terminales': []}
+        for f in filas:
+            salida[f['familia']].append({
+                'id': f['id'], 'code': f['code'], 'name': f['name'],
+                'atraso': f['atraso'] or 0,
+                'numeros': sorted(numeros.get(f['id'], [])),
+            })
+        return salida
+
+    @api.model
     def get_grid_companions(self, sorteo_id, numero, turno='general',
                             fecha_corte=None):
         """{número: distancia en casillas} de los que comparten fila, columna
@@ -2085,6 +2154,74 @@ class LotteryStatsService(models.Model):
 
         return result
 
+    def _delay_interval_tramos(self, group_id, turn, sorteo_id, rangos):
+        """{clave_intervalo: [{desde, hasta, atraso}, ...]} de los intervalos altos.
+
+        Cada racha seca aparece una vez por cada intervalo que atravesó. El
+        tramo SIEMPRE arranca el día en que el grupo empezó a atrasarse (el
+        primer sorteo sin salir) y cierra en el último sorteo permitido del
+        intervalo — o donde la racha realmente terminó, si murió dentro. El
+        `atraso` que se devuelve es el del cierre del tramo, no el total de
+        la racha, para que cuadre con las fechas que se muestran.
+
+        Ejemplo real, una sequía de 81 sorteos que arrancó el 22/06/2009:
+        51-60 → del 22/06 al 20/08 (60),
+        61-70 → del 22/06 al 30/08 (70) y +70 → del 22/06 al 10/09/2009 (81).
+
+        `rangos` es [(clave, lo, hi), ...] con hi=None para el balde abierto.
+        Solo se piden los intervalos altos (51+ en grupos, 31+ en pintas):
+        abajo son cientos de rachas y no aportan nada al tooltip.
+        """
+        where_clause = "AND o.turn_day = %s" if turn else ""
+        params = [group_id, sorteo_id] + ([turn] if turn else [])
+        valores = ', '.join(
+            "('%s', %d, %d, %s)" % (clave, orden, lo,
+                                    'NULL' if hi is None else hi)
+            for orden, (clave, lo, hi) in enumerate(rangos))
+        self.env.cr.execute(f"""
+            WITH base AS (
+                SELECT o.date, o.turn_day,
+                       CASE WHEN rel.number_id IS NOT NULL THEN 1 ELSE 0 END AS hit
+                FROM lottery_output o
+                LEFT JOIN lottery_group_number_rel rel
+                    ON rel.number_id = o.number_id AND rel.group_id = %s
+                WHERE o.sorteo_id = %s {where_clause}
+            ),
+            streaks AS (
+                SELECT *, SUM(hit) OVER (ORDER BY date, turn_day) AS grp FROM base
+            ),
+            misses AS (
+                SELECT grp, date,
+                       ROW_NUMBER() OVER (PARTITION BY grp ORDER BY date, turn_day) AS rn
+                FROM streaks WHERE hit = 0
+            ),
+            largos AS (SELECT grp, MAX(rn) AS atraso, MIN(date) AS inicio
+                       FROM misses GROUP BY grp),
+            rangos (clave, orden, lo, hi) AS (VALUES {valores})
+            SELECT r.clave,
+                   l.inicio AS ini,
+                   to_char(l.inicio, 'DD/MM/YYYY') AS desde,
+                   to_char((SELECT m.date FROM misses m
+                             WHERE m.grp = l.grp
+                               AND m.rn = LEAST(COALESCE(r.hi, l.atraso), l.atraso)),
+                           'DD/MM/YYYY') AS hasta,
+                   -- Atraso al cerrar el tramo, no el largo total de la
+                   -- racha: así el número coincide con el rango de fechas
+                   -- que se muestra (51-60 de una sequía de 81 → 60).
+                   LEAST(COALESCE(r.hi, l.atraso), l.atraso) AS atraso
+            FROM largos l
+            JOIN rangos r ON l.atraso >= r.lo
+            ORDER BY r.orden, ini
+        """, tuple(params))
+        tramos = {clave: [] for clave, _lo, _hi in rangos}
+        for row in self.env.cr.dictfetchall():
+            tramos[row['clave']].append({
+                'desde': row['desde'],
+                'hasta': row['hasta'],
+                'atraso': row['atraso'],
+            })
+        return tramos
+
     @tools.ormcache('group_id', 'turn', 'sorteo_id')
     def get_group_delay_intervals(self, group_id, turn=None, sorteo_id=False):
         where_clause = "where o.sorteo_id = %s"
@@ -2121,22 +2258,47 @@ class LotteryStatsService(models.Model):
         atrasos AS (
             SELECT
                 grp,
-                COUNT(*) AS atraso
+                COUNT(*) AS atraso,
+                MIN(date) AS desde,
+                MAX(date) AS hasta
             FROM streaks
             WHERE hit = 0
             GROUP BY grp
+        ),
+
+        -- Pico histórico: la racha seca más larga, con el rango de fechas
+        -- en que ocurrió (primer y último sorteo sin salir). Lo muestra la
+        -- web debajo del buscador; la API de la app lo descarta.
+        peak AS (
+            SELECT atraso, desde, hasta
+            FROM atrasos
+            ORDER BY atraso DESC, desde
+            LIMIT 1
         )
         
-        SELECT            
-            COUNT(*) FILTER (WHERE atraso BETWEEN 21 AND 40) AS r_21_40,
-            COUNT(*) FILTER (WHERE atraso BETWEEN 41 AND 50) AS r_41_50,
-            COUNT(*) FILTER (WHERE atraso BETWEEN 51 AND 60) AS r_51_60,
-            COUNT(*) FILTER (WHERE atraso BETWEEN 61 AND 70) AS r_61_70,
-            COUNT(*) FILTER (WHERE atraso > 70) AS r_70_plus
+        -- Cuántas veces el grupo ESTUVO en cada intervalo, no cuántas
+        -- rachas terminaron ahí: una sequía de 81 sorteos pasó por todos
+        -- los intervalos, así que suma en todos. Antes se contaba solo el
+        -- balde donde la racha terminaba y quedaban huecos imposibles
+        -- (61-70 en 0 con 70+ en 1). Un atraso de exactamente 70 cuenta
+        -- en 61-70 y no en 70+, como dicen las etiquetas.
+        SELECT
+            COUNT(*) FILTER (WHERE atraso >= 21) AS r_21_40,
+            COUNT(*) FILTER (WHERE atraso >= 41) AS r_41_50,
+            COUNT(*) FILTER (WHERE atraso >= 51) AS r_51_60,
+            COUNT(*) FILTER (WHERE atraso >= 61) AS r_61_70,
+            COUNT(*) FILTER (WHERE atraso > 70)  AS r_70_plus,
+            (SELECT atraso FROM peak)                        AS peak_atraso,
+            (SELECT to_char(desde, 'DD/MM/YYYY') FROM peak)  AS peak_desde,
+            (SELECT to_char(hasta, 'DD/MM/YYYY') FROM peak)  AS peak_hasta
         FROM atrasos;
         """, tuple(params))
 
-        return self.env.cr.dictfetchone()
+        row = self.env.cr.dictfetchone() or {}
+        row['tramos'] = self._delay_interval_tramos(
+            group_id, turn, sorteo_id,
+            [('r_51_60', 51, 60), ('r_61_70', 61, 70), ('r_70_plus', 71, None)])
+        return row
 
     @tools.ormcache('group_id', 'turn', 'sorteo_id')
     def get_group_delay_intervals_pintas(self, group_id, turn=None, sorteo_id=False):
@@ -2173,22 +2335,40 @@ class LotteryStatsService(models.Model):
             atrasos AS (
                 SELECT
                     grp,
-                    COUNT(*) AS atraso
+                    COUNT(*) AS atraso,
+                    MIN(date) AS desde,
+                    MAX(date) AS hasta
                 FROM streaks
                 WHERE hit = 0
                 GROUP BY grp
+            ),
+
+            peak AS (
+                SELECT atraso, desde, hasta
+                FROM atrasos
+                ORDER BY atraso DESC, desde
+                LIMIT 1
             )
 
-            SELECT            
-                COUNT(*) FILTER (WHERE atraso BETWEEN 10 AND 20) AS r_10_20,
-                COUNT(*) FILTER (WHERE atraso BETWEEN 21 AND 30) AS r_21_30,
-                COUNT(*) FILTER (WHERE atraso BETWEEN 31 AND 40) AS r_31_40,
-                COUNT(*) FILTER (WHERE atraso BETWEEN 41 AND 45) AS r_41_45,
-                COUNT(*) FILTER (WHERE atraso > 45) AS r_45_plus
+            -- Acumulado, igual que en grupos: cada racha suma en todos
+            -- los intervalos por los que pasó (ver get_group_delay_intervals).
+            SELECT
+                COUNT(*) FILTER (WHERE atraso >= 10) AS r_10_20,
+                COUNT(*) FILTER (WHERE atraso >= 21) AS r_21_30,
+                COUNT(*) FILTER (WHERE atraso >= 31) AS r_31_40,
+                COUNT(*) FILTER (WHERE atraso >= 41) AS r_41_45,
+                COUNT(*) FILTER (WHERE atraso > 45)  AS r_45_plus,
+                (SELECT atraso FROM peak)                        AS peak_atraso,
+                (SELECT to_char(desde, 'DD/MM/YYYY') FROM peak)  AS peak_desde,
+                (SELECT to_char(hasta, 'DD/MM/YYYY') FROM peak)  AS peak_hasta
             FROM atrasos;
             """, tuple(params))
 
-        return self.env.cr.dictfetchone()
+        row = self.env.cr.dictfetchone() or {}
+        row['tramos'] = self._delay_interval_tramos(
+            group_id, turn, sorteo_id,
+            [('r_31_40', 31, 40), ('r_41_45', 41, 45), ('r_45_plus', 46, None)])
+        return row
 
     # ─── Números Calientes ───────────────────────────────────────────────────
 

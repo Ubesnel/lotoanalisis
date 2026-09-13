@@ -248,6 +248,19 @@
                                     </t>
                                 </div>
                             </div>
+                            <!-- Pico histórico del grupo seleccionado: cambia con cada
+                                 grupo, igual que el gráfico -->
+                            <div class="peak-atraso peak-atraso--general mb-2"
+                                 t-if="state.data_general and state.data_general.peak_atraso">
+                                <i class="fa fa-fire me-2"/>
+                                <span>Mayor atraso histórico:
+                                    <strong><t t-esc="state.data_general.peak_atraso"/> sorteos</strong>
+                                    <span class="peak-atraso__fechas">
+                                        (del <t t-esc="state.data_general.peak_desde"/>
+                                        al <t t-esc="state.data_general.peak_hasta"/>)
+                                    </span>
+                                </span>
+                            </div>
                             <div class="chart-wrapper"
                                 t-att-class="state.data_general ? 'open' : ''">
                                 <div class="chart-container">
@@ -450,6 +463,19 @@
                                         </t>
                                     </div>
                                 </div>
+                                <!-- Pico histórico del grupo seleccionado: cambia con cada
+                                     grupo, igual que el gráfico -->
+                                <div class="peak-atraso peak-atraso--tarde mb-2"
+                                     t-if="state.data_tarde and state.data_tarde.peak_atraso">
+                                    <i class="fa fa-fire me-2"/>
+                                    <span>Mayor atraso histórico:
+                                        <strong><t t-esc="state.data_tarde.peak_atraso"/> sorteos</strong>
+                                        <span class="peak-atraso__fechas">
+                                            (del <t t-esc="state.data_tarde.peak_desde"/>
+                                            al <t t-esc="state.data_tarde.peak_hasta"/>)
+                                        </span>
+                                    </span>
+                                </div>
                                 <div class="chart-wrapper"
                                     t-att-class="state.data_tarde ? 'open' : ''">
                                     <div class="chart-container">
@@ -651,6 +677,19 @@
                                             </a>
                                         </t>
                                     </div>
+                                </div>
+                                <!-- Pico histórico del grupo seleccionado: cambia con cada
+                                     grupo, igual que el gráfico -->
+                                <div class="peak-atraso peak-atraso--noche mb-2"
+                                     t-if="state.data_noche and state.data_noche.peak_atraso">
+                                    <i class="fa fa-fire me-2"/>
+                                    <span>Mayor atraso histórico:
+                                        <strong><t t-esc="state.data_noche.peak_atraso"/> sorteos</strong>
+                                        <span class="peak-atraso__fechas">
+                                            (del <t t-esc="state.data_noche.peak_desde"/>
+                                            al <t t-esc="state.data_noche.peak_hasta"/>)
+                                        </span>
+                                    </span>
                                 </div>
                                 <div class="chart-wrapper"
                                     t-att-class="state.data_noche ? 'open' : ''">

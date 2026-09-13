@@ -748,6 +748,69 @@ class LotteryPrediction(models.Model):
         orden_final = sorted(seleccionados, key=clave, reverse=True)
         return orden_final, origen
 
+    def _senales_recorte(self, candidatos):
+        """Señales de los tres recortes: 20 → 10, 10 → 5 y Súper Mágico.
+
+        Cada una es {número: cuántas coincidencias} y manda ANTES que la
+        cascada: la cascada pasa a desempatar dentro de cada nivel.
+
+        - `rec_lt`  (20 → 10): 3 líneas y 3 terminales recomendados para
+          esta fecha y turno. Vale 2 si el número está en una línea Y en un
+          terminal recomendados (los del cruce), 1 si está en uno solo.
+        - `atr_dia` (10 → 5): 2 grupos + 2 líneas + 2 terminales más
+          atrasados del DÍA DE LA SEMANA de la predicción. De 0 a 3.
+        - `tablas`  (5 → Súper Mágico): en cuántas de las tres tablas
+          LotoAnálisis (general, tarde y noche) el número es acompañante de
+          la última salida de esa serie. De 0 a 3.
+        """
+        self.ensure_one()
+        stats = self.env['lottery.stats.service'].sudo()
+        day = WEEKDAY_CODES[self.date.weekday()]
+
+        reco = stats.get_lineas_terminales_probables(
+            self.turn_day, str(self.date), sorteo_id=self.sorteo_id.id) or {}
+        lineas_reco = {l['idx'] for l in reco.get('lineas') or []}
+        term_reco = {t['idx'] for t in reco.get('terminales') or []}
+        rec_lt = {}
+        for n in candidatos:
+            linea, terminal = _digitos(n)
+            rec_lt[n] = int(linea in lineas_reco) + int(terminal in term_reco)
+
+        atrasados = stats.get_atrasados_dia_semana(self.sorteo_id.id, day, 2)
+        conjuntos = [(item['name'], set(item['numeros']))
+                     for familia in ('grupos', 'lineas', 'terminales')
+                     for item in atrasados.get(familia) or []]
+        atr_dia, atr_det = {}, {}
+        for n in candidatos:
+            pega = [nombre for nombre, nums in conjuntos if n in nums]
+            atr_dia[n] = len(pega)
+            atr_det[n] = pega
+
+        tablas, tablas_det = {n: 0 for n in candidatos}, {}
+        refs = []
+        for turno in ('general', 'afternoon', 'evening'):
+            ref = (self._last_output() if turno == 'general'
+                   else self._last_output(turn=turno))
+            refs.append((turno, ref))
+            if not ref:
+                continue
+            acomp = self._acompanantes(turno, ref.number_id.name)
+            for n in candidatos:
+                if acomp.get(n):
+                    tablas[n] += 1
+                    tablas_det.setdefault(n, []).append(turno)
+
+        ctx = {
+            'lineas_reco': sorted(lineas_reco),
+            'term_reco': sorted(term_reco),
+            'atrasados': conjuntos,
+            'atr_det': atr_det,
+            'tablas_det': tablas_det,
+            'refs_tablas': refs,
+            'dia': day,
+        }
+        return {'rec_lt': rec_lt, 'atr_dia': atr_dia, 'tablas': tablas}, ctx
+
     def _orden_completar_numeros(self):
         """Los números de `number_ids` en el mismo orden que arma el botón
         "Completar números": primero los 20 (o menos, ver
@@ -779,11 +842,22 @@ class LotteryPrediction(models.Model):
         salida y todavía no habían entrado por una más reciente, hasta
         juntar 20 (ver `_seleccionar_veinte`).
 
-        Los 10 y los 5 salen de recortar esos 20, y el Súper Mágico es el
-        primero de los 5 — todo un único orden, dado por la cascada de
-        desempate (tabla LotoAnálisis → grupos atrasados → pintas atrasadas
-        → combinaciones → cruce línea/terminal → mayoría ≥50/<50 → al azar),
-        que también es la que corta una tanda de recencia cuando trae más
+        Los 10, los 5 y el Súper Mágico se recortan de esos 20, pero cada
+        recorte tiene su propia señal, que manda antes que la cascada (ver
+        `_senales_recorte`):
+
+        - 20 → 10: estar en las 3 líneas o los 3 terminales recomendados
+          para esta fecha y turno (los del cruce, que están en los dos,
+          pesan doble).
+        - 10 → 5: coincidir con los 2 grupos, 2 líneas y 2 terminales más
+          atrasados del día de la semana de la predicción.
+        - 5 → Súper Mágico: aparecer en más de las tres tablas LotoAnálisis
+          (general, tarde y noche).
+
+        La cascada de desempate (tabla LotoAnálisis → grupos atrasados →
+        pintas atrasadas → combinaciones → cruce línea/terminal → mayoría
+        ≥50/<50 → al azar) desempata dentro de cada nivel de esas señales,
+        ordena los 20 y corta una tanda de recencia cuando trae más
         candidatos de los que hacen falta para llegar a 20.
 
         Los atrasos de grupos y pintas son los de HOY, no los de la fecha de
@@ -799,9 +873,24 @@ class LotteryPrediction(models.Model):
         candidatos = sorted(self.number_ids.mapped('name'))
         valores, ctx = self._valores_cascada(candidatos)
         veinte, origen = self._seleccionar_veinte(candidatos, valores)
+        senales, ctx_sen = self._senales_recorte(candidatos)
+        ctx.update(ctx_sen)
+        ctx['senales'] = senales
 
-        orden_10 = veinte[:10]
-        orden_5 = orden_10[:5]
+        def por_senal(senal):
+            """Orden: primero la señal del recorte, y la cascada desempata
+            dentro de cada nivel."""
+            return lambda n: ((senal.get(n, 0),)
+                              + self._clave_cascada(valores, n))
+
+        orden_10 = sorted(
+            veinte, key=por_senal(senales['rec_lt']), reverse=True)[:10]
+        orden_5 = sorted(
+            orden_10, key=por_senal(senales['atr_dia']), reverse=True)[:5]
+        # El Súper Mágico es el primero de los 5, ordenados por en cuántas
+        # tablas aparece.
+        orden_5 = sorted(
+            orden_5, key=por_senal(senales['tablas']), reverse=True)
         super_magico = orden_5[0] if orden_5 else False
 
         Number = self.env['lottery.number']
@@ -831,9 +920,10 @@ class LotteryPrediction(models.Model):
         de hoy: es un dato ya escrito en la predicción y el puesto que más
         pesa en el reparto de ternas, así que no puede moverse porque se
         corra el botón otro día. Del 2º al 5º se reconstruye el orden con la
-        misma cascada que usó `action_completar_numeros` (`_clave_cascada`),
-        que no se guarda en ningún lado porque `number_ids_5` es un
-        Many2many y pierde el orden.
+        cascada (`_clave_cascada`), que no se guarda en ningún lado porque
+        `number_ids_5` es un Many2many y pierde el orden. La señal de tablas
+        de `_senales_recorte` no entra acá: esa sólo define quién es el
+        Súper Mágico, que ya viene resuelto.
 
         Ojo: los atrasos de esa cascada son los de HOY, así que si esto se
         corre días después de completar los números, los puestos 2 a 5 pueden
@@ -942,6 +1032,16 @@ class LotteryPrediction(models.Model):
                     'style="font-size:10px;">(d%d, %s)</span></td>'
                     % (fmt(v['tabla']), v['tabla_dist'], v['tabla_origen']))
 
+        senales = ctx.get('senales') or {
+            'rec_lt': {}, 'atr_dia': {}, 'tablas': {}}
+
+        def celda_senal(cantidad, titulo):
+            """Cuántas coincidencias aportó la señal de ese recorte."""
+            if not cantidad:
+                return '<td class="text-center text-muted">·</td>'
+            return ('<td class="text-center" title="%s"><b>%d</b></td>'
+                    % (titulo, cantidad))
+
         def celda_bool(valor):
             return ('<td class="text-center">%s</td>'
                     % ('✓' if valor else '<span class="text-muted">·</span>'))
@@ -970,8 +1070,9 @@ class LotteryPrediction(models.Model):
 
         cabeza = ''.join(
             '<th class="text-center" style="font-size:11px;">%s</th>' % h
-            for h in ('#', 'Nº', 'Entró por', 'Tabla', 'Grupos', 'Pintas',
-                      'Comb.', 'Cruce', 'Mayoría'))
+            for h in ('#', 'Nº', 'Entró por', 'L/T rec.', 'Atras. día',
+                      'Tablas', 'Tabla', 'Grupos', 'Pintas', 'Comb.',
+                      'Cruce', 'Mayoría'))
 
         def fila_html(i, n, mostrar_origen):
             v = valores[n]
@@ -990,23 +1091,49 @@ class LotteryPrediction(models.Model):
                 '<td class="text-center text-muted" style="font-size:11px;">'
                 '%d%s</td>'
                 '<td class="text-center"><b>%02d</b></td>'
-                '%s%s'
+                '%s%s%s%s%s'
                 '<td class="text-center">%s</td>'
                 '<td class="text-center">%s</td>'
                 '<td class="text-center">%d</td>'
                 '%s%s</tr>' % (
-                    fondo, i, corte, n, origen_html, celda_tabla(v),
+                    fondo, i, corte, n, origen_html,
+                    celda_senal(senales['rec_lt'].get(n, 0),
+                                'línea/terminal recomendados'),
+                    celda_senal(senales['atr_dia'].get(n, 0),
+                                ' · '.join(ctx['atr_det'].get(n) or [])),
+                    celda_senal(senales['tablas'].get(n, 0),
+                                ' · '.join(ctx['tablas_det'].get(n) or [])),
+                    celda_tabla(v),
                     fmt(v['grupos']), fmt(v['pintas']), v['comb'],
                     celda_bool(v['cruce']), celda_bool(v['mayoria'])))
 
         cuerpo = [fila_html(i + 1, n, True) for i, n in enumerate(listas[20])]
         if fuera:
             cuerpo.append(
-                '<tr><td colspan="9" class="text-center text-muted small">'
+                '<tr><td colspan="12" class="text-center text-muted small">'
                 '— fuera de los 20: no compartieron dígito con el historial '
                 'reciente — </td></tr>')
             cuerpo += [fila_html(i + 1, n, False)
                       for i, n in enumerate(fuera, len(listas[20]))]
+
+        def lista_txt(valores_txt):
+            return (' · '.join(valores_txt) if valores_txt
+                    else '<span class="text-muted">sin datos</span>')
+
+        dia_lbl = {'lu': 'lunes', 'ma': 'martes', 'mi': 'miércoles',
+                   'ju': 'jueves', 'vi': 'viernes', 'sa': 'sábado',
+                   'do': 'domingo'}.get(ctx.get('dia'), ctx.get('dia') or '')
+        recortes_txt = (
+            '<p class="small mb-1">'
+            '<span class="text-muted">20 → 10, recomendados:</span> '
+            'líneas %s · terminales %s<br/>'
+            '<span class="text-muted">10 → 5, más atrasados del %s:</span> %s'
+            '</p>' % (
+                lista_txt(['%d' % i for i in ctx.get('lineas_reco') or []]),
+                lista_txt(['%d' % i for i in ctx.get('term_reco') or []]),
+                dia_lbl,
+                lista_txt([nombre for nombre, _nums
+                           in ctx.get('atrasados') or []])))
 
         turno_txt = turn_lbl.get(self.turn_day, self.turn_day)
         rango_txt = {'bajo': 'sí, a favor de los <50',
@@ -1024,20 +1151,27 @@ class LotteryPrediction(models.Model):
                     <span class="text-muted">Mayoría últimos %d:</span> %s
                 </p>
                 %s
+                %s
                 <p class="text-muted small mb-2">
                     Fondo violeta: los 5 · naranja: los 10 · gris: los 20.
                     Los 20 salen de caminar el historial de salidas (columna
                     <b>Entró por</b>: la salida que trajo a ese número
                     compartiendo línea o terminal con ella; "cascada" si
                     entró porque el historial se agotó antes de llegar a 20).
-                    Dentro de eso, y para ordenar los 20 (de donde salen 10,
-                    5 y Súper Mágico por recorte), manda la cascada Tabla →
-                    Grupos → Pintas → Comb. → Cruce → Mayoría → azar: cada
-                    columna sólo desempata a la anterior. Tabla muestra la
-                    distancia en casillas a la tabla que le dio mejor factor
-                    (general o el turno); Cruce y Mayoría son sí/no. Los
-                    atrasos de grupos y pintas son los del momento en que se
-                    apretó el botón.
+                    De ahí, cada recorte tiene su señal propia, que manda
+                    antes que la cascada: <b>L/T rec.</b> para los 10 (2 si
+                    está en línea y terminal recomendados), <b>Atras. día</b>
+                    para los 5 (cuántos de los 2 grupos + 2 líneas + 2
+                    terminales más atrasados del día lo contienen) y
+                    <b>Tablas</b> para el Súper Mágico (en cuántas de las
+                    tres tablas es acompañante). Pasá el mouse por esos
+                    números para ver el detalle. Dentro de cada nivel, y para
+                    ordenar los 20, desempata la cascada Tabla → Grupos →
+                    Pintas → Comb. → Cruce → Mayoría → azar: cada columna
+                    sólo desempata a la anterior. Tabla muestra la distancia
+                    en casillas a la que le dio mejor factor (general o el
+                    turno); Cruce y Mayoría son sí/no. Los atrasos de grupos
+                    y pintas son los del momento en que se apretó el botón.
                 </p>
                 <table class="table table-sm table-bordered"
                        style="font-size:12px;">
@@ -1050,7 +1184,7 @@ class LotteryPrediction(models.Model):
                salida(ctx['last_turno']), len(ctx['ultimos_mayoria']),
                rango_txt,
                ''.join(detalle(t, d) for t, d in ctx['detalles']),
-               cabeza, ''.join(cuerpo))
+               recortes_txt, cabeza, ''.join(cuerpo))
 
 
 class LotteryPredictionTerna(models.Model):
