@@ -38,6 +38,7 @@
         "views/menu.xml",
         "views/lottery_output_validation_views.xml",
         "views/lottery_prediction_views.xml",
+        "views/numeros_suerte_views.xml",
         "views/consulta_combinaciones_views.xml",
         "views/patron_atraso_views.xml",
         "views/lottery_tabla_acompanantes_views.xml",
