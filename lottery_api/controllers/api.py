@@ -545,15 +545,12 @@ class LotteryAppApi(http.Controller):
                   else stats.get_group_delay_intervals)
 
         # El pico histórico (peak_*) y el detalle de fechas por intervalo
-        # (tramos) hoy solo los pinta la web; acá se descartan para que la
-        # app siga recibiendo exactamente las 5 claves de siempre. Cuando la
-        # APK los muestre, basta con sacarlos de este filtro.
-        _solo_web = ('peak_', 'tramos')
-
+        # (tramos) se mandan enteros desde 1.4.1: la APK los muestra en la
+        # banda de "Mayor atraso histórico" y al tocar una barra. Las
+        # versiones viejas de la app ignoran las claves que no conocen, así
+        # que no hace falta versionar la respuesta.
         def _buckets(*args):
-            row = method(*args, sorteo_id=sorteo.id) or {}
-            return {k: v for k, v in row.items()
-                    if not k.startswith(_solo_web)}
+            return method(*args, sorteo_id=sorteo.id) or {}
 
         return _json_response({
             'group': {'id': group.id, 'name': group.name},
