@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_rifazo_root" name="Rifazo" sequence="60"
+              groups="rifazo.group_rifazo_user"/>
+
+    <menuitem id="menu_rifazo_to_verify" name="Por verificar" parent="menu_rifazo_root"
+              action="action_rifazo_request_to_verify" sequence="10"/>
+    <menuitem id="menu_rifazo_raffle" name="Rifas" parent="menu_rifazo_root"
+              action="action_rifazo_raffle" sequence="20"/>
+    <menuitem id="menu_rifazo_request" name="Solicitudes" parent="menu_rifazo_root"
+              action="action_rifazo_request" sequence="30"/>
+    <menuitem id="menu_rifazo_ticket" name="Números" parent="menu_rifazo_root"
+              action="action_rifazo_ticket" sequence="40"/>
+</odoo>

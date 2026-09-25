@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rifazo_raffle_user,rifazo_raffle_user,model_rifazo_raffle,group_rifazo_user,1,0,0,0
+access_rifazo_raffle_manager,rifazo_raffle_manager,model_rifazo_raffle,group_rifazo_manager,1,1,1,1
+access_rifazo_raffle_image_user,rifazo_raffle_image_user,model_rifazo_raffle_image,group_rifazo_user,1,0,0,0
+access_rifazo_raffle_image_manager,rifazo_raffle_image_manager,model_rifazo_raffle_image,group_rifazo_manager,1,1,1,1
+access_rifazo_ticket_user,rifazo_ticket_user,model_rifazo_ticket,group_rifazo_user,1,1,0,0
+access_rifazo_ticket_manager,rifazo_ticket_manager,model_rifazo_ticket,group_rifazo_manager,1,1,1,1
+access_rifazo_request_user,rifazo_request_user,model_rifazo_request,group_rifazo_user,1,1,0,0
+access_rifazo_request_manager,rifazo_request_manager,model_rifazo_request,group_rifazo_manager,1,1,1,1
+access_rifazo_request_reject_user,rifazo_request_reject_user,model_rifazo_request_reject,group_rifazo_user,1,1,1,1
