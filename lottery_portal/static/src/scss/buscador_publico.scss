@@ -565,6 +565,58 @@
     .fa { font-size: 15px; }
 }
 
+/* ── TARJETA DE RIFAZO (app hermana, al lado de la de LotoAnálisis) ── */
+/* Con Rifazo la portada va a 3 columnas: buscador · LotoAnálisis · Rifazo.
+   Selectores dobles (.bp-app-card.bp-rifazo-card…): los estilos base de la
+   tarjeta están más abajo en este archivo y, si no, pisarían los colores. */
+@media (min-width: 992px) {
+    .bp-hero-grid--3 .bp-hero-col {
+        flex: 1 1 300px;
+        max-width: 380px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .bp-hero-center--wide { max-width: 1200px; }
+}
+
+.bp-app-card.bp-rifazo-card {
+    background: linear-gradient(160deg, #ffffff 0%, #fff4dc 100%);
+    border: 2px solid #FFC21A;
+    box-shadow:
+        0 20px 60px rgba(20, 55, 159, .40),
+        0 4px 16px rgba(0, 0, 0, .12);
+
+    .bp-app-title span {
+        background: linear-gradient(95deg, #1D46C8 0%, #E71F2C 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+    }
+
+    .bp-app-features li .fa { color: #E71F2C; }
+    .bp-app-hint strong { color: #1D46C8; }
+}
+
+.bp-app-badge.bp-rifazo-badge {
+    background: linear-gradient(135deg, #E71F2C 0%, #FF7A1A 100%);
+    box-shadow: 0 4px 12px rgba(231, 31, 44, .35);
+}
+
+.bp-rifazo-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 6px 16px rgba(20, 55, 159, .30);
+}
+
+.bp-app-btn.bp-rifazo-btn {
+    background: linear-gradient(135deg, #14379F 0%, #1D46C8 50%, #E71F2C 100%);
+    box-shadow: 0 10px 26px rgba(29, 70, 200, .45);
+
+    &:hover { box-shadow: 0 14px 32px rgba(29, 70, 200, .55); }
+}
+
 /* ══════════════════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════════════════ */

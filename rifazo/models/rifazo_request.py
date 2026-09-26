@@ -181,6 +181,20 @@ class RifazoRequest(models.Model):
     # API (siempre llamadas con sudo desde el controlador)
     # ------------------------------------------------------------------
 
+    def _public_winner_name(self):
+        """'Juan Pérez García' → 'Juan P.' (nunca el nombre completo en público)."""
+        self.ensure_one()
+        parts = (self.partner_name or '').split()
+        if not parts:
+            return ''
+        return parts[0] + (' %s.' % parts[1][0].upper() if len(parts) > 1 else '')
+
+    def _public_phone_masked(self):
+        """'+5351234567' → '••••••67'."""
+        self.ensure_one()
+        digits = re.sub(r'\D', '', self.phone or '')
+        return '••••••' + digits[-2:] if len(digits) >= 2 else ''
+
     def _check_alive_for_api(self):
         self.ensure_one()
         if self.state == 'reserved' and not self._is_reservation_alive():

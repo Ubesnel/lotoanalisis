@@ -11,4 +11,16 @@
         <field name="numbercall">-1</field>
         <field name="active" eval="True"/>
     </record>
+
+    <!-- Cierra la venta de las rifas que llegaron a su hora de cierre. -->
+    <record id="ir_cron_rifazo_close_expired_sales" model="ir.cron">
+        <field name="name">Rifazo: cerrar ventas vencidas</field>
+        <field name="model_id" ref="model_rifazo_raffle"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_close_expired_sales()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
 </odoo>

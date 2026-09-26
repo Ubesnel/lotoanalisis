@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <menuitem id="menu_rifazo_root" name="Rifazo" sequence="60"
-              groups="rifazo.group_rifazo_user"/>
+              web_icon="rifazo,static/description/icon.png"
+              groups="rifazo.group_rifazo_viewer"/>
 
     <menuitem id="menu_rifazo_to_verify" name="Por verificar" parent="menu_rifazo_root"
               action="action_rifazo_request_to_verify" sequence="10"/>
@@ -11,4 +12,12 @@
               action="action_rifazo_request" sequence="30"/>
     <menuitem id="menu_rifazo_ticket" name="Números" parent="menu_rifazo_root"
               action="action_rifazo_ticket" sequence="40"/>
+
+    <menuitem id="menu_rifazo_config" name="Configuración" parent="menu_rifazo_root"
+              sequence="90" groups="rifazo.group_rifazo_manager"/>
+    <!-- Monedas: CUP y otras vienen desactivadas en Odoo; se activan desde acá. -->
+    <menuitem id="menu_rifazo_currency" name="Monedas" parent="menu_rifazo_config"
+              action="base.action_currency_form" sequence="10"/>
+    <menuitem id="menu_rifazo_app_release" name="Versiones de la app" parent="menu_rifazo_config"
+              action="action_rifazo_app_release" sequence="20"/>
 </odoo>

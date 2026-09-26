@@ -36,6 +36,10 @@ class RifazoRaffle(models.Model):
                                   default=lambda self: self.env.company.currency_id)
     price = fields.Monetary('Precio por número', required=True, tracking=True)
     draw_date = fields.Datetime('Fecha del sorteo', tracking=True)
+    sale_end_date = fields.Datetime(
+        'Cierre de venta', tracking=True,
+        help='A esta fecha y hora la venta de números se cierra sola (las reservas '
+             'en curso pueden terminar de pagar). Vacío: se cierra a mano.')
     draw_method = fields.Char('Cómo se sortea',
                               help='Ej: "Con la cabeza de la Quiniela nocturna de ese día"')
 
@@ -46,10 +50,17 @@ class RifazoRaffle(models.Model):
                                    help='Relleno con ceros: 3 dígitos → 007')
     number_example = fields.Char('Números', compute='_compute_number_example')
 
-    payment_instructions = fields.Text('Datos para el pago',
-                                       help='Banco, cuenta, titular… se muestran en la pantalla de pago')
-    whatsapp_url = fields.Char('Link de WhatsApp')
-    reservation_minutes = fields.Integer('Minutos de reserva', default=15, required=True,
+    # La app no muestra datos bancarios: solo indica adónde ir a pagar.
+    payment_instructions = fields.Text(
+        'Indicaciones de pago',
+        default=lambda self: _('Para realizar el pago, dirigite a nuestro grupo de WhatsApp. '
+                               'Ahí te pasamos los datos de la cuenta.'),
+        help='Texto que ve el participante en la pantalla de pago. '
+             'No pongas datos bancarios: se dan en el grupo de WhatsApp.')
+    whatsapp_url = fields.Char('Grupo de WhatsApp',
+                               help='Link de invitación al grupo (https://chat.whatsapp.com/…). '
+                                    'La app lo muestra como botón en la pantalla de pago.')
+    reservation_minutes = fields.Integer('Minutos de reserva', default=60, required=True,
                                          help='Tiempo para subir el comprobante antes de que se liberen los números')
     max_numbers_per_request = fields.Integer('Máx. números por solicitud', default=10, required=True)
 
@@ -61,6 +72,17 @@ class RifazoRaffle(models.Model):
                                         readonly=True, copy=False)
     winner_name = fields.Char(related='winner_request_id.partner_name', string='Ganador')
     winner_phone = fields.Char(related='winner_request_id.phone', string='Teléfono del ganador')
+
+    # Entrega del premio: se publica en "Últimos sorteos" de la app para dar
+    # confianza (comprobante de la recarga, foto de la entrega del equipo…).
+    prize_delivered = fields.Boolean('Premio entregado', readonly=True, tracking=True, copy=False)
+    prize_delivered_date = fields.Datetime('Entregado el', readonly=True, copy=False)
+    prize_evidence_image = fields.Image(
+        'Evidencia de la entrega', max_width=1920, max_height=1920, attachment=True, copy=False,
+        help='Comprobante de la recarga o foto de la entrega. Se muestra en la app.')
+    prize_note = fields.Char(
+        'Nota de la entrega', copy=False,
+        help='Se muestra en la app junto a la evidencia. Ej: "Recarga de 360 CUP realizada".')
 
     ticket_total = fields.Integer('Total', compute='_compute_ticket_stats')
     ticket_available_count = fields.Integer('Disponibles', compute='_compute_ticket_stats')
@@ -135,6 +157,12 @@ class RifazoRaffle(models.Model):
                 raise ValidationError(_('%(to)s no entra en %(digits)s dígitos.',
                                         to=rec.number_to, digits=rec.number_digits))
 
+    @api.constrains('sale_end_date', 'draw_date')
+    def _check_sale_end_date(self):
+        for rec in self:
+            if rec.sale_end_date and rec.draw_date and rec.sale_end_date > rec.draw_date:
+                raise ValidationError(_('El cierre de venta tiene que ser antes del sorteo.'))
+
     @api.constrains('price', 'reservation_minutes', 'max_numbers_per_request')
     def _check_positive_values(self):
         for rec in self:
@@ -205,10 +233,29 @@ class RifazoRaffle(models.Model):
     # Estados
     # ------------------------------------------------------------------
 
+    def _is_sale_expired(self):
+        """Llegó la hora de cierre de venta (aunque el cron todavía no corrió)."""
+        self.ensure_one()
+        return bool(self.sale_end_date) and self.sale_end_date <= fields.Datetime.now()
+
+    @api.model
+    def _cron_close_expired_sales(self):
+        expired = self.search([
+            ('state', '=', 'open'),
+            ('sale_end_date', '!=', False),
+            ('sale_end_date', '<=', fields.Datetime.now()),
+        ])
+        for rec in expired:
+            rec.action_close()
+            rec.message_post(body=_('Venta cerrada automáticamente: llegó la hora de cierre de venta.'))
+
     def action_open(self):
         for rec in self:
             if rec.state not in ('draft', 'closed'):
                 raise UserError(_('Solo se puede abrir una rifa en borrador o con la venta cerrada.'))
+            if rec._is_sale_expired():
+                raise UserError(_('La hora de cierre de venta ya pasó: cambiala (o dejala vacía) '
+                                  'antes de abrir la rifa.'))
             if rec.state == 'draft':
                 rec._generate_tickets()
         self.write({'state': 'open'})
@@ -247,6 +294,18 @@ class RifazoRaffle(models.Model):
                                         number=number, code=ticket.request_id.code))
             else:
                 rec.message_post(body=_('El %s no estaba vendido: la rifa queda sin ganador.', number))
+
+    def action_mark_prize_delivered(self):
+        for rec in self:
+            if rec.state != 'drawn' or not rec.winner_request_id:
+                raise UserError(_('Solo se marca la entrega en una rifa sorteada con ganador.'))
+            if not rec.prize_evidence_image:
+                raise UserError(_('Cargá la evidencia de la entrega (comprobante o foto) en la '
+                                  'pestaña "Entrega del premio".'))
+        self.write({'prize_delivered': True, 'prize_delivered_date': fields.Datetime.now()})
+
+    def action_unmark_prize_delivered(self):
+        self.write({'prize_delivered': False, 'prize_delivered_date': False})
 
     def action_cancel(self):
         for rec in self:
@@ -301,6 +360,9 @@ class RifazoRaffle(models.Model):
         transacciones y acá vuelven menos filas de las pedidas → se deshace todo
         y se responde 409 con los números perdidos."""
         self.ensure_one()
+        if self.state == 'open' and self._is_sale_expired():
+            # Pasó la hora de cierre y el cron todavía no corrió: se cierra ya.
+            self.action_close()
         if self.state != 'open':
             raise RifazoApiError('raffle_not_open', _('Esta rifa no está a la venta.'), status=409)
         device_id = (device_id or '').strip()

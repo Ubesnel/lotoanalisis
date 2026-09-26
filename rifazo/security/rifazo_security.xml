@@ -5,15 +5,22 @@
         <field name="sequence">60</field>
     </record>
 
-    <!-- Verificador: revisa comprobantes, confirma y rechaza solicitudes. -->
-    <record id="group_rifazo_user" model="res.groups">
-        <field name="name">Verificador</field>
+    <!-- Consulta: ve rifas, solicitudes, comprobantes y números; no modifica nada. -->
+    <record id="group_rifazo_viewer" model="res.groups">
+        <field name="name">Consulta</field>
         <field name="category_id" ref="module_category_rifazo"/>
     </record>
 
-    <!-- Administrador: además crea, abre, cierra y sortea rifas. -->
+    <!-- Verificador: además revisa comprobantes, confirma y rechaza solicitudes. -->
+    <record id="group_rifazo_user" model="res.groups">
+        <field name="name">Verificador</field>
+        <field name="category_id" ref="module_category_rifazo"/>
+        <field name="implied_ids" eval="[(4, ref('group_rifazo_viewer'))]"/>
+    </record>
+
+    <!-- Gestor: además crea, abre, cierra, sortea y cancela rifas. -->
     <record id="group_rifazo_manager" model="res.groups">
-        <field name="name">Administrador</field>
+        <field name="name">Gestor</field>
         <field name="category_id" ref="module_category_rifazo"/>
         <field name="implied_ids" eval="[(4, ref('group_rifazo_user'))]"/>
         <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>

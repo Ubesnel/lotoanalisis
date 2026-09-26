@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Página pública de descarga (/rifazo). Es independiente del layout del
+         sitio (LotoAnálisis): Rifazo tiene su propia identidad y el link se
+         comparte suelto por WhatsApp y Facebook. -->
+    <template id="download_page" name="Rifazo: página de descarga">
+        <t t-call="rifazo.download_page_html"/>
+    </template>
+
+    <template id="download_page_html" name="Rifazo: HTML de descarga">
+&lt;!DOCTYPE html&gt;
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Rifazo · Descargá la app</title>
+    <meta name="description" content="Rifas de saldo y premios desde tu celular. Descargá la app Rifazo para Android."/>
+    <meta property="og:title" content="Rifazo · Rifas de saldo y premios"/>
+    <meta property="og:description" content="Elegí tus números, pagá y seguí tus rifas desde el celular."/>
+    <meta property="og:image" content="/rifazo/static/src/img/banner.jpg"/>
+    <meta name="theme-color" content="#14379F"/>
+    <link rel="icon" href="/rifazo/static/src/img/icon.png"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&amp;family=Nunito:wght@600;700;800;900&amp;display=swap"/>
+    <style>
+        :root { --red:#E71F2C; --red-deep:#A3101C; --blue:#1D46C8; --blue-deep:#14379F;
+                --gold:#FFC21A; --gold-light:#FFE9A6; --green:#2EAE4A; --teal:#00B5C7;
+                --orange:#FF7A1A; --pink:#FF3D8B; --bg:#FFF8EE; --text:#1E1A3A; --muted:#6E6886; }
+        * { box-sizing: border-box; }
+        body { margin:0; background:var(--bg); color:var(--text); font-family:'Nunito',sans-serif; }
+        .wrap { max-width:760px; margin:0 auto; padding:0 16px; }
+        .topbar { position:sticky; top:0; z-index:10; display:flex; align-items:center;
+                  justify-content:space-between; gap:12px; padding:10px 16px;
+                  background:linear-gradient(90deg,var(--blue-deep),var(--blue) 45%,var(--red));
+                  box-shadow:0 2px 10px rgba(0,0,0,.2); }
+        .topbar .brand { display:flex; align-items:center; gap:8px; color:#fff; text-decoration:none;
+                         font-family:'Baloo 2',sans-serif; font-size:22px; font-weight:800; }
+        .topbar .brand img { width:34px; height:34px; border-radius:9px; }
+        .topbar .back { display:inline-flex; align-items:center; gap:6px; color:var(--blue-deep);
+                        background:#fff; text-decoration:none; font-weight:900; font-size:14px;
+                        padding:8px 14px; border-radius:999px; white-space:nowrap; }
+        .topbar .back:hover { background:var(--gold-light); }
+        .banner-box { max-width:1100px; margin:0 auto; }
+        .banner { display:block; width:100%; aspect-ratio:3/1; object-fit:cover; }
+        @media (min-width:900px) {
+            .banner-box { padding:18px 16px 0; }
+            .banner { border-radius:22px; box-shadow:0 10px 30px rgba(20,55,159,.25); }
+            .banner-box .strip { border-radius:0 0 6px 6px; margin:0 12px; }
+        }
+        .strip { display:flex; height:6px; }
+        .strip span { flex:1; }
+        h1, h2, .baloo { font-family:'Baloo 2',sans-serif; }
+        .hero { display:flex; gap:16px; align-items:center; background:#fff; border-radius:22px;
+                padding:18px; margin-top:-28px; position:relative;
+                box-shadow:0 10px 30px rgba(29,70,200,.15); }
+        .hero img.icon { width:88px; height:88px; border-radius:20px; flex:none; }
+        .hero h1 { margin:0; font-size:30px; line-height:1; }
+        .hero p { margin:4px 0 0; color:var(--muted); font-weight:700; }
+        .cta { display:flex; align-items:center; gap:12px; margin:18px 0 6px; padding:14px 18px;
+               border-radius:22px; text-decoration:none; color:#fff;
+               background:linear-gradient(90deg,var(--red),var(--orange));
+               box-shadow:0 8px 20px rgba(231,31,44,.35); animation:pulse 1.2s ease-in-out infinite alternate; }
+        .cta .ic { width:48px; height:48px; border-radius:50%; background:#fff; color:var(--red);
+                   display:flex; align-items:center; justify-content:center; flex:none; }
+        .cta .ic svg { width:26px; height:26px; }
+        .cta b { display:block; font-family:'Baloo 2',sans-serif; font-size:22px; line-height:1.1; }
+        .cta small { font-weight:800; opacity:.95; }
+        @keyframes pulse { to { transform:scale(1.02); } }
+        .meta { text-align:center; color:var(--muted); font-size:13px; font-weight:700; }
+        .soon { margin:18px 0; padding:16px; border-radius:18px; background:var(--gold-light);
+                text-align:center; font-weight:900; color:#7A5600; }
+        .welcome { display:flex; align-items:flex-end; gap:8px; margin:22px 0 6px; }
+        .bubble { flex:1; background:#fff; border:2px solid var(--gold); border-radius:18px 18px 4px 18px;
+                  padding:12px 14px; font-weight:900; color:var(--blue-deep); margin-bottom:18px; }
+        .welcome img { height:110px; }
+        h2 { font-size:24px; margin:26px 0 10px; }
+        .steps { counter-reset:s; list-style:none; padding:0; margin:0; }
+        .steps li { counter-increment:s; display:flex; gap:12px; align-items:flex-start; background:#fff;
+                    border-radius:16px; padding:12px 14px; margin-bottom:10px; font-weight:700; }
+        .steps li::before { content:counter(s); flex:none; width:30px; height:30px; border-radius:50%;
+                            color:#fff; display:flex; align-items:center; justify-content:center;
+                            font-family:'Baloo 2',sans-serif; font-size:18px; background:var(--blue); }
+        .steps li:nth-child(2)::before { background:var(--green); }
+        .steps li:nth-child(3)::before { background:var(--orange); }
+        .steps li:nth-child(4)::before { background:var(--red); }
+        .steps small { display:block; color:var(--muted); font-weight:600; margin-top:2px; }
+        .features { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .feat { background:#fff; border-radius:16px; padding:12px; font-weight:800; border-left:5px solid var(--c); }
+        .feat span { display:block; font-size:24px; }
+        .notes { background:#fff; border-radius:16px; padding:12px 16px; }
+        .notes p { margin:4px 0; }
+        footer { text-align:center; color:var(--muted); font-size:12px; padding:28px 0 36px; }
+        @media (max-width:420px) { .features { grid-template-columns:1fr; } .hero h1 { font-size:26px; } }
+    </style>
+</head>
+<body>
+    <!-- Barra fija: la página no usa el menú del sitio, así que siempre hay
+         una salida a la portada. -->
+    <nav class="topbar">
+        <a class="brand" href="/rifazo">
+            <img src="/rifazo/static/src/img/icon.png" alt=""/>Rifazo
+        </a>
+        <a class="back" href="/">← Volver al sitio</a>
+    </nav>
+
+    <div class="banner-box">
+        <img class="banner" src="/rifazo/static/src/img/banner.jpg" alt="Rifazo: Suerte · Premios · Diversión"/>
+        <div class="strip">
+            <span style="background:#E71F2C"/><span style="background:#FFC21A"/><span style="background:#2EAE4A"/>
+            <span style="background:#00B5C7"/><span style="background:#1D46C8"/><span style="background:#FF3D8B"/>
+            <span style="background:#FF7A1A"/>
+        </div>
+    </div>
+
+    <div class="wrap">
+        <div class="hero">
+            <img class="icon" src="/rifazo/static/src/img/icon.png" alt="Ícono de Rifazo"/>
+            <div>
+                <h1>Rifazo</h1>
+                <p>Rifas de saldo y premios, desde tu celular</p>
+                <p t-if="open_count" style="color:var(--green)">
+                    🔥 <t t-esc="open_count"/> <t t-if="open_count == 1">rifa abierta</t><t t-else="">rifas abiertas</t> ahora
+                </p>
+            </div>
+        </div>
+
+        <t t-if="release">
+            <a class="cta" href="/rifazo/descargar">
+                <span class="ic">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/>
+                    </svg>
+                </span>
+                <span>
+                    <b>¡Descargá Rifazo!</b>
+                    <small>Android · versión <t t-esc="release.name"/>
+                        <t t-if="release.file_size_label"> · <t t-esc="release.file_size_label"/></t>
+                    </small>
+                </span>
+            </a>
+            <div class="meta">
+                Actualizada el <t t-esc="release.release_date.strftime('%d/%m/%Y')"/> · Gratis
+            </div>
+        </t>
+        <div t-else="" class="soon">📲 La app sale muy pronto. ¡Volvé en unos días!</div>
+
+        <div class="welcome">
+            <div class="bubble">¡Hola! Descargá la app, elegí tus números y probá tu suerte 🍀</div>
+            <img src="/rifazo/static/src/img/mateo_vale_caras.png" alt="Mateo y Valeria"/>
+        </div>
+
+        <h2>Cómo instalarla</h2>
+        <ol class="steps">
+            <li><div>Tocá <b>¡Descargá Rifazo!</b> y esperá que baje el archivo.
+                <small>Si el navegador pregunta si querés conservar el archivo, tocá "Descargar de todos modos".</small></div></li>
+            <li><div>Abrí el archivo <b>Rifazo.apk</b> desde las notificaciones o desde Descargas.</div></li>
+            <li><div>Si Android avisa que es de <b>origen desconocido</b>, tocá <b>Configuración</b> y activá
+                "Permitir de esta fuente".
+                <small>Es normal: la app se distribuye desde esta web, no desde Google Play.</small></div></li>
+            <li><div>Tocá <b>Instalar</b>. Si aparece Play Protect, elegí <b>Instalar de todos modos</b>. ¡Listo!</div></li>
+        </ol>
+
+        <h2>Qué podés hacer</h2>
+        <div class="features">
+            <div class="feat" style="--c:#E71F2C"><span>🎟️</span>Elegí tus números o dejá que la app los elija</div>
+            <div class="feat" style="--c:#1D46C8"><span>💬</span>Pagá por el grupo de WhatsApp y subí el comprobante</div>
+            <div class="feat" style="--c:#2EAE4A"><span>✅</span>Seguí el estado de tus rifas en "Mis rifas"</div>
+            <div class="feat" style="--c:#FF7A1A"><span>🏆</span>Mirá los ganadores y la entrega de cada premio</div>
+        </div>
+
+        <t t-if="release and release.release_notes">
+            <h2>Novedades de la versión <t t-esc="release.name"/></h2>
+            <div class="notes">
+                <p t-foreach="release.release_notes.splitlines()" t-as="line" t-if="line.strip()">
+                    <t t-esc="line"/>
+                </p>
+            </div>
+        </t>
+
+        <footer>Rifazo · Suerte · Premios · Diversión</footer>
+    </div>
+</body>
+</html>
+    </template>
+</odoo>

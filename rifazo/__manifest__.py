@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Rifazo",
-    "version": "1.0",
+    "version": "1.1",
     "author": "SeuS IT",
     "category": "Sales",
     "summary": "Gestión de rifas y solicitudes de participación para la app Rifazo",
@@ -17,6 +17,8 @@
         "views/rifazo_raffle_views.xml",
         "views/rifazo_request_views.xml",
         "views/rifazo_ticket_views.xml",
+        "views/rifazo_app_release_views.xml",
+        "views/rifazo_download_page.xml",
         "views/menus.xml",
     ],
     "installable": True,

@@ -66,6 +66,14 @@ def _unique(record):
     return int(record.write_date.timestamp()) if record.write_date else 0
 
 
+def _public_state(raffle):
+    """Estado que ve la app: una rifa abierta que ya pasó su hora de cierre
+    figura como cerrada aunque el cron todavía no la haya cerrado."""
+    if raffle.state == 'open' and raffle._is_sale_expired():
+        return 'closed'
+    return raffle.state
+
+
 def _raffle_image_url(raffle, size=512):
     if not raffle.image_128:
         return None
@@ -98,11 +106,15 @@ def _serialize_raffle(raffle, detail=False):
         'id': raffle.id,
         'name': raffle.name,
         'short_description': raffle.short_description or '',
-        'state': raffle.state,
+        'state': _public_state(raffle),
         'price': raffle.price,
         'currency': raffle.currency_id.name,
         'currency_symbol': raffle.currency_id.symbol,
         'draw_date': _dt(raffle.draw_date),
+        'sale_end_date': _dt(raffle.sale_end_date),
+        # Segundos hasta el cierre según el reloj del servidor (la app no
+        # depende de la hora del celular).
+        'sale_seconds_left': _seconds_left(raffle.sale_end_date) if raffle.state == 'open' else None,
         'draw_method': raffle.draw_method or '',
         'number_from': raffle.number_from,
         'number_to': raffle.number_to,
@@ -158,6 +170,30 @@ def _serialize_request(rifazo_request, with_token=True):
     return data
 
 
+def _serialize_result(raffle):
+    """Rifa sorteada para "Últimos sorteos". El ganador va abreviado: nunca
+    el nombre completo ni el teléfono."""
+    winner = raffle.winner_request_id
+    delivered = bool(winner) and raffle.prize_delivered
+    return {
+        'id': raffle.id,
+        'name': raffle.name,
+        'image_url': _raffle_image_url(raffle),
+        'currency_symbol': raffle.currency_id.symbol,
+        'draw_date': _dt(raffle.draw_date),
+        'draw_method': raffle.draw_method or '',
+        'winning_number': raffle.winning_number,
+        'has_winner': bool(winner),
+        'winner_name': winner._public_winner_name() if winner else '',
+        'winner_phone': winner._public_phone_masked() if winner else '',
+        'prize_delivered': delivered,
+        'prize_delivered_date': _dt(raffle.prize_delivered_date) if delivered else None,
+        'prize_note': (raffle.prize_note or '') if delivered else '',
+        'evidence_url': '%s/raffles/%s/evidence?unique=%s' % (PREFIX, raffle.id, _unique(raffle))
+        if delivered and raffle.prize_evidence_image else None,
+    }
+
+
 def _image_response(record, size):
     size = int(size) if str(size).isdigit() and int(size) in IMAGE_SIZES else 512
     stream = request.env['ir.binary']._get_image_stream_from(record, 'image_%s' % size)
@@ -175,7 +211,12 @@ class RifazoApi(http.Controller):
                 methods=['GET'], csrf=False, cors='*')
     @_api
     def raffles(self, **kwargs):
-        raffles = request.env['rifazo.raffle'].sudo().search([('state', '=', 'open')])
+        # Las que pasaron su hora de cierre no se muestran aunque el cron
+        # todavía no las haya cerrado.
+        raffles = request.env['rifazo.raffle'].sudo().search([
+            ('state', '=', 'open'),
+            '|', ('sale_end_date', '=', False), ('sale_end_date', '>', fields.Datetime.now()),
+        ])
         return _json({'raffles': [_serialize_raffle(r) for r in raffles]})
 
     @http.route(PREFIX + '/raffles/<int:raffle_id>', type='http', auth='public',
@@ -201,7 +242,7 @@ class RifazoApi(http.Controller):
             (reserved if state == 'reserved' else taken).append(number)
         return _json({
             'raffle_id': raffle.id,
-            'state': raffle.state,
+            'state': _public_state(raffle),
             'number_from': raffle.number_from,
             'number_to': raffle.number_to,
             'digits': raffle.number_digits,
@@ -214,6 +255,29 @@ class RifazoApi(http.Controller):
     @_api
     def raffle_image(self, raffle_id, size=512, **kwargs):
         return _image_response(_get_raffle(raffle_id), size)
+
+    @http.route(PREFIX + '/results', type='http', auth='public',
+                methods=['GET'], csrf=False, cors='*')
+    @_api
+    def results(self, limit=5, **kwargs):
+        """Últimos sorteos: número ganador, ganador abreviado y entrega."""
+        limit = min(int(limit), 20) if str(limit).isdigit() else 5
+        raffles = request.env['rifazo.raffle'].sudo().search(
+            [('state', '=', 'drawn')], order='draw_date desc, id desc', limit=limit)
+        return _json({'results': [_serialize_result(r) for r in raffles]})
+
+    @http.route(PREFIX + '/raffles/<int:raffle_id>/evidence', type='http', auth='public',
+                methods=['GET'], csrf=False, cors='*')
+    @_api
+    def prize_evidence(self, raffle_id, size=1024, **kwargs):
+        raffle = request.env['rifazo.raffle'].sudo().search(
+            [('id', '=', raffle_id), ('state', '=', 'drawn'), ('prize_delivered', '=', True)], limit=1)
+        if not raffle or not raffle.prize_evidence_image:
+            raise RifazoApiError('image_not_found', 'Imagen no encontrada.', status=404)
+        size = int(size) if str(size).isdigit() and int(size) in IMAGE_SIZES else 1024
+        stream = request.env['ir.binary']._get_image_stream_from(
+            raffle, 'prize_evidence_image', width=size, height=size)
+        return stream.get_response(immutable=bool(request.params.get('unique')))
 
     @http.route(PREFIX + '/images/<int:image_id>', type='http', auth='public',
                 methods=['GET'], csrf=False, cors='*')

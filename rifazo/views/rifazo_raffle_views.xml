@@ -21,6 +21,12 @@
                             confirm="Se cancelan las solicitudes reservadas y por verificar. Las confirmadas quedan como están (la devolución es manual). ¿Continuar?"/>
                     <button name="action_draft" string="Volver a borrador" type="object"
                             invisible="state != 'cancelled'" groups="rifazo.group_rifazo_manager"/>
+                    <button name="action_mark_prize_delivered" string="Marcar premio entregado" type="object"
+                            class="btn-primary" groups="rifazo.group_rifazo_manager"
+                            invisible="state != 'drawn' or not winner_request_id or prize_delivered"/>
+                    <button name="action_unmark_prize_delivered" string="Deshacer entrega" type="object"
+                            groups="rifazo.group_rifazo_manager" invisible="not prize_delivered"
+                            confirm="La app va a volver a mostrar la entrega como pendiente. ¿Continuar?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,open,closed,drawn"/>
                 </header>
                 <sheet>
@@ -49,7 +55,8 @@
                     <group>
                         <group string="Venta">
                             <field name="price"/>
-                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="currency_id" options="{'no_create': True}"/>
+                            <field name="sale_end_date"/>
                             <field name="draw_date"/>
                             <field name="draw_method"/>
                         </group>
@@ -81,6 +88,8 @@
                         <group invisible="not winner_request_id">
                             <field name="winner_name"/>
                             <field name="winner_phone" widget="phone"/>
+                            <field name="prize_delivered" invisible="state != 'drawn'"/>
+                            <field name="prize_delivered_date" invisible="not prize_delivered"/>
                         </group>
                     </group>
                     <notebook>
@@ -88,6 +97,10 @@
                             <field name="description" placeholder="Qué se rifa, condiciones, entrega del premio…"/>
                         </page>
                         <page string="Galería" name="gallery">
+                            <p class="text-muted">
+                                Imágenes cuadradas de 1080 × 1080 px (la portada también). Dejá un margen
+                                de ~10% sin texto importante en los bordes: las miniaturas los recortan.
+                            </p>
                             <field name="image_ids">
                                 <tree editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -96,11 +109,25 @@
                                 </tree>
                             </field>
                         </page>
+                        <page string="Entrega del premio" name="prize"
+                              invisible="state != 'drawn' or not winner_request_id">
+                            <p class="text-muted">
+                                Esta evidencia se publica en "Últimos sorteos" de la app, con el ganador
+                                abreviado (ej: "Juan P. · ••••••67"). Cargá el comprobante de la recarga o
+                                una foto de la entrega y tocá "Marcar premio entregado".
+                            </p>
+                            <group>
+                                <field name="prize_note" placeholder="Recarga de 360 CUP realizada"/>
+                                <field name="prize_evidence_image" widget="image"
+                                       options="{'zoom': true, 'size': [0, 360]}"/>
+                            </group>
+                        </page>
                         <page string="Pago" name="payment">
                             <group>
                                 <field name="payment_instructions"
-                                       placeholder="Banco: …&#10;Cuenta: …&#10;Titular: …"/>
-                                <field name="whatsapp_url" widget="url"/>
+                                       placeholder="Para realizar el pago, dirigite al grupo de WhatsApp XYZ"/>
+                                <field name="whatsapp_url" widget="url"
+                                       placeholder="https://chat.whatsapp.com/…"/>
                             </group>
                         </page>
                         <page string="Configuración" name="config">
@@ -132,6 +159,7 @@
                 <field name="price"/>
                 <field name="currency_id" column_invisible="True"/>
                 <field name="number_example"/>
+                <field name="sale_end_date" optional="show"/>
                 <field name="draw_date"/>
                 <field name="sold_percent" widget="progressbar"/>
                 <field name="request_to_verify_count"/>
@@ -151,16 +179,29 @@
                 <field name="id"/>
                 <field name="currency_id"/>
                 <field name="request_to_verify_count"/>
+                <field name="image_128"/>
                 <templates>
                     <t t-name="kanban-box">
-                        <div class="oe_kanban_global_click o_kanban_record_has_image_fill">
-                            <div class="o_kanban_image_fill_left d-none d-md-block"
-                                 t-attf-style="background-image: url(#{kanban_image('rifazo.raffle', 'image_512', record.id.raw_value)})"/>
+                        <div class="oe_kanban_global_click d-flex">
+                            <!-- Mismo patrón que Productos/Flota en Odoo 17: <img> con kanban_image. -->
+                            <div class="o_kanban_image me-3">
+                                <img t-if="record.image_128.raw_value"
+                                     t-att-src="kanban_image('rifazo.raffle', 'image_256', record.id.raw_value)"
+                                     alt="Portada" class="rounded"
+                                     style="width: 104px; height: 104px; object-fit: cover;"/>
+                                <div t-else="" class="rounded bg-100 d-flex align-items-center justify-content-center"
+                                     style="width: 104px; height: 104px;">
+                                    <i class="fa fa-ticket fa-3x text-muted" title="Sin imagen"/>
+                                </div>
+                            </div>
                             <div class="oe_kanban_details">
                                 <strong class="o_kanban_record_title"><field name="name"/></strong>
                                 <div><field name="price" widget="monetary"/> por número</div>
                                 <div class="text-muted"><field name="number_example"/></div>
-                                <div class="text-muted"><field name="draw_date"/></div>
+                                <div class="text-muted" t-if="record.sale_end_date.raw_value">
+                                    Cierre: <field name="sale_end_date"/>
+                                </div>
+                                <div class="text-muted">Sorteo: <field name="draw_date"/></div>
                                 <field name="sold_percent" widget="progressbar"/>
                                 <div class="d-flex justify-content-between mt-1">
                                     <field name="state" widget="badge"
