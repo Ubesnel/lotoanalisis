@@ -5,9 +5,10 @@ from werkzeug.utils import redirect
 
 _MAINTENANCE_PATH = '/mantenimiento'
 # /api/ queda fuera del modo mantenimiento: la app móvil debe seguir
-# funcionando aunque el sitio web esté en mantenimiento.
+# funcionando aunque el sitio web esté en mantenimiento. /rifazo es la página
+# de descarga de la APK de Rifazo (se comparte suelta por WhatsApp).
 _SKIP_PREFIXES = ('/web/', '/lottery/', '/salidas/', '/static/', '/favicon',
-                  '/api/', '/app-ads.txt')
+                  '/api/', '/app-ads.txt', '/rifazo')
 # Páginas legales siempre accesibles aun en mantenimiento: Google Play
 # verifica la política de privacidad en cualquier momento.
 _LEGAL_PATHS = ('/politica-privacidad', '/terminos-condiciones')

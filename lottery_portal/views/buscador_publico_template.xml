@@ -20,7 +20,7 @@
                 <img src="/lottery_portal/static/src/img/mateo.png"
                      class="bp-char bp-char-ube" alt=""/>
 
-                <div class="bp-hero-center">
+                <div t-attf-class="bp-hero-center #{'bp-hero-center--wide' if rifazo_release else ''}">
 
                     <!-- Badge dinámico con los sorteos habilitados -->
                     <div class="bp-hero-badge">
@@ -34,7 +34,7 @@
                         <t t-else="">Búsqueda de salidas</t>
                     </div>
 
-                    <div class="bp-hero-grid">
+                    <div t-attf-class="bp-hero-grid #{'bp-hero-grid--3' if rifazo_release else ''}">
                         <!-- Columna izquierda: buscador histórico -->
                         <div class="bp-hero-col bp-hero-col--search">
                             <h1 class="bp-hero-title">
@@ -87,6 +87,41 @@
                                     </a>
                                     <div class="bp-app-hint">
                                         Buscá: <strong>LOTOANÁLISIS</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+
+                        <!-- App hermana Rifazo: mismo formato de tarjeta, con sus
+                             colores; lleva a /rifazo (descarga directa del APK). -->
+                        <t t-if="rifazo_release">
+                            <div class="bp-hero-col bp-hero-col--app">
+                                <div class="bp-app-card bp-rifazo-card">
+                                    <div class="bp-app-badge bp-rifazo-badge">
+                                        <i class="fa fa-ticket me-1"/>¡Nuevo!
+                                    </div>
+                                    <img src="/rifazo/static/src/img/icon.png"
+                                         class="bp-rifazo-logo" alt="Rifazo"/>
+                                    <h2 class="bp-app-title">
+                                        Descargá la app <span>Rifazo</span>
+                                    </h2>
+                                    <p class="bp-app-sub">
+                                        Rifas de saldo y premios, desde tu celular.
+                                    </p>
+                                    <ul class="bp-app-features">
+                                        <li><i class="fa fa-check"/>Elegí tus números al instante</li>
+                                        <li><i class="fa fa-check"/>Pagá y seguí tus rifas</li>
+                                        <li><i class="fa fa-check"/>Ganadores con entrega verificada</li>
+                                    </ul>
+                                    <a href="/rifazo" class="bp-app-btn bp-rifazo-btn">
+                                        <i class="fa fa-android"/>
+                                        <span class="bp-app-btn-txt">
+                                            <small>DESCARGA DIRECTA</small>
+                                            Android
+                                        </span>
+                                    </a>
+                                    <div class="bp-app-hint">
+                                        Versión <strong t-esc="rifazo_release.name"/>
                                     </div>
                                 </div>
                             </div>

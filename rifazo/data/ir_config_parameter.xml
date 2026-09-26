@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Antiabuso sin login: reservas sin pagar que puede tener a la vez un
+         mismo dispositivo / una misma IP. Editables en Parámetros del sistema. -->
+    <record id="param_max_active_per_device" model="ir.config_parameter">
+        <field name="key">rifazo.max_active_per_device</field>
+        <field name="value">2</field>
+    </record>
+    <record id="param_max_active_per_ip" model="ir.config_parameter">
+        <field name="key">rifazo.max_active_per_ip</field>
+        <field name="value">6</field>
+    </record>
+    <!-- Tamaño máximo del comprobante (MB). La app lo comprime antes de subirlo. -->
+    <record id="param_max_proof_mb" model="ir.config_parameter">
+        <field name="key">rifazo.max_proof_mb</field>
+        <field name="value">8</field>
+    </record>
+</odoo>

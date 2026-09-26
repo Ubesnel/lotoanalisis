@@ -103,6 +103,21 @@ CURVA_DISTANCIA_TABLA = (0.40, 0.55, 0.68, 0.78, 0.85, 0.90, 0.93, 0.96,
 # mayoría ≥50/<50 del anteúltimo escalón de la cascada.
 VENTANA_MAYORIA = 10
 
+# ── Tabla de 30 (26/09/2026) ───────────────────────────────────────────────
+# Los 30 son los 20 de siempre MÁS diez que se eligen aparte, al revés que
+# aquéllos: en vez de los que comparten dígito con las salidas recientes, los
+# que NO comparten ninguno. Nada del cálculo de 20/10/5/Súper Mágico cambia —
+# esto se calcula después y por su cuenta (ver `_seleccionar_diez_extra`).
+#
+# Cuántos dígitos distintos cuentan como "las salidas recientes": se caminan
+# las salidas de la más nueva hacia atrás tomando decena y unidad de cada una
+# hasta juntar estos cuatro, así el filtro no depende de cuántas salidas haga
+# falta recorrer ni de cuántos candidatos haya.
+DIGITOS_RECIENTES = 4
+
+# Cuántos números se suman a los 20 para llegar a la tabla de 30.
+EXTRA_PARA_30 = 10
+
 # ── Atraso del mes ─────────────────────────────────────────────────────────
 # Ya NO se usa para elegir los 10 y los 5 de "Completar números" (eso ahora
 # lo decide la cascada de arriba); sigue viva porque la Tómbola de la
@@ -250,6 +265,13 @@ class LotteryPrediction(models.Model):
         'lottery.number', 'lottery_prediction_number_rel',
         'prediction_id', 'number_id',
         string='Números a predecir')
+    number_ids_30 = fields.Many2many(
+        'lottery.number', 'lottery_prediction_number_30_rel',
+        'prediction_id', 'number_id',
+        string='30 Números a predecir',
+        help='Los 20 más diez elegidos entre los candidatos que quedaron '
+             'afuera, con el criterio inverso: los que NO comparten dígito '
+             'con las salidas recientes.')
     number_ids_20 = fields.Many2many(
         'lottery.number', 'lottery_prediction_number_20_rel',
         'prediction_id', 'number_id',
@@ -270,6 +292,8 @@ class LotteryPrediction(models.Model):
 
     numbers_count = fields.Integer(
         string='Cantidad', compute='_compute_numbers_count', store=True)
+    numbers_count_30 = fields.Integer(
+        string='Cantidad 30', compute='_compute_numbers_count_30', store=True)
     numbers_count_20 = fields.Integer(
         string='Cantidad 20', compute='_compute_numbers_count_20', store=True)
     numbers_count_10 = fields.Integer(
@@ -283,6 +307,9 @@ class LotteryPrediction(models.Model):
         help='El número que salió en el sorteo estaba entre los números '
              'de esta predicción. Se marca automáticamente al registrar '
              'la salida.')
+    cumplida_30 = fields.Boolean(
+        'Cumplida en 30?', default=False, index=True,
+        help='El número salido estaba entre los 30 Números a predecir.')
     cumplida_20 = fields.Boolean(
         'Cumplida en 20?', default=False, index=True,
         help='El número salido estaba entre los 20 Números a predecir.')
@@ -337,6 +364,11 @@ class LotteryPrediction(models.Model):
     def _compute_numbers_count(self):
         for rec in self:
             rec.numbers_count = len(rec.number_ids)
+
+    @api.depends('number_ids_30')
+    def _compute_numbers_count_30(self):
+        for rec in self:
+            rec.numbers_count_30 = len(rec.number_ids_30)
 
     @api.depends('number_ids_20')
     def _compute_numbers_count_20(self):
@@ -832,9 +864,93 @@ class LotteryPrediction(models.Model):
             key=lambda n: self._clave_cascada(valores, n), reverse=True)
         return veinte + resto
 
+    # ── Tabla de 30 ─────────────────────────────────────────────
+
+    def _digitos_recientes(self, cantidad=DIGITOS_RECIENTES):
+        """Los `cantidad` dígitos distintos más recientes de este sorteo.
+
+        Se caminan las salidas de la más nueva hacia atrás tomando decena y
+        unidad de cada una (en ese orden, que es como se lee el número) y se
+        corta al juntar `cantidad` dígitos diferentes. Una salida capicúa
+        como 77 aporta uno solo, así que a veces hacen falta tres salidas
+        para llegar a cuatro dígitos.
+
+        Ojo, no es lo que hace la selección de los 20: aquélla camina salida
+        por salida y se detiene cuando llenó la lista, así que consume una
+        cantidad variable de salidas. Ésta es una ventana fija, a propósito,
+        para que el filtro de los diez no dependa de cuántos candidatos
+        hubiera ese día."""
+        self.ensure_one()
+        digitos = []
+        for output in self._last_output(limit=MAX_SALIDAS_HISTORIAL):
+            for d in _digitos(output.number_id.name):
+                if d not in digitos:
+                    digitos.append(d)
+            if len(digitos) >= cantidad:
+                break
+        return set(digitos[:cantidad])
+
+    def _seleccionar_diez_extra(self, candidatos, veinte, valores, senales,
+                                cantidad=EXTRA_PARA_30):
+        """Los diez que se suman a los 20 para armar la tabla de 30.
+
+        Salen de los candidatos que NO entraron en los 20 (y como
+        5 ⊂ 10 ⊂ 20, eso es exactamente `candidatos - veinte`), con el
+        criterio inverso al de aquéllos:
+
+        1º  los que no comparten ninguno de los `DIGITOS_RECIENTES` dígitos
+            recientes Y están en una línea o terminal recomendados;
+        2º  los que no comparten dígito aunque no estén en las recomendadas;
+        3º  el resto de los sobrantes, para completar los diez.
+
+        Dentro de cada escalón ordena: primero cuántas recomendadas toca
+        (el cruce línea+terminal vale 2), después los que NO aparecen en
+        ninguna tabla LotoAnálisis —el desempate pedido— y al final la
+        cascada de siempre.
+
+        No toca nada de lo que ya calcularon `_seleccionar_veinte` ni
+        `_senales_recorte`: recibe sus resultados y elige entre las sobras."""
+        self.ensure_one()
+        ya_estan = set(veinte)
+        sobrantes = [n for n in candidatos if n not in ya_estan]
+        if not sobrantes:
+            return []
+
+        digitos = self._digitos_recientes()
+        rec_lt = senales.get('rec_lt') or {}
+        tablas = senales.get('tablas') or {}
+
+        def limpio(n):
+            """No comparte decena ni unidad con los dígitos recientes."""
+            return not (set(_digitos(n)) & digitos)
+
+        def clave(n):
+            return (rec_lt.get(n, 0),
+                    tablas.get(n, 0) == 0) + self._clave_cascada(valores, n)
+
+        escalones = [
+            [n for n in sobrantes if limpio(n) and rec_lt.get(n, 0)],
+            [n for n in sobrantes if limpio(n) and not rec_lt.get(n, 0)],
+            sobrantes,
+        ]
+        elegidos, vistos = [], set()
+        for escalon in escalones:
+            if len(elegidos) >= cantidad:
+                break
+            nuevos = sorted((n for n in escalon if n not in vistos),
+                            key=clave, reverse=True)
+            elegidos.extend(nuevos[:cantidad - len(elegidos)])
+            vistos = set(elegidos)
+        return elegidos
+
     def action_completar_numeros(self):
-        """Completa las listas de 20, 10, 5 y el Súper Mágico a partir de
-        los números a predecir.
+        """Completa las listas de 30, 20, 10, 5 y el Súper Mágico a partir
+        de los números a predecir.
+
+        La de 30 se calcula APARTE y al final: son los 20 de abajo más diez
+        elegidos entre los candidatos que quedaron afuera, con el criterio
+        inverso (ver `_seleccionar_diez_extra`). Nada de lo que sigue cambia
+        por eso — 20, 10, 5 y Súper Mágico salen igual que siempre.
 
         Los 20 se arman caminando el historial de salidas de este sorteo
         (los dos turnos mezclados, de la más reciente hacia atrás): en cada
@@ -893,13 +1009,22 @@ class LotteryPrediction(models.Model):
             orden_5, key=por_senal(senales['tablas']), reverse=True)
         super_magico = orden_5[0] if orden_5 else False
 
+        # La tabla de 30 se arma recién acá, con los 20 ya cerrados: son
+        # esos mismos más los diez del criterio inverso. Si en "Números a
+        # predecir" hay exactamente 30, los sobrantes son justo diez y
+        # entran todos por el último escalón, así que la tabla de 30 termina
+        # siendo igual a los 30 cargados — sin necesidad de un caso aparte.
+        treinta = veinte + self._seleccionar_diez_extra(
+            candidatos, veinte, valores, senales)
+
         Number = self.env['lottery.number']
 
         def ids(numeros):
             return Number.search([('name', 'in', numeros)]).ids
 
-        listas = {20: veinte, 10: orden_10, 5: orden_5}
+        listas = {30: treinta, 20: veinte, 10: orden_10, 5: orden_5}
         vals = {
+            'number_ids_30': [(6, 0, ids(listas[30]))],
             'number_ids_20': [(6, 0, ids(listas[20]))],
             'number_ids_10': [(6, 0, ids(listas[10]))],
             'number_ids_5': [(6, 0, ids(listas[5]))],
@@ -1064,6 +1189,9 @@ class LotteryPrediction(models.Model):
 
         en_5, en_10, en_20 = (set(listas[5]), set(listas[10]),
                               set(listas[20]))
+        # Los diez extra de la tabla de 30 viven en el tramo de abajo (no
+        # entraron a los 20), así que se tiñen distinto para poder verlos.
+        en_30 = set(listas.get(30) or [])
         fuera = sorted(
             (n for n in candidatos if n not in en_20),
             key=lambda n: self._clave_cascada(valores, n), reverse=True)
@@ -1082,6 +1210,8 @@ class LotteryPrediction(models.Model):
                 fondo, corte = '#fff1e0', ' · 10'
             elif n in en_20:
                 fondo, corte = '#f1f3f5', ' · 20'
+            elif n in en_30:
+                fondo, corte = '#e3f2fd', ' · 30'
             else:
                 fondo, corte = '', ''
             origen_html = (celda_origen(n) if mostrar_origen else

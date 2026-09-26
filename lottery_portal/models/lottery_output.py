@@ -139,6 +139,7 @@ class LotteryOutput(models.Model):
                 num_id = out.number_id.id
                 prediction.write({
                     'cumplida':    num_id in prediction.number_ids.ids,
+                    'cumplida_30': num_id in prediction.number_ids_30.ids,
                     'cumplida_20': num_id in prediction.number_ids_20.ids,
                     'cumplida_10': num_id in prediction.number_ids_10.ids,
                     'cumplida_5':  num_id in prediction.number_ids_5.ids,

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rifazo_request_form" model="ir.ui.view">
+        <field name="name">rifazo.request.form</field>
+        <field name="model">rifazo.request</field>
+        <field name="arch" type="xml">
+            <form create="false">
+                <header>
+                    <button name="action_confirm" string="Confirmar pago" type="object" class="btn-primary"
+                            invisible="state != 'submitted'" groups="rifazo.group_rifazo_user"/>
+                    <button name="action_open_reject_wizard" string="Rechazar" type="object"
+                            invisible="state not in ('reserved', 'submitted')" groups="rifazo.group_rifazo_user"/>
+                    <button name="action_open_whatsapp" string="WhatsApp" type="object" icon="fa-whatsapp"
+                            invisible="not phone"/>
+                    <button name="action_back_to_verify" string="Volver a verificar" type="object"
+                            invisible="state != 'confirmed'" groups="rifazo.group_rifazo_manager"
+                            confirm="Los números vuelven a quedar en verificación. ¿Continuar?"/>
+                    <button name="action_cancel" string="Cancelar" type="object"
+                            invisible="state not in ('reserved', 'submitted')" groups="rifazo.group_rifazo_manager"
+                            confirm="Los números vuelven a quedar disponibles. ¿Continuar?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="reserved,submitted,confirmed"/>
+                </header>
+                <sheet>
+                    <field name="is_winner" invisible="1"/>
+                    <widget name="web_ribbon" title="Ganadora" bg_color="text-bg-success" invisible="not is_winner"/>
+                    <div class="oe_title">
+                        <h1><field name="code"/></h1>
+                    </div>
+                    <group>
+                        <group string="Participante">
+                            <field name="raffle_id"/>
+                            <field name="partner_name"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="number_list"/>
+                            <field name="numbers_count"/>
+                            <field name="amount"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Seguimiento">
+                            <field name="create_date" string="Reservado el"/>
+                            <field name="reserved_until" invisible="state != 'reserved'"/>
+                            <field name="submitted_date"/>
+                            <field name="verified_date"/>
+                            <field name="verified_by_id"/>
+                            <field name="rejection_reason" invisible="state != 'rejected'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Comprobante" name="proof">
+                            <field name="proof_image" widget="image" options="{'zoom': true, 'size': [0, 520]}"/>
+                            <p class="text-muted" invisible="proof_image">Todavía no subió el comprobante.</p>
+                        </page>
+                        <page string="Números retenidos" name="tickets">
+                            <field name="ticket_ids">
+                                <tree>
+                                    <field name="number"/>
+                                    <field name="state" widget="badge"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Técnico" name="technical" groups="rifazo.group_rifazo_manager">
+                            <group>
+                                <field name="device_id"/>
+                                <field name="ip_address"/>
+                                <field name="fcm_token"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rifazo_request_tree" model="ir.ui.view">
+        <field name="name">rifazo.request.tree</field>
+        <field name="model">rifazo.request</field>
+        <field name="arch" type="xml">
+            <tree create="false"
+                  decoration-warning="state == 'submitted'" decoration-muted="state in ('expired', 'cancelled', 'rejected')">
+                <field name="code"/>
+                <field name="create_date" string="Fecha"/>
+                <field name="raffle_id"/>
+                <field name="partner_name"/>
+                <field name="phone" widget="phone"/>
+                <field name="number_list"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="submitted_date" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'submitted'" decoration-success="state == 'confirmed'"
+                       decoration-danger="state == 'rejected'" decoration-info="state == 'reserved'"/>
+                <button name="action_confirm" string="Confirmar" type="object" icon="fa-check"
+                        invisible="state != 'submitted'" groups="rifazo.group_rifazo_user"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_rifazo_request_search" model="ir.ui.view">
+        <field name="name">rifazo.request.search</field>
+        <field name="model">rifazo.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="partner_name"/>
+                <field name="phone"/>
+                <field name="number_list" string="Número"/>
+                <field name="raffle_id"/>
+                <filter name="to_verify" string="Por verificar" domain="[('state', '=', 'submitted')]"/>
+                <filter name="reserved" string="Reservadas" domain="[('state', '=', 'reserved')]"/>
+                <filter name="confirmed" string="Confirmadas" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="rejected" string="Rechazadas" domain="[('state', '=', 'rejected')]"/>
+                <filter name="expired" string="Vencidas / canceladas" domain="[('state', 'in', ('expired', 'cancelled'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_raffle" string="Rifa" context="{'group_by': 'raffle_id'}"/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_phone" string="Teléfono" context="{'group_by': 'phone'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rifazo_request" model="ir.actions.act_window">
+        <field name="name">Solicitudes</field>
+        <field name="res_model">rifazo.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_rifazo_request_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">Todavía no hay solicitudes</p>
+            <p>Aparecen cuando alguien reserva números desde la app.</p>
+        </field>
+    </record>
+
+    <record id="action_rifazo_request_to_verify" model="ir.actions.act_window">
+        <field name="name">Por verificar</field>
+        <field name="res_model">rifazo.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_rifazo_request_search"/>
+        <field name="context">{'search_default_to_verify': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nada pendiente de verificar</p>
+        </field>
+    </record>
+</odoo>

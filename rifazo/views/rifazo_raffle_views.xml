@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rifazo_raffle_form" model="ir.ui.view">
+        <field name="name">rifazo.raffle.form</field>
+        <field name="model">rifazo.raffle</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open" string="Abrir rifa" type="object" class="btn-primary"
+                            invisible="state != 'draft'" groups="rifazo.group_rifazo_manager"/>
+                    <button name="action_open" string="Reabrir venta" type="object"
+                            invisible="state != 'closed'" groups="rifazo.group_rifazo_manager"/>
+                    <button name="action_close" string="Cerrar venta" type="object"
+                            invisible="state != 'open'" groups="rifazo.group_rifazo_manager"
+                            confirm="La rifa deja de aparecer en la app. Las reservas en curso pueden terminar de pagar."/>
+                    <button name="action_draw" string="Registrar sorteo" type="object" class="btn-primary"
+                            invisible="state != 'closed'" groups="rifazo.group_rifazo_manager"
+                            confirm="Se registra el número ganador y la rifa queda sorteada. ¿Continuar?"/>
+                    <button name="action_cancel" string="Cancelar rifa" type="object"
+                            invisible="state in ('drawn', 'cancelled')" groups="rifazo.group_rifazo_manager"
+                            confirm="Se cancelan las solicitudes reservadas y por verificar. Las confirmadas quedan como están (la devolución es manual). ¿Continuar?"/>
+                    <button name="action_draft" string="Volver a borrador" type="object"
+                            invisible="state != 'cancelled'" groups="rifazo.group_rifazo_manager"/>
+                    <button name="action_mark_prize_delivered" string="Marcar premio entregado" type="object"
+                            class="btn-primary" groups="rifazo.group_rifazo_manager"
+                            invisible="state != 'drawn' or not winner_request_id or prize_delivered"/>
+                    <button name="action_unmark_prize_delivered" string="Deshacer entrega" type="object"
+                            groups="rifazo.group_rifazo_manager" invisible="not prize_delivered"
+                            confirm="La app va a volver a mostrar la entrega como pendiente. ¿Continuar?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,open,closed,drawn"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_requests_to_verify" type="object" class="oe_stat_button"
+                                icon="fa-hourglass-half" invisible="state == 'draft'">
+                            <field name="request_to_verify_count" widget="statinfo" string="Por verificar"/>
+                        </button>
+                        <button name="action_view_requests" type="object" class="oe_stat_button"
+                                icon="fa-list" invisible="state == 'draft'">
+                            <field name="request_count" widget="statinfo" string="Solicitudes"/>
+                        </button>
+                        <button name="action_view_tickets" type="object" class="oe_stat_button"
+                                icon="fa-th" invisible="state == 'draft'">
+                            <field name="ticket_total" widget="statinfo" string="Números"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivada" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="image_1920" widget="image" class="oe_avatar"
+                           options="{'preview_image': 'image_128'}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ej: iPhone 16 Pro"/></h1>
+                        <field name="short_description" placeholder="Resumen de una línea para la app"/>
+                    </div>
+                    <group>
+                        <group string="Venta">
+                            <field name="price"/>
+                            <field name="currency_id" options="{'no_create': True}"/>
+                            <field name="sale_end_date"/>
+                            <field name="draw_date"/>
+                            <field name="draw_method"/>
+                        </group>
+                        <group string="Números">
+                            <field name="number_from" readonly="state != 'draft'"/>
+                            <field name="number_to" readonly="state != 'draft'"/>
+                            <field name="number_digits" readonly="state != 'draft'"/>
+                            <field name="number_example"/>
+                        </group>
+                    </group>
+                    <group string="Avance" invisible="state == 'draft'">
+                        <group>
+                            <field name="ticket_available_count"/>
+                            <field name="ticket_reserved_count"/>
+                            <field name="ticket_pending_count"/>
+                            <field name="ticket_sold_count"/>
+                        </group>
+                        <group>
+                            <field name="sold_percent" widget="progressbar"/>
+                            <field name="amount_collected"/>
+                            <field name="amount_to_verify"/>
+                        </group>
+                    </group>
+                    <group string="Resultado" invisible="state not in ('closed', 'drawn')">
+                        <group>
+                            <field name="winning_number" readonly="state == 'drawn'"/>
+                            <field name="winner_request_id" invisible="state != 'drawn'"/>
+                        </group>
+                        <group invisible="not winner_request_id">
+                            <field name="winner_name"/>
+                            <field name="winner_phone" widget="phone"/>
+                            <field name="prize_delivered" invisible="state != 'drawn'"/>
+                            <field name="prize_delivered_date" invisible="not prize_delivered"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Descripción" name="description">
+                            <field name="description" placeholder="Qué se rifa, condiciones, entrega del premio…"/>
+                        </page>
+                        <page string="Galería" name="gallery">
+                            <p class="text-muted">
+                                Imágenes cuadradas de 1080 × 1080 px (la portada también). Dejá un margen
+                                de ~10% sin texto importante en los bordes: las miniaturas los recortan.
+                            </p>
+                            <field name="image_ids">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="image_1920" widget="image" options="{'size': [64, 64]}"/>
+                                    <field name="name"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Entrega del premio" name="prize"
+                              invisible="state != 'drawn' or not winner_request_id">
+                            <p class="text-muted">
+                                Esta evidencia se publica en "Últimos sorteos" de la app, con el ganador
+                                abreviado (ej: "Juan P. · ••••••67"). Cargá el comprobante de la recarga o
+                                una foto de la entrega y tocá "Marcar premio entregado".
+                            </p>
+                            <group>
+                                <field name="prize_note" placeholder="Recarga de 360 CUP realizada"/>
+                                <field name="prize_evidence_image" widget="image"
+                                       options="{'zoom': true, 'size': [0, 360]}"/>
+                            </group>
+                        </page>
+                        <page string="Pago" name="payment">
+                            <group>
+                                <field name="payment_instructions"
+                                       placeholder="Para realizar el pago, dirigite al grupo de WhatsApp XYZ"/>
+                                <field name="whatsapp_url" widget="url"
+                                       placeholder="https://chat.whatsapp.com/…"/>
+                            </group>
+                        </page>
+                        <page string="Configuración" name="config">
+                            <group>
+                                <field name="reservation_minutes"/>
+                                <field name="max_numbers_per_request"/>
+                                <field name="sequence"/>
+                                <field name="active" invisible="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_rifazo_raffle_tree" model="ir.ui.view">
+        <field name="name">rifazo.raffle.tree</field>
+        <field name="model">rifazo.raffle</field>
+        <field name="arch" type="xml">
+            <tree decoration-muted="state in ('drawn', 'cancelled')" decoration-info="state == 'draft'">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="price"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="number_example"/>
+                <field name="sale_end_date" optional="show"/>
+                <field name="draw_date"/>
+                <field name="sold_percent" widget="progressbar"/>
+                <field name="request_to_verify_count"/>
+                <field name="amount_collected" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'open'" decoration-warning="state == 'closed'"
+                       decoration-info="state == 'drawn'" decoration-danger="state == 'cancelled'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_rifazo_raffle_kanban" model="ir.ui.view">
+        <field name="name">rifazo.raffle.kanban</field>
+        <field name="model">rifazo.raffle</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="id"/>
+                <field name="currency_id"/>
+                <field name="request_to_verify_count"/>
+                <field name="image_128"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click d-flex">
+                            <!-- Mismo patrón que Productos/Flota en Odoo 17: <img> con kanban_image. -->
+                            <div class="o_kanban_image me-3">
+                                <img t-if="record.image_128.raw_value"
+                                     t-att-src="kanban_image('rifazo.raffle', 'image_256', record.id.raw_value)"
+                                     alt="Portada" class="rounded"
+                                     style="width: 104px; height: 104px; object-fit: cover;"/>
+                                <div t-else="" class="rounded bg-100 d-flex align-items-center justify-content-center"
+                                     style="width: 104px; height: 104px;">
+                                    <i class="fa fa-ticket fa-3x text-muted" title="Sin imagen"/>
+                                </div>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                <div><field name="price" widget="monetary"/> por número</div>
+                                <div class="text-muted"><field name="number_example"/></div>
+                                <div class="text-muted" t-if="record.sale_end_date.raw_value">
+                                    Cierre: <field name="sale_end_date"/>
+                                </div>
+                                <div class="text-muted">Sorteo: <field name="draw_date"/></div>
+                                <field name="sold_percent" widget="progressbar"/>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'open'" decoration-warning="state == 'closed'"
+                                           decoration-info="state == 'drawn'" decoration-danger="state == 'cancelled'"/>
+                                    <span t-if="record.request_to_verify_count.raw_value" class="badge text-bg-warning">
+                                        <t t-esc="record.request_to_verify_count.value"/> por verificar
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_rifazo_raffle_search" model="ir.ui.view">
+        <field name="name">rifazo.raffle.search</field>
+        <field name="model">rifazo.raffle</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="open" string="Abiertas" domain="[('state', '=', 'open')]"/>
+                <filter name="closed" string="Venta cerrada" domain="[('state', '=', 'closed')]"/>
+                <filter name="drawn" string="Sorteadas" domain="[('state', '=', 'drawn')]"/>
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter name="archived" string="Archivadas" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rifazo_raffle" model="ir.actions.act_window">
+        <field name="name">Rifas</field>
+        <field name="res_model">rifazo.raffle</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="search_view_id" ref="view_rifazo_raffle_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Creá tu primera rifa</p>
+            <p>Cargá imágenes, precio y rango de números, y abrila para que aparezca en la app.</p>
+        </field>
+    </record>
+</odoo>
