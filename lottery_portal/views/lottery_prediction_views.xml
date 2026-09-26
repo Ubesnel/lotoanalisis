@@ -16,6 +16,7 @@
                 <field name="number_ids" widget="many2many_tags" optional="show"/>
                 <field name="published" widget="boolean_toggle"/>
                 <field name="cumplida" widget="boolean_toggle" readonly="1"/>
+                <field name="cumplida_30" widget="boolean_toggle" readonly="1" optional="show"/>
                 <field name="cumplida_20" widget="boolean_toggle" readonly="1" optional="show"/>
                 <field name="cumplida_10" widget="boolean_toggle" readonly="1" optional="show"/>
                 <field name="cumplida_5" widget="boolean_toggle" readonly="1" optional="show"/>
@@ -36,8 +37,8 @@
                     <button name="action_completar_numeros" type="object"
                             string="Completar números" class="btn-primary"
                             invisible="not number_ids"
-                            confirm="Se van a reemplazar las listas de 20, 10 y 5 con el resultado del cálculo. ¿Seguimos?"
-                            help="Ordena los números a predecir por combinaciones, acompañantes de las tablas LotoAnálisis (general y del turno) y grupos y pintas más atrasados, y con ese orden llena las listas de 20, 10 y 5."/>
+                            confirm="Se van a reemplazar las listas de 30, 20, 10 y 5 con el resultado del cálculo. ¿Seguimos?"
+                            help="Ordena los números a predecir por combinaciones, acompañantes de las tablas LotoAnálisis (general y del turno) y grupos y pintas más atrasados, y con ese orden llena las listas de 20, 10 y 5. La de 30 son esos 20 más diez de los candidatos que quedaron afuera, elegidos al revés: los que NO comparten dígito con las salidas recientes."/>
                     <button name="action_completar_ternas" type="object"
                             string="Completar ternas" class="btn-secondary"
                             invisible="sorteo_source_code != 'quiniela_uy' or not number_ids_5"
@@ -60,6 +61,7 @@
                             <field name="published"/>
                             <field name="published_date" readonly="1"/>
                             <field name="numbers_count"/>
+                            <field name="numbers_count_30"/>
                             <field name="numbers_count_20"/>
                             <field name="numbers_count_10"/>
                             <field name="numbers_count_5"/>
@@ -74,6 +76,16 @@
                             </group>
                             <group string="Números a predecir">
                                 <field name="number_ids" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
+                        <page string="30 Números" name="numeros_30">
+                            <group>
+                                <field name="cumplida_30" readonly="1"/>
+                            </group>
+                            <group string="30 Números a predecir">
+                                <field name="number_ids_30" nolabel="1" colspan="2"
                                        widget="many2many_tags"
                                        options="{'no_open': True, 'no_create': True}"/>
                             </group>
@@ -174,6 +186,8 @@
                 <separator/>
                 <filter string="Cumplidas" name="cumplidas"
                         domain="[('cumplida', '=', True)]"/>
+                <filter string="Cumplidas en 30" name="cumplidas_30"
+                        domain="[('cumplida_30', '=', True)]"/>
                 <filter string="No cumplidas" name="no_cumplidas"
                         domain="[('cumplida', '=', False), ('verification_date', '!=', False)]"/>
                 <filter string="Sin verificar" name="sin_verificar"
