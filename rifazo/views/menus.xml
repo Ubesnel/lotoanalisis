@@ -20,4 +20,7 @@
               action="base.action_currency_form" sequence="10"/>
     <menuitem id="menu_rifazo_app_release" name="Versiones de la app" parent="menu_rifazo_config"
               action="action_rifazo_app_release" sequence="20"/>
+    <!-- Ajustes generales (grupo de WhatsApp): requiere permiso de Ajustes de Odoo. -->
+    <menuitem id="menu_rifazo_settings" name="Ajustes" parent="menu_rifazo_config"
+              action="action_rifazo_settings" sequence="5" groups="base.group_system"/>
 </odoo>
