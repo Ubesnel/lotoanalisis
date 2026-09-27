@@ -500,9 +500,11 @@ class LotteryController(http.Controller):
             order='date desc, turn_day desc, id desc', limit=limit)
         dias = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
         turn_field = request.env['lottery.output']._fields['turn_day']
+        # Se buscan las más recientes, pero se muestran en orden del día
+        # (la más vieja arriba): tarde y después noche.
         return [{
             'id': r.id,
-            'fecha': r.date.strftime('%d/%m/%Y'),
+            'fecha': r.date.strftime('%d/%m'),
             'dia_semana': dias[r.date.weekday()],
             'turno': r.turn_day,
             'turno_label': turn_field.convert_to_export(r.turn_day, r) or '',
@@ -511,7 +513,7 @@ class LotteryController(http.Controller):
             'bola_extra': r.fireball_id.name if r.fireball_id else "-",
             'premio_2': str(r.premio_2_id.name).zfill(2) if r.premio_2_id else None,
             'premio_3': str(r.premio_3_id.name).zfill(2) if r.premio_3_id else None,
-        } for r in salidas]
+        } for r in reversed(salidas)]
 
     @http.route('/lottery/top5_centenas', type='json', auth='public', website=True)
     def top5_centenas(self, type, sorteo_id=False):

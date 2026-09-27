@@ -32,97 +32,15 @@
                 </div>
             </t>
 
-            <!-- Resultados -->
-            <t t-elif="state.resultados and (state.resultados.afternoon or state.resultados.evening)">
-                <div class="text-center mt-2 mb-3">
-                    <span class="fw-bold" style="color:#8c6ca8;font-size:20px;">
-                        <t t-esc="state.resultados.dia_semana"/>
-                    </span>
+            <!-- Resultado de la fecha elegida -->
+            <t t-elif="state.fecha and resultadosLista.length">
+                <div class="bp-ultimas">
+                    <t t-foreach="resultadosLista" t-as="r" t-key="r.id">
+                        <t t-call="lottery_portal.BuscadorPublico.Salida"/>
+                    </t>
                 </div>
-                <t t-if="state.resultados.afternoon">
-                    <div class="lottery-block">
-                        <div class="lottery-row">
-                            <div class="lottery-date-dia">
-                                <i class="fa fa-sun-o sun-icon"/>
-                            </div>
-                            <div class="lottery-numbers">
-                                <div class="box-centena-dia" t-if="state.resultados.afternoon.centena != null">
-                                    <t t-esc="state.resultados.afternoon.centena"/>
-                                </div>
-                                <div class="box-numero-dia">
-                                    <t t-esc="state.resultados.afternoon.numero"/>
-                                </div>
-                            </div>
-                            <div class="box-extra">
-                                <t t-esc="state.resultados.afternoon.bola_extra"/>
-                            </div>
-                        </div>
-                        <t t-if="state.resultados.afternoon.premio_2 or state.resultados.afternoon.premio_3">
-                            <div class="numeros-corridos-row">
-                                <span class="numeros-corridos-label">Números corridos:</span>
-                                <t t-if="state.resultados.afternoon.premio_2">
-                                    <span class="corrido-ball corrido-ball-1">
-                                        <t t-esc="state.resultados.afternoon.premio_2[0]"/>
-                                    </span>
-                                    <span class="corrido-ball corrido-ball-2">
-                                        <t t-esc="state.resultados.afternoon.premio_2[1]"/>
-                                    </span>
-                                </t>
-                                <t t-if="state.resultados.afternoon.premio_3">
-                                    <span class="corrido-ball corrido-ball-3">
-                                        <t t-esc="state.resultados.afternoon.premio_3[0]"/>
-                                    </span>
-                                    <span class="corrido-ball corrido-ball-4">
-                                        <t t-esc="state.resultados.afternoon.premio_3[1]"/>
-                                    </span>
-                                </t>
-                            </div>
-                        </t>
-                    </div>
-                </t>
-                <t t-if="state.resultados.evening">
-                    <div class="lottery-block">
-                        <div class="lottery-row">
-                            <div class="lottery-date-noche">
-                                <i class="fa fa-moon-o moon-icon"/>
-                            </div>
-                            <div class="lottery-numbers">
-                                <div class="box-centena-noche" t-if="state.resultados.evening.centena != null">
-                                    <t t-esc="state.resultados.evening.centena"/>
-                                </div>
-                                <div class="box-numero-noche">
-                                    <t t-esc="state.resultados.evening.numero"/>
-                                </div>
-                            </div>
-                            <div class="box-extra">
-                                <t t-esc="state.resultados.evening.bola_extra"/>
-                            </div>
-                        </div>
-                        <t t-if="state.resultados.evening.premio_2 or state.resultados.evening.premio_3">
-                            <div class="numeros-corridos-row">
-                                <span class="numeros-corridos-label">Números corridos:</span>
-                                <t t-if="state.resultados.evening.premio_2">
-                                    <span class="corrido-ball corrido-ball-1">
-                                        <t t-esc="state.resultados.evening.premio_2[0]"/>
-                                    </span>
-                                    <span class="corrido-ball corrido-ball-2">
-                                        <t t-esc="state.resultados.evening.premio_2[1]"/>
-                                    </span>
-                                </t>
-                                <t t-if="state.resultados.evening.premio_3">
-                                    <span class="corrido-ball corrido-ball-3">
-                                        <t t-esc="state.resultados.evening.premio_3[0]"/>
-                                    </span>
-                                    <span class="corrido-ball corrido-ball-4">
-                                        <t t-esc="state.resultados.evening.premio_3[1]"/>
-                                    </span>
-                                </t>
-                            </div>
-                        </t>
-                    </div>
-                </t>
             </t>
-            <t t-elif="state.fecha and !state.cargando">
+            <t t-elif="state.fecha">
                 <div class="alert alert-warning mt-3 mb-0">
                     <i class="fa fa-info-circle me-2"/>
                     No se encontró salida para la fecha seleccionada.
@@ -131,49 +49,44 @@
 
             <!-- Sin fecha elegida: las últimas salidas registradas del sorteo -->
             <t t-elif="state.ultimas.length">
-                <div class="text-center mt-2 mb-2">
-                    <span class="fw-bold" style="color:#8c6ca8;font-size:16px;">
+                <div class="bp-ultimas">
+                    <div class="bp-ultimas-title">
                         <i class="fa fa-clock-o me-1"/>Últimas salidas
-                    </span>
-                </div>
-                <t t-foreach="state.ultimas" t-as="r" t-key="r.id">
-                    <div class="lottery-block">
-                        <div class="text-center fw-bold mb-1" style="color:#6b6480;font-size:13px;">
-                            <t t-esc="r.dia_semana"/> <t t-esc="r.fecha"/> · <t t-esc="r.turno_label"/>
-                        </div>
-                        <div class="lottery-row">
-                            <div t-att-class="r.turno === 'evening' ? 'lottery-date-noche' : 'lottery-date-dia'">
-                                <i t-att-class="r.turno === 'evening' ? 'fa fa-moon-o moon-icon' : 'fa fa-sun-o sun-icon'"/>
-                            </div>
-                            <div class="lottery-numbers">
-                                <div t-att-class="r.turno === 'evening' ? 'box-centena-noche' : 'box-centena-dia'"
-                                     t-if="r.centena != null">
-                                    <t t-esc="r.centena"/>
-                                </div>
-                                <div t-att-class="r.turno === 'evening' ? 'box-numero-noche' : 'box-numero-dia'">
-                                    <t t-esc="r.numero"/>
-                                </div>
-                            </div>
-                            <div class="box-extra">
-                                <t t-esc="r.bola_extra"/>
-                            </div>
-                        </div>
-                        <t t-if="r.premio_2 or r.premio_3">
-                            <div class="numeros-corridos-row">
-                                <span class="numeros-corridos-label">Números corridos:</span>
-                                <t t-if="r.premio_2">
-                                    <span class="corrido-ball corrido-ball-1"><t t-esc="r.premio_2[0]"/></span>
-                                    <span class="corrido-ball corrido-ball-2"><t t-esc="r.premio_2[1]"/></span>
-                                </t>
-                                <t t-if="r.premio_3">
-                                    <span class="corrido-ball corrido-ball-3"><t t-esc="r.premio_3[0]"/></span>
-                                    <span class="corrido-ball corrido-ball-4"><t t-esc="r.premio_3[1]"/></span>
-                                </t>
-                            </div>
-                        </t>
                     </div>
-                </t>
+                    <t t-foreach="state.ultimas" t-as="r" t-key="r.id">
+                        <t t-call="lottery_portal.BuscadorPublico.Salida"/>
+                    </t>
+                </div>
             </t>
+        </div>
+    </t>
+
+    <t t-name="lottery_portal.BuscadorPublico.Salida" owl="1">
+        <div t-att-class="'bp-ultima ' + (r.turno === 'evening' ? 'bp-ultima--noche' : 'bp-ultima--dia')">
+            <div class="bp-ultima-head">
+                <i t-att-class="r.turno === 'evening' ? 'fa fa-moon-o' : 'fa fa-sun-o'"/>
+                <span><t t-esc="r.dia_semana"/> <t t-esc="r.fecha"/> · <t t-esc="r.turno_label"/></span>
+            </div>
+            <div class="bp-ultima-balls">
+                <div class="bp-ultima-ball" t-if="tiene(r.centena)">
+                    <span class="bp-ball-box"><span class="bp-ball bp-ball--cen"><t t-esc="r.centena"/></span></span>
+                    <small>Centena</small>
+                </div>
+                <div class="bp-ultima-ball">
+                    <span class="bp-ball-box"><span class="bp-ball bp-ball--fijo"><t t-esc="r.numero"/></span></span>
+                    <small>Fijo</small>
+                </div>
+                <div class="bp-ultima-ball" t-if="tiene(r.bola_extra)">
+                    <span class="bp-ball-box"><span class="bp-ball bp-ball--extra"><t t-esc="r.bola_extra"/></span></span>
+                    <small>Extra</small>
+                </div>
+            </div>
+            <div class="bp-ultima-corridos" t-if="r.premio_2 or r.premio_3">
+                Corridos:
+                <b t-if="r.premio_2"><t t-esc="r.premio_2"/></b>
+                <t t-if="r.premio_2 and r.premio_3"> · </t>
+                <b t-if="r.premio_3"><t t-esc="r.premio_3"/></b>
+            </div>
         </div>
     </t>
 </templates>
