@@ -27,6 +27,9 @@
                     <button name="action_unmark_prize_delivered" string="Deshacer entrega" type="object"
                             groups="rifazo.group_rifazo_manager" invisible="not prize_delivered"
                             confirm="La app va a volver a mostrar la entrega como pendiente. ¿Continuar?"/>
+                    <button name="action_force_delete" string="Eliminar rifa" type="object"
+                            class="btn-danger" groups="rifazo.group_rifazo_manager"
+                            confirm="⚠️ Se borra la rifa CON TODO: solicitudes, comprobantes de pago, números vendidos y el resultado del sorteo. Desaparece también de la app (Mis rifas y Ganadores). No se puede deshacer. Usalo solo para rifas de prueba. ¿Eliminar definitivamente?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,open,closed,drawn"/>
                 </header>
                 <sheet>
