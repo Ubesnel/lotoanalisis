@@ -18,6 +18,7 @@
         "views/rifazo_request_views.xml",
         "views/rifazo_ticket_views.xml",
         "views/rifazo_app_release_views.xml",
+        "views/res_config_settings_views.xml",
         "views/rifazo_download_page.xml",
         "views/menus.xml",
     ],

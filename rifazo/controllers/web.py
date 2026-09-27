@@ -16,9 +16,12 @@ class RifazoWeb(http.Controller):
     def download_page(self, **kwargs):
         release = request.env['rifazo.app.release']._get_current()
         open_count = request.env['rifazo.raffle'].sudo().search_count([('state', '=', 'open')])
+        whatsapp_group_url = request.env['ir.config_parameter'].sudo().get_param(
+            'rifazo.whatsapp_group_url') or ''
         return request.render('rifazo.download_page', {
             'release': release,
             'open_count': open_count,
+            'whatsapp_group_url': whatsapp_group_url.strip(),
         })
 
     @http.route('/rifazo/descargar', type='http', auth='public', methods=['GET'])
