@@ -20,7 +20,7 @@
                 <img src="/lottery_portal/static/src/img/mateo.png"
                      class="bp-char bp-char-ube" alt=""/>
 
-                <div t-attf-class="bp-hero-center #{'bp-hero-center--wide' if rifazo_release else ''}">
+                <div class="bp-hero-center">
 
                     <!-- Badge dinámico con los sorteos habilitados -->
                     <div class="bp-hero-badge">

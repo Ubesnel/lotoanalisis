@@ -569,15 +569,14 @@
 /* Con Rifazo la portada va a 3 columnas: buscador · LotoAnálisis · Rifazo.
    Selectores dobles (.bp-app-card.bp-rifazo-card…): los estilos base de la
    tarjeta están más abajo en este archivo y, si no, pisarían los colores. */
+/* Las 3 columnas entran en el ancho original (1080 px): ensanchar el
+   contenido tapaba a los personajes de los costados. */
 @media (min-width: 992px) {
+    .bp-hero-grid--3 { gap: 20px; }
     .bp-hero-grid--3 .bp-hero-col {
         flex: 1 1 300px;
-        max-width: 380px;
+        max-width: 340px;
     }
-}
-
-@media (min-width: 1400px) {
-    .bp-hero-center--wide { max-width: 1200px; }
 }
 
 .bp-app-card.bp-rifazo-card {
