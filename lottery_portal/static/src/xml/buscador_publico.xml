@@ -68,16 +68,16 @@
                 <span><t t-esc="r.dia_semana"/> <t t-esc="r.fecha"/> · <t t-esc="r.turno_label"/></span>
             </div>
             <div class="bp-ultima-balls">
-                <div class="bp-ultima-ball" t-if="r.centena and r.centena !== '-'">
-                    <span class="bp-ball bp-ball--cen"><t t-esc="r.centena"/></span>
+                <div class="bp-ultima-ball" t-if="tiene(r.centena)">
+                    <span class="bp-ball-box"><span class="bp-ball bp-ball--cen"><t t-esc="r.centena"/></span></span>
                     <small>Centena</small>
                 </div>
                 <div class="bp-ultima-ball">
-                    <span class="bp-ball bp-ball--fijo"><t t-esc="r.numero"/></span>
+                    <span class="bp-ball-box"><span class="bp-ball bp-ball--fijo"><t t-esc="r.numero"/></span></span>
                     <small>Fijo</small>
                 </div>
-                <div class="bp-ultima-ball" t-if="r.bola_extra and r.bola_extra !== '-'">
-                    <span class="bp-ball bp-ball--extra"><t t-esc="r.bola_extra"/></span>
+                <div class="bp-ultima-ball" t-if="tiene(r.bola_extra)">
+                    <span class="bp-ball-box"><span class="bp-ball bp-ball--extra"><t t-esc="r.bola_extra"/></span></span>
                     <small>Extra</small>
                 </div>
             </div>

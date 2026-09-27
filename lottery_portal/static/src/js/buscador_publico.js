@@ -51,6 +51,14 @@ export class BuscadorPublico extends Component {
     }
 
     /**
+     * Hay dato para mostrar. Ojo: el 0 es una centena / bola extra válida;
+     * solo "-" (o vacío) significa que esa salida no la tiene.
+     */
+    tiene(valor) {
+        return valor !== null && valor !== undefined && valor !== false && valor !== "-" && valor !== "";
+    }
+
+    /**
      * Resultado de la fecha elegida con la misma forma que las últimas
      * salidas, para dibujar las dos con el mismo bloque compacto.
      */
