@@ -185,8 +185,24 @@ class RifazoRaffle(models.Model):
 
     @api.ondelete(at_uninstall=False)
     def _unlink_only_draft(self):
+        # El borrado completo (action_force_delete) pasa por acá con el flag.
+        if self.env.context.get('rifazo_force_delete'):
+            return
         if self.filtered(lambda r: r.state not in ('draft', 'cancelled')):
-            raise UserError(_('Solo se pueden borrar rifas en borrador o canceladas.'))
+            raise UserError(_('Solo se pueden borrar rifas en borrador o canceladas. '
+                              'Para borrar una rifa de prueba con todo, usá "Eliminar rifa".'))
+
+    def action_force_delete(self):
+        """Borra la rifa con todo (solicitudes, comprobantes, números), en
+        cualquier estado. Pensado para rifas de prueba: no se puede deshacer."""
+        if not self.env.user.has_group('rifazo.group_rifazo_manager'):
+            raise UserError(_('Solo un Gestor de Rifazo puede eliminar rifas.'))
+        forced = self.with_context(rifazo_force_delete=True)
+        # Las solicitudes van primero: su raffle_id es ondelete='restrict'.
+        forced.write({'winner_request_id': False})
+        forced.request_ids.unlink()
+        forced.unlink()
+        return self.env['ir.actions.act_window']._for_xml_id('rifazo.action_rifazo_raffle')
 
     # ------------------------------------------------------------------
     # Números
