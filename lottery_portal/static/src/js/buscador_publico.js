@@ -12,6 +12,8 @@ export class BuscadorPublico extends Component {
             fecha: '',
             resultados: null,
             cargando: false,
+            // Últimas salidas del sorteo: se muestran mientras no se elige fecha.
+            ultimas: [],
         });
 
         onWillStart(async () => {
@@ -22,13 +24,30 @@ export class BuscadorPublico extends Component {
             } catch (e) {
                 this.state.sorteos = [];
             }
+            await this.cargarUltimas();
         });
     }
 
-    onSorteoChange(ev) {
+    async cargarUltimas() {
+        if (!this.state.sorteoId) {
+            this.state.ultimas = [];
+            return;
+        }
+        try {
+            this.state.ultimas = await jsonrpc("/salidas/ultimas", {
+                sorteo_id: this.state.sorteoId,
+                limit: 2,
+            }) || [];
+        } catch (e) {
+            this.state.ultimas = [];
+        }
+    }
+
+    async onSorteoChange(ev) {
         this.state.sorteoId = parseInt(ev.target.value) || null;
         this.state.fecha = '';
         this.state.resultados = null;
+        await this.cargarUltimas();
     }
 
     async buscarSalida(ev) {
