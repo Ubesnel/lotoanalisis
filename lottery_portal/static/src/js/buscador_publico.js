@@ -50,6 +50,32 @@ export class BuscadorPublico extends Component {
         await this.cargarUltimas();
     }
 
+    /**
+     * Resultado de la fecha elegida con la misma forma que las últimas
+     * salidas, para dibujar las dos con el mismo bloque compacto.
+     */
+    get resultadosLista() {
+        const r = this.state.resultados;
+        if (!r) {
+            return [];
+        }
+        const [, mes, dia] = (this.state.fecha || "").split("-");
+        const fecha = dia && mes ? `${dia}/${mes}` : "";
+        const labels = { afternoon: "Tarde", evening: "Noche" };
+        const orden = (t) => (t === "afternoon" ? 0 : t === "evening" ? 1 : 2);
+        return Object.keys(r)
+            .filter((k) => k !== "dia_semana" && r[k] && typeof r[k] === "object")
+            .sort((a, b) => orden(a) - orden(b) || a.localeCompare(b))
+            .map((t) => ({
+                ...r[t],
+                id: t,
+                turno: t,
+                turno_label: labels[t] || t,
+                dia_semana: r.dia_semana,
+                fecha,
+            }));
+    }
+
     async buscarSalida(ev) {
         this.state.fecha = ev.target.value;
         if (!this.state.fecha || !this.state.sorteoId) {

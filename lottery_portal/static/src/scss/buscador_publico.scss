@@ -572,10 +572,126 @@
 /* Las 3 columnas entran en el ancho original (1080 px): ensanchar el
    contenido tapaba a los personajes de los costados. */
 @media (min-width: 992px) {
-    .bp-hero-grid--3 { gap: 20px; }
+    .bp-hero-grid--3 { gap: 18px; }
     .bp-hero-grid--3 .bp-hero-col {
-        flex: 1 1 300px;
-        max-width: 340px;
+        flex: 1 1 290px;
+        max-width: 320px;
+    }
+}
+
+/* Pantallas medianas (notebooks, o 1920 con escalado de Windows al 125%,
+   que el navegador ve como ~1536 px): con 3 columnas no queda lugar para
+   los personajes a tamaño completo, así que se achican y se abren. */
+@media (min-width: 1200px) and (max-width: 1700px) {
+    .bp-char     { height: 60%; max-height: 430px; }
+    .bp-char-eli { transform: translateX(-18%); animation-name: bp-float-eli-md; }
+    .bp-char-ube { transform: translateX(18%);  animation-name: bp-float-ube-md; }
+}
+@keyframes bp-float-eli-md {
+    0%, 100% { transform: translateX(-18%) translateY(0); }
+    50%       { transform: translateX(-18%) translateY(-14px); }
+}
+@keyframes bp-float-ube-md {
+    0%, 100% { transform: translateX(18%) translateY(0); }
+    50%       { transform: translateX(18%) translateY(-14px); }
+}
+
+/* ── ÚLTIMAS SALIDAS (buscador, antes de elegir fecha) ── */
+.bp-ultimas {
+    margin-top: 6px;
+
+    .bp-ultimas-title {
+        text-align: center;
+        color: #8c6ca8;
+        font-weight: 800;
+        font-size: 15px;
+        margin-bottom: 8px;
+    }
+}
+
+.bp-ultima {
+    border-radius: 16px;
+    padding: 10px 12px 12px;
+    margin-bottom: 10px;
+    background: #f7f3ff;
+    border: 1px solid #ebe3fb;
+
+    &:last-child { margin-bottom: 0; }
+
+    .bp-ultima-head {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 800;
+        color: #6b6480;
+        margin-bottom: 8px;
+
+        .fa { font-size: 16px; }
+    }
+}
+
+.bp-ultima--dia .bp-ultima-head .fa   { color: #f59e0b; }
+.bp-ultima--noche .bp-ultima-head .fa { color: #23395b; }
+
+.bp-ultima-balls {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.bp-ultima-ball {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+
+    small {
+        font-size: 10px;
+        font-weight: 800;
+        color: #8a82a0;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+    }
+}
+
+.bp-ball {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 900;
+    font-size: 18px;
+    box-shadow: inset 0 -4px 8px rgba(0, 0, 0, .18), 0 4px 10px rgba(0, 0, 0, .15);
+}
+
+.bp-ultima--dia   .bp-ball--cen,
+.bp-ultima--dia   .bp-ball--fijo  { background: radial-gradient(circle at 35% 30%, #fdba74, #f97316 70%); }
+.bp-ultima--noche .bp-ball--cen,
+.bp-ultima--noche .bp-ball--fijo  { background: radial-gradient(circle at 35% 30%, #60a5fa, #1d4ed8 70%); }
+.bp-ball--fijo  { width: 52px; height: 52px; font-size: 21px; }
+.bp-ball--extra { background: radial-gradient(circle at 35% 30%, #f87171, #dc2626 70%); }
+
+.bp-ultima-corridos {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b6480;
+
+    b {
+        display: inline-block;
+        min-width: 30px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: #dcfce7;
+        color: #15803d;
+        font-weight: 900;
     }
 }
 

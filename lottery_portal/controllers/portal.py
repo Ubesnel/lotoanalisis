@@ -502,7 +502,7 @@ class LotteryController(http.Controller):
         turn_field = request.env['lottery.output']._fields['turn_day']
         return [{
             'id': r.id,
-            'fecha': r.date.strftime('%d/%m/%Y'),
+            'fecha': r.date.strftime('%d/%m'),
             'dia_semana': dias[r.date.weekday()],
             'turno': r.turn_day,
             'turno_label': turn_field.convert_to_export(r.turn_day, r) or '',
