@@ -37,14 +37,6 @@
                     <div t-attf-class="bp-hero-grid #{'bp-hero-grid--3' if rifazo_release else ''}">
                         <!-- Columna izquierda: buscador histórico -->
                         <div class="bp-hero-col bp-hero-col--search">
-                            <h1 class="bp-hero-title">
-                                Consultá cualquier<br/>
-                                <span class="bp-hero-title-accent">salida histórica</span>
-                            </h1>
-                            <p class="bp-hero-sub">
-                                Ingresá una fecha y conocé los resultados al instante
-                            </p>
-
                             <div class="bp-search-card">
                                 <div class="bp-search-header">
                                     <i class="fa fa-search me-2"/>Buscar salida histórica

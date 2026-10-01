@@ -25,7 +25,18 @@ export class BuscadorPublico extends Component {
                 this.state.sorteos = [];
             }
             await this.cargarUltimas();
+            await this.precargarFecha();
         });
+    }
+
+    /**
+     * Arranca con la fecha de la última salida registrada ya elegida, así el
+     * input nunca queda vacío mostrando resultados. Si el sorteo todavía no
+     * tiene salidas, queda vacío y no se muestra nada.
+     */
+    async precargarFecha() {
+        const ultima = this.state.ultimas[this.state.ultimas.length - 1];
+        await this.consultar(ultima ? ultima.fecha_iso : '');
     }
 
     async cargarUltimas() {
@@ -48,6 +59,7 @@ export class BuscadorPublico extends Component {
         this.state.fecha = '';
         this.state.resultados = null;
         await this.cargarUltimas();
+        await this.precargarFecha();
     }
 
     /**
@@ -85,7 +97,11 @@ export class BuscadorPublico extends Component {
     }
 
     async buscarSalida(ev) {
-        this.state.fecha = ev.target.value;
+        await this.consultar(ev.target.value);
+    }
+
+    async consultar(fecha) {
+        this.state.fecha = fecha || '';
         if (!this.state.fecha || !this.state.sorteoId) {
             this.state.resultados = null;
             return;

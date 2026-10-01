@@ -12,6 +12,7 @@
                 <field name="hour" widget="float_time" optional="hide"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="temperature" optional="show"/>
+                <field name="algoritmo" optional="show"/>
                 <field name="numbers_count"/>
                 <field name="number_ids" widget="many2many_tags" optional="show"/>
                 <field name="published" widget="boolean_toggle"/>
@@ -56,6 +57,7 @@
                             <!-- Sólo para el invisible del botón de ternas. -->
                             <field name="sorteo_source_code" invisible="1"/>
                             <field name="combinaciones_window"/>
+                            <field name="algoritmo"/>
                         </group>
                         <group>
                             <field name="published"/>
@@ -67,6 +69,10 @@
                             <field name="numbers_count_5"/>
                             <field name="verification_date"/>
                         </group>
+                    </group>
+
+                    <group string="Criterio del algoritmo">
+                        <field name="algoritmo_descripcion" nolabel="1" colspan="2"/>
                     </group>
 
                     <notebook>
