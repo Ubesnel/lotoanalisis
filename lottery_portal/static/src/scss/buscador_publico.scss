@@ -149,7 +149,15 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+}
+
+/* Las tarjetas (buscador, LotoAnálisis, Rifazo) ocupan todo el alto de su
+   columna: arrancan y terminan a la misma altura aunque el contenido de
+   cada una mida distinto. */
+.bp-hero-col > .bp-search-card,
+.bp-hero-col > .bp-app-card {
+    flex: 1 1 auto;
 }
 
 .bp-hero-badge {

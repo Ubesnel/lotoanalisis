@@ -118,6 +118,76 @@ DIGITOS_RECIENTES = 4
 # Cuántos números se suman a los 20 para llegar a la tabla de 30.
 EXTRA_PARA_30 = 10
 
+# ── Algoritmo de "Completar números" (01/10/2026) ──────────────────────────
+# La predicción elige con qué algoritmo se llenan las listas. El 1 es el de
+# siempre (tandas de recencia + cascada + señales de recorte + tabla de 30);
+# el 2 es uno nuevo. El texto de cada uno es lo que muestra el formulario en
+# "Criterio del algoritmo" — si cambia la lógica, hay que actualizarlo acá.
+DESCRIPCION_ALGORITMO = {
+    '1': (
+        "20 números: se recorren las salidas de este sorteo de la más "
+        "reciente hacia atrás (los dos turnos mezclados) y en cada una entran "
+        "los candidatos que comparten línea o terminal con ese número y no "
+        "habían entrado antes, hasta juntar 20. Si una salida trae más de los "
+        "que faltan, se cortan con la cascada de desempate.\n\n"
+        "Cascada de desempate (cada señal sólo desempata a la anterior): "
+        "1) Tabla LotoAnálisis (general y turno, la mejor de las dos), "
+        "2) grupos más atrasados, 3) pintas más atrasadas, 4) combinaciones, "
+        "5) cruce línea/terminal con la última salida, 6) mayoría ≥50/<50 de "
+        "los últimos 10 sorteos, 7) al azar.\n\n"
+        "10 números: de los 20, primero los que están en las 3 líneas o los 3 "
+        "terminales recomendados (el cruce vale doble); la cascada desempata.\n\n"
+        "5 números: de los 10, primero los que coinciden con los 2 grupos, 2 "
+        "líneas y 2 terminales más atrasados del día de la semana; la cascada "
+        "desempata.\n\n"
+        "Súper Mágico: de los 5, el que es acompañante en más de las tres "
+        "tablas LotoAnálisis (general, tarde y noche).\n\n"
+        "30 números: los 20 más diez de los que quedaron afuera, con el "
+        "criterio inverso: primero los que NO comparten dígito con las "
+        "salidas recientes y están en líneas o terminales recomendados."
+    ),
+    '2': (
+        "30 números: la misma caminata que arma los 20 en el Algoritmo 1, "
+        "pero hasta juntar 30: se recorren las salidas de la más reciente "
+        "hacia atrás y entran los que comparten línea o terminal con cada "
+        "una; si una salida trae de más, se cortan con la cascada de "
+        "siempre.\n\n"
+        "20 números: de los 30, los que tienen en línea o terminal alguno de "
+        "los 5 dígitos distintos más recientes. Si sobran o faltan, ordena: "
+        "1) coincide con alguno de los 3 dígitos más recientes, 2) grupos "
+        "más atrasados, 3) tabla LotoAnálisis, pintas, combinaciones, cruce, "
+        "mayoría y azar.\n\n"
+        "10 números: de los 20, los que tienen alguno de los 2 dígitos "
+        "distintos más recientes. Si sobran o faltan: tabla → pintas → "
+        "grupos → azar.\n\n"
+        "Dígitos recientes (5, 3 y 2): si una salida aporta más dígitos de "
+        "los que faltan, gana el que está en más líneas/terminales "
+        "recomendados, después el que tiene más acompañantes en la tabla "
+        "general y después en la del turno.\n\n"
+        "5 números: de los 10, los cruzados con la última salida (con 34: "
+        "línea 40-49 o terminal 3). Si sobran o faltan: tabla → pintas → "
+        "grupos → azar.\n\n"
+        "Súper Mágico: de los 5, el que tiene la línea en las 3 recomendadas; "
+        "si empatan, el terminal en los 3 recomendados; si sigue el empate, "
+        "el que pertenece a la mejor línea o mejor terminal recomendado."
+    ),
+}
+
+# Algoritmo 2: los 30 salen de la caminata de recencia (la misma que arma
+# los 20 en el Algoritmo 1, con objetivo 30). De esos 30, los 20 son los que
+# tienen alguno de los DIGITOS_20_ALG2 dígitos distintos más recientes; si
+# sobran o faltan, se corta / completa con: coincidir con los
+# DIGITOS_CERCANOS_ALG2 más recientes (que son los primeros de aquellos
+# cinco) → grupos más atrasados → resto de la cascada.
+DIGITOS_20_ALG2 = 5
+DIGITOS_CERCANOS_ALG2 = 3
+# Los 10 salen de los 20: los que tienen alguno de los DIGITOS_10_ALG2
+# dígitos distintos más recientes. Esos dígitos se juntan con
+# `_digitos_recientes_alg2`, que cuando una salida aporta más dígitos de los
+# que faltan (22 → {2}, después 34 → 3 y 4 pero falta uno) elige con
+# recomendadas → tabla general → tabla del turno.
+DIGITOS_10_ALG2 = 2
+
 # ── Atraso del mes ─────────────────────────────────────────────────────────
 # Ya NO se usa para elegir los 10 y los 5 de "Completar números" (eso ahora
 # lo decide la cascada de arriba); sigue viva porque la Tómbola de la
@@ -230,6 +300,17 @@ class LotteryPrediction(models.Model):
         related='sorteo_id.source_code', string='Código de origen del sorteo',
         help='Sólo para condicionar la vista: las ternas existen únicamente '
              'en los sorteos de Quiniela Uruguay.')
+
+    algoritmo = fields.Selection([
+        ('1', 'Algoritmo 1'),
+        ('2', 'Algoritmo 2'),
+    ], string='Algoritmo', default='1', required=True,
+        help='Con qué criterio llena el botón "Completar números" las listas '
+             'de 30, 20, 10, 5 y el Súper Mágico.')
+    algoritmo_descripcion = fields.Text(
+        string='Criterio del algoritmo',
+        compute='_compute_algoritmo_descripcion',
+        help='Cómo completa los números el algoritmo elegido.')
 
     combinaciones_window = fields.Integer(
         string='Ventana de combinaciones', default=50, required=True,
@@ -359,6 +440,12 @@ class LotteryPrediction(models.Model):
                 raise ValidationError(
                     'El Súper Mágico tiene que ser uno de los 5 Números a '
                     'predecir.')
+
+    @api.depends('algoritmo')
+    def _compute_algoritmo_descripcion(self):
+        for rec in self:
+            rec.algoritmo_descripcion = DESCRIPCION_ALGORITMO.get(
+                rec.algoritmo, '')
 
     @api.depends('number_ids')
     def _compute_numbers_count(self):
@@ -729,7 +816,7 @@ class LotteryPrediction(models.Model):
         return (v['tabla'], v['grupos'], v['pintas'], v['comb'],
                 v['cruce'], v['mayoria'], v['azar'])
 
-    def _seleccionar_veinte(self, candidatos, valores):
+    def _seleccionar_veinte(self, candidatos, valores, cantidad=20):
         """Arma el conjunto de hasta 20 candidatos caminando el historial de
         salidas de este sorteo (los dos turnos mezclados) de la más reciente
         hacia atrás: en cada paso entran los candidatos que comparten línea
@@ -744,9 +831,12 @@ class LotteryPrediction(models.Model):
         Devuelve (orden_final, origen): `orden_final` son los números en el
         orden que van a tener los 20 (y de ahí salen 10 y 5), y `origen` es
         {número: salida que lo trajo (o None si entró por la cascada al
-        agotarse el historial)}, para mostrarlo en el desglose."""
+        agotarse el historial)}, para mostrarlo en el desglose.
+
+        `cantidad` es cuántos junta la caminata: 20 en el Algoritmo 1, 30 en
+        el Algoritmo 2 (que arma así su tabla de 30)."""
         self.ensure_one()
-        objetivo = min(20, len(candidatos))
+        objetivo = min(cantidad, len(candidatos))
         outputs = self._last_output(limit=MAX_SALIDAS_HISTORIAL)
 
         def clave(n):
@@ -843,27 +933,6 @@ class LotteryPrediction(models.Model):
         }
         return {'rec_lt': rec_lt, 'atr_dia': atr_dia, 'tablas': tablas}, ctx
 
-    def _orden_completar_numeros(self):
-        """Los números de `number_ids` en el mismo orden que arma el botón
-        "Completar números": primero los 20 (o menos, ver
-        `_seleccionar_veinte`) y detrás el resto de los candidatos, ambos
-        tramos ordenados por la cascada de desempate.
-
-        Es el método que reusa la Tómbola de la Quiniela Uruguay para
-        puntear sus 20 premios exactamente igual que una predicción
-        individual, sin tener que grabar 20 `lottery.prediction` de más."""
-        self.ensure_one()
-        candidatos = sorted(self.number_ids.mapped('name'))
-        valores, _ctx = self._valores_cascada(candidatos)
-        veinte, _origen = self._seleccionar_veinte(candidatos, valores)
-        if len(veinte) >= len(candidatos):
-            return veinte
-        vistos = set(veinte)
-        resto = sorted(
-            (n for n in candidatos if n not in vistos),
-            key=lambda n: self._clave_cascada(valores, n), reverse=True)
-        return veinte + resto
-
     # ── Tabla de 30 ─────────────────────────────────────────────
 
     def _digitos_recientes(self, cantidad=DIGITOS_RECIENTES):
@@ -944,8 +1013,195 @@ class LotteryPrediction(models.Model):
         return elegidos
 
     def action_completar_numeros(self):
-        """Completa las listas de 30, 20, 10, 5 y el Súper Mágico a partir
-        de los números a predecir.
+        """Completa las listas de 30, 20, 10, 5 y el Súper Mágico con el
+        algoritmo elegido en la predicción (campo `algoritmo`)."""
+        self.ensure_one()
+        if len(self.number_ids) < 5:
+            raise UserError(
+                'Cargá primero los números a predecir (con el campo '
+                'Temperatura o a mano): hacen falta al menos 5 para armar '
+                'las listas de 20, 10 y 5.')
+        return self._grabar_listas(self._calcular_listas())
+
+    # ── Algoritmo 2 ─────────────────────────────────────────────
+
+    @staticmethod
+    def _recortar_alg2(base, entra, clave, cantidad):
+        """Recorte común a los 20, 10 y 5 del Algoritmo 2.
+
+        De `base` entran primero los que cumplen `entra(n)`, ordenados por
+        `clave`; si son más de `cantidad` se cortan, y si son menos se
+        completa con el resto de `base`, también por `clave`. Devuelve la
+        lista en ese orden: los que cumplen primero y los de relleno
+        después."""
+        cumplen = sorted((n for n in base if entra(n)), key=clave,
+                         reverse=True)[:cantidad]
+        if len(cumplen) < cantidad:
+            ya_estan = set(cumplen)
+            relleno = sorted((n for n in base if n not in ya_estan),
+                             key=clave, reverse=True)
+            cumplen += relleno[:cantidad - len(cumplen)]
+        return cumplen
+
+    def _recomendadas_alg2(self):
+        """(líneas, terminales) recomendados para esta fecha y turno, cada
+        uno como lista en el orden del pronóstico (la 1ª es la mejor). Es
+        el mismo `get_lineas_terminales_probables` que usa el Algoritmo 1
+        para el recorte 20 → 10."""
+        self.ensure_one()
+        reco = self.env['lottery.stats.service'].sudo() \
+            .get_lineas_terminales_probables(
+                self.turn_day, str(self.date),
+                sorteo_id=self.sorteo_id.id) or {}
+        return ([l['idx'] for l in reco.get('lineas') or []],
+                [t['idx'] for t in reco.get('terminales') or []])
+
+    def _digitos_recientes_alg2(self, cantidad, lineas_reco, term_reco):
+        """Los `cantidad` dígitos distintos más recientes, como
+        `_digitos_recientes`, pero desempatando cuando una salida aporta
+        más dígitos nuevos de los que faltan.
+
+        Ej: la anterior fue 22 (aporta el 2) y antes 34 (aporta 3 y 4) y
+        hacen falta 2: entra el 2 y entre el 3 y el 4 se elige por, en
+        este orden:
+          1) en cuántas recomendadas está (línea y terminal recomendados
+             de esta fecha y turno: 0, 1 o 2),
+          2) cuántos acompañantes de la última salida en la tabla
+             LotoAnálisis general tienen ese dígito (en línea o terminal),
+          3) ídem en la tabla del turno a predecir con la última salida de
+             ese turno.
+        Si todo empata queda el orden de lectura (decena antes que unidad).
+
+        Devuelve una lista en el orden en que entraron."""
+        self.ensure_one()
+        last_general = self._last_output()
+        last_turno = self._last_output(turn=self.turn_day)
+        acomp_general = (self._acompanantes('general', last_general.number_id.name)
+                         if last_general else {})
+        acomp_turno = (self._acompanantes(self.turn_day, last_turno.number_id.name)
+                       if last_turno else {})
+
+        def con_digito(acomp, d):
+            return sum(1 for n in acomp if d in _digitos(n))
+
+        def clave(d):
+            return (int(d in lineas_reco) + int(d in term_reco),
+                    con_digito(acomp_general, d),
+                    con_digito(acomp_turno, d))
+
+        digitos = []
+        for output in self._last_output(limit=MAX_SALIDAS_HISTORIAL):
+            nuevos = []
+            for d in _digitos(output.number_id.name):
+                if d not in digitos and d not in nuevos:
+                    nuevos.append(d)
+            faltan = cantidad - len(digitos)
+            if len(nuevos) > faltan:
+                # sorted es estable: a igualdad queda decena antes que unidad.
+                nuevos = sorted(nuevos, key=clave, reverse=True)[:faltan]
+            digitos.extend(nuevos)
+            if len(digitos) >= cantidad:
+                break
+        return digitos
+
+    @staticmethod
+    def _clave_super_magico_alg2(n, lineas_reco, term_reco):
+        """Orden del Súper Mágico del Algoritmo 2: 1) su línea está en las
+        3 recomendadas, 2) su terminal está en los 3 recomendados, 3) la
+        mejor posición que ocupa su línea o su terminal en esas listas (la
+        1ª recomendada gana)."""
+        linea, terminal = _digitos(n)
+        puestos = []
+        if linea in lineas_reco:
+            puestos.append(lineas_reco.index(linea))
+        if terminal in term_reco:
+            puestos.append(term_reco.index(terminal))
+        mejor = -min(puestos) if puestos else -len(lineas_reco) - len(term_reco)
+        return (linea in lineas_reco, terminal in term_reco, mejor)
+
+    def _calcular_algoritmo_2(self):
+        """Algoritmo 2: calcula las listas de 30, 20, 10, 5 y el Súper
+        Mágico a partir de los números a predecir (sin grabar nada; el
+        Súper Mágico queda 1º de los 5). Cada lista se recorta de
+        la anterior (5 ⊂ 10 ⊂ 20 ⊂ 30):
+
+        - 30: la caminata de recencia del Algoritmo 1 (`_seleccionar_veinte`)
+          con objetivo 30, cortando cada tanda con la cascada de siempre.
+        - 20: los que tienen alguno de los `DIGITOS_20_ALG2` dígitos más
+          recientes. Corta/completa: coincide con alguno de los
+          `DIGITOS_CERCANOS_ALG2` más recientes → grupos → tabla → pintas →
+          combinaciones → cruce → mayoría → azar.
+        - 10: los que tienen alguno de los `DIGITOS_10_ALG2` dígitos más
+          recientes (con desempate de dígitos, ver
+          `_digitos_recientes_alg2`). Corta/completa: tabla → pintas →
+          grupos → azar.
+        - 5: los cruzados con la última salida general (la línea de la
+          anterior pasa a terminal, o el terminal a línea: con 34, la línea
+          40-49 o el terminal 3). Corta/completa: tabla → pintas → grupos →
+          azar.
+        - Súper Mágico: de los 5, ver `_clave_super_magico_alg2`; si sigue
+          el empate, el orden de los 5.
+
+        Las listas quedan editables, el botón sólo las precarga."""
+        self.ensure_one()
+        candidatos = sorted(self.number_ids.mapped('name'))
+        valores, ctx = self._valores_cascada(candidatos)
+        lineas_reco, term_reco = self._recomendadas_alg2()
+
+        # Los tres juegos de dígitos usan el mismo desempate cuando una
+        # salida aporta de más, así que el de 2 ⊂ el de 3 ⊂ el de 5.
+        dig_20 = set(self._digitos_recientes_alg2(
+            DIGITOS_20_ALG2, lineas_reco, term_reco))
+        dig_cercanos = set(self._digitos_recientes_alg2(
+            DIGITOS_CERCANOS_ALG2, lineas_reco, term_reco))
+        dig_10 = self._digitos_recientes_alg2(
+            DIGITOS_10_ALG2, lineas_reco, term_reco)
+
+        def comparte(digitos):
+            return lambda n: bool(set(_digitos(n)) & set(digitos))
+
+        def clave_20(n):
+            v = valores[n]
+            return (comparte(dig_cercanos)(n), v['grupos'], v['tabla'],
+                    v['pintas'], v['comb'], v['cruce'], v['mayoria'],
+                    v['azar'])
+
+        def clave_10_5(n):
+            v = valores[n]
+            return (v['tabla'], v['pintas'], v['grupos'], v['azar'])
+
+        treinta, origen = self._seleccionar_veinte(
+            candidatos, valores, cantidad=20 + EXTRA_PARA_30)
+        veinte = self._recortar_alg2(treinta, comparte(dig_20), clave_20, 20)
+        diez = self._recortar_alg2(veinte, comparte(dig_10), clave_10_5, 10)
+        # `cruce` de la cascada ya es contra la última salida general.
+        cinco = self._recortar_alg2(
+            diez, lambda n: valores[n]['cruce'], clave_10_5, 5)
+        # sorted es estable: a igualdad de recomendadas queda el orden de
+        # los 5 (tabla → pintas → grupos → azar).
+        cinco = sorted(
+            cinco, key=lambda n: self._clave_super_magico_alg2(
+                n, lineas_reco, term_reco), reverse=True)
+        super_magico = cinco[0] if cinco else False
+
+        ctx.update({
+            'dig_20': sorted(dig_20),
+            'dig_cercanos': sorted(dig_cercanos),
+            'dig_10': dig_10,
+            'lineas_reco': lineas_reco,
+            'term_reco': term_reco,
+        })
+
+        return {
+            'listas': {30: treinta, 20: veinte, 10: diez, 5: cinco},
+            'super_magico': super_magico,
+            'candidatos': candidatos, 'valores': valores, 'ctx': ctx,
+            'origen': origen,
+        }
+
+    def _calcular_algoritmo_1(self):
+        """Algoritmo 1: calcula las listas de 30, 20, 10, 5 y el Súper
+        Mágico a partir de los números a predecir (sin grabar nada).
 
         La de 30 se calcula APARTE y al final: son los 20 de abajo más diez
         elegidos entre los candidatos que quedaron afuera, con el criterio
@@ -980,12 +1236,6 @@ class LotteryPrediction(models.Model):
         la predicción: está pensado para correrlo antes de cada salida. Las
         cuatro listas quedan editables, el botón sólo las precarga."""
         self.ensure_one()
-        if len(self.number_ids) < 5:
-            raise UserError(
-                'Cargá primero los números a predecir (con el campo '
-                'Temperatura o a mano): hacen falta al menos 5 para armar '
-                'las listas de 20, 10 y 5.')
-
         candidatos = sorted(self.number_ids.mapped('name'))
         valores, ctx = self._valores_cascada(candidatos)
         veinte, origen = self._seleccionar_veinte(candidatos, valores)
@@ -1017,22 +1267,48 @@ class LotteryPrediction(models.Model):
         treinta = veinte + self._seleccionar_diez_extra(
             candidatos, veinte, valores, senales)
 
+        return {
+            'listas': {30: treinta, 20: veinte, 10: orden_10, 5: orden_5},
+            'super_magico': super_magico,
+            'candidatos': candidatos, 'valores': valores, 'ctx': ctx,
+            'origen': origen,
+        }
+
+    def _calcular_listas(self):
+        """Corre el algoritmo elegido (`algoritmo`) SIN grabar nada y
+        devuelve {'listas': {30, 20, 10, 5}, 'super_magico', ...}. Los 5
+        vienen con el Súper Mágico primero.
+
+        Es lo que hace el botón "Completar números" antes de escribir, y lo
+        que reusa la Tómbola de la Quiniela Uruguay sobre predicciones en
+        memoria (`new`) para cada premio, sin crear 20 predicciones."""
+        self.ensure_one()
+        if self.algoritmo == '2':
+            return self._calcular_algoritmo_2()
+        return self._calcular_algoritmo_1()
+
+    def _grabar_listas(self, res):
+        """Escribe en la predicción el resultado de `_calcular_listas`, con
+        el desglose de puntajes del algoritmo que lo calculó."""
+        self.ensure_one()
         Number = self.env['lottery.number']
 
         def ids(numeros):
             return Number.search([('name', 'in', numeros)]).ids
 
-        listas = {30: treinta, 20: veinte, 10: orden_10, 5: orden_5}
+        listas = res['listas']
+        render = (self._render_scores_html_alg2 if self.algoritmo == '2'
+                  else self._render_scores_html)
         vals = {
             'number_ids_30': [(6, 0, ids(listas[30]))],
             'number_ids_20': [(6, 0, ids(listas[20]))],
             'number_ids_10': [(6, 0, ids(listas[10]))],
             'number_ids_5': [(6, 0, ids(listas[5]))],
-            'score_html': self._render_scores_html(
-                candidatos, valores, ctx, listas, origen),
+            'score_html': render(res['candidatos'], res['valores'],
+                                 res['ctx'], listas, res['origen']),
         }
-        if super_magico:
-            vals['super_magico_id'] = ids([super_magico])[0]
+        if res['super_magico'] is not False:
+            vals['super_magico_id'] = ids([res['super_magico']])[0]
         self.write(vals)
         return True
 
@@ -1315,6 +1591,146 @@ class LotteryPrediction(models.Model):
                rango_txt,
                ''.join(detalle(t, d) for t, d in ctx['detalles']),
                recortes_txt, cabeza, ''.join(cuerpo))
+
+    def _render_scores_html_alg2(self, candidatos, valores, ctx, listas,
+                                 origen):
+        """Desglose del Algoritmo 2. `listas` es {30, 20, 10, 5} en el
+        orden de cada recorte (el 1º de los 5 es el Súper Mágico) y
+        `origen` es {número: salida de la caminata que lo trajo a los 30}."""
+        self.ensure_one()
+        turn_lbl = dict(self._fields['turn_day'].selection)
+        fmt = self._fmt_pts
+        lineas_reco, term_reco = ctx['lineas_reco'], ctx['term_reco']
+
+        def salida(rec):
+            if not rec:
+                return '<span class="text-muted">sin salidas previas</span>'
+            return '<b>%02d</b> (%s %s)' % (
+                rec.number_id.name, rec.date.strftime('%d/%m/%Y'),
+                turn_lbl.get(rec.turn_day, rec.turn_day))
+
+        def lista_txt(items):
+            return (' · '.join('%d' % i for i in items) if items
+                    else '<span class="text-muted">sin datos</span>')
+
+        def marca(valor):
+            return ('<td class="text-center">%s</td>'
+                    % ('✓' if valor else '<span class="text-muted">·</span>'))
+
+        def celda_origen(n):
+            o = origen.get(n)
+            if o is None:
+                return ('<td class="text-center text-muted" '
+                        'style="font-size:11px;">cascada</td>')
+            return ('<td class="text-center" style="font-size:11px;">'
+                    '%02d <span class="text-muted">(%s %s)</span></td>'
+                    % (o.number_id.name, o.date.strftime('%d/%m'),
+                       turn_lbl.get(o.turn_day, o.turn_day)[:1]))
+
+        def celda_tabla(v):
+            if not v['tabla']:
+                return '<td class="text-center text-muted">·</td>'
+            return ('<td class="text-center">%s <span class="text-muted" '
+                    'style="font-size:10px;">(d%d, %s)</span></td>'
+                    % (fmt(v['tabla']), v['tabla_dist'], v['tabla_origen']))
+
+        def tiene(n, digitos):
+            return bool(set(_digitos(n)) & set(digitos))
+
+        def reco_txt(n):
+            linea, terminal = _digitos(n)
+            partes = []
+            if linea in lineas_reco:
+                partes.append('L%d' % linea)
+            if terminal in term_reco:
+                partes.append('T%d' % terminal)
+            return ('<td class="text-center">%s</td>' % ' '.join(partes)
+                    if partes else '<td class="text-center text-muted">·</td>')
+
+        sm = listas[5][0] if listas[5] else None
+        en_5, en_10, en_20 = set(listas[5]), set(listas[10]), set(listas[20])
+
+        def fila(i, n):
+            v = valores[n]
+            if n == sm:
+                fondo, corte = '#e9d5ff', ' · SM'
+            elif n in en_5:
+                fondo, corte = '#f3e8ff', ' · 5'
+            elif n in en_10:
+                fondo, corte = '#fff1e0', ' · 10'
+            elif n in en_20:
+                fondo, corte = '#f1f3f5', ' · 20'
+            else:
+                fondo, corte = '#e3f2fd', ' · 30'
+            return (
+                '<tr style="background:%s;">'
+                '<td class="text-center text-muted" style="font-size:11px;">'
+                '%d%s</td><td class="text-center"><b>%02d</b></td>'
+                '%s%s%s%s%s%s%s'
+                '<td class="text-center">%s</td><td class="text-center">%s</td>'
+                '<td class="text-center">%d</td></tr>' % (
+                    fondo, i, corte, n, celda_origen(n),
+                    marca(tiene(n, ctx['dig_20'])),
+                    marca(tiene(n, ctx['dig_cercanos'])),
+                    marca(tiene(n, ctx['dig_10'])),
+                    marca(v['cruce']), reco_txt(n), celda_tabla(v),
+                    fmt(v['grupos']), fmt(v['pintas']), v['comb']))
+
+        # Orden de la tabla: los 5 (SM primero), después el resto de los 10,
+        # de los 20 y de los 30, cada tramo en el orden de su recorte.
+        orden, vistos = [], set()
+        for clave in (5, 10, 20, 30):
+            for n in listas[clave]:
+                if n not in vistos:
+                    orden.append(n)
+                    vistos.add(n)
+
+        cabeza = ''.join(
+            '<th class="text-center" style="font-size:11px;">%s</th>' % h
+            for h in ('#', 'Nº', 'Entró por',
+                      'Díg. %s' % ''.join(map(str, ctx['dig_20'])),
+                      'Díg. %s' % ''.join(map(str, ctx['dig_cercanos'])),
+                      'Díg. %s' % ''.join(map(str, ctx['dig_10'])),
+                      'Cruce', 'L/T rec.', 'Tabla', 'Grupos', 'Pintas',
+                      'Comb.'))
+        afuera = len(candidatos) - len(listas[30])
+
+        return """
+            <div>
+                <p class="small mb-1"><b>Algoritmo 2</b> ·
+                    <span class="text-muted">Último número (general, usado
+                    para el cruce):</span> %s ·
+                    <span class="text-muted">Recomendadas:</span>
+                    líneas %s · terminales %s ·
+                    <span class="text-muted">Candidatos fuera de los 30:</span>
+                    %d
+                </p>
+                <p class="text-muted small mb-2">
+                    30: caminata de recencia (columna <b>Entró por</b>).
+                    20: los que tienen algún dígito de <b>Díg. %s</b>;
+                    desempata <b>Díg. %s</b> → grupos → tabla → pintas →
+                    comb. → cruce → mayoría → azar.
+                    10: los que tienen algún dígito de <b>Díg. %s</b>;
+                    desempata tabla → pintas → grupos → azar.
+                    5: los de <b>Cruce</b> con el último número; mismo
+                    desempate que los 10. Súper Mágico (SM): línea
+                    recomendada → terminal recomendado → mejor puesto en las
+                    recomendadas. Los atrasos de grupos y pintas son los del
+                    momento en que se apretó el botón.
+                </p>
+                <table class="table table-sm table-bordered"
+                       style="font-size:12px;">
+                    <thead><tr>%s</tr></thead>
+                    <tbody>%s</tbody>
+                </table>
+            </div>
+        """ % (salida(ctx['last_general']), lista_txt(lineas_reco),
+               lista_txt(term_reco), afuera,
+               ''.join(map(str, ctx['dig_20'])),
+               ''.join(map(str, ctx['dig_cercanos'])),
+               ''.join(map(str, ctx['dig_10'])),
+               cabeza,
+               ''.join(fila(i + 1, n) for i, n in enumerate(orden)))
 
 
 class LotteryPredictionTerna(models.Model):

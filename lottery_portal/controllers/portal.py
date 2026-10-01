@@ -505,6 +505,8 @@ class LotteryController(http.Controller):
         return [{
             'id': r.id,
             'fecha': r.date.strftime('%d/%m'),
+            # Para precargar el input de fecha del buscador (YYYY-MM-DD).
+            'fecha_iso': r.date.isoformat(),
             'dia_semana': dias[r.date.weekday()],
             'turno': r.turn_day,
             'turno_label': turn_field.convert_to_export(r.turn_day, r) or '',
