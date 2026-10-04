@@ -20,6 +20,12 @@ class LotteryTurno(models.Model):
     code = fields.Char(string='Código', required=True,
                        help="Identificador técnico, usado por la API, la app y el scraper. "
                             "No cambiarlo una vez en uso.")
+    name_en = fields.Char(string='Nombre en inglés',
+                          help="Etiqueta del turno en la app en inglés (ej. 'Midday', '6:00 PM'). "
+                               "Vacío = se usa el nombre en español.")
+    color = fields.Char(string='Color',
+                        help="Color del turno en la app, en hexadecimal (ej. #F59E0B). "
+                             "Vacío = la app usa uno de respaldo.")
     sequence = fields.Integer(string='Secuencia', default=10,
                               help="Orden del turno dentro del día: primero el de menor secuencia.")
     active = fields.Boolean(string='Activo', default=True)

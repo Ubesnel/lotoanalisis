@@ -7,7 +7,9 @@
             <tree string="Turnos" editable="bottom">
                 <field name="sequence"/>
                 <field name="name"/>
+                <field name="name_en"/>
                 <field name="code"/>
+                <field name="color" widget="color"/>
                 <field name="active" optional="hide"/>
             </tree>
         </field>

@@ -59,8 +59,15 @@ def _serialize_output(record):
 
 def _turno_dict(turno):
     """Turno (lottery.turno) → dict para la app. El `code` es el contrato:
-    la app no conoce los turnos de antemano, los recibe de cada sorteo."""
-    return {'code': turno.code, 'name': turno.name or '', 'sequence': turno.sequence}
+    la app no conoce los turnos de antemano, los recibe de /sorteos y con el
+    código resuelve nombre (ES/EN) y color en cualquier pantalla."""
+    return {
+        'code': turno.code,
+        'name': turno.name or '',
+        'name_en': turno.name_en or '',
+        'color': turno.color or '',
+        'sequence': turno.sequence,
+    }
 
 
 def _turno_by_code(code):
@@ -145,6 +152,11 @@ class LotteryAppApi(http.Controller):
                 'turnos': [_turno_dict(t) for t in s._ordered_turnos()],
             } for s in sorteos],
             'default_id': sorteos[0].id if sorteos else None,
+            # Catálogo de todos los turnos activos, en orden del día: sirve
+            # para resolver nombre y color de un código aunque la pantalla no
+            # dependa de un sorteo (Tómbola).
+            'turnos': [_turno_dict(t) for t in
+                       request.env['lottery.turno'].sudo().search([], order='sequence, id')],
             # Build mínimo requerido (versionCode de Android); 0 = sin
             # exigencia. La app lo compara contra su propio PackageInfo y
             # bloquea con una pantalla de actualización obligatoria si está
@@ -1341,4 +1353,23 @@ class LotteryAppApi(http.Controller):
             'super_magico': (
                 str(pred.super_magico_id.name).zfill(2)
                 if pred.super_magico_id else None),
+            # Ternas pronosticadas (solo Quiniela UY, en la predicción del
+            # premio 1) y la terna que salió en ese premio, para marcar en
+            # amarillo la que coincidió. No se contabilizan en los aciertos.
+            'ternas': sorted(pred.terna_ids.mapped('terna')),
+            'result_terna': (output.complete_number or None) if output else None,
+            # Líneas de Tómbola pronosticadas (7 números cada una) y los 20
+            # números que salieron en la Tómbola de esa fecha y turno, para
+            # marcar en amarillo los que coincidieron. Vacío si todavía no
+            # salió. Tampoco se contabilizan en los aciertos.
+            'tombola_lineas': [
+                sorted(str(n.name).zfill(2) for n in (
+                    linea.numero_1, linea.numero_2, linea.numero_3, linea.numero_4,
+                    linea.numero_5, linea.numero_6, linea.numero_7) if n)
+                for linea in pred.tombola_linea_ids],
+            'tombola_salidos': sorted(
+                str(o.number_id.name).zfill(2)
+                for o in request.env['lottery.tombola.output'].sudo().search([
+                    ('date', '=', date), ('turno_id', '=', turno.id)])
+            ) if pred.tombola_linea_ids else [],
         })
