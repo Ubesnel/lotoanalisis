@@ -30,7 +30,10 @@ class LotteryPortal(http.Controller):
     def get_sorteos_publicos(self, **kwargs):
         sorteos = request.env['lottery.sorteo'].sudo().search(
             [('show_in_public', '=', True)], order='sequence, id')
-        default = sorteos[0] if sorteos else None
+        # Pick3 Florida por defecto (como el resto del sitio) si es público;
+        # si no, el primero por orden.
+        florida = request.env.ref('lottery_base.sorteo_florida', raise_if_not_found=False)
+        default = florida if florida and florida in sorteos else (sorteos[0] if sorteos else None)
         return {
             'sorteos': [{'id': s.id, 'name': s.name, 'code': s.code} for s in sorteos],
             'default_id': default.id if default else False,
@@ -484,6 +487,35 @@ class LotteryController(http.Controller):
             {'dia_semana': dia_semana}
         )
         return data
+
+    @http.route('/salidas/ultimas', type='json', auth='public')
+    def ultimas_salidas(self, sorteo_id=False, limit=2):
+        """Últimas salidas registradas del sorteo (por defecto las 2 más
+        recientes: ej. hoy tarde y ayer noche). Las muestra el buscador de la
+        portada antes de que se elija una fecha."""
+        sorteo_id = self._resolve_sorteo_id(sorteo_id)
+        limit = min(int(limit), 10) if str(limit).isdigit() else 2
+        salidas = request.env['lottery.output'].sudo().search(
+            [('sorteo_id', '=', sorteo_id)],
+            order='date desc, turn_day desc, id desc', limit=limit)
+        dias = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
+        turn_field = request.env['lottery.output']._fields['turn_day']
+        # Se buscan las más recientes, pero se muestran en orden del día
+        # (la más vieja arriba): tarde y después noche.
+        return [{
+            'id': r.id,
+            'fecha': r.date.strftime('%d/%m'),
+            # Para precargar el input de fecha del buscador (YYYY-MM-DD).
+            'fecha_iso': r.date.isoformat(),
+            'dia_semana': dias[r.date.weekday()],
+            'turno': r.turn_day,
+            'turno_label': turn_field.convert_to_export(r.turn_day, r) or '',
+            'centena': r.hundreds_id.name if r.hundreds_id else '-',
+            'numero': str(r.number_id.name).zfill(2),
+            'bola_extra': r.fireball_id.name if r.fireball_id else "-",
+            'premio_2': str(r.premio_2_id.name).zfill(2) if r.premio_2_id else None,
+            'premio_3': str(r.premio_3_id.name).zfill(2) if r.premio_3_id else None,
+        } for r in reversed(salidas)]
 
     @http.route('/lottery/top5_centenas', type='json', auth='public', website=True)
     def top5_centenas(self, type, sorteo_id=False):

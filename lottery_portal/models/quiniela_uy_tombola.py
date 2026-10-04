@@ -5,11 +5,10 @@ Es un agrupador de `lottery.prediction`. La quiniela uruguaya tiene 20
 premios y cada uno es su propio `lottery.sorteo` (`quiniela_uy_1` …
 `quiniela_uy_20`), así que predecirlos a mano serían 20 predicciones
 individuales. Acá se corre para los 20 la MISMA lógica que el botón
-"Completar números" de la predicción individual — la selección de 20 por
-recencia de dígitos y la cascada Tabla → Grupos → Pintas → Combinaciones →
-Cruce → Mayoría → azar (ver `_orden_completar_numeros` en
-lottery_prediction.py) — y se toman los 5 mejores de cada uno: 20 grupos de
-5.
+"Completar números" de la predicción individual, con el algoritmo que se
+elija (1 o 2, campo `algoritmo`; ver `_calcular_listas` en
+lottery_prediction.py), y de cada premio se toman sus 5 Números a predecir
+con su Súper Mágico: 20 grupos de 5.
 
 Con esos 100 números (muchos repetidos entre premios) se arman 10
 combinaciones de 7 para jugar a la tómbola. El sorteo es al azar pero
@@ -95,6 +94,11 @@ PESO_DIGITOS = 0.25
 # números" para elegir los 10 y los 5, y tiene que haber uno solo.
 PESO_MES = 0.9
 
+# Bola del Súper Mágico en la tarjeta de los 5 de cada premio: dorada y con
+# aro, para encontrarla de un vistazo entre las otras cuatro (que van con el
+# color del turno).
+COLOR_SUPER_MAGICO = (0xF5, 0xB0, 0x0B)
+
 # Tope de tiradas para juntar 10 combinaciones distintas. Con un puñado de
 # decenas de números en el bombo las repetidas son rarísimas; el tope está
 # para que un pool chico no deje el botón girando.
@@ -133,6 +137,13 @@ class LotteryPredictionTombolaUy(models.Model):
         help='De dónde salen los números que se puntean en cada premio, '
              'igual que el campo Temperatura de la predicción individual. '
              '"Todos" saltea el ranking y evalúa los 100 números.')
+    algoritmo = fields.Selection([
+        ('1', 'Algoritmo 1'),
+        ('2', 'Algoritmo 2'),
+    ], string='Algoritmo', default='1', required=True,
+        help='Con qué algoritmo de "Completar números" se calculan los 5 y '
+             'el Súper Mágico de cada premio (los mismos de la predicción '
+             'individual).')
     combinaciones_window = fields.Integer(
         string='Ventana de combinaciones', default=50, required=True,
         help='Cuántas salidas hacia atrás mira el puntaje de combinaciones '
@@ -192,7 +203,8 @@ class LotteryPredictionTombolaUy(models.Model):
             rec.display_name = 'Tómbola %s / %s' % (
                 fecha, turnos.get(rec.turn_day, ''))
 
-    @api.onchange('date', 'turn_day', 'temperature', 'combinaciones_window')
+    @api.onchange('date', 'turn_day', 'temperature', 'combinaciones_window',
+                  'algoritmo')
     def _onchange_parametros(self):
         """Si se cambia un parámetro, lo calculado ya no corresponde: se
         limpia. Si no, quedaría en pantalla una tarjeta con la fecha vieja en
@@ -231,9 +243,9 @@ class LotteryPredictionTombolaUy(models.Model):
     def _prediccion(self, sorteo, candidatos):
         """Una `lottery.prediction` en memoria (`new`) para ese premio.
 
-        No se graba nada: sólo se usa para llamar a
-        `_orden_completar_numeros`, que es la lógica del botón "Completar
-        números". Así la tómbola y la predicción individual puntean
+        No se graba nada: sólo se usa para llamar a `_calcular_listas`, que
+        es la lógica del botón "Completar números" con el algoritmo elegido
+        acá. Así la tómbola y la predicción individual puntean
         exactamente igual, y no quedan 20 predicciones basura en la base ni
         choca la constraint de fecha + turno + sorteo."""
         self.ensure_one()
@@ -242,13 +254,15 @@ class LotteryPredictionTombolaUy(models.Model):
             'date': self.date,
             'turn_day': self.turn_day,
             'combinaciones_window': self.combinaciones_window,
+            'algoritmo': self.algoritmo,
             'number_ids': [(6, 0, candidatos.ids)],
         })
 
     # ── Acción 1: evaluar los 20 sorteos ──────────────────────────────────
 
     def action_evaluar(self):
-        """Puntea los 20 premios y se queda con los 5 mejores de cada uno.
+        """Corre "Completar números" (algoritmo elegido) en los 20 premios y
+        se queda con los 5 Números a predecir y el Súper Mágico de cada uno.
 
         Es la parte cara: cada premio corre el mismo cálculo que la
         predicción individual, y la primera vez arma además las tablas
@@ -263,7 +277,9 @@ class LotteryPredictionTombolaUy(models.Model):
                 sin_datos.append(premio)
                 continue
             pred = self._prediccion(sorteo, candidatos)
-            top = pred._orden_completar_numeros()[:TOP_POR_PREMIO]
+            res = pred._calcular_listas()
+            # Los 5 vienen con el Súper Mágico primero.
+            top = res['listas'][5][:TOP_POR_PREMIO]
             # Los mismos "interesantes del mes" que la app muestra y que el
             # botón Completar números usa para los 10 y los 5, pero mirando
             # el mes de la fecha que se predice y el premio de este sorteo.
@@ -272,6 +288,7 @@ class LotteryPredictionTombolaUy(models.Model):
             grupos.append({
                 'premio': premio,
                 'top': top,
+                'super_magico': res['super_magico'],
                 'salidas': pred._last_output(
                     limit=ULTIMAS_SALIDAS).mapped('number_id.name'),
                 # Sólo los elegidos: es lo único que se usa después y deja
@@ -566,6 +583,18 @@ class LotteryPredictionTombolaUy(models.Model):
             % (DORADO, FUENTE, mes, FUENTE, mes, chips)
         )
 
+    @staticmethod
+    def _bola_grupo(numero, grupo, color):
+        """Bola de un número en la tarjeta de los 5 de cada premio: la del
+        Súper Mágico va dorada y con un aro; las otras, del color del
+        turno. Grupos evaluados antes de que existiera el Súper Mágico no
+        lo traen y se dibujan todas iguales."""
+        if numero != grupo.get('super_magico'):
+            return bola('%02d' % numero, color, diam=34)
+        return ('<div style="border-radius:50%%;'
+                'box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px %s;">%s</div>'
+                % (DORADO, bola('%02d' % numero, COLOR_SUPER_MAGICO, diam=34)))
+
     def _render_grupos(self, grupos, sin_datos):
         """Tarjeta con los 5 mejores de cada premio, en dos columnas de 10."""
         self.ensure_one()
@@ -578,8 +607,12 @@ class LotteryPredictionTombolaUy(models.Model):
             for premio in (i, i + TOTAL_PREMIOS // 2):
                 grupo = por_premio.get(premio)
                 if grupo:
-                    bolas = ''.join(bola('%02d' % n, color, diam=34)
-                                    for n in grupo['top'])
+                    # Se muestran de menor a mayor (el Súper Mágico ya se
+                    # distingue por el color). En el JSON quedan en el orden
+                    # del algoritmo, que el informe de probables usa para
+                    # desempatar por puesto.
+                    bolas = ''.join(self._bola_grupo(n, grupo, color)
+                                    for n in sorted(grupo['top']))
                 else:
                     bolas = ('<span style="font:600 11px/1 %s;color:%s;">'
                              'sin datos</span>' % (FUENTE, TEXTO_SUAVE))
@@ -591,8 +624,9 @@ class LotteryPredictionTombolaUy(models.Model):
             filas.append('<tr>%s</tr>' % ''.join(celdas))
 
         pie = self._pie(
-            'Los 5 mejores de cada premio · Candidatos: %s · ventana de '
-            'combinaciones: %d' % (
+            'Los 5 de cada premio · <b>dorada: Súper Mágico</b> · %s · '
+            'Candidatos: %s · ventana de combinaciones: %d' % (
+                dict(self._fields['algoritmo'].selection)[self.algoritmo],
                 dict(self._fields['temperature'].selection)[self.temperature],
                 self.combinaciones_window))
         if sin_datos:

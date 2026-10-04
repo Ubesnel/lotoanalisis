@@ -19,11 +19,17 @@ class NewsController(http.Controller):
         company = request.env.company.sudo()
         sorteos = request.env['lottery.sorteo'].sudo().search(
             [('show_in_public', '=', True)], order='sequence, id')
+        # Franja de Rifazo: sin depender del módulo, solo si está instalado y
+        # tiene una versión de la APK publicada.
+        rifazo_release = False
+        if 'rifazo.app.release' in request.env:
+            rifazo_release = request.env['rifazo.app.release']._get_current()
         return request.render('lottery_portal.buscador_publico_page', {
             'facebook_group_url': company.facebook_group_url or '',
             'facebook_page_url': company.facebook_page_url or '',
             'play_store_url': company.play_store_url or '',
             'sorteos_publicos': sorteos,
+            'rifazo_release': rifazo_release,
         })
 
     @http.route('/inicio', type='http', auth='user', website=True)

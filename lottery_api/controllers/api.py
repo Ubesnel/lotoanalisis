@@ -382,18 +382,21 @@ class LotteryAppApi(http.Controller):
             return [str(n).zfill(2) for n in sorted(field.mapped('name'))]
 
         if not prediction or not (
-            prediction.number_ids or prediction.number_ids_20
+            prediction.number_ids or prediction.number_ids_30
+            or prediction.number_ids_20
             or prediction.number_ids_10 or prediction.number_ids_5
         ):
             return _json_response(dict(
                 base, found=False,
-                numbers=[], numbers_20=[], numbers_10=[], numbers_5=[],
+                numbers=[], numbers_30=[], numbers_20=[], numbers_10=[],
+                numbers_5=[],
                 super_magico=None, hour=None,
             ))
 
         return _json_response(dict(
             base, found=True,
             numbers=_nums(prediction.number_ids),
+            numbers_30=_nums(prediction.number_ids_30),
             numbers_20=_nums(prediction.number_ids_20),
             numbers_10=_nums(prediction.number_ids_10),
             numbers_5=_nums(prediction.number_ids_5),
@@ -545,15 +548,12 @@ class LotteryAppApi(http.Controller):
                   else stats.get_group_delay_intervals)
 
         # El pico histórico (peak_*) y el detalle de fechas por intervalo
-        # (tramos) hoy solo los pinta la web; acá se descartan para que la
-        # app siga recibiendo exactamente las 5 claves de siempre. Cuando la
-        # APK los muestre, basta con sacarlos de este filtro.
-        _solo_web = ('peak_', 'tramos')
-
+        # (tramos) se mandan enteros desde 1.4.1: la APK los muestra en la
+        # banda de "Mayor atraso histórico" y al tocar una barra. Las
+        # versiones viejas de la app ignoran las claves que no conocen, así
+        # que no hace falta versionar la respuesta.
         def _buckets(*args):
-            row = method(*args, sorteo_id=sorteo.id) or {}
-            return {k: v for k, v in row.items()
-                    if not k.startswith(_solo_web)}
+            return method(*args, sorteo_id=sorteo.id) or {}
 
         return _json_response({
             'group': {'id': group.id, 'name': group.name},
@@ -967,6 +967,7 @@ class LotteryAppApi(http.Controller):
 
         levels = (
             ('total', 'number_ids',    'cumplida'),
+            ('n30',   'number_ids_30', 'cumplida_30'),
             ('n20',   'number_ids_20', 'cumplida_20'),
             ('n10',   'number_ids_10', 'cumplida_10'),
             ('n5',    'number_ids_5',  'cumplida_5'),
@@ -1014,6 +1015,7 @@ class LotteryAppApi(http.Controller):
                 'result_number': results.get(key),
                 'evaluada': evaluada,
                 'cumplida':    pred.cumplida,
+                'cumplida_30': pred.cumplida_30,
                 'cumplida_20': pred.cumplida_20,
                 'cumplida_10': pred.cumplida_10,
                 'cumplida_5':  pred.cumplida_5,
@@ -1349,10 +1351,12 @@ class LotteryAppApi(http.Controller):
                 if output and output.number_id else None
             ),
             'cumplida':    pred.cumplida,
+            'cumplida_30': pred.cumplida_30,
             'cumplida_20': pred.cumplida_20,
             'cumplida_10': pred.cumplida_10,
             'cumplida_5':  pred.cumplida_5,
             'numbers':    _nums(pred.number_ids),
+            'numbers_30': _nums(pred.number_ids_30),
             'numbers_20': _nums(pred.number_ids_20),
             'numbers_10': _nums(pred.number_ids_10),
             'numbers_5':  _nums(pred.number_ids_5),

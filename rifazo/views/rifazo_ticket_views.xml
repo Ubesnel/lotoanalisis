@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rifazo_ticket_tree" model="ir.ui.view">
+        <field name="name">rifazo.ticket.tree</field>
+        <field name="model">rifazo.ticket</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false" delete="false"
+                  decoration-success="state == 'sold'" decoration-warning="state == 'pending'"
+                  decoration-info="state == 'reserved'">
+                <field name="raffle_id"/>
+                <field name="number"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'sold'" decoration-warning="state == 'pending'"
+                       decoration-info="state == 'reserved'"/>
+                <field name="request_id"/>
+                <field name="partner_name"/>
+                <field name="phone" widget="phone"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_rifazo_ticket_search" model="ir.ui.view">
+        <field name="name">rifazo.ticket.search</field>
+        <field name="model">rifazo.ticket</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="number"/>
+                <field name="raffle_id"/>
+                <field name="partner_name"/>
+                <field name="phone"/>
+                <filter name="not_available" string="Ocupados" domain="[('state', '!=', 'available')]"/>
+                <filter name="available" string="Disponibles" domain="[('state', '=', 'available')]"/>
+                <filter name="sold" string="Vendidos" domain="[('state', '=', 'sold')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_raffle" string="Rifa" context="{'group_by': 'raffle_id'}"/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rifazo_ticket" model="ir.actions.act_window">
+        <field name="name">Números</field>
+        <field name="res_model">rifazo.ticket</field>
+        <field name="view_mode">tree</field>
+        <field name="search_view_id" ref="view_rifazo_ticket_search"/>
+        <field name="context">{'search_default_not_available': 1}</field>
+    </record>
+</odoo>

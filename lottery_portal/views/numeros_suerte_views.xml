@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Tree ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_numeros_suerte_tree" model="ir.ui.view">
+        <field name="name">lottery.numeros.suerte.tree</field>
+        <field name="model">lottery.numeros.suerte</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="date"/>
+                <field name="sorteo_id" optional="show"/>
+                <field name="temperature"/>
+                <field name="numbers_count"/>
+                <field name="numbers_count_doble" optional="show"/>
+                <field name="number_ids_5" widget="many2many_tags" optional="show"/>
+                <field name="super_magico_id" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── Form ──────────────────────────────────────────────────── -->
+    <record id="view_lottery_numeros_suerte_form" model="ir.ui.view">
+        <field name="name">lottery.numeros.suerte.form</field>
+        <field name="model">lottery.numeros.suerte</field>
+        <field name="arch" type="xml">
+            <form string="Números de la Suerte">
+                <header>
+                    <button name="action_cargar_candidatos" type="object"
+                            string="Cargar candidatos" class="btn-secondary"
+                            invisible="not temperature"
+                            confirm="Se van a reemplazar los candidatos con la unión de las dos tablas del ranking del sorteo. ¿Seguimos?"
+                            help="Vuelve a leer el ranking calientes/fríos del sorteo y carga la unión de la tabla de tarde y la de noche de la temperatura elegida."/>
+                    <button name="action_calcular" type="object"
+                            string="Calcular" class="btn-primary"
+                            invisible="not number_ids"
+                            confirm="Se van a reemplazar las listas de 20, 15, 10, 5 y el Súper Mágico con el resultado del cálculo. ¿Seguimos?"
+                            help="Arma los 20 caminando el historial día por día por coincidencia de dígitos, y de ahí recorta 15, 10, 5 y el Súper Mágico con las tablas LotoAnálisis y los grupos atrasados."/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="sorteo_id"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                            <field name="temperature"/>
+                            <field name="combinaciones_window"/>
+                        </group>
+                        <group>
+                            <field name="numbers_count"/>
+                            <field name="numbers_count_doble"/>
+                            <field name="super_magico_id"
+                                   domain="[('id', 'in', number_ids_5)]"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Candidatos" name="candidatos">
+                            <group string="Unión de las dos tablas (tarde + noche)">
+                                <field name="number_ids" nolabel="1" colspan="2"
+                                       widget="many2many_tags"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                            <group string="En los dos turnos">
+                                <field name="doble_turno_ids" nolabel="1" colspan="2"
+                                       widget="many2many_tags" readonly="1" force_save="1"
+                                       options="{'no_open': True, 'no_create': True}"/>
+                            </group>
+                        </page>
+                        <page string="20 Números" name="numeros_20">
+                            <field name="number_ids_20" nolabel="1" colspan="2"
+                                   widget="many2many_tags"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                        </page>
+                        <page string="15 Números" name="numeros_15">
+                            <field name="number_ids_15" nolabel="1" colspan="2"
+                                   widget="many2many_tags"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                        </page>
+                        <page string="10 Números" name="numeros_10">
+                            <field name="number_ids_10" nolabel="1" colspan="2"
+                                   widget="many2many_tags"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                        </page>
+                        <page string="5 Números" name="numeros_5">
+                            <field name="number_ids_5" nolabel="1" colspan="2"
+                                   widget="many2many_tags"
+                                   options="{'no_open': True, 'no_create': True}"/>
+                        </page>
+                        <page string="Puntajes" name="puntajes"
+                              invisible="not score_html">
+                            <field name="score_html" nolabel="1" colspan="2"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── Search ────────────────────────────────────────────────── -->
+    <record id="view_lottery_numeros_suerte_search" model="ir.ui.view">
+        <field name="name">lottery.numeros.suerte.search</field>
+        <field name="model">lottery.numeros.suerte</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="date"/>
+                <field name="number_ids"/>
+                <field name="sorteo_id"/>
+                <filter string="Calientes" name="suerte_hot"
+                        domain="[('temperature', '=', 'hot')]"/>
+                <filter string="Restantes" name="suerte_remaining"
+                        domain="[('temperature', '=', 'remaining')]"/>
+                <filter string="Fríos" name="suerte_cold"
+                        domain="[('temperature', '=', 'cold')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Fecha" name="group_date"
+                            context="{'group_by': 'date'}"/>
+                    <filter string="Sorteo" name="group_sorteo"
+                            context="{'group_by': 'sorteo_id'}"/>
+                    <filter string="Temperatura" name="group_temperature"
+                            context="{'group_by': 'temperature'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── Acción y menú ─────────────────────────────────────────── -->
+    <record id="action_lottery_numeros_suerte" model="ir.actions.act_window">
+        <field name="name">Números de la Suerte</field>
+        <field name="res_model">lottery.numeros.suerte</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Armá tus primeros Números de la Suerte
+            </p>
+            <p>
+                Elegí fecha, sorteo y temperatura: se cargan los candidatos
+                uniendo la tabla de tarde y la de noche, y el botón Calcular
+                recorta 20, 15, 10, 5 y el Súper Mágico.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lottery_numeros_suerte_item" name="Números de la Suerte"
+              parent="lottery_portal.menu_predicciones_root"
+              action="action_lottery_numeros_suerte" sequence="15"
+              groups="lottery_base.group_lottery_user"/>
+
+</odoo>
