@@ -37,13 +37,13 @@ class ConsultaCombinaciones(models.TransientModel):
         """Últimas `window` salidas hasta la fecha, más reciente primero."""
         self.ensure_one()
         self.env.cr.execute("""
-            SELECT date, turn_day, complete_number
-            FROM lottery_output
-            WHERE sorteo_id = %s
-              AND date <= %s
-              AND complete_number IS NOT NULL
-            ORDER BY date DESC,
-                     CASE turn_day WHEN 'evening' THEN 1 ELSE 0 END DESC
+            SELECT o.date, t.name, o.complete_number
+            FROM lottery_output o
+            JOIN lottery_turno t ON t.id = o.turno_id
+            WHERE o.sorteo_id = %s
+              AND o.date <= %s
+              AND o.complete_number IS NOT NULL
+            ORDER BY o.date DESC, o.turno_sequence DESC
             LIMIT %s
         """, (self.sorteo_id.id, self.date, self.window))
         return self.env.cr.fetchall()
@@ -90,10 +90,9 @@ class ConsultaCombinaciones(models.TransientModel):
         top, digs = self._top_candidatos(completos, top=self.top_n)
         mismos_fecha = self._get_same_date_numbers()
 
-        turn_lbl = {'afternoon': 'Tarde', 'evening': 'Noche'}
         salidas = ' '.join(
             '<span class="badge bg-light text-dark border me-1 mb-1">'
-            f'{d.strftime("%d/%m")} {turn_lbl.get(t, t)}: <b>{n}</b></span>'
+            f'{d.strftime("%d/%m")} {t}: <b>{n}</b></span>'
             for d, t, n in outputs)
 
         digitos = ' '.join(

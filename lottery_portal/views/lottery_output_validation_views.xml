@@ -104,7 +104,7 @@
         <field name="model">lottery.output</field>
         <field name="inherit_id" ref="lottery_base.view_lottery_output_search"/>
         <field name="arch" type="xml">
-            <filter name="lottery_output_evening" position="after">
+            <filter name="lottery_output_monday" position="before">
                 <separator/>
                 <filter string="Calientes"
                         name="hot_numero_ok"

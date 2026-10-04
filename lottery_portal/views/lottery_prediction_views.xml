@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <tree decoration-success="cumplida" decoration-muted="not verification_date">
                 <field name="date"/>
-                <field name="turn_day"/>
+                <field name="turno_id"/>
                 <field name="hour" widget="float_time" optional="hide"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="temperature" optional="show"/>
@@ -50,7 +50,8 @@
                     <group>
                         <group>
                             <field name="date"/>
-                            <field name="turn_day"/>
+                            <field name="sorteo_turno_ids" invisible="1"/>
+                            <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="hour" widget="float_time"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                             <field name="temperature"/>
@@ -173,11 +174,7 @@
                 <field name="date"/>
                 <field name="number_ids"/>
                 <field name="sorteo_id"/>
-                <filter string="Tarde" name="pred_afternoon"
-                        domain="[('turn_day', '=', 'afternoon')]"/>
-                <filter string="Noche" name="pred_evening"
-                        domain="[('turn_day', '=', 'evening')]"/>
-                <separator/>
+                <field name="turno_id"/>
                 <filter string="Calientes" name="pred_hot"
                         domain="[('temperature', '=', 'hot')]"/>
                 <filter string="Restantes" name="pred_remaining"
@@ -202,7 +199,7 @@
                     <filter string="Fecha" name="group_date"
                             context="{'group_by': 'date'}"/>
                     <filter string="Turno" name="group_turn"
-                            context="{'group_by': 'turn_day'}"/>
+                            context="{'group_by': 'turno_id'}"/>
                     <filter string="Sorteo" name="group_sorteo"
                             context="{'group_by': 'sorteo_id'}"/>
                     <filter string="Temperatura" name="group_temperature"

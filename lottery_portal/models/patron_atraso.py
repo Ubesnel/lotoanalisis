@@ -3,7 +3,6 @@ from datetime import timedelta
 
 from odoo import api, fields, models
 
-TURN_LABEL = {'afternoon': 'Tarde', 'evening': 'Noche'}
 WEEKDAY_LABEL = {
     'lu': 'Lunes', 'ma': 'Martes', 'mi': 'Miércoles', 'ju': 'Jueves',
     'vi': 'Viernes', 'sa': 'Sábado', 'do': 'Domingo',
@@ -74,18 +73,19 @@ class LotteryPatronAtraso(models.TransientModel):
 
     def _fetch_rows(self, sorteo_id, target_date):
         self.env.cr.execute("""
-            SELECT o.date, o.turn_day, o.week_day, n.name
+            SELECT o.date, t.name, o.week_day, n.name, t.code, t.sequence
             FROM lottery_output o
             JOIN lottery_number n ON n.id = o.number_id
+            JOIN lottery_turno t ON t.id = o.turno_id
             WHERE o.sorteo_id = %s AND o.date <= %s
-            ORDER BY o.date,
-                     CASE o.turn_day WHEN 'afternoon' THEN 0 ELSE 1 END
+            ORDER BY o.date, o.turno_sequence, o.id
         """, (sorteo_id, target_date))
         return self.env.cr.fetchall()
 
     @staticmethod
     def _par(a, b):
-        """(date_prev, turn_prev, numero_prev, date_next, turn_next, numero_next)."""
+        """(date_prev, turno_prev, numero_prev, date_next, turno_next, numero_next),
+        con el turno como su nombre (es lo que se muestra)."""
         return (a[0], a[1], a[3], b[0], b[1], b[3])
 
     @staticmethod
@@ -140,51 +140,45 @@ class LotteryPatronAtraso(models.TransientModel):
         }
 
     def _categorias(self, rows, target_date):
-        """rows: (date, turn_day, week_day, numero) ordenadas cronológicamente."""
+        """rows: (date, nombre turno, week_day, numero, código turno, secuencia
+        turno) ordenadas cronológicamente.
+
+        Categorías: la general (cualquier turno), cada turno solo, cada par
+        de turnos cruzado (turno A de un día → turno B del día siguiente) y
+        cada turno en el día de la semana de `target_date`."""
         weekday_target = WEEKDAY_BY_PYTHON_INDEX[target_date.weekday()]
-
-        general = [self._par(rows[i], rows[i + 1]) for i in range(len(rows) - 1)]
-
-        tardes = [r for r in rows if r[1] == 'afternoon']
-        noches = [r for r in rows if r[1] == 'evening']
-        solo_tarde = [self._par(tardes[i], tardes[i + 1])
-                      for i in range(len(tardes) - 1)]
-        solo_noche = [self._par(noches[i], noches[i + 1])
-                      for i in range(len(noches) - 1)]
-
-        por_fecha_noche = {r[0]: r for r in noches}
-        por_fecha_tarde = {r[0]: r for r in tardes}
-        cruzado_tn = [
-            self._par(t, por_fecha_noche[t[0] + timedelta(days=1)])
-            for t in tardes if (t[0] + timedelta(days=1)) in por_fecha_noche
-        ]
-        cruzado_nt = [
-            self._par(n, por_fecha_tarde[n[0] + timedelta(days=1)])
-            for n in noches if (n[0] + timedelta(days=1)) in por_fecha_tarde
-        ]
-
-        dia_tarde = [r for r in tardes if r[2] == weekday_target]
-        dia_noche = [r for r in noches if r[2] == weekday_target]
-        patron_dia_tarde = [self._par(dia_tarde[i], dia_tarde[i + 1])
-                            for i in range(len(dia_tarde) - 1)]
-        patron_dia_noche = [self._par(dia_noche[i], dia_noche[i + 1])
-                            for i in range(len(dia_noche) - 1)]
-
         dia_nombre = WEEKDAY_LABEL[weekday_target]
+
+        def consecutivos(lista):
+            return [self._par(lista[i], lista[i + 1]) for i in range(len(lista) - 1)]
+
+        # Turnos con salidas, en orden del día.
+        turnos = sorted({(r[5], r[4], r[1]) for r in rows})
+        por_turno = {code: [r for r in rows if r[4] == code] for _seq, code, _n in turnos}
+
         # (key estable, nombre ES para el wizard, día de semana ES o None, pares)
-        return [
-            ('general', 'General (cualquier turno, consecutivos)', None, general),
-            ('solo_tarde', 'Solo tarde, consecutivos', None, solo_tarde),
-            ('solo_noche', 'Solo noche, consecutivos', None, solo_noche),
-            ('cruzado_tn', 'Cruzado: tarde → noche (día siguiente)', None,
-             cruzado_tn),
-            ('cruzado_nt', 'Cruzado: noche → tarde (día siguiente)', None,
-             cruzado_nt),
-            ('dia_tarde', f'{dia_nombre}, turno tarde', dia_nombre,
-             patron_dia_tarde),
-            ('dia_noche', f'{dia_nombre}, turno noche', dia_nombre,
-             patron_dia_noche),
-        ]
+        categorias = [('general', 'General (cualquier turno, consecutivos)', None,
+                       consecutivos(rows))]
+        for _seq, code, nombre in turnos:
+            categorias.append(('solo_%s' % code, 'Solo %s, consecutivos' % nombre.lower(),
+                               None, consecutivos(por_turno[code])))
+        for _sa, code_a, nombre_a in turnos:
+            for _sb, code_b, nombre_b in turnos:
+                if code_a == code_b:
+                    continue
+                por_fecha_b = {r[0]: r for r in por_turno[code_b]}
+                pares = [self._par(r, por_fecha_b[r[0] + timedelta(days=1)])
+                         for r in por_turno[code_a]
+                         if (r[0] + timedelta(days=1)) in por_fecha_b]
+                categorias.append((
+                    'cruzado_%s_%s' % (code_a, code_b),
+                    'Cruzado: %s → %s (día siguiente)' % (nombre_a.lower(), nombre_b.lower()),
+                    None, pares))
+        for _seq, code, nombre in turnos:
+            del_dia = [r for r in por_turno[code] if r[2] == weekday_target]
+            categorias.append(('dia_%s' % code, '%s, turno %s' % (dia_nombre, nombre.lower()),
+                               dia_nombre, consecutivos(del_dia)))
+        return categorias
 
     def _row_html(self, nombre, pares, hit_fn):
         info = self._analizar(pares, hit_fn)
@@ -198,8 +192,8 @@ class LotteryPatronAtraso(models.TransientModel):
             dp, tp, np_, dn, tn, nn = info['ultimo_acierto']
             ultimo_txt = (
                 f'{np_:02d} ({dp.strftime("%d/%m/%y")} '
-                f'{TURN_LABEL.get(tp, tp)}) → {nn:02d} '
-                f'({dn.strftime("%d/%m/%y")} {TURN_LABEL.get(tn, tn)})')
+                f'{tp}) → {nn:02d} '
+                f'({dn.strftime("%d/%m/%y")} {tn})')
         else:
             ultimo_txt = '—'
 
@@ -259,9 +253,9 @@ class LotteryPatronAtraso(models.TransientModel):
             dp, tp, np_, dn, tn, nn = ua
             ultimo = {
                 'prev': {'number': np_, 'date': dp.strftime('%d/%m/%y'),
-                         'turn_label': TURN_LABEL.get(tp, tp)},
+                         'turn_label': tp},
                 'next': {'number': nn, 'date': dn.strftime('%d/%m/%y'),
-                         'turn_label': TURN_LABEL.get(tn, tn)},
+                         'turn_label': tn},
             }
         maximo = info['maximo']
         record = bool(info['atraso_actual'] > 0 and maximo

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Los códigos son contrato de la API y del scraper: no cambiarlos. -->
+    <data noupdate="1">
+        <record id="turno_morning" model="lottery.turno">
+            <field name="name">Mañana</field>
+            <field name="code">morning</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="turno_midday" model="lottery.turno">
+            <field name="name">Mediodía</field>
+            <field name="code">midday</field>
+            <field name="sequence">15</field>
+        </record>
+        <record id="turno_afternoon" model="lottery.turno">
+            <field name="name">Tarde</field>
+            <field name="code">afternoon</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="turno_evening" model="lottery.turno">
+            <field name="name">Noche</field>
+            <field name="code">evening</field>
+            <field name="sequence">30</field>
+        </record>
+    </data>
+</odoo>

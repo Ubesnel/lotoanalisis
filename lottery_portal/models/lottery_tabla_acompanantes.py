@@ -32,12 +32,12 @@ class LotteryTablaAcompanantes(models.TransientModel):
              'elegida, porque la información sigue cambiando. Por defecto '
              'toma la fecha de referencia de Ajustes → Loterías (o hoy, si '
              'no hay ninguna configurada).')
-    turno = fields.Selection([
-        ('general', 'General'), ('afternoon', 'Tarde'), ('evening', 'Noche'),
-    ], string='Turno', required=True, default='general',
-        help='General: mezcla sorteos de tarde y noche (como siempre). '
-             'Tarde/Noche: solo esa secuencia de sorteos consecutivos, '
-             'salteando el otro turno.')
+    turno_id = fields.Many2one(
+        'lottery.turno', string='Turno', domain="[('id', 'in', sorteo_turno_ids)]",
+        help='Vacío = General: mezcla los sorteos de todos los turnos. Con un '
+             'turno: solo esa secuencia de sorteos consecutivos, salteando '
+             'los demás turnos.')
+    sorteo_turno_ids = fields.Many2many(related='sorteo_id.turno_ids', string='Turnos del sorteo')
     grid_size = fields.Selection([
         ('11', '11 × 11'), ('12', '12 × 12'),
     ], string='Tamaño de grilla', required=True, default='12',
@@ -63,9 +63,14 @@ class LotteryTablaAcompanantes(models.TransientModel):
         return self.env['lottery.tabla.acompanantes.cache'].sudo().search([
             ('sorteo_id', '=', self.sorteo_id.id),
             ('fecha_corte', '=', self.fecha_corte),
-            ('turno', '=', self.turno),
+            ('turno', '=', self._turno_key()),
             ('grid_size', '=', self.grid_size),
         ], limit=1)
+
+    def _turno_key(self):
+        """Clave del turno en la caché: el código del turno o 'general'."""
+        self.ensure_one()
+        return self.turno_id.code or 'general'
 
     def _parse_grid_json(self, grid_json):
         return {
@@ -82,7 +87,7 @@ class LotteryTablaAcompanantes(models.TransientModel):
             # el mismo — se reutiliza en vez de recalcular.
             self.grid_json = cache.grid_json
         else:
-            turno = self.turno if self.turno != 'general' else False
+            turno = self.turno_id.code or False
             affinity = self.env['lottery.stats.service'].sudo().get_companion_affinity(
                 self.sorteo_id.id, fecha_corte=str(self.fecha_corte), turno=turno)
             grid, _empty = build_grid(affinity, size=int(self.grid_size))
@@ -90,7 +95,7 @@ class LotteryTablaAcompanantes(models.TransientModel):
             self.env['lottery.tabla.acompanantes.cache'].sudo().create({
                 'sorteo_id': self.sorteo_id.id,
                 'fecha_corte': self.fecha_corte,
-                'turno': self.turno,
+                'turno': self._turno_key(),
                 'grid_size': self.grid_size,
                 'grid_json': self.grid_json,
             })
@@ -111,7 +116,7 @@ class LotteryTablaAcompanantes(models.TransientModel):
             attachment = self.env['ir.attachment'].sudo().create({
                 'name': 'tabla-lotoanalisis-%s-%s-%s-%sx%s.png' % (
                     self.sorteo_id.code or self.sorteo_id.id,
-                    self.fecha_corte, self.turno,
+                    self.fecha_corte, self._turno_key(),
                     self.grid_size, self.grid_size),
                 'type': 'binary',
                 'datas': base64.b64encode(png_bytes),
@@ -127,10 +132,9 @@ class LotteryTablaAcompanantes(models.TransientModel):
 
     def _sorteo_label(self):
         self.ensure_one()
-        if self.turno == 'general':
+        if not self.turno_id:
             return self.sorteo_id.name
-        turno_label = dict(self._fields['turno'].selection).get(self.turno)
-        return f'{self.sorteo_id.name} · {turno_label}'
+        return f'{self.sorteo_id.name} · {self.turno_id.name}'
 
     def _reopen(self):
         return {
@@ -217,19 +221,18 @@ class LotteryTablaAcompanantes(models.TransientModel):
         return self._reopen()
 
     def _clasificacion_turno(self):
-        """Turno cuyo caliente/restante/frío se usa para clasificar. Tabla
-        Tarde → solo clasificación de tarde. Tabla Noche → solo la de
-        noche. Tabla General → la del próximo sorteo (tarde o noche, el
-        que corresponda — no hay una versión "general" de calientes/
-        fríos, siempre es por turno)."""
-        if self.turno in ('afternoon', 'evening'):
-            return self.turno
+        """Turno (registro) cuyo caliente/restante/frío se usa para
+        clasificar. Tabla de un turno → la clasificación de ese turno. Tabla
+        General → la del próximo sorteo (no hay una versión "general" de
+        calientes/fríos, siempre es por turno)."""
+        if self.turno_id:
+            return self.turno_id
         return self.sorteo_id.get_next_draw()[1]
 
     def _render_numero_result(self, n0, companions):
         snapshot = self.sorteo_id._get_ranking_snapshot() or {}
         turn = self._clasificacion_turno()
-        turn_data = snapshot.get(turn) or {}
+        turn_data = snapshot.get(turn.code) or {}
 
         if not turn_data:
             # Sin snapshot calculado todavía para este sorteo: mostramos la
@@ -262,7 +265,7 @@ class LotteryTablaAcompanantes(models.TransientModel):
             ('Restantes', [n for n in companions if n in remaining]),
             ('Fríos', [n for n in companions if n in cold]),
         ]
-        turn_label = dict(self._fields['turno'].selection).get(turn, turn)
+        turn_label = turn.name or ''
 
         secciones = []
         for titulo, numeros in grupos:

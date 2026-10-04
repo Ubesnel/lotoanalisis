@@ -18,7 +18,6 @@ WEEKDAYS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 
 MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
              'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 WEEK_LABELS = {1: '1 al 7', 2: '8 al 14', 3: '15 al 21', 4: '22 al 28', 5: '29 al 31'}
-TURN_LABELS = {'afternoon': 'Tarde', 'evening': 'Noche'}
 
 
 VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
@@ -47,8 +46,8 @@ def _serialize_output(record):
     return {
         'date': record.date.isoformat(),
         'weekday': WEEKDAYS_ES[record.date.weekday()],
-        'turn': record.turn_day,
-        'turn_label': TURN_LABELS.get(record.turn_day, record.turn_day),
+        'turn': record.turno_id.code,
+        'turn_label': record.turno_id.name or '',
         'centena': str(record.hundreds_id.name) if record.hundreds_id else None,
         'numero': str(record.number_id.name).zfill(2),
         'extra': str(record.fireball_id.name) if record.fireball_id else None,
@@ -56,6 +55,19 @@ def _serialize_output(record):
         'premio_2': str(record.premio_2_id.name).zfill(2) if record.premio_2_id else None,
         'premio_3': str(record.premio_3_id.name).zfill(2) if record.premio_3_id else None,
     }
+
+
+def _turno_dict(turno):
+    """Turno (lottery.turno) → dict para la app. El `code` es el contrato:
+    la app no conoce los turnos de antemano, los recibe de cada sorteo."""
+    return {'code': turno.code, 'name': turno.name or '', 'sequence': turno.sequence}
+
+
+def _turno_by_code(code):
+    """lottery.turno con ese código, o vacío."""
+    if not code:
+        return request.env['lottery.turno']
+    return request.env['lottery.turno'].sudo().search([('code', '=', code)], limit=1)
 
 
 def _get_public_sorteo(sorteo_id):
@@ -128,6 +140,9 @@ class LotteryAppApi(http.Controller):
                 # Solo el ISO: el nombre del país y la bandera los resuelve la
                 # app, que ya es bilingüe y arma el emoji desde el código.
                 'country_code': s.country_id.code or None,
+                # Turnos del sorteo en orden del día: la app arma una
+                # pestaña por turno a partir de esta lista.
+                'turnos': [_turno_dict(t) for t in s._ordered_turnos()],
             } for s in sorteos],
             'default_id': sorteos[0].id if sorteos else None,
             # Build mínimo requerido (versionCode de Android); 0 = sin
@@ -146,22 +161,17 @@ class LotteryAppApi(http.Controller):
             return _json_response({'error': 'sorteo_not_found'}, status=404)
 
         Output = request.env['lottery.output'].sudo()
-        latest = {
-            turn: _serialize_output(Output.search(
-                [('turn_day', '=', turn), ('sorteo_id', '=', sorteo.id)],
-                order='date desc', limit=1))
-            for turn in ('afternoon', 'evening')
-        }
-
-        next_date, next_turn = sorteo.get_next_draw()
+        next_date, next_turno = sorteo.get_next_draw()
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name, 'code': sorteo.code,
                        'uses_fireball': sorteo.uses_fireball,
                        'uses_hundreds': sorteo.uses_hundreds},
-            'afternoon': latest['afternoon'],
-            'evening': latest['evening'],
-            'next_draw': {'date': next_date, 'turn': next_turn,
-                          'turn_label': TURN_LABELS.get(next_turn)},
+            # Última salida de cada turno del sorteo, en orden del día.
+            'turnos': [dict(_turno_dict(t), result=_serialize_output(Output.search(
+                [('turno_id', '=', t.id), ('sorteo_id', '=', sorteo.id)],
+                order='date desc', limit=1))) for t in sorteo._ordered_turnos()],
+            'next_draw': {'date': next_date, 'turn': next_turno.code or None,
+                          'turn_label': next_turno.name or ''},
         })
 
     @http.route('/api/lottery/v1/results/search', type='http', auth='public',
@@ -185,8 +195,9 @@ class LotteryAppApi(http.Controller):
             'sorteo': {'id': sorteo.id, 'name': sorteo.name, 'code': sorteo.code},
             'date': date,
             'weekday': WEEKDAYS_ES[date_dt.weekday()],
-            'afternoon': _serialize_output(salidas.filtered(lambda s: s.turn_day == 'afternoon')[:1]),
-            'evening': _serialize_output(salidas.filtered(lambda s: s.turn_day == 'evening')[:1]),
+            'turnos': [dict(_turno_dict(t), result=_serialize_output(
+                salidas.filtered(lambda o, t=t: o.turno_id == t)[:1]))
+                for t in sorteo._ordered_turnos()],
         })
 
     # ── Estadísticas (mismos servicios que la homepage /inicio) ──────────
@@ -214,9 +225,9 @@ class LotteryAppApi(http.Controller):
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         stats = self._stats()
         return _json_response({
-            'general': stats.get_top_10_general(sorteo_id=sorteo.id),
-            'afternoon': stats.get_top_10_dia(sorteo_id=sorteo.id),
-            'evening': stats.get_top_10_noche(sorteo_id=sorteo.id),
+            'general': stats.get_top_10(sorteo_id=sorteo.id),
+            'turnos': stats._por_turno(
+                sorteo.id, lambda tid: stats.get_top_10(sorteo_id=sorteo.id, turno_id=tid)),
         })
 
     @http.route('/api/lottery/v1/stats/atrasos-numeros-dia', type='http',
@@ -231,32 +242,6 @@ class LotteryAppApi(http.Controller):
             'items': self._stats().get_top_10_por_dia_semana(day, sorteo_id=sorteo.id),
         })
 
-    def _attach_corridos(self, items, sorteo_id):
-        """Agrega premio2/premio3 (números corridos) por turno a las filas de
-        salidas (que vienen de la MV, sin esos campos). Claves nuevas:
-        premio2_dia, premio3_dia, premio2_noche, premio3_noche."""
-        dates = [i['date'] for i in items if i.get('date')]
-        if not dates:
-            return items
-        request.env.cr.execute("""
-            SELECT o.date, o.turn_day, n2.name AS p2, n3.name AS p3
-            FROM lottery_output o
-            LEFT JOIN lottery_number n2 ON n2.id = o.premio_2_id
-            LEFT JOIN lottery_number n3 ON n3.id = o.premio_3_id
-            WHERE o.sorteo_id = %s AND o.date = ANY(%s)
-              AND (o.premio_2_id IS NOT NULL OR o.premio_3_id IS NOT NULL)
-        """, (sorteo_id, dates))
-        corridos = {(r['date'], r['turn_day']): r
-                    for r in request.env.cr.dictfetchall()}
-        for item in items:
-            for turn, suffix in (('afternoon', 'dia'), ('evening', 'noche')):
-                row = corridos.get((item.get('date'), turn))
-                item['premio2_' + suffix] = (
-                    str(row['p2']).zfill(2) if row and row['p2'] is not None else None)
-                item['premio3_' + suffix] = (
-                    str(row['p3']).zfill(2) if row and row['p3'] is not None else None)
-        return items
-
     @http.route('/api/lottery/v1/stats/salidas-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def salidas_dia(self, sorteo_id=None, day=None, **kwargs):
@@ -264,10 +249,9 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         day = self._resolve_day(day)
-        items = self._stats().get_ultimas_salidas_por_dia(day, sorteo_id=sorteo.id)
         return _json_response({
             'day': day,
-            'items': self._attach_corridos(items, sorteo.id),
+            'items': self._stats().get_ultimas_salidas(sorteo_id=sorteo.id, day=day),
         })
 
     @http.route('/api/lottery/v1/stats/ultimas-salidas', type='http',
@@ -276,9 +260,8 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
-        items = self._stats().get_ultimas_salidas_col1(sorteo_id=sorteo.id)
         return _json_response({
-            'items': self._attach_corridos(items, sorteo.id),
+            'items': self._stats().get_ultimas_salidas(sorteo_id=sorteo.id),
         })
 
     @http.route('/api/lottery/v1/stats/atrasos-lineas', type='http',
@@ -314,18 +297,10 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
-        stats = self._stats()
         if not sorteo.uses_hundreds:
-            return _json_response({
-                'uses_hundreds': False,
-                'general': [], 'afternoon': [], 'evening': [],
-            })
-        return _json_response({
-            'uses_hundreds': True,
-            'general': stats.get_top5_centenas_general(sorteo_id=sorteo.id)[:4],
-            'afternoon': stats.get_top5_centenas_afternoon(sorteo_id=sorteo.id)[:4],
-            'evening': stats.get_top5_centenas_evening(sorteo_id=sorteo.id)[:4],
-        })
+            return _json_response({'uses_hundreds': False, 'general': [], 'turnos': []})
+        return _json_response(dict(
+            self._top_digitos_payload(sorteo, 'centena'), uses_hundreds=True))
 
     @http.route('/api/lottery/v1/stats/atrasos-bola-extra', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -333,12 +308,17 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
+        return _json_response(self._top_digitos_payload(sorteo, 'bola_extra'))
+
+    def _top_digitos_payload(self, sorteo, tipo):
+        """Los 4 dígitos (de centena o bola extra) más atrasados, en general
+        y por turno."""
         stats = self._stats()
-        return _json_response({
-            'general': stats.get_top5_bola_extra_general(sorteo_id=sorteo.id)[:4],
-            'afternoon': stats.get_top5_bola_extra_afternoon(sorteo_id=sorteo.id)[:4],
-            'evening': stats.get_top5_bola_extra_evening(sorteo_id=sorteo.id)[:4],
-        })
+        return {
+            'general': stats.get_top_digitos(tipo, sorteo_id=sorteo.id),
+            'turnos': stats._por_turno(
+                sorteo.id, lambda tid: stats.get_top_digitos(tipo, sorteo_id=sorteo.id, turno_id=tid)),
+        }
 
     @http.route('/api/lottery/v1/stats/secuencias-grupos', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -362,19 +342,19 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
 
-        date_str, turn = sorteo.get_next_draw()
+        date_str, turno = sorteo.get_next_draw()
         base = {
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
             'date': date_str,
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
-            'turn': turn,
-            'turn_label': TURN_LABELS.get(turn, turn),
+            'turn': turno.code or None,
+            'turn_label': turno.name or '',
         }
 
         prediction = request.env['lottery.prediction'].sudo().search([
             ('sorteo_id', '=', sorteo.id),
             ('date', '=', date_str),
-            ('turn_day', '=', turn),
+            ('turno_id', '=', turno.id),
             ('published', '=', True),
         ], limit=1)
 
@@ -434,11 +414,9 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
 
-        date_str, turn = sorteo.get_next_draw()
-        if turn not in ('afternoon', 'evening'):
-            turn = 'afternoon'
+        date_str, turno = sorteo.get_next_draw()
         data = self._stats().get_lineas_terminales_probables(
-            turn, date_str, sorteo_id=sorteo.id)
+            turno.id, date_str, sorteo_id=sorteo.id)
         # El desglose de puntajes es interno; la app no lo necesita.
         for side in ('lineas', 'terminales'):
             for item in data.get(side) or []:
@@ -446,53 +424,48 @@ class LotteryAppApi(http.Controller):
         return _json_response(data)
 
     def _grupos_atrasados_payload(self, sorteo, top_fn, analysis_limit):
-        """Payload común de grupos/pintas atrasados: por turno, cada grupo con
-        sus 4 contadores de atraso, los números que lo forman (ordenados por
-        el atraso del turno) y el análisis de números que muestra la web."""
+        """Payload común de grupos/pintas atrasados: en general y por turno,
+        cada grupo con su atraso (general, del día de semana y de cada
+        turno), los números que lo forman (ordenados por el atraso de esa
+        sección) y el análisis de números que muestra la web."""
         stats = self._stats()
         now = _now_local()
         day = VALID_DAYS[now.weekday()]
         week = (now.day + 6) // 7  # semana del mes, como la web (ceil(día/7))
         month = now.month
-        field_map = {'general': 'salidas_atrasadas',
-                     'afternoon': 'salidas_atrasadas_dia',
-                     'evening': 'salidas_atrasadas_noche'}
-        orden_map = {'general': 'total_atrasadas',
-                     'afternoon': 'total_atrasadas_dia',
-                     'evening': 'total_atrasadas_noche'}
         Group = request.env['lottery.group'].sudo()
-
-        payload = {
-            'day': day,
-            'day_label': WEEKDAYS_ES[now.weekday()],
-            'week_label': WEEK_LABELS.get(week, ''),
-            'month_label': MONTHS_ES[month - 1],
-        }
         analysis_cache = {}
-        for option, field in field_map.items():
+
+        def _items(turno_id):
             items = []
-            for r in top_fn(option, day, sorteo_id=sorteo.id):
+            for r in top_fn(turno_id, day, sorteo_id=sorteo.id):
                 gid = r['id']
                 if gid not in analysis_cache:
                     analysis_cache[gid] = stats.get_info_group_numbers_analysis(
                         gid, day, week, month, analysis_limit,
                         sorteo_id=sorteo.id)
                 numbers = stats.get_info_groups_numbers(
-                    Group.browse(gid), orden_map[option], day,
-                    sorteo_id=sorteo.id)
+                    Group.browse(gid), turno_id, day, sorteo_id=sorteo.id)
                 items.append({
                     'id': gid,
                     'name': r['name'],
-                    'atraso': r[field] or 0,
+                    'atraso': r['atraso'] or 0,
                     'salidas_atrasadas': r['salidas_atrasadas'] or 0,
-                    'salidas_atrasadas_dia': r['salidas_atrasadas_dia'] or 0,
-                    'salidas_atrasadas_noche': r['salidas_atrasadas_noche'] or 0,
                     'salidas_atrasadas_por_dia': r['salidas_atrasadas_por_dia'] or 0,
+                    'turnos': r['turnos'],
                     'numbers': [n['numero'] for n in numbers],
                     'analysis': analysis_cache[gid],
                 })
-            payload[option] = items
-        return payload
+            return items
+
+        return {
+            'day': day,
+            'day_label': WEEKDAYS_ES[now.weekday()],
+            'week_label': WEEK_LABELS.get(week, ''),
+            'month_label': MONTHS_ES[month - 1],
+            'general': _items(False),
+            'turnos': stats._por_turno(sorteo.id, _items),
+        }
 
     @http.route('/api/lottery/v1/stats/grupos-atrasados', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -558,8 +531,7 @@ class LotteryAppApi(http.Controller):
         return _json_response({
             'group': {'id': group.id, 'name': group.name},
             'general': _buckets(group.id),
-            'afternoon': _buckets(group.id, 'afternoon'),
-            'evening': _buckets(group.id, 'evening'),
+            'turnos': stats._por_turno(sorteo.id, lambda tid: _buckets(group.id, tid)),
         })
 
     @http.route('/api/lottery/v1/stats/numeros-mes', type='http',
@@ -625,13 +597,14 @@ class LotteryAppApi(http.Controller):
         """Tabla LotoAnálisis 12×12 (versión app del wizard
         lottery.tabla.acompanantes). La fecha de corte NO es un parámetro: se
         toma de Ajustes → Loterías (company.tabla_acompanantes_fecha_referencia,
-        o hoy si no hay). Params: sorteo_id, turno (general|afternoon|evening).
+        o hoy si no hay). Params: sorteo_id, turno ('general' o el código de
+        un turno del sorteo).
         Los acompañantes (misma fila/columna/diagonal) los resuelve la app
         sobre la grilla — acá solo se devuelve la matriz de celdas."""
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
-        if turno not in ('general', 'afternoon', 'evening'):
+        if turno not in sorteo.turno_ids.mapped('code'):
             turno = 'general'
         company = request.env.company.sudo()
         fecha_corte = (company.tabla_acompanantes_fecha_referencia
@@ -893,18 +866,17 @@ class LotteryAppApi(http.Controller):
         preds = request.env['lottery.prediction'].sudo().search(
             domain, order='date desc, id desc')
 
+        Turno = request.env['lottery.turno'].sudo()
         by_date = {}
         for p in preds:
             key = p.date.isoformat()
-            if key not in by_date:
-                by_date[key] = []
-            if p.turn_day not in by_date[key]:
-                by_date[key].append(p.turn_day)
+            by_date[key] = by_date.get(key, Turno) | p.turno_id
 
         return _json_response({
             'since': since or None,
-            'dates': [{'date': d, 'turns': turns}
-                      for d, turns in by_date.items()],
+            'dates': [{'date': d,
+                       'turns': [_turno_dict(t) for t in turnos.sorted('sequence')]}
+                      for d, turnos in by_date.items()],
         })
 
     @http.route('/api/lottery/v1/stats/historial-resumen', type='http',
@@ -948,7 +920,7 @@ class LotteryAppApi(http.Controller):
             domain.append(('date', '>=', since))
 
         preds = request.env['lottery.prediction'].sudo().search(
-            domain, order='date desc, turn_day desc')
+            domain, order='date desc, turno_sequence desc')
 
         # Salidas del rango: dan el número ganador y permiten considerar
         # "evaluada" una predicción cargada después de registrada la salida
@@ -962,7 +934,7 @@ class LotteryAppApi(http.Controller):
                 ('date', '<=', max(dates)),
             ])
             for out in outputs:
-                results[(out.date, out.turn_day)] = (
+                results[(out.date, out.turno_id.id)] = (
                     str(out.number_id.name).zfill(2) if out.number_id else None)
 
         levels = (
@@ -982,7 +954,7 @@ class LotteryAppApi(http.Controller):
         by_date = {}
 
         for pred in preds:
-            key = (pred.date, pred.turn_day)
+            key = (pred.date, pred.turno_id.id)
             evaluada = bool(pred.verification_date) or key in results
             counts = {name: len(pred[field]) for name, field, _ in levels}
 
@@ -1010,8 +982,9 @@ class LotteryAppApi(http.Controller):
                 continue
 
             by_date.setdefault(pred.date, []).append({
-                'turn': pred.turn_day,
-                'turn_label': TURN_LABELS.get(pred.turn_day, pred.turn_day),
+                'turn': pred.turno_id.code,
+                'turn_label': pred.turno_id.name or '',
+                'sequence': pred.turno_id.sequence,
                 'result_number': results.get(key),
                 'evaluada': evaluada,
                 'cumplida':    pred.cumplida,
@@ -1048,7 +1021,6 @@ class LotteryAppApi(http.Controller):
         # pct} por sublista que `totales`: la app lo usa para que las tarjetas
         # de arriba del historial muestren el % del período elegido (mes/año/
         # todos) en vez de siempre el histórico completo.
-        turn_order = {'afternoon': 0, 'evening': 1}
         by_year = {}
         for (y, m), data in periodos.items():
             entry = by_year.setdefault(y, {
@@ -1082,8 +1054,7 @@ class LotteryAppApi(http.Controller):
             'fechas': [{
                 'date': d.isoformat(),
                 'weekday': WEEKDAYS_ES[d.weekday()],
-                'turnos': sorted(turnos,
-                                 key=lambda t: turn_order.get(t['turn'], 9)),
+                'turnos': sorted(turnos, key=lambda t: t['sequence']),
             } for d, turnos in sorted(by_date.items(), reverse=True)],
         })
 
@@ -1097,7 +1068,8 @@ class LotteryAppApi(http.Controller):
         puntuales (buscador histórico de la app; ver
         lottery.quiniela.uy.resultados.get_premios, mismo dato que usa el
         wizard de Odoo)."""
-        if not date or turn not in ('afternoon', 'evening'):
+        turno = _turno_by_code(turn)
+        if not date or not turno:
             return _json_response({'error': 'date_and_turn_required'}, status=400)
         try:
             date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -1109,8 +1081,8 @@ class LotteryAppApi(http.Controller):
         return _json_response({
             'date': date,
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
-            'turn': turn,
-            'turn_label': TURN_LABELS.get(turn, turn),
+            'turn': turno.code,
+            'turn_label': turno.name or '',
             'premios': [{'premio': p, 'numero': n} for p, n in premios],
             'total_esperado': self.QUINIELA_UY_TOTAL_PREMIOS,
             'completo': len(premios) == self.QUINIELA_UY_TOTAL_PREMIOS,
@@ -1186,18 +1158,18 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
 
-        date_str, turn = sorteo.get_next_draw()
+        date_str, turno = sorteo.get_next_draw()
         base = {
             'date': date_str,
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
-            'turn': turn,
-            'turn_label': TURN_LABELS.get(turn, turn),
+            'turn': turno.code or None,
+            'turn_label': turno.name or '',
         }
 
         prediction = request.env['lottery.prediction'].sudo().search([
             ('sorteo_id', '=', sorteo.id),
             ('date', '=', date_str),
-            ('turn_day', '=', turn),
+            ('turno_id', '=', turno.id),
             ('published', '=', True),
         ], limit=1)
 
@@ -1221,7 +1193,8 @@ class LotteryAppApi(http.Controller):
         """Los números de la Tómbola de la Quiniela Uruguay de una fecha y
         turno puntuales, ordenados de menor a mayor (buscador histórico de
         la app; juego aparte de la Quiniela, ver lottery.tombola.output)."""
-        if not date or turn not in ('afternoon', 'evening'):
+        turno = _turno_by_code(turn)
+        if not date or not turno:
             return _json_response({'error': 'date_and_turn_required'}, status=400)
         try:
             date_obj = datetime.strptime(date, '%Y-%m-%d')
@@ -1229,14 +1202,14 @@ class LotteryAppApi(http.Controller):
             return _json_response({'error': 'invalid_date'}, status=400)
 
         outputs = request.env['lottery.tombola.output'].sudo().search([
-            ('date', '=', date), ('turn_day', '=', turn),
+            ('date', '=', date), ('turno_id', '=', turno.id),
         ])
         numeros = sorted(str(o.number_id.name).zfill(2) for o in outputs)
         return _json_response({
             'date': date,
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
-            'turn': turn,
-            'turn_label': TURN_LABELS.get(turn, turn),
+            'turn': turno.code,
+            'turn_label': turno.name or '',
             'numeros': numeros,
             'total_esperado': self.TOMBOLA_UY_TOTAL_NUMEROS,
             'completo': len(numeros) == self.TOMBOLA_UY_TOTAL_NUMEROS,
@@ -1245,14 +1218,14 @@ class LotteryAppApi(http.Controller):
     @http.route('/api/lottery/v1/stats/tombola-atrasos-numeros', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def tombola_atrasos_numeros(self, **kwargs):
-        """Top 10 números más atrasados de la Tómbola: general, tarde y
-        noche. Juego aparte de la Quiniela (sin sorteo_id), ver
+        """Top 10 números más atrasados de la Tómbola: general y por turno.
+        Juego aparte de la Quiniela (sin sorteo_id), ver
         lottery.tombola.number.stat."""
         stats = self._stats()
         return _json_response({
-            'general': stats.get_tombola_top_10_general(),
-            'afternoon': stats.get_tombola_top_10_dia(),
-            'evening': stats.get_tombola_top_10_noche(),
+            'general': stats.get_tombola_top_10(),
+            'turnos': [{'code': code, 'name': name, 'items': stats.get_tombola_top_10(tid)}
+                       for tid, code, name in stats.get_tombola_turnos()],
         })
 
     @http.route('/api/lottery/v1/stats/tombola-numeros-salidas-dia', type='http',
@@ -1313,7 +1286,8 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
-        if not date or not turn:
+        turno = _turno_by_code(turn)
+        if not date or not turno:
             return _json_response({'error': 'date_and_turn_required'}, status=400)
 
         try:
@@ -1324,7 +1298,7 @@ class LotteryAppApi(http.Controller):
         pred = request.env['lottery.prediction'].sudo().search([
             ('sorteo_id', '=', sorteo.id),
             ('date', '=', date),
-            ('turn_day', '=', turn),
+            ('turno_id', '=', turno.id),
             ('published', '=', True),
         ], limit=1)
 
@@ -1334,7 +1308,7 @@ class LotteryAppApi(http.Controller):
         output = request.env['lottery.output'].sudo().search([
             ('sorteo_id', '=', sorteo.id),
             ('date', '=', date),
-            ('turn_day', '=', turn),
+            ('turno_id', '=', turno.id),
         ], limit=1)
 
         def _nums(field):
@@ -1343,8 +1317,8 @@ class LotteryAppApi(http.Controller):
         return _json_response({
             'date': date,
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
-            'turn': turn,
-            'turn_label': TURN_LABELS.get(turn, turn),
+            'turn': turno.code,
+            'turn_label': turno.name or '',
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
             'result_number': (
                 str(output.number_id.name).zfill(2)

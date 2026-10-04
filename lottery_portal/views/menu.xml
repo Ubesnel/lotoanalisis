@@ -8,48 +8,6 @@
 
     <data noupdate="1">
 
-        <record id="menu_lottery_inicio" model="website.menu">
-            <field name="name">Inicio</field>
-            <field name="url">/inicio</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">10</field>
-        </record>
-
-        <record id="menu_lottery_estadisticas_generales" model="website.menu">
-            <field name="name">Estadísticas Generales</field>
-            <field name="url">/estadisticas-generales</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">15</field>
-        </record>
-
-        <record id="menu_lottery_estadisticas" model="website.menu">
-            <field name="name">Grupos</field>
-            <field name="url">/estadisticas</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">20</field>
-        </record>
-
-        <record id="menu_lottery_grupos_por_dia" model="website.menu">
-            <field name="name">Grupos por Día</field>
-            <field name="url">/grupos-por-dia</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">21</field>
-        </record>
-
-        <record id="menu_lottery_estadisticas_pintas" model="website.menu">
-            <field name="name">Pintas</field>
-            <field name="url">/estadisticas-pintas</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">22</field>
-        </record>
-
-        <record id="menu_lottery_estadisticas_numeros" model="website.menu">
-            <field name="name">Números</field>
-            <field name="url">/estadisticas-numeros</field>
-            <field name="parent_id" ref="website.main_menu"/>
-            <field name="sequence">25</field>
-        </record>
-
         <record id="menu_lottery_faq" model="website.menu">
             <field name="name">Preguntas frecuentes</field>
             <field name="url">/faq</field>

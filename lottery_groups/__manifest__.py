@@ -1,6 +1,6 @@
 {
     'name': 'Grupos',
-    'version': '0.1',
+    'version': '2.0',
     'description': """º
 Estadísticas sobre Grupos de números
 """,
@@ -22,7 +22,6 @@ Estadísticas sobre Grupos de números
         'data/lottery_acomp_menor_groups_data.xml',
         'data/lottery_acomp_mayor_groups_data.xml',
         'data/ir_cron.xml',
-        'data/lottery_group_stat_sorteo_filters_data.xml',
         'views/lottery_groups_view.xml',
         'views/lottery_menu_view.xml',
     ],

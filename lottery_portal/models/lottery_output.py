@@ -133,7 +133,7 @@ class LotteryOutput(models.Model):
             prediction = Prediction.search([
                 ('sorteo_id', '=', out.sorteo_id.id),
                 ('date', '=', out.date),
-                ('turn_day', '=', out.turn_day),
+                ('turno_id', '=', out.turno_id.id),
             ], limit=1)
             if prediction:
                 num_id = out.number_id.id
@@ -163,23 +163,8 @@ class LotteryOutput(models.Model):
     _MATERIALIZED_VIEWS = [
         'lottery_centena_week_mv',
         'lottery_centena_weekday_mv',
+        'lottery_digito_atraso_mv',
         'lottery_group_sequences_mv',
-        'lottery_group_analysis_mv',
-        'lottery_top10_afternoon_mv',
-        'lottery_top10_dia_semana_mv',
-        'lottery_top10_mv',
-        'lottery_top10_evening_mv',
-        'lottery_top_atrasos_lineas_mv',
-        'lottery_number_groups_atrasos_mv',
-        'lottery_top_atrasos_terminales_mv',
-        'lottery_top5_bola_extra_dia_mv',
-        'lottery_top5_bola_extra_general_mv',
-        'lottery_top5_bola_extra_noche_mv',
-        'lottery_top5_centena_dia_mv',
-        'lottery_top5_centena_general_mv',
-        'lottery_top5_centena_noche_mv',
-        'lottery_ultima_salida_dia_semana_mv',
-        'lottery_weekend_groups_mv',
     ]
 
     def _after_change(self):
@@ -214,7 +199,7 @@ class LotteryOutput(models.Model):
         en lottery.sorteo.ranking_snapshot).  Lectura instantánea, sin SQL.
         Retorna el dict de campos de validación o {} si no hay snapshot.
         """
-        turn        = vals.get('turn_day')
+        turn        = self.env['lottery.turno'].browse(vals.get('turno_id')).code
         number_id   = vals.get('number_id')
         hundreds_id = vals.get('hundreds_id')
         fireball_id = vals.get('fireball_id')

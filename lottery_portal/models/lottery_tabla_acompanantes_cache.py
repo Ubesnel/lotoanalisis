@@ -17,12 +17,11 @@ class LotteryTablaAcompanantesCache(models.Model):
 
     sorteo_id = fields.Many2one('lottery.sorteo', required=True, index=True)
     fecha_corte = fields.Date(required=True, index=True)
-    # required + default 'general' (nunca False/NULL): un unique() de
-    # Postgres no considera iguales dos NULL, así que si "General" se
-    # guardara como NULL la restricción de abajo no evitaría duplicados.
-    turno = fields.Selection([
-        ('general', 'General'), ('afternoon', 'Tarde'), ('evening', 'Noche'),
-    ], string='Turno', required=True, default='general')
+    # Código del turno de la tabla, o 'general'. required + default
+    # 'general' (nunca False/NULL): un unique() de Postgres no considera
+    # iguales dos NULL, así que si "General" se guardara como NULL la
+    # restricción de abajo no evitaría duplicados.
+    turno = fields.Char(string='Turno', required=True, default='general')
     # required, nunca False/NULL, por la misma razón que turno (ver nota
     # de más abajo sobre la unique constraint).
     grid_size = fields.Selection([

@@ -10,4 +10,9 @@
               parent="menu_tombola_root"
               action="action_lottery_tombola_number_stat" sequence="1"
               groups="lottery_base.group_lottery_user"/>
+
+    <menuitem id="menu_lottery_tombola_number_stat_turno_item" name="Atrasos por turno"
+              parent="menu_tombola_root"
+              action="action_lottery_tombola_number_stat_turno" sequence="2"
+              groups="lottery_base.group_lottery_user"/>
 </odoo>

@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 
-# Mismo vocabulario de turn_day que lottery.tombola.output: 'afternoon' es
-# Tarde, el resto ('evening') es Noche.
-EARLY_TURNS = ('afternoon',)
-
 # ir.config_parameter que define desde cuándo cuentan las estadísticas de
 # Tómbola (excluye los ~29 sorteos de 2006 con un número repetido en vez de
 # uno distinto entre los 20). Definido en lottery_portal, pero se lee acá
@@ -14,6 +10,9 @@ _NO_START_DATE = '1900-01-01'
 
 
 class LotteryTombolaNumberStat(models.Model):
+    """Estadísticas generales de un número de la Tómbola (todos los turnos
+    juntos). Lo que depende del turno vive en una fila por turno en
+    `lottery.tombola.number.stat.turno` (turno_stat_ids)."""
     _name = 'lottery.tombola.number.stat'
     _description = 'Estadísticas de número de Tómbola'
     _order = 'number_name'
@@ -21,10 +20,9 @@ class LotteryTombolaNumberStat(models.Model):
     number_id = fields.Many2one('lottery.number', string='Número', required=True,
                                 index=True, ondelete='cascade')
     number_name = fields.Integer(related='number_id.name', string='Número', store=True, index=True)
+    turno_stat_ids = fields.One2many('lottery.tombola.number.stat.turno', 'stat_id', string='Por turno')
 
     total_salidas = fields.Integer(store=True, index=True, help="Total salidas")
-    total_salidas_dia = fields.Integer(store=True, index=True, help="Total salidas Tarde")
-    total_salidas_noche = fields.Integer(store=True, index=True, help="Total salidas Noche")
 
     cant_salidas_enero = fields.Integer(store=True, index=True)
     cant_salidas_febrero = fields.Integer(store=True, index=True)
@@ -54,8 +52,6 @@ class LotteryTombolaNumberStat(models.Model):
     total_semana_5 = fields.Integer(store=True, index=True, help="Últimos días (29, 30 y 31)")
 
     total_atrasadas = fields.Integer(string="Atrasos totales", default=0, index=True)
-    total_atrasadas_dia = fields.Integer(string="Atrasos Tarde", default=0, index=True)
-    total_atrasadas_noche = fields.Integer(string="Atrasos Noche", default=0, index=True)
 
     salidas_atrasadas_lunes = fields.Integer(string='Atrasos lunes', index=True)
     salidas_atrasadas_martes = fields.Integer(string='Atrasos martes', index=True)
@@ -85,11 +81,11 @@ class LotteryTombolaNumberStat(models.Model):
     #  sorteo_id, acá no hace falta un camino rápido "por sorteo").
     # ------------------------------------------------------------------
     def cron_recompute_totales(self):
-        p = {'early_turns': list(EARLY_TURNS), 'start_date': self._start_date()}
+        p = {'start_date': self._start_date()}
         self.env.cr.execute("""
             INSERT INTO lottery_tombola_number_stat (
                 number_id,
-                total_salidas, total_salidas_dia, total_salidas_noche,
+                total_salidas,
                 cant_salidas_enero, cant_salidas_febrero, cant_salidas_marzo, cant_salidas_abril,
                 cant_salidas_mayo, cant_salidas_junio, cant_salidas_julio, cant_salidas_agosto,
                 cant_salidas_septiembre, cant_salidas_octubre, cant_salidas_noviembre, cant_salidas_diciembre,
@@ -100,8 +96,6 @@ class LotteryTombolaNumberStat(models.Model):
             SELECT
                 number_id,
                 COUNT(*),
-                COUNT(*) FILTER (WHERE turn_day = ANY(%(early_turns)s)),
-                COUNT(*) FILTER (WHERE turn_day != ALL(%(early_turns)s)),
                 COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 1),
                 COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 2),
                 COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) = 3),
@@ -130,8 +124,6 @@ class LotteryTombolaNumberStat(models.Model):
             GROUP BY number_id
             ON CONFLICT (number_id) DO UPDATE SET
                 total_salidas = EXCLUDED.total_salidas,
-                total_salidas_dia = EXCLUDED.total_salidas_dia,
-                total_salidas_noche = EXCLUDED.total_salidas_noche,
                 cant_salidas_enero = EXCLUDED.cant_salidas_enero,
                 cant_salidas_febrero = EXCLUDED.cant_salidas_febrero,
                 cant_salidas_marzo = EXCLUDED.cant_salidas_marzo,
@@ -159,26 +151,24 @@ class LotteryTombolaNumberStat(models.Model):
         self._sync_number_name()
 
     def cron_recompute_atrasos_general(self):
-        """Atraso general: sorteos consecutivos (eventos date+turn_day, NO
+        """Atraso general: sorteos consecutivos (eventos fecha+turno, NO
         filas) sin que el número haya salido entre los 20."""
-        p = {'early_turns': list(EARLY_TURNS), 'start_date': self._start_date()}
+        p = {'start_date': self._start_date()}
         self.env.cr.execute("""
             WITH draws AS (
-                SELECT DISTINCT date, turn_day
+                SELECT DISTINCT date, turno_id, turno_sequence
                 FROM lottery_tombola_output
                 WHERE date >= %(start_date)s
             ),
             ranking AS (
-                SELECT date, turn_day,
-                    ROW_NUMBER() OVER (
-                        ORDER BY date, CASE WHEN turn_day = ANY(%(early_turns)s) THEN 0 ELSE 1 END
-                    ) AS orden_global
+                SELECT date, turno_id,
+                    ROW_NUMBER() OVER (ORDER BY date, turno_sequence) AS orden_global
                 FROM draws
             ),
             ultima_por_numero AS (
                 SELECT o.number_id, MAX(r.orden_global) AS ultima_orden
                 FROM lottery_tombola_output o
-                JOIN ranking r ON r.date = o.date AND r.turn_day = o.turn_day
+                JOIN ranking r ON r.date = o.date AND r.turno_id = o.turno_id
                 WHERE o.date >= %(start_date)s
                 GROUP BY o.number_id
             ),
@@ -190,50 +180,6 @@ class LotteryTombolaNumberStat(models.Model):
             LEFT JOIN ultima_por_numero u ON u.number_id = n.id
             ON CONFLICT (number_id) DO UPDATE SET
                 total_atrasadas = EXCLUDED.total_atrasadas;
-        """, p)
-        self._sync_number_name()
-
-    def cron_recompute_atrasos_turno(self):
-        """Atraso por turno (Tarde/Noche): sorteos consecutivos de ESE turno
-        sin que el número haya salido en él."""
-        p = {'early_turns': list(EARLY_TURNS), 'start_date': self._start_date()}
-        self.env.cr.execute("""
-            WITH draws_turno AS (
-                SELECT DISTINCT date, turn_day
-                FROM lottery_tombola_output
-                WHERE date >= %(start_date)s
-            ),
-            ranking_turno AS (
-                SELECT date, turn_day,
-                    (turn_day = ANY(%(early_turns)s)) AS es_tarde,
-                    ROW_NUMBER() OVER (
-                        PARTITION BY (turn_day = ANY(%(early_turns)s)) ORDER BY date
-                    ) AS orden_turno
-                FROM draws_turno
-            ),
-            ultima_por_numero_turno AS (
-                SELECT o.number_id, rt.es_tarde, MAX(rt.orden_turno) AS ultima_orden
-                FROM lottery_tombola_output o
-                JOIN ranking_turno rt ON rt.date = o.date AND rt.turn_day = o.turn_day
-                WHERE o.date >= %(start_date)s
-                GROUP BY o.number_id, rt.es_tarde
-            ),
-            ultima_global_turno AS (
-                SELECT es_tarde, MAX(orden_turno) AS max_orden FROM ranking_turno GROUP BY es_tarde
-            )
-            INSERT INTO lottery_tombola_number_stat (number_id, total_atrasadas_dia, total_atrasadas_noche)
-            SELECT
-                n.id,
-                COALESCE(gv.max_orden - uv.ultima_orden, gv.max_orden, 0),
-                COALESCE(gn.max_orden - un.ultima_orden, gn.max_orden, 0)
-            FROM lottery_number n
-            LEFT JOIN ultima_global_turno gv ON gv.es_tarde = TRUE
-            LEFT JOIN ultima_por_numero_turno uv ON uv.number_id = n.id AND uv.es_tarde = TRUE
-            LEFT JOIN ultima_global_turno gn ON gn.es_tarde = FALSE
-            LEFT JOIN ultima_por_numero_turno un ON un.number_id = n.id AND un.es_tarde = FALSE
-            ON CONFLICT (number_id) DO UPDATE SET
-                total_atrasadas_dia = EXCLUDED.total_atrasadas_dia,
-                total_atrasadas_noche = EXCLUDED.total_atrasadas_noche;
         """, p)
         self._sync_number_name()
 
@@ -313,5 +259,87 @@ class LotteryTombolaNumberStat(models.Model):
         self.env.cr.execute("DELETE FROM lottery_tombola_number_stat;")
         self.cron_recompute_totales()
         self.cron_recompute_atrasos_general()
-        self.cron_recompute_atrasos_turno()
         self.cron_recompute_atrasos_por_dia_semana()
+        # Al final: necesita las filas generales ya creadas para enlazar stat_id.
+        self.env['lottery.tombola.number.stat.turno']._recompute_all(self._start_date())
+
+
+class LotteryTombolaNumberStatTurno(models.Model):
+    """Estadísticas de un número de la Tómbola en UN turno: una fila por
+    (número, turno). Reemplaza a los antiguos campos fijos *_dia / *_noche.
+    Turnos considerados: los que tienen salidas desde la fecha de inicio de
+    las estadísticas. Se reconstruye entera (DELETE + INSERT)."""
+    _name = 'lottery.tombola.number.stat.turno'
+    _description = 'Estadísticas de número de Tómbola por turno'
+    _order = 'number_name, turno_sequence'
+    _log_access = False
+
+    stat_id = fields.Many2one('lottery.tombola.number.stat', string='Estadística general',
+                              index=True, ondelete='cascade')
+    number_id = fields.Many2one('lottery.number', string='Número', required=True,
+                                index=True, ondelete='cascade')
+    number_name = fields.Integer(string='Número', index=True)
+    turno_id = fields.Many2one('lottery.turno', string='Turno', required=True,
+                               index=True, ondelete='cascade')
+    turno_sequence = fields.Integer(string='Secuencia del turno', index=True)
+
+    total_salidas = fields.Integer(string='Salidas', index=True,
+                                   help="Veces que salió el número entre los 20 de este turno.")
+    total_atrasadas = fields.Integer(string='Atraso', index=True,
+                                     help="Sorteos de este turno desde la última vez que salió en él. "
+                                          "Si nunca salió en el turno, el total de sorteos del turno.")
+    ultima_fecha = fields.Date(string='Última salida', help="Última fecha en que salió en este turno.")
+
+    _sql_constraints = [
+        ('lottery_tombola_number_stat_turno_unique',
+         'unique(number_id, turno_id)',
+         'Ya existe una fila de estadísticas para ese número y turno.')
+    ]
+
+    @api.depends('number_name', 'turno_id')
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = f"{rec.number_name} · {rec.turno_id.name or ''}"
+
+    def _recompute_all(self, start_date):
+        """Atraso por turno: sorteos (fechas) de ESE turno sin que el número
+        haya salido en él. Cada turno se rankea por separado."""
+        p = {'start_date': start_date}
+        self.env.cr.execute("DELETE FROM lottery_tombola_number_stat_turno;")
+        self.env.cr.execute("""
+            WITH draws AS (
+                SELECT DISTINCT date, turno_id
+                FROM lottery_tombola_output
+                WHERE date >= %(start_date)s
+            ),
+            ranking AS (
+                SELECT date, turno_id,
+                    ROW_NUMBER() OVER (PARTITION BY turno_id ORDER BY date) AS orden
+                FROM draws
+            ),
+            por_numero AS (
+                SELECT o.number_id, o.turno_id,
+                       COUNT(*) AS salidas, MAX(r.orden) AS ultima_orden, MAX(o.date) AS ultima_fecha
+                FROM lottery_tombola_output o
+                JOIN ranking r ON r.date = o.date AND r.turno_id = o.turno_id
+                WHERE o.date >= %(start_date)s
+                GROUP BY o.number_id, o.turno_id
+            ),
+            por_turno AS (
+                SELECT turno_id, MAX(orden) AS max_orden FROM ranking GROUP BY turno_id
+            )
+            INSERT INTO lottery_tombola_number_stat_turno (
+                stat_id, number_id, number_name, turno_id, turno_sequence,
+                total_salidas, total_atrasadas, ultima_fecha
+            )
+            SELECT
+                st.id, n.id, n.name, pt.turno_id, lt.sequence,
+                COALESCE(pn.salidas, 0),
+                COALESCE(pt.max_orden - pn.ultima_orden, pt.max_orden, 0),
+                pn.ultima_fecha
+            FROM lottery_number n
+            CROSS JOIN por_turno pt
+            JOIN lottery_turno lt ON lt.id = pt.turno_id
+            LEFT JOIN por_numero pn ON pn.number_id = n.id AND pn.turno_id = pt.turno_id
+            LEFT JOIN lottery_tombola_number_stat st ON st.number_id = n.id;
+        """, p)

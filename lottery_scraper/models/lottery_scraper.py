@@ -192,7 +192,7 @@ class LotteryScraper(models.Model):
         log_lines = []
 
         if self.afternoon_start <= hour_et <= self.afternoon_end:
-            if Output.search([('date', '=', today_et), ('turn_day', '=', 'afternoon'),
+            if Output.search([('date', '=', today_et), ('turno_id.code', '=', 'afternoon'),
                               ('sorteo_id', '=', self.sorteo_id.id)], limit=1):
                 _logger.debug('Scraper %s Tarde %s: ya registrada.', self.game_code, today_et)
                 return
@@ -200,7 +200,7 @@ class LotteryScraper(models.Model):
             log_lines += self._run_for_turn('afternoon', today_et)
 
         elif self.evening_start <= hour_et <= self.evening_end:
-            if Output.search([('date', '=', today_et), ('turn_day', '=', 'evening'),
+            if Output.search([('date', '=', today_et), ('turno_id.code', '=', 'evening'),
                               ('sorteo_id', '=', self.sorteo_id.id)], limit=1):
                 _logger.debug('Scraper %s Noche %s: ya registrada.', self.game_code, today_et)
                 return
@@ -283,12 +283,12 @@ class LotteryScraper(models.Model):
         today_et = datetime.now(tz=et_tz).date()
 
         last = self.env['lottery.output'].search(
-            [('sorteo_id', '=', self.sorteo_id.id)], order='date desc, id desc', limit=1)
+            [('sorteo_id', '=', self.sorteo_id.id)], limit=1)
 
         if not last:
             return today_et
 
-        if last.turn_day == 'afternoon':
+        if last.turno_id.code == 'afternoon':
             return last.date                          # pedir noche del mismo día
         else:
             return min(last.date + timedelta(days=1), today_et)  # pedir tarde del día siguiente
@@ -858,7 +858,10 @@ class LotteryScraper(models.Model):
         turn_label = 'Tarde' if draw['turn'] == 'afternoon' else 'Noche'
         label = f"{draw['date']} {turn_label}"
 
-        if Output.search([('date', '=', draw['date']), ('turn_day', '=', draw['turn']),
+        turno_id = self.env['lottery.turno']._ids_by_code().get(draw['turn'])
+        if not turno_id:
+            return f'[ERROR] {label} – turno {draw["turn"]} no existe'
+        if Output.search([('date', '=', draw['date']), ('turno_id', '=', turno_id),
                           ('sorteo_id', '=', self.sorteo_id.id)], limit=1):
             return f'[OMITIDO] {label} – ya registrado'
 
@@ -896,7 +899,7 @@ class LotteryScraper(models.Model):
 
         Output.create({
             'date':        draw['date'],
-            'turn_day':    draw['turn'],
+            'turno_id':    turno_id,
             'sorteo_id':   self.sorteo_id.id,
             'number_id':   number_rec.id,
             'hundreds_id': hundreds_rec.id if hundreds_rec else False,
@@ -931,23 +934,29 @@ class LotteryScraper(models.Model):
             if n['can_use_hundreds']:
                 by_name_hundreds.setdefault(n['name'], n['id'])
 
-        # Claves ya registradas para este sorteo, una sola lectura.
+        turno_ids = self.env['lottery.turno']._ids_by_code()
+
+        # Claves (fecha, turno_id) ya registradas para este sorteo, una sola lectura.
         existing = {
-            (fields.Date.to_date(r['date']), r['turn_day'])
+            (fields.Date.to_date(r['date']), r['turno_id'][0])
             for r in Output.search_read([('sorteo_id', '=', self.sorteo_id.id)],
-                                        ['date', 'turn_day'])
+                                        ['date', 'turno_id'])
         }
 
         vals_list, omitidos, errores = [], 0, []
-        importadas = set()   # claves (fecha, turno) efectivamente creadas
+        importadas = set()   # claves (fecha, turno_id) efectivamente creadas
         for draw in draws:
-            key = (draw['date'], draw['turn'])
+            turn_label = 'Tarde' if draw['turn'] == 'afternoon' else 'Noche'
+            label = f"{draw['date']} {turn_label}"
+
+            turno_id = turno_ids.get(draw['turn'])
+            if not turno_id:
+                errores.append(f'[ERROR] {label} – turno {draw["turn"]} no existe')
+                continue
+            key = (draw['date'], turno_id)
             if key in existing:
                 omitidos += 1
                 continue
-
-            turn_label = 'Tarde' if draw['turn'] == 'afternoon' else 'Noche'
-            label = f"{draw['date']} {turn_label}"
 
             number_id = by_name.get(draw['numero'])
             if not number_id:
@@ -956,7 +965,7 @@ class LotteryScraper(models.Model):
 
             vals = {
                 'date':      draw['date'],
-                'turn_day':  draw['turn'],
+                'turno_id':  turno_id,
                 'sorteo_id': self.sorteo_id.id,
                 'number_id': number_id,
             }
@@ -1002,7 +1011,7 @@ class LotteryScraper(models.Model):
             # consume esa marca; si no, _recompute_next_draw no haría nada.
             sorteo = self.sorteo_id
             if sorteo.next_draw_manual and \
-                    (sorteo.next_draw_date, sorteo.next_draw_turn) in importadas:
+                    (sorteo.next_draw_date, sorteo.next_draw_turno_id.id) in importadas:
                 sorteo.next_draw_manual = False
             sorteo._recompute_next_draw()
 
@@ -1150,7 +1159,7 @@ class LotteryScraper(models.Model):
 
             updated = skipped = 0
             for output in outputs:
-                key = (output.date, output.turn_day)
+                key = (output.date, output.turno_id.code)
                 p4 = pick4_index.get(key)
                 if not p4:
                     skipped += 1

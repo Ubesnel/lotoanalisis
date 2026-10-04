@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <tree string="Tómbola Quiniela Uruguay">
                 <field name="date"/>
-                <field name="turn_day"/>
+                <field name="turno_id"/>
                 <field name="temperature"/>
                 <field name="algoritmo" optional="show"/>
                 <field name="combinaciones_window" optional="hide"/>
@@ -37,7 +37,7 @@
                     <group>
                         <group>
                             <field name="date"/>
-                            <field name="turn_day"/>
+                            <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
                             <field name="temperature"/>

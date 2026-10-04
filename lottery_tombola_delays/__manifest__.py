@@ -1,6 +1,6 @@
 {
     'name': 'Atrasos de Tómbola',
-    'version': '0.1',
+    'version': '2.0',
     'description': """
 Atrasos de números para la Tómbola de la Quiniela Uruguay. Independiente de
 los atrasos de las demás loterías: la Tómbola no tiene sorteo_id, es un

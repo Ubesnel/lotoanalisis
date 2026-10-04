@@ -33,6 +33,12 @@ VERDE_HONDO = '#12602C'
 VERDE_VIVO = '#33B457'
 DORADO = '#FFC93C'
 
+def turno_label(code):
+    """Nombre del turno como se dice en la quiniela uruguaya. Un turno que no
+    esté en TURN_LABEL se muestra con su código."""
+    return TURN_LABEL.get(code) or (code or '').capitalize()
+
+
 # ── Color de la bola según el turno ───────────────────────────────────────
 # Los mismos de lib/theme.dart, para que una bola de Vespertina se vea igual
 # acá que en Últimas salidas de la app.
@@ -43,6 +49,13 @@ COLOR_TURNO = {
     'afternoon': (0xF5, 0x9E, 0x0B),   # AppColors.tarde
     'evening': (0x23, 0x39, 0x5B),     # AppColors.noche
 }
+
+
+def turno_color(code):
+    """Color de la bola del turno; uno sin color propio usa el del General."""
+    return COLOR_TURNO.get(code, COLOR_TURNO['general'])
+
+
 # Las bolas de la Tómbola van en rojo con el número en blanco, como las de
 # una tómbola de verdad, y así no se confunden con las de las salidas.
 COLOR_TOMBOLA = (0xD3, 0x2F, 0x2F)
@@ -87,7 +100,7 @@ def fecha_larga(date):
         DIAS[date.weekday()], date.day, MESES[date.month - 1], date.year)
 
 
-def cabezal(turn_day, date, titulo='Quiniela Uruguay'):
+def cabezal(turn_code, date, titulo='Quiniela Uruguay'):
     """Banner verde de Quiniela con el logo, las caras, el turno y la fecha.
 
     `titulo` es el cintillo chico de arriba: distingue de qué informe es la
@@ -96,7 +109,7 @@ def cabezal(turn_day, date, titulo='Quiniela Uruguay'):
             'height:40px;border-radius:50%%;object-fit:cover;'
             'background:#fff;border:2px solid rgba(255,255,255,.85);'
             'box-shadow:0 2px 6px rgba(0,0,0,.3);%s"/>')
-    claro, base, _oscuro = ball_shades(COLOR_TURNO[turn_day])
+    claro, base, _oscuro = ball_shades(turno_color(turn_code))
     return (
         '<div style="background:linear-gradient(135deg,%s,%s);'
         'border-radius:18px 18px 0 0;padding:20px 16px 16px;'
@@ -134,7 +147,7 @@ def cabezal(turn_day, date, titulo='Quiniela Uruguay'):
             cara % (IMG, 'mateo_cara.png', ''),
             cara % (IMG, 'valeria_cara.png', 'margin-left:-13px;'),
             IMG, FUENTE, titulo, _rgb(claro), _rgb(base), FUENTE,
-            TURN_LABEL[turn_day], FUENTE, fecha_larga(date))
+            turno_label(turn_code), FUENTE, fecha_larga(date))
     )
 
 

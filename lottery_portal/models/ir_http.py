@@ -15,9 +15,7 @@ _LEGAL_PATHS = ('/politica-privacidad', '/terminos-condiciones')
 
 # Páginas del portal que se rastrean
 _TRACK_PREFIXES = (
-    '/inicio', '/estadisticas', '/estadisticas-generales', '/estadisticas-pintas',
-    '/estadisticas-numeros', '/grupos-por-dia', '/faq', '/noticias', '/buscador',
-    '/politica-privacidad', '/terminos-condiciones', '/contactus',
+    '/faq', '/politica-privacidad', '/terminos-condiciones', '/contactus',
 )
 
 

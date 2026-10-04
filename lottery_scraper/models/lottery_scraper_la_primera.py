@@ -116,20 +116,20 @@ class LotteryScraperLaPrimera(models.Model):
         self.ensure_one()
         Output = self.env['lottery.output']
         registros = Output.search([('sorteo_id', '=', self.sorteo_id.id)],
-                                  order='date desc, id desc')
+                                  order='date desc, turno_sequence desc, id desc')
 
         por_turno, a_borrar, detalle = {}, Output, []
         for rec in registros:      # ya viene de más nuevo a más viejo
-            firma = (rec.turn_day, rec.number_id.id,
+            firma = (rec.turno_code, rec.number_id.id,
                      rec.premio_2_id.id, rec.premio_3_id.id)
-            if por_turno.get(rec.turn_day) == firma:
+            if por_turno.get(rec.turno_code) == firma:
                 a_borrar |= rec
                 detalle.append(
                     f'[OK] {rec.date} '
-                    f'{"Tarde" if rec.turn_day == "afternoon" else "Noche"} – '
+                    f'{"Tarde" if rec.turno_code == "afternoon" else "Noche"} – '
                     f'{rec.number_id.name:02d} (repetía el sorteo siguiente)')
             else:
-                por_turno[rec.turn_day] = firma
+                por_turno[rec.turno_code] = firma
 
         log = [f'{len(registros)} salida(s) revisada(s).']
         if a_borrar:
@@ -192,12 +192,14 @@ class LotteryScraperLaPrimera(models.Model):
         completos = {}
         for rec in self.env['lottery.output'].search_read([
                 ('sorteo_id', '=', self.sorteo_id.id),
-                ('date', '>=', desde), ('date', '<=', hasta)], ['date', 'turn_day']):
-            completos.setdefault(fields.Date.to_date(rec['date']), set()).add(rec['turn_day'])
+                ('date', '>=', desde), ('date', '<=', hasta)], ['date', 'turno_code']):
+            completos.setdefault(fields.Date.to_date(rec['date']), set()).add(rec['turno_code'])
 
+        # Un día está completo cuando tiene todos los turnos del sorteo.
+        turnos_sorteo = set(self.sorteo_id.turno_ids.mapped('code'))
         dias, cur = [], desde
         while cur <= hasta:
-            if completos.get(cur, set()) != {'afternoon', 'evening'}:
+            if not turnos_sorteo <= completos.get(cur, set()):
                 dias.append(cur)
             cur += timedelta(days=1)
         return dias, (hasta - desde).days + 1
@@ -391,13 +393,14 @@ class LotteryScraperLaPrimera(models.Model):
         by_name = {n['name']: n['id']
                    for n in self.env['lottery.number'].search_read([], ['name'])}
 
+        turno_ids = self.env['lottery.turno']._ids_by_code()
         existing = {
-            (fields.Date.to_date(rec['date']), rec['turn_day'])
+            (fields.Date.to_date(rec['date']), rec['turno_code'])
             for rec in Output.search_read([
                 ('sorteo_id', '=', self.sorteo_id.id),
                 ('date', '>=', draws[0]['date']),
                 ('date', '<=', draws[-1]['date']),
-            ], ['date', 'turn_day'])
+            ], ['date', 'turno_code'])
         }
 
         log_lines, vals_list = [], []
@@ -423,7 +426,7 @@ class LotteryScraperLaPrimera(models.Model):
             # PRÓXIMO sorteo ya registrado de ese turno.
             siguiente = Output.search([
                 ('sorteo_id', '=', self.sorteo_id.id),
-                ('turn_day', '=', draw['turn']),
+                ('turno_code', '=', draw['turn']),
                 ('date', '>', draw['date']),
             ], order='date asc', limit=1)
             if siguiente and (
@@ -437,7 +440,7 @@ class LotteryScraperLaPrimera(models.Model):
 
             vals = {
                 'date':      draw['date'],
-                'turn_day':  draw['turn'],
+                'turno_id':  turno_ids[draw['turn']],
                 'sorteo_id': self.sorteo_id.id,
                 'number_id': number_id,
             }

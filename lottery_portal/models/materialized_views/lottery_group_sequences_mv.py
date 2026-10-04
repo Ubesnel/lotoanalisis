@@ -4,6 +4,9 @@ from odoo import models, tools
 
 
 class LotteryGroupSequencesMV(models.Model):
+    """Cuántas veces a una línea (o terminal) le siguió cada otra en el
+    sorteo siguiente: en general (turno_id NULL, sorteos de todos los turnos
+    en orden fecha + secuencia del turno) y dentro de cada turno."""
     _name = 'lottery.group.sequences.mv'
     _description = 'Lottery Group Sequences Materialized View'
     _auto = False
@@ -13,87 +16,30 @@ class LotteryGroupSequencesMV(models.Model):
 
         self.env.cr.execute("""
             CREATE MATERIALIZED VIEW lottery_group_sequences_mv AS
-            WITH line_draws AS (
-                SELECT lo.date, lo.id, lo.turn_day, lo.sorteo_id, lg.code AS grp_code
+            WITH draws AS (
+                SELECT lo.date, lo.id, lo.turno_id, lo.turno_sequence, lo.sorteo_id,
+                       lg.code AS grp_code,
+                       CASE WHEN lg.code LIKE 'line\\_%' THEN 'line' ELSE 'terminal' END AS grp_type
                 FROM lottery_output lo
-                JOIN lottery_number ln  ON ln.id  = lo.number_id
-                JOIN lottery_group_number_rel rel ON rel.number_id = ln.id
+                JOIN lottery_group_number_rel rel ON rel.number_id = lo.number_id
                 JOIN lottery_group lg ON lg.id = rel.group_id
-                WHERE lg.code LIKE 'line_%'
+                WHERE lg.code LIKE 'line\\_%' OR lg.code LIKE 'terminal\\_%'
             ),
-            terminal_draws AS (
-                SELECT lo.date, lo.id, lo.turn_day, lo.sorteo_id, lg.code AS grp_code
-                FROM lottery_output lo
-                JOIN lottery_number ln  ON ln.id  = lo.number_id
-                JOIN lottery_group_number_rel rel ON rel.number_id = ln.id
-                JOIN lottery_group lg ON lg.id = rel.group_id
-                WHERE lg.code LIKE 'terminal_%'
-            ),
-            line_gen AS (
-                SELECT sorteo_id, from_code, to_code FROM (
-                    SELECT sorteo_id, grp_code AS from_code,
-                           LEAD(grp_code) OVER (PARTITION BY sorteo_id ORDER BY date, id) AS to_code
-                    FROM line_draws
-                ) s WHERE to_code IS NOT NULL
-            ),
-            line_aft AS (
-                SELECT sorteo_id, from_code, to_code FROM (
-                    SELECT sorteo_id, grp_code AS from_code,
-                           LEAD(grp_code) OVER (PARTITION BY sorteo_id ORDER BY date, id) AS to_code
-                    FROM line_draws WHERE turn_day = 'afternoon'
-                ) s WHERE to_code IS NOT NULL
-            ),
-            line_eve AS (
-                SELECT sorteo_id, from_code, to_code FROM (
-                    SELECT sorteo_id, grp_code AS from_code,
-                           LEAD(grp_code) OVER (PARTITION BY sorteo_id ORDER BY date, id) AS to_code
-                    FROM line_draws WHERE turn_day = 'evening'
-                ) s WHERE to_code IS NOT NULL
-            ),
-            term_gen AS (
-                SELECT sorteo_id, from_code, to_code FROM (
-                    SELECT sorteo_id, grp_code AS from_code,
-                           LEAD(grp_code) OVER (PARTITION BY sorteo_id ORDER BY date, id) AS to_code
-                    FROM terminal_draws
-                ) s WHERE to_code IS NOT NULL
-            ),
-            term_aft AS (
-                SELECT sorteo_id, from_code, to_code FROM (
-                    SELECT sorteo_id, grp_code AS from_code,
-                           LEAD(grp_code) OVER (PARTITION BY sorteo_id ORDER BY date, id) AS to_code
-                    FROM terminal_draws WHERE turn_day = 'afternoon'
-                ) s WHERE to_code IS NOT NULL
-            ),
-            term_eve AS (
-                SELECT sorteo_id, from_code, to_code FROM (
-                    SELECT sorteo_id, grp_code AS from_code,
-                           LEAD(grp_code) OVER (PARTITION BY sorteo_id ORDER BY date, id) AS to_code
-                    FROM terminal_draws WHERE turn_day = 'evening'
-                ) s WHERE to_code IS NOT NULL
-            ),
-            all_pairs AS (
-                SELECT sorteo_id, 'line'     AS grp_type, from_code, to_code, 'general'   AS turn FROM line_gen
+            pairs AS (
+                SELECT sorteo_id, NULL::integer AS turno_id, grp_type, grp_code AS from_code,
+                       LEAD(grp_code) OVER (PARTITION BY sorteo_id, grp_type
+                                            ORDER BY date, turno_sequence, id) AS to_code
+                FROM draws
                 UNION ALL
-                SELECT sorteo_id, 'line',     from_code, to_code, 'afternoon' FROM line_aft
-                UNION ALL
-                SELECT sorteo_id, 'line',     from_code, to_code, 'evening'   FROM line_eve
-                UNION ALL
-                SELECT sorteo_id, 'terminal', from_code, to_code, 'general'   FROM term_gen
-                UNION ALL
-                SELECT sorteo_id, 'terminal', from_code, to_code, 'afternoon' FROM term_aft
-                UNION ALL
-                SELECT sorteo_id, 'terminal', from_code, to_code, 'evening'   FROM term_eve
+                SELECT sorteo_id, turno_id, grp_type, grp_code,
+                       LEAD(grp_code) OVER (PARTITION BY sorteo_id, turno_id, grp_type
+                                            ORDER BY date, id)
+                FROM draws
             )
-            SELECT
-                sorteo_id,
-                grp_type,
-                from_code,
-                to_code,
-                COUNT(*) FILTER (WHERE turn = 'general')   AS total_general,
-                COUNT(*) FILTER (WHERE turn = 'afternoon') AS total_afternoon,
-                COUNT(*) FILTER (WHERE turn = 'evening')   AS total_evening
-            FROM all_pairs
-            GROUP BY sorteo_id, grp_type, from_code, to_code;
+            SELECT sorteo_id, turno_id, grp_type, from_code, to_code, COUNT(*) AS total
+            FROM pairs
+            WHERE to_code IS NOT NULL
+            GROUP BY sorteo_id, turno_id, grp_type, from_code, to_code;
         """)
 
         self.env.cr.execute("""

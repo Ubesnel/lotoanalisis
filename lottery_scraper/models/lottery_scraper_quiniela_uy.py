@@ -114,7 +114,7 @@ class LotteryScraperQuinielaUy(models.Model):
 
     def _get_next_query_date(self):
         last = self.env['lottery.output'].search(
-            [('sorteo_id.source_code', '=', 'quiniela_uy')], order='date desc, id desc', limit=1)
+            [('sorteo_id.source_code', '=', 'quiniela_uy')], order='date desc, turno_sequence desc, id desc', limit=1)
         if not last:
             return date.today()
         return min(last.date + timedelta(days=1), date.today())
@@ -242,7 +242,7 @@ class LotteryScraperQuinielaUy(models.Model):
             log_lines += self._import_tombola_turn(draw_date, 'evening', data['nocturna_tombola'])
         return log_lines
 
-    def _import_turn(self, draw_date, turn_day, numeros):
+    def _import_turn(self, draw_date, turn_code, numeros):
         # Una salida que no es la del día NO se puede validar contra el
         # ranking_snapshot del sorteo, porque ese snapshot es siempre el del
         # PRÓXIMO sorteo: sellarla con las banderas de hoy deja aciertos y
@@ -260,17 +260,20 @@ class LotteryScraperQuinielaUy(models.Model):
             Output = Output.with_context(skip_prediction_validation=True)
         LottoNum = self.env['lottery.number']
         sorteo_by_premio = self._sorteo_by_premio()
+        turno_id = self.env['lottery.turno']._ids_by_code().get(turn_code)
+        if not turno_id:
+            return [f'[ERROR] {draw_date} {turn_code} – turno inexistente']
         log_lines = []
 
         for premio, numero_str in enumerate(numeros, start=1):
-            label = f'{draw_date} {turn_day} S{premio}'
+            label = f'{draw_date} {turn_code} S{premio}'
             sorteo = sorteo_by_premio.get(premio)
             if not sorteo:
                 log_lines.append(f'[ERROR] {label} – no existe lottery.sorteo quiniela_uy_{premio}')
                 continue
 
             if Output.search([
-                ('date', '=', draw_date), ('turn_day', '=', turn_day),
+                ('date', '=', draw_date), ('turno_code', '=', turn_code),
                 ('sorteo_id', '=', sorteo.id),
             ], limit=1):
                 log_lines.append(f'[OMITIDO] {label} – ya registrado')
@@ -291,7 +294,7 @@ class LotteryScraperQuinielaUy(models.Model):
 
             Output.create({
                 'date': draw_date,
-                'turn_day': turn_day,
+                'turno_id': turno_id,
                 'sorteo_id': sorteo.id,
                 'number_id': number_rec.id,
                 'hundreds_id': hundreds_rec.id,
@@ -300,16 +303,19 @@ class LotteryScraperQuinielaUy(models.Model):
 
         return log_lines
 
-    def _import_tombola_turn(self, draw_date, turn_day, numeros):
+    def _import_tombola_turn(self, draw_date, turn_code, numeros):
         """20 registros `lottery.tombola.output`, uno por número, para ese
         turno. A diferencia de la Quiniela no hay premios: los 20 números
         salen de un solo sorteo, y una fila por número es lo que después
         permite calcular atrasos y salidas por día/mes con una consulta
         directa (número, fecha), igual que ya se hace con lottery.output."""
-        label = f'{draw_date} {turn_day} Tómbola'
+        label = f'{draw_date} {turn_code} Tómbola'
         Tombola = self.env['lottery.tombola.output']
+        turno_id = self.env['lottery.turno']._ids_by_code().get(turn_code)
+        if not turno_id:
+            return [f'[ERROR] {label} – turno inexistente']
 
-        if Tombola.search([('date', '=', draw_date), ('turn_day', '=', turn_day)], limit=1):
+        if Tombola.search([('date', '=', draw_date), ('turno_code', '=', turn_code)], limit=1):
             return [f'[OMITIDO] {label} – ya registrado']
 
         LottoNum = self.env['lottery.number']
@@ -325,7 +331,7 @@ class LotteryScraperQuinielaUy(models.Model):
                 return [f'[ERROR] {label} – número {numero_str} no existe en el catálogo']
             vals_list.append({
                 'date': draw_date,
-                'turn_day': turn_day,
+                'turno_id': turno_id,
                 'number_id': number_rec.id,
             })
 

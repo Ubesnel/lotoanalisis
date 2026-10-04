@@ -80,8 +80,8 @@ class LotteryScraperNewYork(models.Model):
 
         last = self.env['lottery.output'].search(
             [('sorteo_id', '=', scraper.sorteo_id.id)],
-            order='date desc, id desc', limit=1)
-        if last and last.date == today_et and last.turn_day == 'evening':
+            order='date desc, turno_sequence desc, id desc', limit=1)
+        if last and last.date == today_et and last.turno_code == 'evening':
             _logger.debug('Scraper NY: %s ya está completo.', today_et)
             return
 
@@ -151,10 +151,10 @@ class LotteryScraperNewYork(models.Model):
         today_et = datetime.now(tz=et_tz).date()
 
         last = self.env['lottery.output'].search(
-            [('sorteo_id', '=', self.sorteo_id.id)], order='date desc, id desc', limit=1)
+            [('sorteo_id', '=', self.sorteo_id.id)], order='date desc, turno_sequence desc, id desc', limit=1)
         if not last:
             return today_et
-        if last.turn_day == 'afternoon':
+        if last.turno_code == 'afternoon':
             return last.date
         return min(last.date + timedelta(days=1), today_et)
 
@@ -273,13 +273,14 @@ class LotteryScraperNewYork(models.Model):
                 hundreds_by_name[num['name']] = num['id']
 
         # Salidas ya registradas en el rango: (date, turn) → existe
+        turno_ids = self.env['lottery.turno']._ids_by_code()
         existing = {
-            (rec['date'], rec['turn_day'])
+            (rec['date'], rec['turno_code'])
             for rec in Output.search_read([
                 ('sorteo_id', '=', self.sorteo_id.id),
                 ('date', '>=', draws[0]['date']),
                 ('date', '<=', draws[-1]['date']),
-            ], ['date', 'turn_day'])
+            ], ['date', 'turno_code'])
         }
 
         log_lines, vals_list = [], []
@@ -289,7 +290,7 @@ class LotteryScraperNewYork(models.Model):
 
             # `existing` también deduplica dentro de la misma corrida: el
             # dataset trae alguna fila repetida y la constraint unique
-            # (date, turn_day, sorteo_id) tumbaría el create en lote.
+            # (date, turno_id, sorteo_id) tumbaría el create en lote.
             if (draw['date'], draw['turn']) in existing:
                 log_lines.append(f'[OMITIDO] {label} – ya registrado')
                 continue
@@ -305,7 +306,7 @@ class LotteryScraperNewYork(models.Model):
 
             vals = {
                 'date':        draw['date'],
-                'turn_day':    draw['turn'],
+                'turno_id':    turno_ids[draw['turn']],
                 'sorteo_id':   self.sorteo_id.id,
                 'number_id':   number_id,
                 'hundreds_id': hundreds_id,

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <template id="portal_estadisticas_grupos" name="Estadísticas de grupos">
-        <t t-call="website.layout">
-            <owl-component name="lottery_portal.LotteryDashboardGroups"/>
-        </t>
-    </template>
-</odoo>

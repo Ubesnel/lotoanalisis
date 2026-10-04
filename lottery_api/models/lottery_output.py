@@ -15,7 +15,6 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-TURN_LABELS = {'afternoon': 'Tarde', 'evening': 'Noche'}
 
 
 def _push_worker(dbname, messages):
@@ -74,7 +73,7 @@ class LotteryOutput(models.Model):
         })
 
     def _build_push_message(self, out):
-        turn_label = TURN_LABELS.get(out.turn_day, out.turn_day.capitalize())
+        turn_label = out.turno_id.name or ''
         centena = out.hundreds_id.name if out.hundreds_id else ''
         numero = str(out.number_id.name).zfill(2) if out.number_id else ''
         numero_completo = f'{centena}{numero}'
@@ -133,7 +132,7 @@ class LotteryOutput(models.Model):
         prediction = self.env['lottery.prediction'].sudo().search([
             ('sorteo_id', '=', out.sorteo_id.id),
             ('date', '=', out.date),
-            ('turn_day', '=', out.turn_day),
+            ('turno_id', '=', out.turno_id.id),
             ('published', '=', True),
         ], limit=1)
         if not prediction:

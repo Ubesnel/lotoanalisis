@@ -31,11 +31,7 @@
                                 <tree create="0" edit="0" delete="0" default_order="sorteo_id">
                                     <field name="sorteo_id" optional="show"/>
                                     <field name="total_salidas"/>
-                                    <field name="total_salidas_dia"/>
-                                    <field name="total_salidas_noche"/>
                                     <field name="salidas_atrasadas"/>
-                                    <field name="salidas_atrasadas_dia"/>
-                                    <field name="salidas_atrasadas_noche"/>
                                 </tree>
                             </field>
                         </page>
@@ -64,11 +60,7 @@
                 <field name="sorteo_id" optional="show"/>
                 <field name="group_id"/>
                 <field name="total_salidas" optional="hide"/>
-                <field name="total_salidas_dia" optional="hide"/>
-                <field name="total_salidas_noche" optional="hide"/>
                 <field name="salidas_atrasadas"/>
-                <field name="salidas_atrasadas_dia"/>
-                <field name="salidas_atrasadas_noche"/>
                 <field name="salidas_atrasadas_lunes" optional="hide"/>
                 <field name="salidas_atrasadas_martes" optional="hide"/>
                 <field name="salidas_atrasadas_miercoles" optional="hide"/>
@@ -77,6 +69,61 @@
                 <field name="salidas_atrasadas_sabado" optional="hide"/>
                 <field name="salidas_atrasadas_domingo" optional="hide"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_group_stat_form" model="ir.ui.view">
+        <field name="name">lottery.group.stat.form</field>
+        <field name="model">lottery.group.stat</field>
+        <field name="arch" type="xml">
+            <form string="Estadísticas del grupo" create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="group_id"/>
+                            <field name="sorteo_id"/>
+                        </group>
+                        <group>
+                            <field name="total_salidas"/>
+                            <field name="salidas_atrasadas"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Por turno" name="por_turno">
+                            <field name="turno_stat_ids">
+                                <tree>
+                                    <field name="turno_id"/>
+                                    <field name="total_salidas"/>
+                                    <field name="salidas_atrasadas"/>
+                                    <field name="ultima_fecha"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Por día de la semana" name="por_dia">
+                            <group>
+                                <group string="Salidas">
+                                    <field name="total_lunes"/>
+                                    <field name="total_martes"/>
+                                    <field name="total_miercoles"/>
+                                    <field name="total_jueves"/>
+                                    <field name="total_viernes"/>
+                                    <field name="total_sabado"/>
+                                    <field name="total_domingo"/>
+                                </group>
+                                <group string="Atraso (semanas)">
+                                    <field name="salidas_atrasadas_lunes"/>
+                                    <field name="salidas_atrasadas_martes"/>
+                                    <field name="salidas_atrasadas_miercoles"/>
+                                    <field name="salidas_atrasadas_jueves"/>
+                                    <field name="salidas_atrasadas_viernes"/>
+                                    <field name="salidas_atrasadas_sabado"/>
+                                    <field name="salidas_atrasadas_domingo"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
         </field>
     </record>
 
@@ -100,8 +147,51 @@
         <field name="name">Atrasos de grupos</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">lottery.group.stat</field>
-        <field name="view_mode">tree</field>
+        <field name="view_mode">tree,form</field>
         <field name="context">{'search_default_filter_sorteo_florida': 1}</field>
         <field name="search_view_id" ref="view_lottery_group_stat_search"/>
+    </record>
+
+    <!-- Atrasos de grupos por turno: una fila por grupo, sorteo y turno. -->
+    <record id="view_lottery_group_stat_turno_tree" model="ir.ui.view">
+        <field name="name">view.lottery.group.stat.turno.tree</field>
+        <field name="model">lottery.group.stat.turno</field>
+        <field name="arch" type="xml">
+            <tree string="Atrasos de grupos por turno" create="0" edit="0" delete="0">
+                <field name="sorteo_id" optional="show"/>
+                <field name="turno_id"/>
+                <field name="group_id"/>
+                <field name="total_salidas"/>
+                <field name="salidas_atrasadas"/>
+                <field name="ultima_fecha"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_group_stat_turno_search" model="ir.ui.view">
+        <field name="name">lottery.group.stat.turno.search</field>
+        <field name="model">lottery.group.stat.turno</field>
+        <field name="arch" type="xml">
+            <search string="Atrasos de grupos por turno">
+                <field name="group_id"/>
+                <field name="sorteo_id"/>
+                <field name="turno_id"/>
+                <filter string="Florida" name="filter_sorteo_florida" domain="[('sorteo_id.code', '=', 'florida')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Sorteo" name="group_sorteo_id" domain="[]" context="{'group_by': 'sorteo_id'}"/>
+                    <filter string="Turno" name="group_turno_id" domain="[]" context="{'group_by': 'turno_id'}"/>
+                    <filter string="Grupo" name="group_group" domain="[]" context="{'group_by': 'group_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lottery_group_stat_turno" model="ir.actions.act_window">
+        <field name="name">Atrasos de grupos por turno</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.group.stat.turno</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_filter_sorteo_florida': 1, 'search_default_group_turno_id': 1}</field>
+        <field name="search_view_id" ref="view_lottery_group_stat_turno_search"/>
     </record>
 </odoo>
