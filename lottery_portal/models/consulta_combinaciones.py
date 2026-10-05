@@ -37,16 +37,18 @@ class ConsultaCombinaciones(models.TransientModel):
         """Últimas `window` salidas hasta la fecha, más reciente primero."""
         self.ensure_one()
         self.env.cr.execute("""
-            SELECT o.date, t.name, o.complete_number
+            SELECT o.date, o.turno_id, o.complete_number
             FROM lottery_output o
-            JOIN lottery_turno t ON t.id = o.turno_id
             WHERE o.sorteo_id = %s
               AND o.date <= %s
               AND o.complete_number IS NOT NULL
             ORDER BY o.date DESC, o.turno_sequence DESC
             LIMIT %s
         """, (self.sorteo_id.id, self.date, self.window))
-        return self.env.cr.fetchall()
+        rows = self.env.cr.fetchall()
+        nombres = self.env['lottery.stats.service']._turno_names(
+            r[1] for r in rows)
+        return [(r[0], nombres[r[1]], r[2]) for r in rows]
 
     def _get_same_date_numbers(self):
         """Números (2 cifras) salidos el mismo dd/mm en años anteriores."""

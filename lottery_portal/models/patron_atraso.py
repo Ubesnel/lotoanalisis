@@ -72,15 +72,20 @@ class LotteryPatronAtraso(models.TransientModel):
     result_html = fields.Html(string='Resultado', readonly=True, sanitize=False)
 
     def _fetch_rows(self, sorteo_id, target_date):
+        # t.name es traducible (jsonb): se trae el id del turno y el nombre
+        # se resuelve por ORM (ver lottery.stats.service._turno_names).
         self.env.cr.execute("""
-            SELECT o.date, t.name, o.week_day, n.name, t.code, t.sequence
+            SELECT o.date, o.turno_id, o.week_day, n.name, t.code, t.sequence
             FROM lottery_output o
             JOIN lottery_number n ON n.id = o.number_id
             JOIN lottery_turno t ON t.id = o.turno_id
             WHERE o.sorteo_id = %s AND o.date <= %s
             ORDER BY o.date, o.turno_sequence, o.id
         """, (sorteo_id, target_date))
-        return self.env.cr.fetchall()
+        rows = self.env.cr.fetchall()
+        nombres = self.env['lottery.stats.service']._turno_names(
+            r[1] for r in rows)
+        return [(r[0], nombres[r[1]]) + r[2:] for r in rows]
 
     @staticmethod
     def _par(a, b):

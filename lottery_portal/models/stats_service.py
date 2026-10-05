@@ -85,6 +85,15 @@ class LotteryStatsService(models.Model):
     # ── Últimas salidas ───────────────────────────────────────────
 
     @api.model
+    def _turno_names(self, turno_ids):
+        """{id: nombre} de los turnos, en el idioma del contexto.
+
+        lottery.turno.name es traducible (jsonb con un valor por idioma): en
+        SQL crudo se trae el id del turno y el nombre se resuelve acá."""
+        return {t.id: t.name
+                for t in self.env['lottery.turno'].browse(set(turno_ids))}
+
+    @api.model
     def get_ultimas_salidas(self, sorteo_id=False, day=False, limit=10):
         """Las últimas `limit` fechas con salidas del sorteo (opcionalmente
         solo de un día de la semana, código 'lu'..'do'), de la más nueva a
@@ -106,7 +115,7 @@ class LotteryStatsService(models.Model):
                 LIMIT %s
             )
             SELECT o.date, TO_CHAR(o.date, 'DD/MM/YYYY') AS fecha, o.week_day,
-                   t.code AS turno, t.name AS turno_name,
+                   t.code AS turno, o.turno_id,
                    c.name AS centena,
                    LPAD(n.name::text, 2, '0') AS numero,
                    be.name AS bola_extra,
@@ -123,8 +132,11 @@ class LotteryStatsService(models.Model):
             WHERE o.sorteo_id = %s
             ORDER BY o.date DESC, o.turno_sequence
         """.format(where=' AND '.join(where)), params + [limit, sorteo_id])
+        rows = self.env.cr.dictfetchall()
+        nombres = self._turno_names(r['turno_id'] for r in rows)
         por_fecha = {}
-        for r in self.env.cr.dictfetchall():
+        for r in rows:
+            r['turno_name'] = nombres[r['turno_id']]
             fila = por_fecha.setdefault(r['date'], {
                 'date': r['date'], 'fecha': r['fecha'], 'week_day': r['week_day'], 'salidas': [],
             })
@@ -388,14 +400,16 @@ class LotteryStatsService(models.Model):
 
         # Últimas `window` salidas hasta la fecha, más reciente primero.
         self.env.cr.execute("""
-            SELECT o.date, t.code, o.complete_number, t.name
+            SELECT o.date, t.code, o.complete_number, o.turno_id
             FROM lottery_output o
             JOIN lottery_turno t ON t.id = o.turno_id
             WHERE o.sorteo_id = %s AND o.date <= %s AND o.complete_number IS NOT NULL
             ORDER BY o.date DESC, o.turno_sequence DESC
             LIMIT %s
         """, (sorteo_id, target_date, window))
-        outputs = self.env.cr.fetchall()
+        rows = self.env.cr.fetchall()
+        nombres = self._turno_names(r[3] for r in rows)
+        outputs = [r[:3] + (nombres[r[3]],) for r in rows]
         if not outputs:
             return {'outputs': [], 'digits': Counter(), 'scores': {}}
 
@@ -654,12 +668,14 @@ class LotteryStatsService(models.Model):
         """[(id, code, name)] de los turnos con estadísticas de Tómbola, en
         orden del día (la Tómbola no tiene sorteo con turnos propios)."""
         self.env.cr.execute("""
-            SELECT DISTINCT t.id, t.code, t.name, t.sequence
+            SELECT DISTINCT t.id, t.code, t.sequence
             FROM lottery_tombola_number_stat_turno st
             JOIN lottery_turno t ON t.id = st.turno_id
             ORDER BY t.sequence
         """)
-        return [(r[0], r[1], r[2]) for r in self.env.cr.fetchall()]
+        rows = self.env.cr.fetchall()
+        nombres = self._turno_names(r[0] for r in rows)
+        return [(r[0], r[1], nombres[r[0]]) for r in rows]
 
     @api.model
     def get_tombola_top_10(self, turno_id=False):
@@ -958,16 +974,18 @@ class LotteryStatsService(models.Model):
         if not group_ids:
             return {}
         self.env.cr.execute("""
-            SELECT gt.group_id, t.code, t.name, gt.salidas_atrasadas AS atraso
+            SELECT gt.group_id, t.code, gt.turno_id, gt.salidas_atrasadas AS atraso
             FROM lottery_group_stat_turno gt
             JOIN lottery_turno t ON t.id = gt.turno_id
             WHERE gt.sorteo_id = %s AND gt.group_id = ANY(%s)
             ORDER BY gt.group_id, t.sequence
         """, (sorteo_id, list(group_ids)))
+        rows = self.env.cr.dictfetchall()
+        nombres = self._turno_names(r['turno_id'] for r in rows)
         res = {}
-        for r in self.env.cr.dictfetchall():
+        for r in rows:
             res.setdefault(r['group_id'], []).append(
-                {'code': r['code'], 'name': r['name'], 'atraso': r['atraso'] or 0})
+                {'code': r['code'], 'name': nombres[r['turno_id']], 'atraso': r['atraso'] or 0})
         return res
 
     # ── Atrasos de líneas y terminales ────────────────────────────
