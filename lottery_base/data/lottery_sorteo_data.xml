@@ -1,258 +1,441 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data noupdate="1">
-        <record id="sorteo_florida" model="lottery.sorteo">
-            <field name="name">Florida</field>
-            <field name="code">florida</field>
-            <field name="sequence">1</field>
-            <field name="uses_fireball" eval="True"/>
-            <field name="enforce_turn_continuity" eval="True"/>
-            <field name="source_code">florida</field>
-        </record>
-        <record id="sorteo_new_york" model="lottery.sorteo">
-            <field name="name">New York</field>
-            <field name="code">new_york</field>
-            <field name="sequence">2</field>
-            <field name="uses_fireball" eval="False"/>
-            <!-- Histórico 1980-2001 solo tiene turno Noche: la continuidad
-                 Tarde→Noche rompería la importación de esos años. -->
-            <field name="enforce_turn_continuity" eval="False"/>
-            <field name="is_pick3" eval="True"/>
-            <field name="source_code">new_york</field>
-        </record>
-        <!-- Florida Pick 2: número de 2 dígitos (00-99), SIN centena.
-             Nació el 01/08/2016 y comparte la Fireball con Pick 3 / Pick 4,
-             por eso no se registra acá (ya está en el sorteo Florida). -->
+        <!-- Número de 2 dígitos (00-99), SIN centena. Nació el 01/08/2016 y comparte la Fireball con Pick 3 / Pick 4, por eso no se registra acá (ya está en el sorteo Florida). Continuidad en False: el primer sorteo del histórico es de Tarde y no tiene Noche del día anterior. -->
         <record id="sorteo_florida_pick2" model="lottery.sorteo">
             <field name="name">Florida Pick 2</field>
             <field name="code">florida_pick2</field>
-            <field name="sequence">3</field>
+            <field name="sequence">101</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
             <field name="uses_hundreds" eval="False"/>
             <field name="uses_fireball" eval="False"/>
             <field name="is_pick3" eval="False"/>
-            <!-- En False a propósito: el primer sorteo del histórico (01/08/2016)
-                 es de Tarde, y la continuidad exige una Noche del día anterior
-                 que no existe → rompería el backfill en el primer registro. -->
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">florida_pick2</field>
         </record>
-        <!-- La Primera (Rep. Dominicana): quiniela de 3 números de 2 dígitos.
-             Premio 1 = fijo (number_id), premios 2 y 3 = corridos. Sin centena
-             y sin bola extra. Turnos 12:00pm y 07:00pm (hora RD). -->
+        <record id="sorteo_florida" model="lottery.sorteo">
+            <field name="name">Florida</field>
+            <field name="code">florida</field>
+            <field name="sequence">102</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="True"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="True"/>
+            <field name="source_code">florida</field>
+        </record>
+        <!-- Cash 3: Midday 12:29, Evening 18:59, Night 23:34 (hora del Este). -->
+        <record id="sorteo_georgia" model="lottery.sorteo">
+            <field name="name">Georgia</field>
+            <field name="code">georgia</field>
+            <field name="sequence">103</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_midday'), ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Histórico 1980-2001 solo tiene turno Noche: la continuidad rompería la importación de esos años. -->
+        <record id="sorteo_new_york" model="lottery.sorteo">
+            <field name="name">New York</field>
+            <field name="code">new_york</field>
+            <field name="sequence">104</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">new_york</field>
+        </record>
+        <!-- Pick 3: Morning 10:00, Day 12:27, Evening 18:00, Night 22:12 (hora del Centro). -->
+        <record id="sorteo_texas" model="lottery.sorteo">
+            <field name="name">Texas</field>
+            <field name="code">texas</field>
+            <field name="sequence">105</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_morning'), ref('turno_midday'), ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="True"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Pick-3: Midday 12:59 y Evening 22:57 (hora del Este), como Florida: Tarde y Noche. -->
+        <record id="sorteo_new_jersey" model="lottery.sorteo">
+            <field name="name">New Jersey</field>
+            <field name="code">new_jersey</field>
+            <field name="sequence">106</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="True"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Cash 3: Morning 9:28, Midday 12:28, Evening 18:28 (hora del Centro). -->
+        <record id="sorteo_tennessee" model="lottery.sorteo">
+            <field name="name">Tennessee</field>
+            <field name="code">tennessee</field>
+            <field name="sequence">107</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_morning'), ref('turno_midday'), ref('turno_afternoon')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Quiniela de 3 números de 2 dígitos: premio 1 = fijo (number_id), premios 2 y 3 = corridos. Turnos 12:00 y 19:00 (hora RD). Continuidad en False: el histórico oficial arranca el 18/02/2023 y puede tener días incompletos. -->
         <record id="sorteo_la_primera" model="lottery.sorteo">
             <field name="name">La Primera</field>
             <field name="code">la_primera</field>
-            <field name="sequence">4</field>
+            <field name="sequence">201</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
             <field name="uses_hundreds" eval="False"/>
             <field name="uses_fireball" eval="False"/>
             <field name="is_pick3" eval="True"/>
-            <!-- En False: el histórico oficial arranca el 18/02/2023 y puede
-                 tener días incompletos; la continuidad rompería el backfill. -->
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">la_primera</field>
         </record>
-        <!-- La Suerte Dominicana: misma mecánica que La Primera.
-             Turnos 12:30 ("Día") y 18:00 (que la fuente llama "Tarde"). -->
-        <record id="sorteo_la_suerte" model="lottery.sorteo">
-            <field name="name">La Suerte</field>
-            <field name="code">la_suerte</field>
-            <field name="sequence">5</field>
-            <field name="uses_hundreds" eval="False"/>
-            <field name="uses_fireball" eval="False"/>
-            <field name="is_pick3" eval="True"/>
-            <field name="enforce_turn_continuity" eval="False"/>
-            <field name="source_code">conectate</field>
-        </record>
-        <!-- King Lottery (Sint Maarten, no dominicana). Mismo formato que las
-             quinielas: 3 números de 2 dígitos = premios 1, 2 y 3. En la fuente
-             los campos se llaman "2&amp;3 Pick 3", "1&amp;2 Pick 4" y "3&amp;4 Pick 4"
-             porque los arman con dígitos de un Pick 3 y un Pick 4, pero el dato
-             que llega y se guarda es idéntico. -->
-        <record id="sorteo_king_lottery" model="lottery.sorteo">
-            <field name="name">King Lottery</field>
-            <field name="code">king_lottery</field>
-            <field name="sequence">6</field>
-            <field name="uses_hundreds" eval="False"/>
-            <field name="uses_fireball" eval="False"/>
-            <field name="is_pick3" eval="True"/>
-            <field name="enforce_turn_continuity" eval="False"/>
-            <field name="source_code">conectate</field>
-        </record>
-        <!-- Quinielón (Rep. Dominicana): mismo formato que Florida Pick 2 —
-             un número de 2 dígitos (00-99), sin centena y sin bola extra.
-             Misma fuente que La Primera (laprimera.do), pero el juego
-             recién aparece en el feed desde el 20/05/2024, así que su
-             histórico empieza más tarde que el de La Primera. Turnos
-             12:00pm y 07:00pm (hora RD). -->
+        <!-- Mismo formato que Florida Pick 2: un número de 2 dígitos, sin centena ni bola extra. Misma fuente que La Primera; el juego aparece en el feed desde el 20/05/2024 y tiene huecos que romperían la continuidad. -->
         <record id="sorteo_quinielon" model="lottery.sorteo">
             <field name="name">Quinielón</field>
             <field name="code">quinielon</field>
-            <field name="sequence">7</field>
+            <field name="sequence">202</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
             <field name="uses_hundreds" eval="False"/>
             <field name="uses_fireball" eval="False"/>
             <field name="is_pick3" eval="False"/>
-            <!-- En False: el histórico de este juego tiene huecos (ver
-                 lottery_scraper_quinielon.py) que romperían la continuidad. -->
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quinielon</field>
         </record>
-        <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 1</field>
-            <field name="code">quiniela_uy_1</field>
-            <field name="sequence">11</field>
+        <!-- Misma mecánica que La Primera. Turnos 12:30 ("Día") y 18:00 (que la fuente llama "Tarde"). -->
+        <record id="sorteo_la_suerte" model="lottery.sorteo">
+            <field name="name">La Suerte</field>
+            <field name="code">la_suerte</field>
+            <field name="sequence">203</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">conectate</field>
+        </record>
+        <!-- Un solo sorteo diario, al mediodía (hora RD). -->
+        <record id="sorteo_lotedom" model="lottery.sorteo">
+            <field name="name">LoteDom</field>
+            <field name="code">lotedom</field>
+            <field name="sequence">204</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Un solo sorteo diario, 12:55 (hora RD). -->
+        <record id="sorteo_loteria_real" model="lottery.sorteo">
+            <field name="name">Lotería Real</field>
+            <field name="code">loteria_real</field>
+            <field name="sequence">205</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Un solo sorteo diario, 19:55 (hora RD). -->
+        <record id="sorteo_loteka" model="lottery.sorteo">
+            <field name="name">Loteka</field>
+            <field name="code">loteka</field>
+            <field name="sequence">206</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Leidsa: un sorteo diario, 20:55 (domingos 15:55, hora RD). -->
+        <record id="sorteo_quiniela_pale" model="lottery.sorteo">
+            <field name="name">Quiniela Palé</field>
+            <field name="code">quiniela_pale</field>
+            <field name="sequence">207</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Gana Más 14:30 (Tarde) y Lotería Nacional 21:00 (Noche; domingos 18:00), hora RD. -->
+        <record id="sorteo_loteria_nacional" model="lottery.sorteo">
+            <field name="name">Lotería Nacional</field>
+            <field name="code">loteria_nacional</field>
+            <field name="sequence">208</field>
+            <field name="country_id" ref="base.do"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Sint Maarten (parte neerlandesa), no dominicana. Mismo formato que las quinielas: 3 números de 2 dígitos = premios 1, 2 y 3. En la fuente los campos se llaman "2&amp;3 Pick 3", "1&amp;2 Pick 4" y "3&amp;4 Pick 4" porque los arman con dígitos de un Pick 3 y un Pick 4, pero el dato que llega y se guarda es idéntico. -->
+        <record id="sorteo_king_lottery" model="lottery.sorteo">
+            <field name="name">King Lottery</field>
+            <field name="code">king_lottery</field>
+            <field name="sequence">301</field>
+            <field name="country_id" ref="base.sx"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+            <field name="source_code">conectate</field>
+        </record>
+        <record id="sorteo_quiniela_uy_1" model="lottery.sorteo">
+            <field name="name">Quiniela UY - Premio 1</field>
+            <field name="code">quiniela_uy_1</field>
+            <field name="sequence">401</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_2" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 2</field>
+            <field name="name">Quiniela UY - Premio 2</field>
             <field name="code">quiniela_uy_2</field>
-            <field name="sequence">12</field>
+            <field name="sequence">402</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_3" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 3</field>
+            <field name="name">Quiniela UY - Premio 3</field>
             <field name="code">quiniela_uy_3</field>
-            <field name="sequence">13</field>
+            <field name="sequence">403</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_4" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 4</field>
+            <field name="name">Quiniela UY - Premio 4</field>
             <field name="code">quiniela_uy_4</field>
-            <field name="sequence">14</field>
+            <field name="sequence">404</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_5" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 5</field>
+            <field name="name">Quiniela UY - Premio 5</field>
             <field name="code">quiniela_uy_5</field>
-            <field name="sequence">15</field>
+            <field name="sequence">405</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_6" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 6</field>
+            <field name="name">Quiniela UY - Premio 6</field>
             <field name="code">quiniela_uy_6</field>
-            <field name="sequence">16</field>
+            <field name="sequence">406</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_7" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 7</field>
+            <field name="name">Quiniela UY - Premio 7</field>
             <field name="code">quiniela_uy_7</field>
-            <field name="sequence">17</field>
+            <field name="sequence">407</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_8" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 8</field>
+            <field name="name">Quiniela UY - Premio 8</field>
             <field name="code">quiniela_uy_8</field>
-            <field name="sequence">18</field>
+            <field name="sequence">408</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_9" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 9</field>
+            <field name="name">Quiniela UY - Premio 9</field>
             <field name="code">quiniela_uy_9</field>
-            <field name="sequence">19</field>
+            <field name="sequence">409</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_10" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 10</field>
+            <field name="name">Quiniela UY - Premio 10</field>
             <field name="code">quiniela_uy_10</field>
-            <field name="sequence">20</field>
+            <field name="sequence">410</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_11" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 11</field>
+            <field name="name">Quiniela UY - Premio 11</field>
             <field name="code">quiniela_uy_11</field>
-            <field name="sequence">21</field>
+            <field name="sequence">411</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_12" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 12</field>
+            <field name="name">Quiniela UY - Premio 12</field>
             <field name="code">quiniela_uy_12</field>
-            <field name="sequence">22</field>
+            <field name="sequence">412</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_13" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 13</field>
+            <field name="name">Quiniela UY - Premio 13</field>
             <field name="code">quiniela_uy_13</field>
-            <field name="sequence">23</field>
+            <field name="sequence">413</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_14" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 14</field>
+            <field name="name">Quiniela UY - Premio 14</field>
             <field name="code">quiniela_uy_14</field>
-            <field name="sequence">24</field>
+            <field name="sequence">414</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_15" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 15</field>
+            <field name="name">Quiniela UY - Premio 15</field>
             <field name="code">quiniela_uy_15</field>
-            <field name="sequence">25</field>
+            <field name="sequence">415</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_16" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 16</field>
+            <field name="name">Quiniela UY - Premio 16</field>
             <field name="code">quiniela_uy_16</field>
-            <field name="sequence">26</field>
+            <field name="sequence">416</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_17" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 17</field>
+            <field name="name">Quiniela UY - Premio 17</field>
             <field name="code">quiniela_uy_17</field>
-            <field name="sequence">27</field>
+            <field name="sequence">417</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_18" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 18</field>
+            <field name="name">Quiniela UY - Premio 18</field>
             <field name="code">quiniela_uy_18</field>
-            <field name="sequence">28</field>
+            <field name="sequence">418</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_19" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 19</field>
+            <field name="name">Quiniela UY - Premio 19</field>
             <field name="code">quiniela_uy_19</field>
-            <field name="sequence">29</field>
+            <field name="sequence">419</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
         <record id="sorteo_quiniela_uy_20" model="lottery.sorteo">
-            <field name="name">Quiniela UY - Sorteo 20</field>
+            <field name="name">Quiniela UY - Premio 20</field>
             <field name="code">quiniela_uy_20</field>
-            <field name="sequence">30</field>
+            <field name="sequence">420</field>
+            <field name="country_id" ref="base.uy"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>

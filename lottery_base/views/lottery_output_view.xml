@@ -4,15 +4,14 @@
         <field name="name">view.lottery.output.tree</field>
         <field name="model">lottery.output</field>
         <field name="arch" type="xml">
-            <tree string="Salidas" decoration-warning="turn_day == 'afternoon'"
-                  decoration-success="turn_day == 'evening'">
+            <tree string="Salidas">
                 <field name="date"/>
                 <field name="complete_number"/>
                 <field name="week_day"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="month" optional="hide"/>
                 <field name="year" optional="hide"/>
-                <field name="turn_day" column_invisible="1"/>
+                <field name="turno_id" widget="badge"/>
                 <field name="hundreds_id" column_invisible="1"/>
                 <field name="number_id" column_invisible="1"/>
             </tree>
@@ -23,15 +22,14 @@
         <field name="name">view.lottery.output.all.tree</field>
         <field name="model">lottery.output</field>
         <field name="arch" type="xml">
-            <tree string="Salidas" decoration-warning="turn_day == 'afternoon'"
-                  decoration-success="turn_day == 'evening'" create="1" edit="1" delete="1">
+            <tree string="Salidas" create="1" edit="1" delete="1">
                 <field name="date"/>
                 <field name="complete_number"/>
                 <field name="week_day"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="month" optional="hide"/>
                 <field name="year" optional="hide"/>
-                <field name="turn_day" optional="hide"/>
+                <field name="turno_id" widget="badge"/>
                 <field name="hundreds_id" column_invisible="1"/>
                 <field name="number_id" column_invisible="1"/>
             </tree>
@@ -49,7 +47,8 @@
                             <field name="sorteo_id"/>
                             <field name="date"/>
                             <field name="week_day"/>
-                            <field name="turn_day"/>
+                            <field name="sorteo_turno_ids" invisible="1"/>
+                            <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="month" invisible="1"/>
                             <field name="year" invisible="1"/>
                         </group>
@@ -85,10 +84,7 @@
                 <field name="number_id"/>
                 <field name="date"/>
                 <field name="sorteo_id"/>
-                <filter string="Salidas de día" name="lottery_output_afternoon"
-                        domain="[('turn_day', '=', 'afternoon')]"/>
-                <filter string="Salidas de noche" name="lottery_output_evening"
-                        domain="[('turn_day', '=', 'evening')]"/>
+                <field name="turno_id"/>
                 <filter string="Salidas Lunes" name="lottery_output_monday" domain="[('week_day', '=', 'lu')]"/>
                 <filter string="Salidas Martes" name="lottery_output_tuesday" domain="[('week_day', '=', 'ma')]"/>
                 <filter string="Salidas Miércoles" name="lottery_output_wednesday" domain="[('week_day', '=', 'mi')]"/>
@@ -117,7 +113,7 @@
                     <filter string="Número" name="group_number_id" context="{'group_by': 'number_id'}"/>
                     <filter string="Año" name="group_year" domain="[]" context="{'group_by': 'year'}"/>
                     <filter string="Mes" name="group_month" domain="[]" context="{'group_by': 'month'}"/>
-                    <filter string="Turno" name="group_turn_day" domain="[]" context="{'group_by': 'turn_day'}"/>
+                    <filter string="Turno" name="group_turno_id" domain="[]" context="{'group_by': 'turno_id'}"/>
                     <filter string="Día de la semana" name="group_week_day" domain="[]"
                             context="{'group_by': 'week_day'}"/>
                 </group>
@@ -125,73 +121,33 @@
         </field>
     </record>
 
-    <record id="view_lottery_output_kanban_afternoon" model="ir.ui.view">
-        <field name="name">lottery.output.kanban.afternoon</field>
-        <field name="model">lottery.output</field>
-        <field name="arch" type="xml">
-            <kanban class="o_kanban_lottery">
-                <field name="date"/>
-                <field name="complete_number"/>
-                <field name="week_day"/>
-                <templates>
-                <t t-name="kanban-box">
-                    <div class="oe_kanban_global_click card border-info shadow-sm position-relative p-3">
-                        <span class="badge bg-primary text-white position-absolute top-0 start-0 m-2 fs-6">
-                            <i class="fa fa-calendar me-1" title="Fecha"/>
-                            <field name="date"/>
-                        </span>
-                        <span class="badge bg-info text-white position-absolute top-0 end-0 m-2">
-                            <field name="week_day"/>
-                        </span>
-                        <div class="text-center">
-                            <div class="display-6 fw-bold text-warning">
-                                <field name="complete_number"/>
-                            </div>
-                        </div>
-                    </div>
-                </t>
-            </templates>
-            </kanban>
-        </field>
-    </record>
-
-    <record id="view_lottery_output_kanban_evening" model="ir.ui.view">
-        <field name="name">lottery.output.kanban.evening</field>
-        <field name="model">lottery.output</field>
-        <field name="arch" type="xml">
-            <kanban class="o_kanban_lottery">
-                <field name="date"/>
-                <field name="complete_number"/>
-                <field name="week_day"/>
-                <templates>
-                <t t-name="kanban-box">
-                    <div class="oe_kanban_global_click card border-info shadow-sm position-relative p-3">
-                        <span class="badge bg-primary text-white position-absolute top-0 start-0 m-2 fs-6">
-                            <i class="fa fa-calendar me-1" title="Fecha"/>
-                            <field name="date"/>
-                        </span>
-                        <span class="badge bg-info text-white position-absolute top-0 end-0 m-2">
-                            <field name="week_day"/>
-                        </span>
-                        <div class="text-center">
-                            <div class="display-6 fw-bold text-success">
-                                <field name="complete_number"/>
-                            </div>
-                        </div>
-                    </div>
-                </t>
-            </templates>
-            </kanban>
-        </field>
+    <record id="action_lottery_output_florida_pick2" model="ir.actions.act_window">
+        <field name="name">Florida Pick 2</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'florida_pick2')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'florida_pick2'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
     <record id="action_lottery_output_florida" model="ir.actions.act_window">
-        <field name="name">Florida Pick3</field>
+        <field name="name">Florida</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">lottery.output</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('sorteo_id.code', '=', 'florida')]</field>
         <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'florida'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_georgia" model="ir.actions.act_window">
+        <field name="name">Georgia</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'georgia')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'georgia'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
@@ -205,13 +161,33 @@
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
-    <record id="action_lottery_output_florida_pick2" model="ir.actions.act_window">
-        <field name="name">Florida Pick 2</field>
+    <record id="action_lottery_output_texas" model="ir.actions.act_window">
+        <field name="name">Texas</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">lottery.output</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('sorteo_id.code', '=', 'florida_pick2')]</field>
-        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'florida_pick2'}</field>
+        <field name="domain">[('sorteo_id.code', '=', 'texas')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'texas'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_new_jersey" model="ir.actions.act_window">
+        <field name="name">New Jersey</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'new_jersey')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'new_jersey'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_tennessee" model="ir.actions.act_window">
+        <field name="name">Tennessee</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'tennessee')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'tennessee'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
@@ -225,6 +201,16 @@
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
+    <record id="action_lottery_output_quinielon" model="ir.actions.act_window">
+        <field name="name">Quinielón</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quinielon')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quinielon'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
     <record id="action_lottery_output_la_suerte" model="ir.actions.act_window">
         <field name="name">La Suerte</field>
         <field name="type">ir.actions.act_window</field>
@@ -232,6 +218,56 @@
         <field name="view_mode">tree,form</field>
         <field name="domain">[('sorteo_id.code', '=', 'la_suerte')]</field>
         <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'la_suerte'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_lotedom" model="ir.actions.act_window">
+        <field name="name">LoteDom</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'lotedom')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'lotedom'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_loteria_real" model="ir.actions.act_window">
+        <field name="name">Lotería Real</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'loteria_real')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'loteria_real'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_loteka" model="ir.actions.act_window">
+        <field name="name">Loteka</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'loteka')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'loteka'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_pale" model="ir.actions.act_window">
+        <field name="name">Quiniela Palé</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_pale')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_pale'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_loteria_nacional" model="ir.actions.act_window">
+        <field name="name">Lotería Nacional</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'loteria_nacional')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'loteria_nacional'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
@@ -245,23 +281,203 @@
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
-    <record id="action_lottery_output_quinielon" model="ir.actions.act_window">
-        <field name="name">Quinielón</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">lottery.output</field>
-        <field name="view_mode">tree,form</field>
-        <field name="domain">[('sorteo_id.code', '=', 'quinielon')]</field>
-        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quinielon'}</field>
-        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
-    </record>
-
     <record id="action_lottery_output_quiniela_uy_1" model="ir.actions.act_window">
-        <field name="name">Quiniela UY Premio 1</field>
+        <field name="name">Quiniela UY - Premio 1</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">lottery.output</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_1')]</field>
         <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_1'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_2" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 2</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_2')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_2'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_3" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 3</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_3')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_3'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_4" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 4</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_4')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_4'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_5" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 5</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_5')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_5'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_6" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 6</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_6')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_6'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_7" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 7</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_7')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_7'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_8" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 8</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_8')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_8'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_9" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 9</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_9')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_9'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_10" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 10</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_10')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_10'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_11" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 11</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_11')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_11'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_12" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 12</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_12')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_12'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_13" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 13</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_13')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_13'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_14" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 14</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_14')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_14'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_15" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 15</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_15')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_15'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_16" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 16</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_16')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_16'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_17" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 17</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_17')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_17'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_18" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 18</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_18')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_18'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_19" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 19</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_19')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_19'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_quiniela_uy_20" model="ir.actions.act_window">
+        <field name="name">Quiniela UY - Premio 20</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'quiniela_uy_20')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'quiniela_uy_20'}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
@@ -272,33 +488,5 @@
         <field name="view_mode">tree,form</field>
         <field name="context">{'search_default_current_month': 1, 'search_default_filter_sorteo_florida': 1}</field>
         <field name="view_id" ref="lottery_base.view_lottery_output_all_tree"/>
-    </record>
-
-    <record id="action_lottery_output_afternoon" model="ir.actions.act_window">
-        <field name="name">Tarde</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">lottery.output</field>
-        <field name="view_mode">kanban,tree,form</field>
-        <field name="domain">[('turn_day','=','afternoon')]</field>
-        <field name="context">{'default_turn_day': 'afternoon','search_default_current_month': 1, 'search_default_filter_sorteo_florida': 1}</field>
-        <field name="view_id" ref="lottery_base.view_lottery_output_kanban_afternoon"/>
-        <field eval="[(5, 0, 0),
-        (0, 0, {'sequence': 5,  'view_mode': 'kanban', 'view_id': ref('lottery_base.view_lottery_output_kanban_afternoon')}),
-        (0, 0, {'sequence': 10, 'view_mode': 'tree', 'view_id': ref('lottery_base.view_lottery_output_tree')}),
-        (0, 0, {'sequence': 12, 'view_mode': 'form', 'view_id': ref('lottery_base.view_lottery_output_form')})]" name="view_ids"/>
-    </record>
-
-    <record id="action_lottery_output_evening" model="ir.actions.act_window">
-        <field name="name">Noche</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">lottery.output</field>
-        <field name="view_mode">kanban,tree,form</field>
-        <field name="domain">[('turn_day','=','evening')]</field>
-        <field name="context">{'default_turn_day': 'evening','search_default_current_month': 1, 'search_default_filter_sorteo_florida': 1}</field>
-        <field name="view_id" ref="lottery_base.view_lottery_output_kanban_evening"/>
-        <field eval="[(5, 0, 0),
-        (0, 0, {'sequence': 5,  'view_mode': 'kanban', 'view_id': ref('lottery_base.view_lottery_output_kanban_evening')}),
-        (0, 0, {'sequence': 10, 'view_mode': 'tree', 'view_id': ref('lottery_base.view_lottery_output_tree')}),
-        (0, 0, {'sequence': 12, 'view_mode': 'form', 'view_id': ref('lottery_base.view_lottery_output_form')})]" name="view_ids"/>
     </record>
 </odoo>

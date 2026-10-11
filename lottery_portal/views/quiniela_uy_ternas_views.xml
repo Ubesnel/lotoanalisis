@@ -12,8 +12,8 @@
                             <field name="sorteo_id"
                                    options="{'no_open': True, 'no_create': True}"
                                    placeholder="General (los 20 premios)"/>
-                            <field name="turn_day" widget="radio"
-                                   options="{'horizontal': true}"/>
+                            <field name="turno_id" placeholder="General"
+                                   options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
                             <field name="fecha_corte"/>

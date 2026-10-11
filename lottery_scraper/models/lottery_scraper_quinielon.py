@@ -131,12 +131,14 @@ class LotteryScraperQuinielon(models.Model):
         completos = {}
         for rec in self.env['lottery.output'].search_read([
                 ('sorteo_id', '=', self.sorteo_id.id),
-                ('date', '>=', desde), ('date', '<=', hasta)], ['date', 'turn_day']):
-            completos.setdefault(fields.Date.to_date(rec['date']), set()).add(rec['turn_day'])
+                ('date', '>=', desde), ('date', '<=', hasta)], ['date', 'turno_code']):
+            completos.setdefault(fields.Date.to_date(rec['date']), set()).add(rec['turno_code'])
 
+        # Un día está completo cuando tiene todos los turnos del sorteo.
+        turnos_sorteo = set(self.sorteo_id.turno_ids.mapped('code'))
         dias, cur = [], desde
         while cur <= hasta:
-            if completos.get(cur, set()) != {'afternoon', 'evening'}:
+            if not turnos_sorteo <= completos.get(cur, set()):
                 dias.append(cur)
             cur += timedelta(days=1)
         return dias, (hasta - desde).days + 1
@@ -296,13 +298,14 @@ class LotteryScraperQuinielon(models.Model):
         by_name = {n['name']: n['id']
                    for n in self.env['lottery.number'].search_read([], ['name'])}
 
+        turno_ids = self.env['lottery.turno']._ids_by_code()
         existing = {
-            (fields.Date.to_date(rec['date']), rec['turn_day'])
+            (fields.Date.to_date(rec['date']), rec['turno_code'])
             for rec in Output.search_read([
                 ('sorteo_id', '=', self.sorteo_id.id),
                 ('date', '>=', draws[0]['date']),
                 ('date', '<=', draws[-1]['date']),
-            ], ['date', 'turn_day'])
+            ], ['date', 'turno_code'])
         }
 
         log_lines, vals_list = [], []
@@ -323,7 +326,7 @@ class LotteryScraperQuinielon(models.Model):
 
             vals_list.append({
                 'date':      draw['date'],
-                'turn_day':  draw['turn'],
+                'turno_id':  turno_ids[draw['turn']],
                 'sorteo_id': self.sorteo_id.id,
                 'number_id': number_id,
             })

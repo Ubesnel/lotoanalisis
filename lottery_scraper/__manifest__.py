@@ -1,6 +1,6 @@
 {
     "name": "Lottery Scraper",
-    "version": "1.2",
+    "version": '2.0',
     "author": "SeuS IT",
     "category": "Tools",
     "summary": "Importación automática de resultados Florida Pick 3 y Pick 2, Quiniela UY y New York Numbers",

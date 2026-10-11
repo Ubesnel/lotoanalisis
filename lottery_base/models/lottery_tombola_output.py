@@ -13,7 +13,7 @@ una tabla (número, fecha) — exactamente el mismo patrón que ya usa
 `lottery.output` para sus propios atrasos. Con un many2many habría que
 atravesar la tabla de relación igual, sin ganar nada a cambio.
 
-Sin unique(date, turn_day, number_id): en los primeros meses publicados
+Sin unique(date, turno_id, number_id): en los primeros meses publicados
 (agosto-diciembre de 2006) hay ~29 sorteos donde la página oficial —y el
 extracto firmado— repiten un número dentro de los 20, en vez de traer uno
 distinto. No hay forma de reconstruir cuál era el número real, así que se
@@ -31,12 +31,15 @@ from .utils import MAPPING_WEEK_DATE, MONTHS, default_today_local
 class LotteryTombolaOutput(models.Model):
     _name = 'lottery.tombola.output'
     _description = 'Salida de la Tómbola (Quiniela Uruguay)'
-    _order = 'date desc, turn_day desc, id desc'
+    _order = 'date desc, turno_sequence desc, id desc'
 
     date = fields.Date(string='Fecha', default=default_today_local, required=True)
-    turn_day = fields.Selection([
-        ('afternoon', 'Tarde'), ('evening', 'Noche'),
-    ], string='Turno del día', required=True, index=True)
+    turno_id = fields.Many2one('lottery.turno', string='Turno', required=True, index=True,
+                               ondelete='restrict')
+    turno_code = fields.Char(related='turno_id.code', string='Código del turno')
+    # Igual que en lottery.output: orden cronológico en SQL sin unir con lottery_turno.
+    turno_sequence = fields.Integer(related='turno_id.sequence', store=True, index=True,
+                                    string='Secuencia del turno')
     number_id = fields.Many2one('lottery.number', string='Número', required=True, index=True)
     week_day = fields.Selection([('lu', 'Lunes'), ('ma', 'Martes'), ('mi', 'Miércoles'),
                                  ('ju', 'Jueves'), ('vi', 'Viernes'), ('sa', 'Sábado'), ('do', 'Domingo')],
@@ -70,11 +73,10 @@ class LotteryTombolaOutput(models.Model):
             else:
                 record.week_day = False
 
-    @api.depends('date', 'turn_day', 'number_id.name')
+    @api.depends('date', 'turno_id.name', 'number_id.name')
     def _compute_display_name(self):
-        turnos = dict(self._fields['turn_day'].selection)
         for record in self:
             date_str = record.date.strftime('%d-%m-%Y') if record.date else ''
             numero = '%02d' % record.number_id.name if record.number_id else ''
             record.display_name = 'Tómbola %s / %s / %s' % (
-                date_str, turnos.get(record.turn_day, ''), numero)
+                date_str, record.turno_id.name or '', numero)

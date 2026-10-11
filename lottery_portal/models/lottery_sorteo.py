@@ -37,7 +37,8 @@ class LotterySorteo(models.Model):
             return None
 
     def compute_ranking_snapshot(self):
-        """Calcula y guarda el snapshot completo de rankings para ambos turnos.
+        """Calcula y guarda el snapshot completo de rankings de cada turno del
+        sorteo (indexado por el código del turno).
         Almacena la salida completa de get_calientes_all (con scores, remaining,
         uses_fireball, next_draw) para que el portal lo lea directamente."""
         service = self.env['lottery.stats.service']
@@ -57,14 +58,14 @@ class LotterySorteo(models.Model):
         """Botón manual para recalcular el ranking."""
         self.compute_ranking_snapshot()
 
-    def get_validation_data(self, turn):
-        """Lee el ranking pre-calculado para un turno. Retorna dict con los
-        sets de calientes/fríos o {} si no hay snapshot."""
+    def get_validation_data(self, turn_code):
+        """Lee el ranking pre-calculado para un turno (por su código). Retorna
+        dict con los sets de calientes/fríos o {} si no hay snapshot."""
         self.ensure_one()
         snapshot = self._get_ranking_snapshot()
-        if not snapshot:
+        if not snapshot or not turn_code:
             return {}
-        return snapshot.get(turn, {})
+        return snapshot.get(turn_code, {})
 
     @staticmethod
     def _fmt_item(item):
@@ -72,11 +73,12 @@ class LotterySorteo(models.Model):
             return item.get('name', '?')
         return str(item)
 
-    @classmethod
-    def _render_ranking_html(cls, snapshot):
+    def _render_ranking_html(self, snapshot):
+        self.ensure_one()
         parts = []
-        for turn, label in (('afternoon', 'Tarde'), ('evening', 'Noche')):
-            data = snapshot.get(turn, {})
+        for turno in self._ordered_turnos():
+            label = turno.name
+            data = snapshot.get(turno.code, {})
             if not data:
                 continue
             nums_hot = data.get('numbers', [])
@@ -85,7 +87,7 @@ class LotterySorteo(models.Model):
             cen_cold = data.get('centenas_cold', [])
             be_hot = data.get('bola_extra', [])
             be_cold = data.get('bola_extra_cold', [])
-            fmt = cls._fmt_item
+            fmt = self._fmt_item
 
             parts.append(f'<h4 style="margin-top:12px">{label}</h4>')
             parts.append('<table class="table table-sm table-bordered" style="width:auto">')

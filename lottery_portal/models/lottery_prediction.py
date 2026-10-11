@@ -209,14 +209,6 @@ ANIOS_MES_NUNCA = 99
 # a valer 0.02) y dos corridas no se podrían comparar.
 TOPE_ANIOS_MES = 8
 
-# Campo de lottery_group_stat que mide el atraso de cada lista.
-CAMPO_ATRASO = {
-    'general': 'salidas_atrasadas',
-    'afternoon': 'salidas_atrasadas_dia',
-    'evening': 'salidas_atrasadas_noche',
-}
-
-
 def _factor_distancia(dist):
     """Parte del peso de la tabla que se lleva un acompañante a `dist`
     casillas. Valor absoluto: dos tiradas distintas se miden con la misma
@@ -258,7 +250,7 @@ def _default_hour(self):
 class LotteryPrediction(models.Model):
     _name = 'lottery.prediction'
     _description = 'Predicción de números'
-    _order = 'date desc, turn_day desc, id desc'
+    _order = 'date desc, turno_sequence desc, id desc'
 
     sorteo_id = fields.Many2one(
         'lottery.sorteo', string='Sorteo', required=True, index=True,
@@ -268,9 +260,15 @@ class LotteryPrediction(models.Model):
         string='Fecha de predicción', required=True, index=True,
         default=default_today_local,
         help='Fecha del sorteo para el que se predicen los números.')
-    turn_day = fields.Selection([
-        ('afternoon', 'Tarde'), ('evening', 'Noche'),
-    ], string='Turno del día', required=True, index=True)
+    turno_id = fields.Many2one(
+        'lottery.turno', string='Turno', required=True, index=True, ondelete='restrict',
+        domain="[('id', 'in', sorteo_turno_ids)]")
+    sorteo_turno_ids = fields.Many2many(related='sorteo_id.turno_ids', string='Turnos del sorteo')
+    # Código del turno: clave del ranking_snapshot del sorteo y de la tabla
+    # LotoAnálisis de ese turno.
+    turno_code = fields.Char(related='turno_id.code', string='Código del turno')
+    turno_sequence = fields.Integer(related='turno_id.sequence', store=True, index=True,
+                                    string='Secuencia del turno')
     published = fields.Boolean(
         string='Publicado', default=False, index=True,
         help='Solo las predicciones publicadas se envían a la app móvil '
@@ -411,7 +409,7 @@ class LotteryPrediction(models.Model):
     _sql_constraints = [
         (
             'unique_date_turn_sorteo',
-            'unique(date, turn_day, sorteo_id)',
+            'unique(date, turno_id, sorteo_id)',
             'Ya existe una predicción registrada para esa fecha, turno y sorteo.'
         )
     ]
@@ -472,16 +470,16 @@ class LotteryPrediction(models.Model):
         for rec in self:
             rec.numbers_count_5 = len(rec.number_ids_5)
 
-    @api.depends('date', 'turn_day', 'sorteo_id.name')
+    @api.depends('date', 'turno_id.name', 'sorteo_id.name')
     def _compute_display_name(self):
         for rec in self:
             date_str = rec.date.strftime('%d-%m-%Y') if rec.date else ''
-            turn_label = dict(self._fields['turn_day'].selection).get(rec.turn_day, '')
+            turn_label = rec.turno_id.name or ''
             sorteo_label = f" / {rec.sorteo_id.name}" if rec.sorteo_id else ''
             rec.display_name = f"{date_str} / {turn_label}{sorteo_label}"
 
     @api.model
-    def numbers_by_temperature(self, sorteo, turn_day, temperature):
+    def numbers_by_temperature(self, sorteo, turn_code, temperature):
         """Números calientes / restantes / fríos de ese sorteo y turno, tal
         como los dejó el último artículo generado (`ranking_snapshot`).
 
@@ -492,13 +490,13 @@ class LotteryPrediction(models.Model):
 
         Devuelve un recordset vacío si el sorteo todavía no tiene snapshot."""
         Number = self.env['lottery.number']
-        if not (sorteo and turn_day and temperature):
+        if not (sorteo and turn_code and temperature):
             return Number
         try:
             snapshot = json.loads(sorteo.ranking_snapshot or '{}')
         except (ValueError, TypeError):
             return Number
-        items = snapshot.get(turn_day, {}).get(
+        items = snapshot.get(turn_code, {}).get(
             TEMPERATURE_KEY.get(temperature), []) or []
         names = []
         for item in items:
@@ -510,7 +508,7 @@ class LotteryPrediction(models.Model):
         return Number.search([('name', 'in', names)]) if names else Number
 
     @api.model
-    def centenas_by_temperature(self, sorteo, turn_day, temperature):
+    def centenas_by_temperature(self, sorteo, turn_code, temperature):
         """Centenas calientes / restantes / frías de ese sorteo y turno, tal
         como las dejó el último artículo generado (`ranking_snapshot`).
 
@@ -520,13 +518,13 @@ class LotteryPrediction(models.Model):
         centena más importante.
 
         Lista vacía si el sorteo no usa centena o todavía no tiene snapshot."""
-        if not (sorteo and turn_day and temperature):
+        if not (sorteo and turn_code and temperature):
             return []
         try:
             snapshot = json.loads(sorteo.ranking_snapshot or '{}')
         except (ValueError, TypeError):
             return []
-        items = snapshot.get(turn_day, {}).get(
+        items = snapshot.get(turn_code, {}).get(
             CENTENA_TEMPERATURE_KEY.get(temperature), []) or []
         centenas = []
         for item in items:
@@ -537,12 +535,12 @@ class LotteryPrediction(models.Model):
                 continue
         return centenas
 
-    @api.onchange('temperature', 'turn_day', 'sorteo_id')
+    @api.onchange('temperature', 'turno_id', 'sorteo_id')
     def _onchange_temperature(self):
-        if not self.temperature or not self.turn_day or not self.sorteo_id:
+        if not self.temperature or not self.turno_id or not self.sorteo_id:
             return
         self.number_ids = self.numbers_by_temperature(
-            self.sorteo_id, self.turn_day, self.temperature)
+            self.sorteo_id, self.turno_code, self.temperature)
 
     # ── Atraso del mes ────────────────────────────────────────────────────
 
@@ -594,27 +592,24 @@ class LotteryPrediction(models.Model):
         """Última salida ANTERIOR al sorteo que se está prediciendo.
 
         turn=None → la última sin importar el turno (si se predice la noche
-        de hoy y la tarde ya salió, es la de la tarde). turn='afternoon' /
-        'evening' → la última de ese turno. Nunca mira el propio sorteo a
-        predecir ni ninguno posterior, así que volver a correr una predicción
-        vieja da lo mismo que el día que se generó.
+        de hoy y la tarde ya salió, es la de la tarde). turn=<código de
+        turno> → la última de ese turno. Nunca mira el propio sorteo a
+        predecir ni ninguno posterior (anteriores = fecha menor, o misma
+        fecha y turno anterior en el día), así que volver a correr una
+        predicción vieja da lo mismo que el día que se generó.
 
         `limit` sube de 1 para pedir las últimas N (la Tómbola pide 6 para
         comparar dígitos), y devuelve el recordset ordenado de más reciente a
         más vieja."""
         self.ensure_one()
-        domain = [('sorteo_id', '=', self.sorteo_id.id)]
-        if self.turn_day == 'evening':
-            domain += ['|', ('date', '<', self.date),
-                       '&', ('date', '=', self.date),
-                       ('turn_day', '=', 'afternoon')]
-        else:
-            domain += [('date', '<', self.date)]
+        domain = [('sorteo_id', '=', self.sorteo_id.id),
+                  '|', ('date', '<', self.date),
+                  '&', ('date', '=', self.date),
+                  ('turno_sequence', '<', self.turno_id.sequence)]
         if turn:
-            domain += [('turn_day', '=', turn)]
-        # turn_day desc deja 'evening' antes que 'afternoon' del mismo día.
+            domain += [('turno_id.code', '=', turn)]
         return self.env['lottery.output'].sudo().search(
-            domain, order='date desc, turn_day desc, id desc', limit=limit)
+            domain, order='date desc, turno_sequence desc, id desc', limit=limit)
 
     def _acompanantes(self, turno, numero):
         """{número: distancia en casillas} de los que comparten fila, columna
@@ -660,15 +655,13 @@ class LotteryPrediction(models.Model):
         atrasado — no se busca que gane por acumular en vez de por atraso —,
         pero estar en tres o cuatro sí lo despega."""
         self.ensure_one()
-        turno_lbl = dict(self._fields['turn_day'].selection).get(
-            self.turn_day, self.turn_day).lower()
+        turno_lbl = (self.turno_id.name or '').lower()
 
         entradas = {}
-        for option, etiqueta in (('general', 'general'),
-                                 (self.turn_day, turno_lbl)):
-            campo = CAMPO_ATRASO[option]
-            for row in top_fn(option, day, sorteo_id=self.sorteo_id.id):
-                atraso = row.get(campo) or 0
+        for turno_id, etiqueta in ((False, 'general'),
+                                   (self.turno_id.id, turno_lbl)):
+            for row in top_fn(turno_id, day, sorteo_id=self.sorteo_id.id):
+                atraso = row.get('atraso') or 0
                 previa = entradas.get(row['id'])
                 if previa is None:
                     entradas[row['id']] = {
@@ -710,10 +703,9 @@ class LotteryPrediction(models.Model):
         self.ensure_one()
         acomp_general = (self._acompanantes('general', last_general.number_id.name)
                          if last_general else {})
-        acomp_turno = (self._acompanantes(self.turn_day, last_turno.number_id.name)
+        acomp_turno = (self._acompanantes(self.turno_code, last_turno.number_id.name)
                        if last_turno else {})
-        turno_lbl = dict(self._fields['turn_day'].selection).get(
-            self.turn_day, self.turn_day).lower()
+        turno_lbl = (self.turno_id.name or '').lower()
 
         valores = {}
         for n in candidatos:
@@ -751,7 +743,7 @@ class LotteryPrediction(models.Model):
         day = WEEKDAY_CODES[self.date.weekday()]
 
         last_general = self._last_output()
-        last_turno = self._last_output(turn=self.turn_day)
+        last_turno = self._last_output(turn=self.turno_code)
         tabla = self._valor_tabla(candidatos, last_general, last_turno)
 
         gr_pts, gr_det = self._puntos_por_atraso(
@@ -881,16 +873,17 @@ class LotteryPrediction(models.Model):
           terminal recomendados (los del cruce), 1 si está en uno solo.
         - `atr_dia` (10 → 5): 2 grupos + 2 líneas + 2 terminales más
           atrasados del DÍA DE LA SEMANA de la predicción. De 0 a 3.
-        - `tablas`  (5 → Súper Mágico): en cuántas de las tres tablas
-          LotoAnálisis (general, tarde y noche) el número es acompañante de
-          la última salida de esa serie. De 0 a 3.
+        - `tablas`  (5 → Súper Mágico): en cuántas de las tablas
+          LotoAnálisis (la general y la de cada turno del sorteo) el número
+          es acompañante de la última salida de esa serie. De 0 a 1 + la
+          cantidad de turnos.
         """
         self.ensure_one()
         stats = self.env['lottery.stats.service'].sudo()
         day = WEEKDAY_CODES[self.date.weekday()]
 
         reco = stats.get_lineas_terminales_probables(
-            self.turn_day, str(self.date), sorteo_id=self.sorteo_id.id) or {}
+            self.turno_id.id, str(self.date), sorteo_id=self.sorteo_id.id) or {}
         lineas_reco = {l['idx'] for l in reco.get('lineas') or []}
         term_reco = {t['idx'] for t in reco.get('terminales') or []}
         rec_lt = {}
@@ -910,7 +903,7 @@ class LotteryPrediction(models.Model):
 
         tablas, tablas_det = {n: 0 for n in candidatos}, {}
         refs = []
-        for turno in ('general', 'afternoon', 'evening'):
+        for turno in ['general'] + self.sorteo_id._ordered_turnos().mapped('code'):
             ref = (self._last_output() if turno == 'general'
                    else self._last_output(turn=turno))
             refs.append((turno, ref))
@@ -1051,7 +1044,7 @@ class LotteryPrediction(models.Model):
         self.ensure_one()
         reco = self.env['lottery.stats.service'].sudo() \
             .get_lineas_terminales_probables(
-                self.turn_day, str(self.date),
+                self.turno_id.id, str(self.date),
                 sorteo_id=self.sorteo_id.id) or {}
         return ([l['idx'] for l in reco.get('lineas') or []],
                 [t['idx'] for t in reco.get('terminales') or []])
@@ -1075,10 +1068,10 @@ class LotteryPrediction(models.Model):
         Devuelve una lista en el orden en que entraron."""
         self.ensure_one()
         last_general = self._last_output()
-        last_turno = self._last_output(turn=self.turn_day)
+        last_turno = self._last_output(turn=self.turno_code)
         acomp_general = (self._acompanantes('general', last_general.number_id.name)
                          if last_general else {})
-        acomp_turno = (self._acompanantes(self.turn_day, last_turno.number_id.name)
+        acomp_turno = (self._acompanantes(self.turno_code, last_turno.number_id.name)
                        if last_turno else {})
 
         def con_digito(acomp, d):
@@ -1378,7 +1371,7 @@ class LotteryPrediction(models.Model):
                 'con el botón "Completar números".')
 
         centenas = self.centenas_by_temperature(
-            self.sorteo_id, self.turn_day, self.temperature)
+            self.sorteo_id, self.turno_code, self.temperature)
         if len(centenas) < 2:
             raise UserError(
                 'El sorteo no tiene al menos dos centenas en el bloque '
@@ -1406,7 +1399,6 @@ class LotteryPrediction(models.Model):
         los que faltan ahí entraron por la cascada al agotarse el
         historial."""
         self.ensure_one()
-        turn_lbl = dict(self._fields['turn_day'].selection)
         fmt = self._fmt_pts
 
         def salida(rec):
@@ -1414,7 +1406,7 @@ class LotteryPrediction(models.Model):
                 return '<span class="text-muted">sin salidas previas</span>'
             return '<b>%02d</b> (%s %s)' % (
                 rec.number_id.name, rec.date.strftime('%d/%m/%Y'),
-                turn_lbl.get(rec.turn_day, rec.turn_day))
+                rec.turno_id.name or '')
 
         def detalle(titulo, det):
             if not det:
@@ -1455,7 +1447,7 @@ class LotteryPrediction(models.Model):
             return ('<td class="text-center" style="font-size:11px;">'
                     '%02d <span class="text-muted">(%s %s)</span></td>'
                     % (o.number_id.name, o.date.strftime('%d/%m'),
-                       turn_lbl.get(o.turn_day, o.turn_day)[:1]))
+                       (o.turno_id.name or '')[:1]))
 
         aviso = ''
         if len(candidatos) < 20:
@@ -1541,7 +1533,7 @@ class LotteryPrediction(models.Model):
                 lista_txt([nombre for nombre, _nums
                            in ctx.get('atrasados') or []])))
 
-        turno_txt = turn_lbl.get(self.turn_day, self.turn_day)
+        turno_txt = self.turno_id.name or ''
         rango_txt = {'bajo': 'sí, a favor de los <50',
                     'alto': 'sí, a favor de los ≥50'}.get(
             ctx['rango_mayoria'], 'no (empate o sin datos)')
@@ -1598,7 +1590,6 @@ class LotteryPrediction(models.Model):
         orden de cada recorte (el 1º de los 5 es el Súper Mágico) y
         `origen` es {número: salida de la caminata que lo trajo a los 30}."""
         self.ensure_one()
-        turn_lbl = dict(self._fields['turn_day'].selection)
         fmt = self._fmt_pts
         lineas_reco, term_reco = ctx['lineas_reco'], ctx['term_reco']
 
@@ -1607,7 +1598,7 @@ class LotteryPrediction(models.Model):
                 return '<span class="text-muted">sin salidas previas</span>'
             return '<b>%02d</b> (%s %s)' % (
                 rec.number_id.name, rec.date.strftime('%d/%m/%Y'),
-                turn_lbl.get(rec.turn_day, rec.turn_day))
+                rec.turno_id.name or '')
 
         def lista_txt(items):
             return (' · '.join('%d' % i for i in items) if items
@@ -1625,7 +1616,7 @@ class LotteryPrediction(models.Model):
             return ('<td class="text-center" style="font-size:11px;">'
                     '%02d <span class="text-muted">(%s %s)</span></td>'
                     % (o.number_id.name, o.date.strftime('%d/%m'),
-                       turn_lbl.get(o.turn_day, o.turn_day)[:1]))
+                       (o.turno_id.name or '')[:1]))
 
         def celda_tabla(v):
             if not v['tabla']:

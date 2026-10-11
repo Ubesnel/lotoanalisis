@@ -4,11 +4,10 @@
         <field name="name">view.lottery.tombola.output.tree</field>
         <field name="model">lottery.tombola.output</field>
         <field name="arch" type="xml">
-            <tree string="Salidas Tómbola" decoration-warning="turn_day == 'afternoon'"
-                  decoration-success="turn_day == 'evening'">
+            <tree string="Salidas Tómbola">
                 <field name="date"/>
                 <field name="week_day"/>
-                <field name="turn_day"/>
+                <field name="turno_id" widget="badge"/>
                 <field name="number_id"/>
                 <field name="month" optional="hide"/>
                 <field name="year" optional="hide"/>
@@ -25,7 +24,7 @@
                     <group>
                         <field name="date"/>
                         <field name="week_day"/>
-                        <field name="turn_day"/>
+                        <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                         <field name="number_id" options="{'no_open': True, 'no_create': True}"/>
                         <field name="month" invisible="1"/>
                         <field name="year" invisible="1"/>
@@ -42,10 +41,7 @@
             <search string="Salidas Tómbola">
                 <field name="number_id"/>
                 <field name="date"/>
-                <filter string="Tarde" name="tombola_output_afternoon"
-                        domain="[('turn_day', '=', 'afternoon')]"/>
-                <filter string="Noche" name="tombola_output_evening"
-                        domain="[('turn_day', '=', 'evening')]"/>
+                <field name="turno_id"/>
                 <separator/>
                 <filter string="Mes Actual"
                         name="current_month"
@@ -64,7 +60,7 @@
                     <filter string="Número" name="group_number_id" domain="[]" context="{'group_by': 'number_id'}"/>
                     <filter string="Año" name="group_year" domain="[]" context="{'group_by': 'year'}"/>
                     <filter string="Mes" name="group_month" domain="[]" context="{'group_by': 'month'}"/>
-                    <filter string="Turno" name="group_turn_day" domain="[]" context="{'group_by': 'turn_day'}"/>
+                    <filter string="Turno" name="group_turno_id" domain="[]" context="{'group_by': 'turno_id'}"/>
                     <filter string="Día de la semana" name="group_week_day" domain="[]"
                             context="{'group_by': 'week_day'}"/>
                 </group>

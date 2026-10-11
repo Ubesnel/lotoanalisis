@@ -20,20 +20,23 @@ def post_init_hook(env):
 
 def _seed_sorteo_calendars(env, sorteos):
     """Siembra el calendario semanal por defecto de cada sorteo que aún no tenga
-    slots, e inicializa el próximo sorteo. Quiniela UY: Lun-Vie ambos turnos +
-    Sábado solo noche. Resto (Florida, etc.): todos los días, ambos turnos."""
+    slots, e inicializa el próximo sorteo. Quiniela UY: Lun-Vie todos sus
+    turnos + Sábado solo el último (Noche). Resto (Florida, etc.): todos los
+    días con todos sus turnos."""
     Slot = env['lottery.sorteo.slot']
     for sorteo in sorteos:
         if sorteo.slot_ids:
             continue
+        turnos = sorteo._ordered_turnos()
+        if not turnos:
+            continue
         if sorteo.source_code == 'quiniela_uy':
-            # Lun(0)-Vie(4) tarde+noche, Sábado(5) solo noche.
-            slots = [(str(d), t) for d in range(5) for t in ('afternoon', 'evening')]
-            slots.append(('5', 'evening'))
+            # Lun(0)-Vie(4) todos los turnos, Sábado(5) solo el último.
+            slots = [(str(d), t) for d in range(5) for t in turnos]
+            slots.append(('5', turnos[-1]))
         else:
-            slots = [(str(d), t) for d in range(7) for t in ('afternoon', 'evening')]
+            slots = [(str(d), t) for d in range(7) for t in turnos]
         Slot.create([
-            {'sorteo_id': sorteo.id, 'dow': d, 'turn': t} for d, t in slots
+            {'sorteo_id': sorteo.id, 'dow': d, 'turno_id': t.id} for d, t in slots
         ])
         sorteo._recompute_next_draw()
-

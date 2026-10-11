@@ -8,7 +8,7 @@ import threading
 from odoo import fields, models
 from odoo.exceptions import UserError
 
-from .lottery_output import TURN_LABELS, _push_worker
+from .lottery_output import _push_worker
 
 
 class LotteryPrediction(models.Model):
@@ -50,7 +50,7 @@ class LotteryPrediction(models.Model):
         })
 
     def _build_push_message(self, pred):
-        turn_label = TURN_LABELS.get(pred.turn_day, pred.turn_day.capitalize())
+        turn_label = pred.turno_id.name or ''
         fecha = pred.date.strftime('%d/%m/%Y') if pred.date else ''
 
         title = '🔮 Números Mágicos disponibles'

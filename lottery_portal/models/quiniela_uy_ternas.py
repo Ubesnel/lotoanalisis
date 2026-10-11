@@ -27,7 +27,7 @@ vuelve a pegarle a la base.
 from odoo import api, fields, models, tools
 
 from .quiniela_uy_ui import (
-    COLOR_TURNO, FUENTE, MESES, TEXTO, TEXTO_SUAVE, TURN_LABEL,
+    FUENTE, MESES, TEXTO, TEXTO_SUAVE, turno_color, turno_label,
     badge, bola, tarjeta, cabezal,
 )
 
@@ -40,9 +40,11 @@ CENTENAS_POR_NUMERO = 3
 TURNO_CORTO = {'afternoon': 'Vesp.', 'evening': 'Noct.'}
 
 
-def _filtro_turno(turn_day):
-    """Fragmento de WHERE para el turno. 'general' no filtra nada."""
-    return '' if turn_day == 'general' else 'AND o.turn_day = %(turno)s'
+def _filtro_turno(turn_code):
+    """Fragmento de WHERE para el turno (por código). 'general' no filtra nada."""
+    if turn_code == 'general':
+        return ''
+    return 'AND o.turno_id = (SELECT id FROM lottery_turno WHERE code = %(turno)s)'
 
 
 def _texto_premios(premios):
@@ -70,11 +72,16 @@ class LotteryQuinielaUyTernas(models.TransientModel):
         help='Dejalo vacío para el análisis General: ahí un sorteo es una '
              'fecha y turno de la quiniela, y la terna cuenta como salida si '
              'salió en cualquiera de los 20 premios.')
-    turn_day = fields.Selection([
-        ('general', 'General'),
-        ('afternoon', 'Vespertina'),
-        ('evening', 'Nocturna'),
-    ], string='Turno', required=True, default='general')
+    turno_id = fields.Many2one(
+        'lottery.turno', string='Turno',
+        domain="[('sorteo_ids.source_code', '=', '%s')]" % SOURCE_CODE,
+        help='Vacío = General: mezcla todos los turnos.')
+    turno_code = fields.Char(compute='_compute_turno_code')
+
+    @api.depends('turno_id')
+    def _compute_turno_code(self):
+        for rec in self:
+            rec.turno_code = rec.turno_id.code or 'general'
     fecha_corte = fields.Date(
         string='Fecha de corte', required=True,
         default=lambda self: fields.Date.context_today(self),
@@ -116,8 +123,8 @@ class LotteryQuinielaUyTernas(models.TransientModel):
     # ── Consultas ─────────────────────────────────────────────────────────
 
     @api.model
-    @tools.ormcache('sorteo_ids', 'turn_day', 'fecha_corte')
-    def get_ternas_atrasadas(self, sorteo_ids, turn_day, fecha_corte):
+    @tools.ormcache('sorteo_ids', 'turn_code', 'fecha_corte')
+    def get_ternas_atrasadas(self, sorteo_ids, turn_code, fecha_corte):
         """Las 1000 ternas ordenadas de más atrasada a menos.
 
         Se numeran los sorteos del ámbito (fecha+turno, sin repetir aunque
@@ -128,13 +135,10 @@ class LotteryQuinielaUyTernas(models.TransientModel):
             return []
         self.env.cr.execute("""
             WITH ordenados AS (
-                SELECT date, turn_day,
-                       ROW_NUMBER() OVER (
-                           ORDER BY date,
-                           CASE turn_day WHEN 'afternoon' THEN 0 ELSE 1 END
-                       ) AS orden
+                SELECT date, turno_id,
+                       ROW_NUMBER() OVER (ORDER BY date, turno_sequence) AS orden
                 FROM (
-                    SELECT DISTINCT o.date, o.turn_day
+                    SELECT DISTINCT o.date, o.turno_id, o.turno_sequence
                     FROM lottery_output o
                     WHERE o.sorteo_id IN %(sorteo_ids)s
                       AND o.date <= %(corte)s
@@ -143,12 +147,12 @@ class LotteryQuinielaUyTernas(models.TransientModel):
             ),
             tope AS (SELECT COALESCE(MAX(orden), 0) AS maximo FROM ordenados),
             salidas AS (
-                SELECT o.complete_number, ord.orden, o.date, o.turn_day,
+                SELECT o.complete_number, ord.orden, o.date, o.turno_id,
                        SUBSTRING(so.code FROM '(\\d+)$')::int AS premio
                 FROM lottery_output o
                 JOIN lottery_sorteo so ON so.id = o.sorteo_id
                 JOIN ordenados ord
-                  ON ord.date = o.date AND ord.turn_day = o.turn_day
+                  ON ord.date = o.date AND ord.turno_id = o.turno_id
                 WHERE o.sorteo_id IN %(sorteo_ids)s
                   AND o.date <= %(corte)s
                   AND o.complete_number IS NOT NULL
@@ -162,13 +166,13 @@ class LotteryQuinielaUyTernas(models.TransientModel):
                 FROM salidas GROUP BY complete_number
             ),
             ultima AS (
-                SELECT sa.complete_number, sa.orden, sa.date, sa.turn_day,
+                SELECT sa.complete_number, sa.orden, sa.date, sa.turno_id,
                        ARRAY_AGG(sa.premio ORDER BY sa.premio) AS premios
                 FROM salidas sa
                 JOIN tope_terna tt
                   ON tt.complete_number = sa.complete_number
                  AND tt.orden = sa.orden
-                GROUP BY sa.complete_number, sa.orden, sa.date, sa.turn_day
+                GROUP BY sa.complete_number, sa.orden, sa.date, sa.turno_id
             ),
             totales AS (
                 SELECT complete_number, COUNT(*) AS total
@@ -183,22 +187,22 @@ class LotteryQuinielaUyTernas(models.TransientModel):
                        - COALESCE(ul.orden, 0) AS atraso,
                    COALESCE(t.total, 0) AS total,
                    TO_CHAR(ul.date, 'DD/MM/YYYY') AS ultima_fecha,
-                   ul.turn_day AS ultimo_turno,
+                   (SELECT t.code FROM lottery_turno t WHERE t.id = ul.turno_id) AS ultimo_turno,
                    ul.premios
             FROM universo u
             LEFT JOIN ultima ul ON ul.complete_number = u.terna
             LEFT JOIN totales t ON t.complete_number = u.terna
             ORDER BY atraso DESC, u.terna
-        """.format(turno=_filtro_turno(turn_day)), {
+        """.format(turno=_filtro_turno(turn_code)), {
             'sorteo_ids': tuple(sorteo_ids),
             'corte': fecha_corte,
-            'turno': turn_day,
+            'turno': turn_code,
         })
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_ids', 'turn_day', 'mes', 'fecha_corte')
-    def get_ternas_atrasadas_mes(self, sorteo_ids, turn_day, mes, fecha_corte):
+    @tools.ormcache('sorteo_ids', 'turn_code', 'mes', 'fecha_corte')
+    def get_ternas_atrasadas_mes(self, sorteo_ids, turn_code, mes, fecha_corte):
         """Las 1000 ternas ordenadas por años sin salir en ese mes.
 
         El año del corte SÍ cuenta: si la terna ya salió en ese mes de este
@@ -257,18 +261,18 @@ class LotteryQuinielaUyTernas(models.TransientModel):
             FROM universo u
             LEFT JOIN ultimas ul ON ul.complete_number = u.terna
             ORDER BY (ul.ultimo_anio IS NULL) DESC, anios DESC, u.terna
-        """.format(turno=_filtro_turno(turn_day)), {
+        """.format(turno=_filtro_turno(turn_code)), {
             'sorteo_ids': tuple(sorteo_ids),
             'mes': mes,
             'corte': fecha_corte,
             'anio': anio,
-            'turno': turn_day,
+            'turno': turn_code,
         })
         return self.env.cr.dictfetchall()
 
     @api.model
-    @tools.ormcache('sorteo_ids', 'turn_day', 'fecha_corte')
-    def get_centenas_por_numero(self, sorteo_ids, turn_day, fecha_corte):
+    @tools.ormcache('sorteo_ids', 'turn_code', 'fecha_corte')
+    def get_centenas_por_numero(self, sorteo_ids, turn_code, fecha_corte):
         """[{numero, centena, veces, puesto}] con las `CENTENAS_POR_NUMERO`
         centenas más salidas de cada número 00-99.
 
@@ -296,11 +300,11 @@ class LotteryQuinielaUyTernas(models.TransientModel):
             SELECT numero, centena, veces, puesto
             FROM conteo WHERE puesto <= %(cuantas)s
             ORDER BY numero, puesto
-        """.format(turno=_filtro_turno(turn_day)), {
+        """.format(turno=_filtro_turno(turn_code)), {
             'sorteo_ids': tuple(sorteo_ids),
             'corte': fecha_corte,
             'cuantas': CENTENAS_POR_NUMERO,
-            'turno': turn_day,
+            'turno': turn_code,
         })
         return self.env.cr.dictfetchall()
 
@@ -312,10 +316,10 @@ class LotteryQuinielaUyTernas(models.TransientModel):
         corte = str(self.fecha_corte)
         limite = max(1, min(self.limite or 20, LIMITE_MAX))
 
-        atrasadas = self.get_ternas_atrasadas(ids, self.turn_day, corte)
+        atrasadas = self.get_ternas_atrasadas(ids, self.turno_code, corte)
         del_mes = self.get_ternas_atrasadas_mes(
-            ids, self.turn_day, self.mes, corte)
-        centenas = self.get_centenas_por_numero(ids, self.turn_day, corte)
+            ids, self.turno_code, self.mes, corte)
+        centenas = self.get_centenas_por_numero(ids, self.turno_code, corte)
 
         self.write({
             'limite': limite,
@@ -372,7 +376,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
 
         `detalle` es la función que arma el texto de cada fila."""
         self.ensure_one()
-        color = COLOR_TURNO[self.turn_day]
+        color = turno_color(self.turno_code)
         columnas = 1 if len(items) <= COLUMNA_UNICA_HASTA else 2
         por_columna = -(-len(items) // columnas)   # techo de la división
 
@@ -401,7 +405,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
         self.ensure_one()
         if not items:
             cuerpo = self._vacio('No hay salidas cargadas para este ámbito.')
-            return tarjeta(cabezal(self.turn_day, self.fecha_corte,
+            return tarjeta(cabezal(self.turno_code, self.fecha_corte,
                                    titulo=self._titulo()), cuerpo)
 
         def detalle(item):
@@ -424,7 +428,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
                          'Un sorteo es una fecha y turno; con el turno '
                          'filtrado, sólo los de ese turno.'
                          % (len(items), self._etiqueta_ambito()))))
-        return tarjeta(cabezal(self.turn_day, self.fecha_corte,
+        return tarjeta(cabezal(self.turno_code, self.fecha_corte,
                                titulo=self._titulo()), cuerpo, ancho=ancho)
 
     def _render_atrasadas_mes(self, items, ultimas):
@@ -434,7 +438,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
         mes = MESES[int(self.mes) - 1]
         if not items:
             cuerpo = self._vacio('No hay salidas cargadas para este ámbito.')
-            return tarjeta(cabezal(self.turn_day, self.fecha_corte,
+            return tarjeta(cabezal(self.turno_code, self.fecha_corte,
                                    titulo=self._titulo()), cuerpo)
 
         def ultima_global(item):
@@ -470,7 +474,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
                          'cero, así que ninguna de estas salió este %s.'
                          % (len(items), mes, self._etiqueta_ambito(), mes,
                             mes))))
-        return tarjeta(cabezal(self.turn_day, self.fecha_corte,
+        return tarjeta(cabezal(self.turno_code, self.fecha_corte,
                                titulo='Ternas de %s · %s'
                                       % (mes, self._etiqueta_ambito())),
                        cuerpo, ancho=ancho)
@@ -481,7 +485,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
         self.ensure_one()
         if not items:
             cuerpo = self._vacio('No hay salidas cargadas para este ámbito.')
-            return tarjeta(cabezal(self.turn_day, self.fecha_corte,
+            return tarjeta(cabezal(self.turno_code, self.fecha_corte,
                                    titulo=self._titulo()), cuerpo)
 
         por_numero = {}
@@ -527,7 +531,7 @@ class LotteryQuinielaUyTernas(models.TransientModel):
                          'cada una, cuántas veces salió.'
                          % (CENTENAS_POR_NUMERO, self._etiqueta_ambito()))))
         return tarjeta(
-            cabezal(self.turn_day, self.fecha_corte,
+            cabezal(self.turno_code, self.fecha_corte,
                     titulo='Centenas por número · %s'
                            % self._etiqueta_ambito()),
             cuerpo, ancho=880)

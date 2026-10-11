@@ -18,7 +18,7 @@ la Nocturna. Todo eso vive en `quiniela_uy_ui`, compartido con la Tómbola.
 from odoo import api, fields, models
 
 from .quiniela_uy_ui import (
-    COLOR_TURNO, FUENTE, TEXTO, TEXTO_SUAVE, TURN_LABEL,
+    FUENTE, TEXTO, TEXTO_SUAVE, turno_color, turno_label,
     badge, bola, cabezal, hueco, tarjeta,
 )
 
@@ -41,11 +41,11 @@ class LotteryQuinielaUyResultados(models.TransientModel):
         default=lambda self: self._default_date(),
         help='Fecha del sorteo. Arranca en el último día con resultados '
              'importados.')
-    turn_day = fields.Selection([
-        ('afternoon', 'Vespertina'),
-        ('evening', 'Nocturna'),
-    ], string='Turno', required=True,
+    turno_id = fields.Many2one(
+        'lottery.turno', string='Turno', required=True,
+        domain="[('sorteo_ids.source_code', '=', '%s')]" % SOURCE_CODE,
         default=lambda self: self._default_turn())
+    turno_code = fields.Char(related='turno_id.code', string='Código del turno')
     result_html = fields.Html(string='Resultado', readonly=True,
                               sanitize=False)
 
@@ -55,7 +55,7 @@ class LotteryQuinielaUyResultados(models.TransientModel):
     def _last_output(self):
         return self.env['lottery.output'].sudo().search(
             [('sorteo_id.source_code', '=', SOURCE_CODE)],
-            order='date desc, turn_day desc, id desc', limit=1)
+            order='date desc, turno_sequence desc, id desc', limit=1)
 
     @api.model
     def _default_date(self):
@@ -65,12 +65,12 @@ class LotteryQuinielaUyResultados(models.TransientModel):
     @api.model
     def _default_turn(self):
         last = self._last_output()
-        return last.turn_day if last else 'evening'
+        return last.turno_id.id if last else False
 
     # ── Lectura de los 20 premios ─────────────────────────────────────────
 
     @api.model
-    def get_premios(self, date, turn_day):
+    def get_premios(self, date, turn_code):
         """[(premio, '410'), …] ordenado por premio, sólo los que existen.
 
         El número de premio sale del sufijo del código del sorteo
@@ -85,7 +85,7 @@ class LotteryQuinielaUyResultados(models.TransientModel):
         outputs = self.env['lottery.output'].sudo().search([
             ('sorteo_id.source_code', '=', SOURCE_CODE),
             ('date', '=', date),
-            ('turn_day', '=', turn_day),
+            ('turno_id.code', '=', turn_code),
         ])
         premios = []
         for out in outputs:
@@ -99,7 +99,7 @@ class LotteryQuinielaUyResultados(models.TransientModel):
 
     def _premios(self):
         self.ensure_one()
-        return self.get_premios(self.date, self.turn_day)
+        return self.get_premios(self.date, self.turno_code)
 
     # ── Acción ────────────────────────────────────────────────────────────
 
@@ -121,12 +121,12 @@ class LotteryQuinielaUyResultados(models.TransientModel):
         self.ensure_one()
         cuerpo = (self._render_premios(premios) if premios
                   else self._render_vacio())
-        return tarjeta(cabezal(self.turn_day, self.date), cuerpo)
+        return tarjeta(cabezal(self.turno_code, self.date), cuerpo)
 
     def _render_premios(self, premios):
         por_premio = dict(premios)
         faltan = TOTAL_PREMIOS - len(premios)
-        color = COLOR_TURNO[self.turn_day]
+        color = turno_color(self.turno_code)
 
         filas = []
         for i in range(1, FILAS + 1):
@@ -167,5 +167,5 @@ class LotteryQuinielaUyResultados(models.TransientModel):
             'todavía no se haya jugado, que ese día no hubiera %s, o que '
             'falte correr el importador.</span></div></div>'
             % ('#C6E4CF', FUENTE, TEXTO, TEXTO_SUAVE,
-               TURN_LABEL[self.turn_day].lower())
+               turno_label(self.turno_code).lower())
         )

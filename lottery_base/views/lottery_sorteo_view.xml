@@ -8,6 +8,7 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="code"/>
+                <field name="turno_ids" widget="many2many_tags"/>
                 <field name="uses_hundreds"/>
                 <field name="uses_fireball"/>
                 <field name="enforce_turn_continuity"/>
@@ -29,6 +30,8 @@
                     <group>
                         <group>
                             <field name="code"/>
+                            <field name="turno_ids" widget="many2many_tags" required="1"
+                                   options="{'no_create': True}"/>
                             <field name="country_id" options="{'no_create': True}"/>
                             <field name="sequence"/>
                             <field name="active"/>
@@ -44,7 +47,7 @@
                     <group string="Próximo sorteo (lo que muestra el portal)">
                         <group>
                             <field name="next_draw_date"/>
-                            <field name="next_draw_turn"/>
+                            <field name="next_draw_turno_id" options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
                             <field name="next_draw_manual"/>
@@ -59,11 +62,12 @@
                             <field name="slot_ids">
                                 <tree editable="bottom">
                                     <field name="dow"/>
-                                    <field name="turn"/>
+                                    <field name="sorteo_turno_ids" column_invisible="1"/>
+                                    <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                                 </tree>
                             </field>
                             <div class="text-muted">
-                                Días y turnos en que se juega este sorteo. Vacío = todos los días, ambos turnos.
+                                Días y turnos en que se juega este sorteo. Vacío = todos los días, todos los turnos del sorteo.
                             </div>
                         </page>
                     </notebook>

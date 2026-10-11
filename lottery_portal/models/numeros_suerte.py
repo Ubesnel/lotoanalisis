@@ -1,33 +1,32 @@
 # -*- coding: utf-8 -*-
 """Números de la Suerte: 20 → 15 → 10 → 5 → Súper Mágico armados sobre la
-UNIÓN de los dos turnos de una misma temperatura.
+UNIÓN de los turnos del sorteo en una misma temperatura.
 
 Se diferencia de `lottery.prediction` en cuatro cosas, y son justamente las
 cuatro razones por las que es un modelo aparte y no un botón más de aquél:
 
-  1. NO tiene turno. Los candidatos salen de juntar la tabla de tarde y la de
-     noche del `ranking_snapshot` del sorteo (la misma que se ve en el
+  1. NO tiene turno. Los candidatos salen de juntar las tablas de todos los
+     turnos del `ranking_snapshot` del sorteo (la misma que se ve en el
      formulario del sorteo, pestaña "Ranking calientes / fríos") en una sola
-     bolsa sin repetidos. Un número que está en las DOS tablas arrastra esa
-     marca: es el primer criterio de orden (ver `_clave`).
+     bolsa sin repetidos. Un número que está en MÁS DE UNA tabla arrastra
+     esa marca: es el primer criterio de orden (ver `_clave`).
 
-  2. La caminata de recencia que arma los 20 avanza por DÍA ENTERO — las dos
-     salidas del día se miran juntas —, no salida por salida como
+  2. La caminata de recencia que arma los 20 avanza por DÍA ENTERO — todas
+     las salidas del día se miran juntas —, no salida por salida como
      `_seleccionar_veinte` de la predicción.
 
-  3. Las tablas LotoAnálisis se miran en TRES referencias en vez de dos:
-       general → contra la última salida (que normalmente es la de la noche)
-       noche   → contra ese mismo número
-       tarde   → contra el número que salió en la tarde
+  3. Las tablas LotoAnálisis se miran en una referencia por nivel en vez de
+     dos: general → contra la última salida, y cada turno → contra el último
+     número que salió en ese turno.
 
-  4. Los grupos y las pintas atrasados también se miran en tres niveles
-     (general, tarde y noche) en lugar de general + turno.
+  4. Los grupos y las pintas atrasados también se miran en todos los niveles
+     (general y cada turno) en lugar de general + turno.
 
 Los recortes van con las tablas primero y los grupos después:
      20 → 15  tabla general
-     15 → 10  en cuántas de las dos tablas de turno aparece (0, 1 ó 2)
+     15 → 10  en cuántas de las tablas de turno aparece
      10 →  5  grupos atrasados generales
-      5 → SM  en cuántos niveles de grupos de turno aparece (0, 1 ó 2)
+      5 → SM  en cuántos niveles de grupos de turno aparece
 y la cascada de `lottery.prediction` desempata dentro de cada nivel.
 
 Es un modelo INTERNO: no se publica en la app ni dispara notificaciones.
@@ -51,24 +50,9 @@ from .lottery_prediction import (
 )
 from .patron_atraso import _hit_cruce
 
-# Los tres niveles en que se miran tablas, grupos y pintas. El orden importa
-# sólo para el desglose HTML; para el puntaje se unen los tres.
-NIVELES = (
-    ('general', 'general'),
-    ('evening', 'noche'),
-    ('afternoon', 'tarde'),
-)
-
-# Campo de lottery_group_stat que mide el atraso de cada nivel.
-CAMPO_ATRASO = {
-    'general': 'salidas_atrasadas',
-    'afternoon': 'salidas_atrasadas_dia',
-    'evening': 'salidas_atrasadas_noche',
-}
-
-# Cuántos días hacia atrás se camina buscando coincidencias de dígito. Con dos
-# salidas por día y 60 días hay de sobra para juntar 20 aunque los candidatos
-# sean pocos; si se agota antes, el resto entra por la cascada.
+# Cuántos días hacia atrás se camina buscando coincidencias de dígito. Con
+# una o más salidas por día y 60 días hay de sobra para juntar 20 aunque los
+# candidatos sean pocos; si se agota antes, el resto entra por la cascada.
 MAX_DIAS_HISTORIAL = 60
 
 
@@ -80,20 +64,20 @@ class LotteryNumerosSuerte(models.Model):
     sorteo_id = fields.Many2one(
         'lottery.sorteo', string='Sorteo', required=True, index=True,
         default=_default_sorteo,
-        help='Sorteo/juego del que se leen las dos tablas de temperatura.')
+        help='Sorteo/juego del que se leen las tablas de temperatura de sus turnos.')
     date = fields.Date(
         string='Fecha', required=True, index=True,
         default=default_today_local,
         help='Fecha del sorteo al que apunta la selección. El historial que '
              'se camina para armar los 20 arranca en el día ANTERIOR a esta '
-             'fecha, con las dos salidas de ese día juntas.')
+             'fecha, con todas las salidas de ese día juntas.')
     temperature = fields.Selection([
         ('hot',       'Calientes'),
         ('remaining', 'Restantes'),
         ('cold',      'Fríos'),
     ], string='Temperatura', required=True, index=True,
         help='Al seleccionar, carga los números de esa temperatura uniendo '
-             'la tabla de tarde y la de noche del ranking del sorteo.')
+             'las tablas de todos los turnos del ranking del sorteo.')
 
     combinaciones_window = fields.Integer(
         string='Ventana de combinaciones', default=50, required=True,
@@ -106,7 +90,7 @@ class LotteryNumerosSuerte(models.Model):
         'lottery.number', 'lottery_suerte_number_rel',
         'suerte_id', 'number_id',
         string='Candidatos',
-        help='Unión de las dos tablas (tarde y noche) de la temperatura '
+        help='Unión de las tablas de todos los turnos en la temperatura '
              'elegida. Se puede editar a mano antes de calcular.')
     number_ids_20 = fields.Many2many(
         'lottery.number', 'lottery_suerte_number_20_rel',
@@ -122,18 +106,18 @@ class LotteryNumerosSuerte(models.Model):
         'suerte_id', 'number_id', string='5 Números')
     doble_turno_ids = fields.Many2many(
         'lottery.number', 'lottery_suerte_number_doble_rel',
-        'suerte_id', 'number_id', string='En los dos turnos', readonly=True,
-        help='Los que estaban en la tabla de esa temperatura TANTO en tarde '
-             'como en noche. Es el primer criterio de orden de los 20.')
+        'suerte_id', 'number_id', string='En varios turnos', readonly=True,
+        help='Los que estaban en la tabla de esa temperatura en MÁS DE UN '
+             'turno. Es el primer criterio de orden de los 20.')
     super_magico_id = fields.Many2one(
         'lottery.number', string='Súper Mágico',
         help='El 1º de los 5, por en cuántos niveles de grupos atrasados de '
-             'turno (tarde y noche) aparece.')
+             'turno aparece.')
 
     numbers_count = fields.Integer(
         string='Candidatos', compute='_compute_counts', store=True)
     numbers_count_doble = fields.Integer(
-        string='En los dos turnos', compute='_compute_counts', store=True)
+        string='En varios turnos', compute='_compute_counts', store=True)
 
     score_html = fields.Html(
         string='Puntajes', readonly=True, sanitize=False, copy=False,
@@ -164,6 +148,22 @@ class LotteryNumerosSuerte(models.Model):
                 etiquetas.get(rec.temperature, ''),
                 ' / %s' % rec.sorteo_id.name if rec.sorteo_id else '')
 
+    # ── Niveles: general + cada turno del sorteo ────────────────────────
+
+    def _niveles(self):
+        """[(clave, turno_id, etiqueta)]: 'general' y después cada turno del
+        sorteo del más reciente al más viejo del día (en un sorteo de tarde
+        y noche: general, noche, tarde). La clave de un turno es su código,
+        que es como lo indexan el ranking_snapshot y la Tabla LotoAnálisis."""
+        self.ensure_one()
+        niveles = [('general', False, 'general')]
+        for turno in reversed(self.sorteo_id._ordered_turnos()):
+            niveles.append((turno.code, turno.id, (turno.name or '').lower()))
+        return niveles
+
+    def _codigos_turno(self):
+        return [clave for clave, turno_id, _lbl in self._niveles() if turno_id]
+
     # ── Candidatos ──────────────────────────────────────────────────────
 
     def _tablas_snapshot(self):
@@ -181,7 +181,7 @@ class LotteryNumerosSuerte(models.Model):
             return {}
         clave = TEMPERATURE_KEY.get(self.temperature)
         turnos = {}
-        for turno in ('afternoon', 'evening'):
+        for turno in self._codigos_turno():
             for item in snapshot.get(turno, {}).get(clave, []) or []:
                 raw = item.get('name') if isinstance(item, dict) else item
                 try:
@@ -228,24 +228,25 @@ class LotteryNumerosSuerte(models.Model):
 
         A diferencia de la predicción no hay turno al que apuntar, así que el
         corte es siempre `date < self.date`: el día de la fecha no se mira
-        nunca, ni siquiera su turno de tarde. Devuelve el recordset de la más
-        reciente a la más vieja ('evening' antes que 'afternoon' del mismo
-        día, que es lo que da `turn_day desc`)."""
+        nunca, ni siquiera su primer turno. `turn` es el código de un turno
+        para filtrar solo ese. Devuelve el recordset de la más reciente a la
+        más vieja (en un mismo día, el último turno primero)."""
         self.ensure_one()
         domain = [('sorteo_id', '=', self.sorteo_id.id),
                   ('date', '<', self.date)]
         if turn:
-            domain += [('turn_day', '=', turn)]
+            domain += [('turno_id.code', '=', turn)]
         return self.env['lottery.output'].sudo().search(
-            domain, order='date desc, turn_day desc, id desc', limit=limit)
+            domain, order='date desc, turno_sequence desc, id desc', limit=limit)
 
     def _salidas_por_dia(self, max_dias=MAX_DIAS_HISTORIAL):
         """[(fecha, [salidas de ese día])] de la más reciente hacia atrás.
 
-        Las dos salidas de un mismo día viajan juntas: la caminata que arma
-        los 20 avanza de día en día, no de salida en salida."""
+        Las salidas de un mismo día viajan juntas: la caminata que arma los
+        20 avanza de día en día, no de salida en salida."""
         self.ensure_one()
-        outputs = self._last_output(limit=max_dias * 4)
+        outputs = self._last_output(
+            limit=max_dias * max(2, len(self._codigos_turno())) * 2)
         dias = []
         for output in outputs:
             if not dias or dias[-1][0] != output.date:
@@ -279,28 +280,27 @@ class LotteryNumerosSuerte(models.Model):
                                     or (r + c) == (r0 + c0))}
 
     def _valores_tabla(self, candidatos, refs):
-        """{nivel: {número: (factor, distancia)}} de las tres tablas.
+        """{nivel: {número: (factor, distancia)}} de las tablas de cada nivel.
 
         Cada nivel se mira contra SU número de referencia: la general contra
-        la última salida, la de noche contra el número de la noche y la de
-        tarde contra el de la tarde. Un candidato puede puntuar en las tres,
-        en una o en ninguna."""
+        la última salida y la de cada turno contra el último número de ese
+        turno. Un candidato puede puntuar en todas, en algunas o en ninguna."""
         self.ensure_one()
         salida = {}
-        for nivel, _lbl in NIVELES:
+        for nivel, _tid, _lbl in self._niveles():
             ref = refs.get(nivel)
             acomp = self._acompanantes(nivel, ref.number_id.name) if ref else {}
             salida[nivel] = {n: (_factor_distancia(acomp[n]), acomp[n])
                              for n in candidatos if acomp.get(n)}
         return salida
 
-    def _numeros_por_nivel(self, top_fn, day, nivel):
+    def _numeros_por_nivel(self, top_fn, day, turno_id):
         """set de números que caen en alguno de los grupos (o pintas) más
-        atrasados de ese nivel. Se usa para las señales de recorte, que
-        cuentan presencia y no atraso."""
+        atrasados de ese nivel (turno_id falso = general). Se usa para las
+        señales de recorte, que cuentan presencia y no atraso."""
         self.ensure_one()
         numeros = set()
-        for row in top_fn(nivel, day, sorteo_id=self.sorteo_id.id):
+        for row in top_fn(turno_id, day, sorteo_id=self.sorteo_id.id):
             numeros.update(
                 self.env['lottery.group'].browse(row['id']).number_ids
                 .mapped('name'))
@@ -311,20 +311,19 @@ class LotteryNumerosSuerte(models.Model):
         los niveles pedidos en UNA sola lista.
 
         Es el mismo criterio que `lottery.prediction._puntos_por_atraso`, con
-        la única diferencia de que acá los niveles son tres (general, tarde y
-        noche) y no dos: el orden lo da la cantidad de salidas atrasadas y no
+        la única diferencia de que acá los niveles son la general y TODOS los
+        turnos, no general + uno: el orden lo da la cantidad de salidas atrasadas y no
         el puesto, un grupo que aparece en varios niveles se queda con su
         atraso más alto, y un número que cae en varios grupos suma el mejor
         entero más la fracción de `APORTE_GRUPOS_EXTRA` según en cuántos
         está."""
         self.ensure_one()
         entradas = {}
-        for nivel, etiqueta in NIVELES:
+        for nivel, turno_id, etiqueta in self._niveles():
             if nivel not in niveles:
                 continue
-            campo = CAMPO_ATRASO[nivel]
-            for row in top_fn(nivel, day, sorteo_id=self.sorteo_id.id):
-                atraso = row.get(campo) or 0
+            for row in top_fn(turno_id, day, sorteo_id=self.sorteo_id.id):
+                atraso = row.get('atraso') or 0
                 previa = entradas.get(row['id'])
                 if previa is None:
                     entradas[row['id']] = {
@@ -370,13 +369,12 @@ class LotteryNumerosSuerte(models.Model):
         stats = self.env['lottery.stats.service'].sudo()
         Pred = self.env['lottery.prediction']
         day = WEEKDAY_CODES[self.date.weekday()]
-        todos_niveles = tuple(nivel for nivel, _lbl in NIVELES)
+        niveles = self._niveles()
+        todos_niveles = tuple(nivel for nivel, _tid, _lbl in niveles)
+        turnos = [(nivel, tid) for nivel, tid, _lbl in niveles if tid]
 
-        refs = {
-            'general':   self._last_output(),
-            'evening':   self._last_output(turn='evening'),
-            'afternoon': self._last_output(turn='afternoon'),
-        }
+        refs = {nivel: self._last_output(turn=nivel if tid else None)
+                for nivel, tid, _lbl in niveles}
         tablas = self._valores_tabla(candidatos, refs)
 
         gr_pts, gr_det = self._puntos_por_atraso(
@@ -388,8 +386,8 @@ class LotteryNumerosSuerte(models.Model):
             stats.get_top_6_groups, day, ('general',), ESCALA_ATRASO)
         # Presencia por turno: es la señal del recorte 5 → Súper Mágico.
         gr_turno = {
-            nivel: self._numeros_por_nivel(stats.get_top_6_groups, day, nivel)
-            for nivel in ('afternoon', 'evening')
+            nivel: self._numeros_por_nivel(stats.get_top_6_groups, day, tid)
+            for nivel, tid in turnos
         }
 
         base = stats.get_combinaciones_scores(
@@ -412,17 +410,17 @@ class LotteryNumerosSuerte(models.Model):
         valores = {}
         for n in candidatos:
             factores = {nivel: tablas[nivel].get(n, (0.0, 0))
-                        for nivel, _lbl in NIVELES}
+                        for nivel, _tid, _lbl in niveles}
             if rango_mayoria == 'bajo':
                 mayoria = n < 50
             elif rango_mayoria == 'alto':
                 mayoria = n >= 50
             else:
                 mayoria = False
-            # Para la cascada: la mejor de las tres tablas, igual que la
+            # Para la cascada: la mejor de todas las tablas, igual que la
             # predicción se queda con la mejor entre general y turno.
             mejor_f, mejor_d, mejor_lbl = 0.0, 0, None
-            for nivel, lbl in NIVELES:
+            for nivel, _tid, lbl in niveles:
                 factor, dist = factores[nivel]
                 if factor > mejor_f:
                     mejor_f, mejor_d, mejor_lbl = factor, dist, lbl
@@ -449,8 +447,8 @@ class LotteryNumerosSuerte(models.Model):
             'window_asked': self.combinaciones_window,
             'dia': day,
             'detalles': [
-                ('Grupos atrasados (general + tarde + noche)', gr_det),
-                ('Pintas atrasadas (general + tarde + noche)', pi_det),
+                ('Grupos atrasados (general + turnos)', gr_det),
+                ('Pintas atrasadas (general + turnos)', pi_det),
                 ('Grupos atrasados generales (recorte 10 → 5)', gr_gen_det),
             ],
         }
@@ -458,16 +456,16 @@ class LotteryNumerosSuerte(models.Model):
             # 20 → 15: la tabla general, contra la última salida.
             'tabla_general': {n: valores[n]['factores']['general'][0]
                               for n in candidatos},
-            # 15 → 10: en cuántas de las dos tablas de turno aparece.
+            # 15 → 10: en cuántas de las tablas de turno aparece.
             'tablas_turnos': {
-                n: sum(1 for nivel in ('evening', 'afternoon')
+                n: sum(1 for nivel, _tid in turnos
                        if valores[n]['factores'][nivel][0])
                 for n in candidatos},
             # 10 → 5: los grupos atrasados generales.
             'grupos_general': {n: gr_gen_pts.get(n, 0.0) for n in candidatos},
             # 5 → Súper Mágico: en cuántos niveles de turno cae.
             'grupos_turnos': {
-                n: sum(1 for nivel in ('afternoon', 'evening')
+                n: sum(1 for nivel, _tid in turnos
                        if n in gr_turno[nivel])
                 for n in candidatos},
         }
@@ -476,7 +474,7 @@ class LotteryNumerosSuerte(models.Model):
     # ── Orden y selección ───────────────────────────────────────────────
 
     def _clave(self, valores, n):
-        """Orden de los 20: primero estar en las dos tablas de temperatura y
+        """Orden de los 20: primero estar en varias tablas de temperatura y
         después la cascada de la predicción, tal cual (tabla → grupos →
         pintas → combinaciones → cruce → mayoría → azar)."""
         Pred = self.env['lottery.prediction']
@@ -485,7 +483,7 @@ class LotteryNumerosSuerte(models.Model):
     def _seleccionar_veinte(self, candidatos, valores):
         """Los hasta 20, caminando el historial DÍA POR DÍA de la fecha hacia
         atrás: en cada paso entran los candidatos que comparten decena o
-        unidad con alguna de las dos salidas de ese día y todavía no habían
+        unidad con alguna de las salidas de ese día y todavía no habían
         entrado por un día más reciente.
 
         Cuando un día trae más candidatos de los que faltan, se cortan con
@@ -533,7 +531,7 @@ class LotteryNumerosSuerte(models.Model):
         cada recorte tiene su propia señal, que manda antes que la cascada:
 
           20 → 15  tabla LotoAnálisis general
-          15 → 10  en cuántas tablas de turno (tarde/noche) aparece
+          15 → 10  en cuántas tablas de turno aparece
           10 →  5  grupos atrasados generales
            5 → SM  en cuántos niveles de grupos de turno aparece
 
@@ -601,14 +599,15 @@ class LotteryNumerosSuerte(models.Model):
         (el campo todavía no está escrito cuando se arma el desglose)."""
         self.ensure_one()
         fmt = self._fmt_pts
-        turn_lbl = {'afternoon': 'Tarde', 'evening': 'Noche'}
+        niveles = self._niveles()
+        niveles_turno = [(nivel, lbl) for nivel, tid, lbl in niveles if tid]
 
         def salida(rec):
             if not rec:
                 return '<span class="text-muted">sin salidas previas</span>'
             return '<b>%02d</b> (%s %s)' % (
                 rec.number_id.name, rec.date.strftime('%d/%m/%Y'),
-                turn_lbl.get(rec.turn_day, rec.turn_day))
+                rec.turno_id.name or '')
 
         def celda_num(valor):
             if not valor:
@@ -645,10 +644,11 @@ class LotteryNumerosSuerte(models.Model):
 
         cabeza = ''.join(
             '<th class="text-center" style="font-size:11px;">%s</th>' % h
-            for h in ('#', 'Nº', '2 turnos', 'Entró por', 'Tabla gral.',
-                      'Tabla noche', 'Tabla tarde', 'Grupos gral.',
-                      'Grupos turno', 'Grupos', 'Pintas', 'Comb.', 'Cruce',
-                      'Mayoría'))
+            for h in (['#', 'Nº', 'Varios turnos', 'Entró por', 'Tabla gral.']
+                      + ['Tabla %s' % lbl for _nivel, lbl in niveles_turno]
+                      + ['Grupos gral.', 'Grupos turno', 'Grupos', 'Pintas',
+                         'Comb.', 'Cruce', 'Mayoría']))
+        n_cols = 12 + len(niveles_turno)
 
         def fila_html(i, n, mostrar_origen):
             v = valores[n]
@@ -670,7 +670,7 @@ class LotteryNumerosSuerte(models.Model):
                 '<td class="text-center text-muted" style="font-size:11px;">'
                 '%d%s</td>'
                 '<td class="text-center"><b>%02d</b>%s</td>'
-                '%s%s%s%s%s%s'
+                '%s%s%s%s%s'
                 '<td class="text-center">%s</td>'
                 '%s%s'
                 '<td class="text-center">%d</td>'
@@ -678,8 +678,8 @@ class LotteryNumerosSuerte(models.Model):
                     fondo, i, corte, n, marca_sm,
                     celda_bool(v['doble']), origen_html,
                     celda_factor(v['factores']['general']),
-                    celda_factor(v['factores']['evening']),
-                    celda_factor(v['factores']['afternoon']),
+                    ''.join(celda_factor(v['factores'][nivel])
+                            for nivel, _lbl in niveles_turno),
                     celda_num(senales['grupos_general'].get(n, 0)),
                     ('<b>%d</b>' % senales['grupos_turnos'][n]
                      if senales['grupos_turnos'].get(n)
@@ -691,9 +691,9 @@ class LotteryNumerosSuerte(models.Model):
         cuerpo = [fila_html(i + 1, n, True) for i, n in enumerate(listas[20])]
         if fuera:
             cuerpo.append(
-                '<tr><td colspan="14" class="text-center text-muted small">'
+                '<tr><td colspan="%d" class="text-center text-muted small">'
                 '— fuera de los 20: no compartieron dígito con el historial '
-                'reciente —</td></tr>')
+                'reciente —</td></tr>' % n_cols)
             cuerpo += [fila_html(i + 1, n, False)
                        for i, n in enumerate(fuera, len(listas[20]))]
 
@@ -722,13 +722,13 @@ class LotteryNumerosSuerte(models.Model):
             '%s'
             '<div class="small mb-2">'
             '<p class="mb-1"><span class="text-muted">Referencias de las '
-            'tablas:</span> general → %s · noche → %s · tarde → %s</p>'
+            'tablas:</span> %s</p>'
             '<p class="mb-1"><span class="text-muted">Cruce línea/terminal '
             'contra:</span> %s · <span class="text-muted">Mayoría últimos %d:'
             '</span> %s</p>'
             '<p class="mb-1"><span class="text-muted">Combinaciones:</span> '
             'ventana de %d salidas (pedidas %d) · '
-            '<span class="text-muted">En las dos tablas de temperatura:</span> '
+            '<span class="text-muted">En varias tablas de temperatura:</span> '
             '%d de %d candidatos</p>'
             '%s%s%s'
             '<p class="mb-1 text-muted">Recortes: 20 → 15 por tabla general · '
@@ -739,9 +739,8 @@ class LotteryNumerosSuerte(models.Model):
             'style="font-size:12px;"><thead><tr>%s</tr></thead>'
             '<tbody>%s</tbody></table>' % (
                 aviso,
-                salida(ctx['refs']['general']),
-                salida(ctx['refs']['evening']),
-                salida(ctx['refs']['afternoon']),
+                ' · '.join('%s → %s' % (lbl, salida(ctx['refs'][nivel]))
+                           for nivel, _tid, lbl in niveles),
                 ('<b>%02d</b>' % ctx['ref_cruce']
                  if ctx['ref_cruce'] is not None else '—'),
                 VENTANA_MAYORIA, mayoria_txt,

@@ -49,8 +49,8 @@ from odoo.exceptions import UserError
 
 from .lottery_prediction import ANIOS_MES_NUNCA, WEEKDAY_CODES
 from .quiniela_uy_ui import (
-    COLOR_TOMBOLA, COLOR_TURNO, DORADO, FUENTE, MESES, TEXTO,
-    TEXTO_SUAVE, TURN_LABEL,
+    COLOR_TOMBOLA, DORADO, FUENTE, MESES, TEXTO,
+    TEXTO_SUAVE, turno_color, turno_label,
     badge, bola, cabezal, tarjeta,
 )
 
@@ -115,7 +115,7 @@ def _coincidencias(numero, salidas):
 class LotteryPredictionTombolaUy(models.Model):
     _name = 'lottery.prediction.tombola.uy'
     _description = 'Tómbola Quiniela Uruguay'
-    _order = 'date desc, turn_day desc, id desc'
+    _order = 'date desc, turno_sequence desc, id desc'
 
     date = fields.Date(
         string='Fecha', required=True, index=True,
@@ -123,11 +123,13 @@ class LotteryPredictionTombolaUy(models.Model):
         help='Fecha del sorteo que se predice. El cálculo nunca mira ese '
              'sorteo ni ninguno posterior, así que volver a correr una '
              'tómbola vieja da lo mismo que el día que se generó.')
-    turn_day = fields.Selection([
-        ('afternoon', 'Vespertina'),
-        ('evening', 'Nocturna'),
-    ], string='Turno', required=True, index=True,
+    turno_id = fields.Many2one(
+        'lottery.turno', string='Turno', required=True, index=True,
+        domain="[('sorteo_ids.source_code', '=', '%s')]" % SOURCE_CODE,
         default=lambda self: self._default_turn())
+    turno_code = fields.Char(related='turno_id.code', string='Código del turno')
+    turno_sequence = fields.Integer(related='turno_id.sequence', store=True, index=True,
+                                    string='Secuencia del turno')
     temperature = fields.Selection([
         ('hot', 'Calientes'),
         ('remaining', 'Restantes'),
@@ -173,7 +175,7 @@ class LotteryPredictionTombolaUy(models.Model):
 
     _sql_constraints = [
         ('unique_date_turn',
-         'unique(date, turn_day)',
+         'unique(date, turno_id)',
          'Ya existe una tómbola para esa fecha y turno.'),
     ]
 
@@ -183,7 +185,7 @@ class LotteryPredictionTombolaUy(models.Model):
     def _last_quiniela_output(self):
         return self.env['lottery.output'].sudo().search(
             [('sorteo_id.source_code', '=', SOURCE_CODE)],
-            order='date desc, turn_day desc, id desc', limit=1)
+            order='date desc, turno_sequence desc, id desc', limit=1)
 
     @api.model
     def _default_date(self):
@@ -193,17 +195,16 @@ class LotteryPredictionTombolaUy(models.Model):
     @api.model
     def _default_turn(self):
         last = self._last_quiniela_output()
-        return last.turn_day if last else 'evening'
+        return last.turno_id.id if last else False
 
-    @api.depends('date', 'turn_day')
+    @api.depends('date', 'turno_id')
     def _compute_display_name(self):
-        turnos = dict(self._fields['turn_day'].selection)
         for rec in self:
             fecha = rec.date.strftime('%d-%m-%Y') if rec.date else ''
             rec.display_name = 'Tómbola %s / %s' % (
-                fecha, turnos.get(rec.turn_day, ''))
+                fecha, turno_label(rec.turno_code))
 
-    @api.onchange('date', 'turn_day', 'temperature', 'combinaciones_window',
+    @api.onchange('date', 'turno_id', 'temperature', 'combinaciones_window',
                   'algoritmo')
     def _onchange_parametros(self):
         """Si se cambia un parámetro, lo calculado ya no corresponde: se
@@ -238,7 +239,7 @@ class LotteryPredictionTombolaUy(models.Model):
         if self.temperature == 'all':
             return self.env['lottery.number'].search([])
         return self.env['lottery.prediction'].numbers_by_temperature(
-            sorteo, self.turn_day, self.temperature)
+            sorteo, self.turno_code, self.temperature)
 
     def _prediccion(self, sorteo, candidatos):
         """Una `lottery.prediction` en memoria (`new`) para ese premio.
@@ -252,7 +253,7 @@ class LotteryPredictionTombolaUy(models.Model):
         return self.env['lottery.prediction'].new({
             'sorteo_id': sorteo.id,
             'date': self.date,
-            'turn_day': self.turn_day,
+            'turno_id': self.turno_id.id,
             'combinaciones_window': self.combinaciones_window,
             'algoritmo': self.algoritmo,
             'number_ids': [(6, 0, candidatos.ids)],
@@ -304,7 +305,7 @@ class LotteryPredictionTombolaUy(models.Model):
                 '(Candidatos: %s). Generá primero los artículos del ranking '
                 'o elegí Candidatos = Todos (100).' % (
                     TOP_POR_PREMIO,
-                    dict(self._fields['turn_day'].selection)[self.turn_day],
+                    turno_label(self.turno_code),
                     dict(self._fields['temperature'].selection)[
                         self.temperature]))
 
@@ -486,9 +487,9 @@ class LotteryPredictionTombolaUy(models.Model):
         day = WEEKDAY_CODES[self.date.weekday()]
         votos = {}
         for _premio, sorteo in sorteos:
-            for option, clave in (('general', 'general'),
-                                  (self.turn_day, 'turno')):
-                filas = stats.get_top_3_pintas(option, day,
+            for turno_id, clave in ((False, 'general'),
+                                    (self.turno_id.id, 'turno')):
+                filas = stats.get_top_3_pintas(turno_id, day,
                                                sorteo_id=sorteo.id)
                 if not filas:
                     continue
@@ -598,7 +599,7 @@ class LotteryPredictionTombolaUy(models.Model):
     def _render_grupos(self, grupos, sin_datos):
         """Tarjeta con los 5 mejores de cada premio, en dos columnas de 10."""
         self.ensure_one()
-        color = COLOR_TURNO[self.turn_day]
+        color = turno_color(self.turno_code)
         por_premio = {g['premio']: g for g in grupos}
 
         filas = []
@@ -644,7 +645,7 @@ class LotteryPredictionTombolaUy(models.Model):
             '<table style="border-collapse:collapse;margin:0 auto;">'
             '<tbody>%s</tbody></table>%s</div>' % (''.join(filas), pie))
         return tarjeta(
-            cabezal(self.turn_day, self.date,
+            cabezal(self.turno_code, self.date,
                     titulo='Tómbola · los 5 de cada premio'),
             cuerpo, ancho=524)
 
@@ -690,7 +691,7 @@ class LotteryPredictionTombolaUy(models.Model):
             % (''.join(filas), self._panel_mes(destacados),
                self._pie('Más pesados: %s' % detalle)))
         return tarjeta(
-            cabezal(self.turn_day, self.date,
+            cabezal(self.turno_code, self.date,
                     titulo='Combinaciones Tómbola'),
             cuerpo, ancho=780)
 
@@ -715,12 +716,12 @@ class LotteryPredictionTombolaUy(models.Model):
                 'evaluados en los primeros %d premios.</div>'
                 % (FUENTE, TEXTO_SUAVE, PREMIOS_PRIMEROS))
             return tarjeta(
-                cabezal(self.turn_day, self.date,
+                cabezal(self.turno_code, self.date,
                         titulo='Probables · primeros %d premios'
                                % PREMIOS_PRIMEROS),
                 cuerpo, ancho=452)
 
-        color = COLOR_TURNO[self.turn_day]
+        color = turno_color(self.turno_code)
         bolas = ''.join(bola('%02d' % d['numero'], color, diam=56)
                         for d in probables)
         detalle = self._chips(
@@ -749,7 +750,7 @@ class LotteryPredictionTombolaUy(models.Model):
                          % (PREMIOS_PRIMEROS * TOP_POR_PREMIO,
                             PREMIOS_PRIMEROS, mes))))
         return tarjeta(
-            cabezal(self.turn_day, self.date,
+            cabezal(self.turno_code, self.date,
                     titulo='Probables · primeros %d premios'
                            % PREMIOS_PRIMEROS),
             cuerpo, ancho=452)
@@ -766,10 +767,10 @@ class LotteryPredictionTombolaUy(models.Model):
                 '<div style="padding:22px 18px;text-align:center;'
                 'font:700 13px/1.5 %s;color:%s;">No hay pintas atrasadas '
                 'cargadas para estos premios.</div>' % (FUENTE, TEXTO_SUAVE))
-            return tarjeta(cabezal(self.turn_day, self.date, titulo=titulo),
+            return tarjeta(cabezal(self.turno_code, self.date, titulo=titulo),
                            cuerpo, ancho=452)
 
-        color = COLOR_TURNO[self.turn_day]
+        color = turno_color(self.turno_code)
         bolas = ''.join(bola('%02d' % n, color, diam=64) for n in numeros)
         detalle = self._chips(
             '%02d · %d de %d premios' % (n, veces[n], TOTAL_PREMIOS)
@@ -826,7 +827,7 @@ class LotteryPredictionTombolaUy(models.Model):
                          'en general y la más atrasada de la %s. De la pinta '
                          'ganadora salen los números que más se repiten '
                          'entre los %d de la evaluación.'
-                         % (TURN_LABEL[self.turn_day].lower(),
+                         % (turno_label(self.turno_code).lower(),
                             TOTAL_PREMIOS * TOP_POR_PREMIO))))
-        return tarjeta(cabezal(self.turn_day, self.date, titulo=titulo),
+        return tarjeta(cabezal(self.turno_code, self.date, titulo=titulo),
                        cuerpo, ancho=452)

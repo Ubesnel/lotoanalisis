@@ -17,61 +17,186 @@
 
     <!-- 2) GRUPOS se agrega completo desde lottery_groups -->
 
-    <!-- 3) SALIDAS -->
-    <menuitem name="Salidas" id="menu_lottery_output" sequence="5"
+    <!-- 3) SALIDAS, UN MENÚ POR PAÍS -->
+    <!-- Estados Unidos -->
+    <menuitem name="Estados Unidos" id="menu_country_us" sequence="1"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
-
-    <menuitem id="menu_lottery_output_all_item" parent="lottery_base.menu_lottery_output"
-              action="action_lottery_output_all" sequence="5"
-              groups="lottery_base.group_lottery_manager"/>
-
-    <!-- 4) SORTEOS DENTRO DE SALIDAS -->
-    <menuitem id="menu_lottery_output_florida_item" name="Florida Pick3"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_florida" sequence="10"
+    <menuitem name="Salidas" id="menu_country_us_salidas" sequence="10"
+              parent="lottery_base.menu_country_us"
               groups="lottery_base.group_lottery_user"/>
-
-    <menuitem id="menu_lottery_output_florida_pick2_item" name="Florida Pick2"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_florida_pick2" sequence="12"
+    <menuitem id="menu_lottery_output_florida_pick2_item" name="Pick2 Florida"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_florida_pick2" sequence="10"
               groups="lottery_base.group_lottery_user"/>
-
+    <menuitem id="menu_lottery_output_florida_item" name="Pick3 Florida"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_florida" sequence="20"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_georgia_item" name="Georgia"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_georgia" sequence="30"
+              groups="lottery_base.group_lottery_user"/>
     <menuitem id="menu_lottery_output_new_york_item" name="New York"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_new_york" sequence="15"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_new_york" sequence="40"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_texas_item" name="Texas"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_texas" sequence="50"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_new_jersey_item" name="New Jersey"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_new_jersey" sequence="60"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_tennessee_item" name="Tennessee"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_tennessee" sequence="70"
               groups="lottery_base.group_lottery_user"/>
 
-    <menuitem id="menu_lottery_output_la_primera_item" name="La Primera"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_la_primera" sequence="18"
+    <!-- República Dominicana -->
+    <menuitem name="República Dominicana" id="menu_country_do" sequence="2"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_do_salidas" sequence="10"
+              parent="lottery_base.menu_country_do"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_primera_item" name="Quiniela La Primera"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_la_primera" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quinielon_item" name="Quinielón La Primera"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_quinielon" sequence="20"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_suerte_item" name="La Suerte Dominicana"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_la_suerte" sequence="30"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_lotedom_item" name="LoteDom"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_lotedom" sequence="40"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_loteria_real_item" name="Lotería Real"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_loteria_real" sequence="50"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_loteka_item" name="Loteka"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_loteka" sequence="60"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_pale_item" name="Quiniela Palé"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_quiniela_pale" sequence="70"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_loteria_nacional_item" name="Lotería Nacional"
+              parent="lottery_base.menu_country_do_salidas"
+              action="lottery_base.action_lottery_output_loteria_nacional" sequence="80"
               groups="lottery_base.group_lottery_user"/>
 
-    <menuitem id="menu_lottery_output_la_suerte_item" name="La Suerte"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_la_suerte" sequence="19"
+    <!-- San Martín -->
+    <menuitem name="San Martín" id="menu_country_sx" sequence="3"
+              parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
-
+    <menuitem name="Salidas" id="menu_country_sx_salidas" sequence="10"
+              parent="lottery_base.menu_country_sx"
+              groups="lottery_base.group_lottery_user"/>
     <menuitem id="menu_lottery_output_king_lottery_item" name="King Lottery"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_king_lottery" sequence="20"
+              parent="lottery_base.menu_country_sx_salidas"
+              action="lottery_base.action_lottery_output_king_lottery" sequence="10"
               groups="lottery_base.group_lottery_user"/>
 
-    <menuitem id="menu_lottery_output_quinielon_item" name="El Quinielón"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_quinielon" sequence="21"
+    <!-- Uruguay -->
+    <menuitem name="Uruguay" id="menu_country_uy" sequence="4"
+              parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
-
-    <menuitem id="menu_lottery_output_quiniela_uy_1_item" name="Quiniela UY Premio 1"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_output_quiniela_uy_1" sequence="20"
+    <menuitem name="Salidas" id="menu_country_uy_salidas" sequence="10"
+              parent="lottery_base.menu_country_uy"
               groups="lottery_base.group_lottery_user"/>
-
+    <menuitem id="menu_lottery_output_quiniela_uy_1_item" name="Premio 1"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_1" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_2_item" name="Premio 2"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_2" sequence="20"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_3_item" name="Premio 3"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_3" sequence="30"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_4_item" name="Premio 4"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_4" sequence="40"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_5_item" name="Premio 5"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_5" sequence="50"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_6_item" name="Premio 6"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_6" sequence="60"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_7_item" name="Premio 7"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_7" sequence="70"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_8_item" name="Premio 8"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_8" sequence="80"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_9_item" name="Premio 9"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_9" sequence="90"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_10_item" name="Premio 10"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_10" sequence="100"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_11_item" name="Premio 11"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_11" sequence="110"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_12_item" name="Premio 12"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_12" sequence="120"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_13_item" name="Premio 13"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_13" sequence="130"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_14_item" name="Premio 14"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_14" sequence="140"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_15_item" name="Premio 15"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_15" sequence="150"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_16_item" name="Premio 16"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_16" sequence="160"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_17_item" name="Premio 17"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_17" sequence="170"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_18_item" name="Premio 18"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_18" sequence="180"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_19_item" name="Premio 19"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_19" sequence="190"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_quiniela_uy_20_item" name="Premio 20"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_output_quiniela_uy_20" sequence="200"
+              groups="lottery_base.group_lottery_user"/>
     <menuitem id="menu_lottery_tombola_output_item" name="Tómbola"
-              parent="lottery_base.menu_lottery_output"
-              action="lottery_base.action_lottery_tombola_output" sequence="25"
+              parent="lottery_base.menu_country_uy_salidas"
+              action="lottery_base.action_lottery_tombola_output" sequence="1000"
               groups="lottery_base.group_lottery_user"/>
-
     <!-- 5) CONFIGURACIÓN -->
     <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
               parent="lottery_base.home_lottery"
@@ -82,6 +207,16 @@
     <menuitem id="menu_lottery_sorteo_item" name="Sorteos"
               parent="lottery_base.menu_configuracion_root"
               action="action_lottery_sorteo" sequence="20"
+              groups="lottery_base.group_lottery_manager"/>
+
+    <menuitem id="menu_lottery_output_all_item" name="Todas las salidas"
+              parent="lottery_base.menu_configuracion_root"
+              action="action_lottery_output_all" sequence="10"
+              groups="lottery_base.group_lottery_manager"/>
+
+    <menuitem id="menu_lottery_turno_item" name="Turnos"
+              parent="lottery_base.menu_configuracion_root"
+              action="action_lottery_turno" sequence="25"
               groups="lottery_base.group_lottery_manager"/>
 
     <menuitem id="menu_ir_cron_act_lottery"

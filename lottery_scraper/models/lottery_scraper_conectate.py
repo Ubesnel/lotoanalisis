@@ -293,13 +293,14 @@ class LotteryScraperConectate(models.Model):
                    for n in self.env['lottery.number'].search_read([], ['name'])}
 
         draws.sort(key=lambda d: (d['date'], 0 if d['turn'] == 'afternoon' else 1))
+        turno_ids = self.env['lottery.turno']._ids_by_code()
         existing = {
-            (fields.Date.to_date(r['date']), r['turn_day'])
+            (fields.Date.to_date(r['date']), r['turno_code'])
             for r in Output.search_read([
                 ('sorteo_id', '=', self.sorteo_id.id),
                 ('date', '>=', draws[0]['date']),
                 ('date', '<=', draws[-1]['date']),
-            ], ['date', 'turn_day'])
+            ], ['date', 'turno_code'])
         }
 
         log, vals_list = [], []
@@ -317,7 +318,7 @@ class LotteryScraperConectate(models.Model):
                 log.append(f'[ERROR] {label} – número {d["numero"]:02d} no existe')
                 continue
 
-            vals = {'date': d['date'], 'turn_day': d['turn'],
+            vals = {'date': d['date'], 'turno_id': turno_ids[d['turn']],
                     'sorteo_id': self.sorteo_id.id, 'number_id': number_id}
             extra = ''
             for src, campo, et in (('premio2', 'premio_2_id', 'P2'),
