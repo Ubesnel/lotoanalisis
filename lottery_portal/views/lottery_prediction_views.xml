@@ -8,10 +8,10 @@
         <field name="arch" type="xml">
             <tree decoration-success="cumplida" decoration-muted="not verification_date">
                 <field name="date"/>
-                <field name="turno_id"/>
-                <field name="hour" widget="float_time" optional="hide"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="temperature" optional="show"/>
+                <field name="turno_id"/>
+                <field name="hour" widget="float_time" optional="hide"/>
                 <field name="algoritmo" optional="show"/>
                 <field name="numbers_count"/>
                 <field name="number_ids" widget="many2many_tags" optional="show"/>
@@ -50,11 +50,11 @@
                     <group>
                         <group>
                             <field name="date"/>
+                            <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="temperature"/>
                             <field name="sorteo_turno_ids" invisible="1"/>
                             <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="hour" widget="float_time"/>
-                            <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
-                            <field name="temperature"/>
                             <!-- Sólo para el invisible del botón de ternas. -->
                             <field name="sorteo_source_code" invisible="1"/>
                             <field name="combinaciones_window"/>
@@ -214,6 +214,7 @@
         <field name="name">Predicciones</field>
         <field name="res_model">lottery.prediction</field>
         <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_pred_remaining': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Registrá tu primera predicción
@@ -225,8 +226,9 @@
         </field>
     </record>
 
-    <menuitem name="Predicciones" id="menu_predicciones_root" sequence="20"
-              parent="lottery_base.home_lottery"
+    <!-- Sección Predicciones dentro de LotoAnálisis (lottery_base) -->
+    <menuitem name="Predicciones" id="menu_predicciones_root" sequence="10"
+              parent="lottery_base.menu_lotoanalisis_root"
               groups="lottery_base.group_lottery_user"/>
 
     <menuitem id="menu_lottery_prediction_item" name="Predicciones"

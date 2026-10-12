@@ -18,6 +18,10 @@ class LotterySorteo(models.Model):
     ranking_display = fields.Html(
         string='Ranking actual', compute='_compute_ranking_display',
         sanitize=False)
+    exclude_from_predictions = fields.Boolean(
+        string='Excluir de predicciones', default=False,
+        help="Si está activo, el sorteo no se puede elegir al cargar una "
+             "predicción. Las predicciones que ya tiene no se tocan.")
 
     def _compute_ranking_display(self):
         for rec in self:

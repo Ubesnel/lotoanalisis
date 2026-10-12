@@ -439,5 +439,17 @@
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
+        <!-- Loto Honduras: un número de 2 dígitos (00-99, cada uno con su "signo"), sin centena ni corridos, como Florida Pick 2. Todos los días a las 11:00, 15:00 y 21:00 (hora de Honduras). Multi X y Más 1 son jugadas aparte y no se guardan. El histórico se carga desde Excel (arranca el 01/01/2025, con huecos). -->
+        <record id="sorteo_la_diaria" model="lottery.sorteo">
+            <field name="name">La Diaria</field>
+            <field name="code">la_diaria</field>
+            <field name="sequence">401</field>
+            <field name="country_id" ref="base.hn"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_morning'), ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
     </data>
 </odoo>

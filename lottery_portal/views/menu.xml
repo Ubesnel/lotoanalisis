@@ -31,8 +31,9 @@
 
     </data>
 
-    <menuitem id="menu_faq_root" name="Sitio Web" parent="lottery_base.home_lottery"
-              groups="lottery_base.group_lottery_manager" sequence="100"/>
+    <!-- Sección Sitio Web dentro de Configuración -->
+    <menuitem id="menu_faq_root" name="Sitio Web" parent="lottery_base.menu_configuracion_root"
+              groups="lottery_base.group_lottery_manager" sequence="90"/>
 
     <menuitem id="menu_faq_category" name="Categorías FAQ" parent="menu_faq_root"
               action="action_faq_category"
