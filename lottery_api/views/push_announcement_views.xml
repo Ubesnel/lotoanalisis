@@ -9,6 +9,7 @@
             <tree decoration-muted="not sent">
                 <field name="create_date"/>
                 <field name="title"/>
+                <field name="sorteo_ids" widget="many2many_tags" optional="show"/>
                 <field name="sent" widget="boolean_toggle"/>
                 <field name="sent_date" optional="show"/>
             </tree>
@@ -25,7 +26,7 @@
                     <button name="action_send_push_notification" type="object"
                             string="Enviar notificación push" class="btn-primary"
                             icon="fa-bell" invisible="not id or sent"
-                            confirm="Se enviará esta notificación a TODOS los usuarios de la app, sin importar qué lotería sigan. Revisá el texto antes de continuar. ¿Confirma el envío?"/>
+                            confirm="Se enviará esta notificación a TODOS los usuarios de la app si no elegiste sorteos, o solo a quienes siguen los sorteos elegidos. Revisá el texto antes de continuar. ¿Confirma el envío?"/>
                     <field name="sent" invisible="1"/>
                 </header>
                 <sheet>
@@ -34,7 +35,17 @@
                     </div>
                     <group>
                         <field name="title"/>
+                        <field name="sorteo_ids" widget="many2many_tags"
+                               options="{'no_create': True}"
+                               placeholder="Todos los usuarios"
+                               readonly="sent"/>
                     </group>
+                    <field name="sorteo_count" invisible="1"/>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="sorteo_count &lt;= 5">
+                        Con más de 5 sorteos el aviso sale en varias tandas: a quien siga
+                        sorteos de dos tandas distintas le puede llegar repetido.
+                    </div>
                     <group string="Mensaje">
                         <field name="body" nolabel="1" colspan="2"
                                placeholder="Escribí el mensaje del aviso…"/>
@@ -70,8 +81,8 @@
             </p>
             <p>
                 Mandá una notificación push a TODOS los usuarios de la app —
-                mantenimiento programado, nueva versión disponible, etc. —
-                sin importar qué lotería sigan.
+                mantenimiento programado, nueva versión disponible, etc. — o
+                solo a quienes siguen ciertos sorteos, eligiéndolos en el aviso.
             </p>
         </field>
     </record>

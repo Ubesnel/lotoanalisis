@@ -439,13 +439,85 @@
             <field name="enforce_turn_continuity" eval="False"/>
             <field name="source_code">quiniela_uy</field>
         </record>
-        <!-- Loto Honduras: un número de 2 dígitos (00-99, cada uno con su "signo"), sin centena ni corridos, como Florida Pick 2. Todos los días a las 11:00, 15:00 y 21:00 (hora de Honduras). Multi X y Más 1 son jugadas aparte y no se guardan. El histórico se carga desde Excel (arranca el 01/01/2025, con huecos). -->
+        <!-- Loto Honduras: un número de 2 dígitos (00-99, cada uno con su "signo"), sin centena ni corridos, como Florida Pick 2. Todos los días a las 11:00, 15:00 y 21:00 (hora de Honduras). Multi X y Más 1 son jugadas aparte y no se guardan. El histórico se carga desde Excel (arranca el 31/05/2015, con huecos; hasta el 10/02/2020 los horarios eran 10:00, 14:00 y 21:00). -->
         <record id="sorteo_la_diaria" model="lottery.sorteo">
             <field name="name">La Diaria</field>
             <field name="code">la_diaria</field>
             <field name="sequence">401</field>
             <field name="country_id" ref="base.hn"/>
-            <field name="turno_ids" eval="[(6, 0, [ref('turno_morning'), ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_h1100'), ref('turno_h1500'), ref('turno_h2100')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Loto Nicaragua: mismo juego que La Diaria de Honduras (00-99 con signo, Multi X y Más 1 aparte). El calendario es el vigente desde el 15/06/2026: 11:00, 15:00 y 21:00 todos los días y 18:00 sábado y domingo (hora de Nicaragua). Antes hubo otros esquemas (del 25/08/2025 al 14/06/2026 eran 12:00, 15:00, 18:00 y 21:00 todos los días): el histórico se carga desde Excel desde el 01/01/2024, con el sorteo de 12:00 en el turno de 11:00 AM. -->
+        <record id="sorteo_la_diaria_nicaragua" model="lottery.sorteo">
+            <field name="name">La Diaria</field>
+            <field name="code">la_diaria_nicaragua</field>
+            <field name="sequence">501</field>
+            <field name="country_id" ref="base.ni"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_h1100'), ref('turno_h1500'), ref('turno_h1800'), ref('turno_h2100')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h1500')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h2100')}),
+            ]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- LOTO El Salvador (Lotería Nacional de Beneficencia): un número de 00 a 99, sin centena. Todos los días a las 11:00 y 21:00 desde el 17/07/2024, y además a las 18:00 desde el 24/08/2026 (hora de El Salvador). Sin sorteo de 15:00. El histórico se carga desde Excel, sacado del sitio oficial (loto.sv). -->
+        <record id="sorteo_la_diaria_el_salvador" model="lottery.sorteo">
+            <field name="name">La Diaria</field>
+            <field name="code">la_diaria_el_salvador</field>
+            <field name="sequence">601</field>
+            <field name="country_id" ref="base.sv"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_h1100'), ref('turno_h1800'), ref('turno_h2100')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_h2100')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h1100')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h1800')}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_h2100')}),
+            ]"/>
             <field name="uses_hundreds" eval="False"/>
             <field name="uses_fireball" eval="False"/>
             <field name="is_pick3" eval="False"/>

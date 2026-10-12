@@ -75,7 +75,7 @@ class LotteryOutput(models.Model):
 
         return res
 
-    @api.depends('date', 'turno_id.name', 'hundreds_id.name', 'number_id', 'sorteo_id.name')
+    @api.depends('date', 'turno_id.name', 'hundreds_id.name', 'number_id', 'sorteo_id.display_name')
     def _compute_display_name(self):
         for record in self:
             date_str = record.date.strftime('%d-%m-%Y') if record.date else ''
@@ -83,7 +83,7 @@ class LotteryOutput(models.Model):
             centena = f"{record.hundreds_id.name}" if record.hundreds_id else ''
             numero = f"{record.number_id.name:02d}" if record.number_id else ''
             combinado = f"{centena}{numero}"
-            sorteo_label = f" / {record.sorteo_id.name}" if record.sorteo_id else ''
+            sorteo_label = f" / {record.sorteo_id.display_name}" if record.sorteo_id else ''
             record.display_name = f"{date_str} / {turn_label} / {combinado}{sorteo_label}"
 
     @api.constrains('turno_id', 'sorteo_id')

@@ -225,6 +225,30 @@
               action="lottery_base.action_lottery_output_la_diaria" sequence="10"
               groups="lottery_base.group_lottery_user"/>
 
+    <!-- Nicaragua -->
+    <menuitem name="Nicaragua" id="menu_country_ni" sequence="6"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_ni_salidas" sequence="10"
+              parent="lottery_base.menu_country_ni"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_diaria_nicaragua_item" name="La Diaria"
+              parent="lottery_base.menu_country_ni_salidas"
+              action="lottery_base.action_lottery_output_la_diaria_nicaragua" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
+    <!-- El Salvador -->
+    <menuitem name="El Salvador" id="menu_country_sv" sequence="7"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_sv_salidas" sequence="10"
+              parent="lottery_base.menu_country_sv"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_diaria_el_salvador_item" name="La Diaria"
+              parent="lottery_base.menu_country_sv_salidas"
+              action="lottery_base.action_lottery_output_la_diaria_el_salvador" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
     <!-- 5) CONFIGURACIÓN -->
     <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
               parent="lottery_base.home_lottery"

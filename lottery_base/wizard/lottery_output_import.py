@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import base64
-import html
 import io
 import logging
 from datetime import date, datetime
@@ -16,6 +15,8 @@ COL_FECHA = 'fecha'
 COL_TURNO = 'turno'
 COL_NUMERO = 'numero'
 COL_CENTENA = 'centena'
+COL_PREMIO_2 = 'premio 2'
+COL_PREMIO_3 = 'premio 3'
 
 _MAX_DETAIL_LINES = 100
 
@@ -34,16 +35,25 @@ class LotteryOutputImport(models.TransientModel):
     sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True)
     file = fields.Binary(string='Archivo Excel (.xlsx)', required=True)
     filename = fields.Char(string='Nombre del archivo')
-    result = fields.Html(string='Resultado', readonly=True, sanitize=False)
+    # El resultado va en campos simples y la vista arma el aviso: un campo
+    # Html obliga a cargar el editor de Odoo (web_editor) solo para mostrarlo.
+    state = fields.Selection([
+        ('draft', 'Sin correr'),
+        ('validated', 'Validado'),
+        ('imported', 'Importado'),
+        ('error', 'Con errores'),
+    ], default='draft', readonly=True)
+    summary = fields.Char(string='Resumen', readonly=True)
+    errors = fields.Text(string='Errores', readonly=True)
 
     def action_validate(self):
         self.ensure_one()
-        self.result = self._run(dry_run=True)
+        self.write(self._run(dry_run=True))
         return self._reopen()
 
     def action_import(self):
         self.ensure_one()
-        self.result = self._run(dry_run=False)
+        self.write(self._run(dry_run=False))
         return self._reopen()
 
     def _reopen(self):
@@ -74,10 +84,15 @@ class LotteryOutputImport(models.TransientModel):
         faltan = [c for c in (COL_FECHA, COL_TURNO, COL_NUMERO) if c not in encabezado]
         if self.sorteo_id.uses_hundreds and COL_CENTENA not in encabezado:
             faltan.append(COL_CENTENA)
+        # Quinielas (premios 2 y 3): los corridos son parte del resultado,
+        # así que si el sorteo los usa el Excel tiene que traerlos.
+        if self.sorteo_id.is_pick3:
+            faltan += [c for c in (COL_PREMIO_2, COL_PREMIO_3) if c not in encabezado]
         if faltan:
             raise UserError('Faltan columnas en la primera fila: %s.\nEncontradas: %s'
                             % (', '.join(faltan), ', '.join(c for c in encabezado if c)))
-        idx = {c: encabezado.index(c) for c in (COL_FECHA, COL_TURNO, COL_NUMERO, COL_CENTENA)
+        idx = {c: encabezado.index(c)
+               for c in (COL_FECHA, COL_TURNO, COL_NUMERO, COL_CENTENA, COL_PREMIO_2, COL_PREMIO_3)
                if c in encabezado}
 
         for nro, fila in enumerate(filas, start=2):
@@ -156,12 +171,21 @@ class LotteryOutputImport(models.TransientModel):
                     errores.append(f'Fila {nro}: centena inválida ({fila.get(COL_CENTENA)}).')
                     continue
                 vals['hundreds_id'] = numeros[centena]
+            if sorteo.is_pick3:
+                p2 = self._parse_int(fila.get(COL_PREMIO_2))
+                p3 = self._parse_int(fila.get(COL_PREMIO_3))
+                if p2 not in numeros or p3 not in numeros:
+                    errores.append(f'Fila {nro}: premios 2 y 3 inválidos '
+                                   f'({fila.get(COL_PREMIO_2)}, {fila.get(COL_PREMIO_3)}).')
+                    continue
+                vals['premio_2_id'] = numeros[p2]
+                vals['premio_3_id'] = numeros[p3]
             vals_list.append(vals)
 
         # Con errores no se importa nada: se corrige el Excel y se vuelve a
         # subir, así no queda un histórico a medias.
         if errores or dry_run:
-            return self._html(sorteo, len(vals_list), omitidas, errores, importado=False)
+            return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=False)
 
         if vals_list:
             # Mismos contextos que los backfills de los importadores: no
@@ -171,23 +195,21 @@ class LotteryOutputImport(models.TransientModel):
                                 skip_prediction_validation=True).create(vals_list)
             sorteo._recompute_next_draw()
             _logger.info('Importación Excel (%s): %d salidas creadas.', sorteo.name, len(vals_list))
-        return self._html(sorteo, len(vals_list), omitidas, errores, importado=True)
+        return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=True)
 
     @staticmethod
-    def _html(sorteo, nuevas, omitidas, errores, importado):
+    def _resultado(sorteo, nuevas, omitidas, errores, importado):
         if errores:
-            clase, titulo = 'alert-danger', 'Hay errores: no se importó nada.'
+            state, titulo = 'error', f'Hay {len(errores)} errores: no se importó nada.'
         elif importado:
-            clase, titulo = 'alert-success', f'Importadas {nuevas} salidas de {sorteo.name}.'
+            state, titulo = 'imported', f'Importadas {nuevas} salidas de {sorteo.name}.'
         else:
-            clase, titulo = 'alert-info', f'Validación OK: se importarían {nuevas} salidas de {sorteo.name}.'
-        partes = [f'<div class="alert {clase}" role="alert"><strong>{titulo}</strong>',
-                  f'<br/>Ya registradas (se saltean): {omitidas}']
-        if errores:
-            partes.append(f'<br/>Errores: {len(errores)}<ul>')
-            partes += [f'<li>{html.escape(e)}</li>' for e in errores[:_MAX_DETAIL_LINES]]
-            if len(errores) > _MAX_DETAIL_LINES:
-                partes.append(f'<li>… y {len(errores) - _MAX_DETAIL_LINES} más.</li>')
-            partes.append('</ul>')
-        partes.append('</div>')
-        return ''.join(partes)
+            state, titulo = 'validated', f'Validación OK: se importarían {nuevas} salidas de {sorteo.name}.'
+        detalle = errores[:_MAX_DETAIL_LINES]
+        if len(errores) > _MAX_DETAIL_LINES:
+            detalle.append(f'… y {len(errores) - _MAX_DETAIL_LINES} más.')
+        return {
+            'state': state,
+            'summary': f'{titulo} Ya registradas (se saltean): {omitidas}.',
+            'errors': '\n'.join(detalle) or False,
+        }

@@ -102,6 +102,21 @@ class LotterySorteo(models.Model):
         ('lottery_sorteo_code_unique', 'unique(code)', 'El código de sorteo ya existe, debe ser único.')
     ]
 
+    @api.depends('name', 'country_id')
+    def _compute_display_name(self):
+        """En el backend, los sorteos con el mismo nombre en distintos países
+        (La Diaria de Honduras, Nicaragua y El Salvador) se distinguen por el
+        país: "La Diaria (Honduras)". Los de nombre único quedan igual. La app
+        y la API usan `name`, así que esto no las cambia."""
+        nombres = [r['name'] for r in self.with_context(active_test=False).sudo()
+                   .search_read([], ['name'])]
+        repetidos = {n for n in nombres if nombres.count(n) > 1}
+        for sorteo in self:
+            if sorteo.name in repetidos and sorteo.country_id:
+                sorteo.display_name = f'{sorteo.name} ({sorteo.country_id.name})'
+            else:
+                sorteo.display_name = sorteo.name
+
     @api.constrains('turno_ids')
     def _check_turno_ids(self):
         for sorteo in self:

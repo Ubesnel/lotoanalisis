@@ -108,7 +108,13 @@ class LotteryOutput(models.Model):
         elif tabla_magicos:
             partes.append(f'🔮 El Premio 1 estuvo en la tabla de {tabla_magicos} Números Mágicos')
 
-        title = f'🎯 Resultado {out.sorteo_id.name} disponible'
+        # El país va en el título: hay loterías que se llaman igual en
+        # distintos países (La Diaria de Honduras y la de Nicaragua).
+        sorteo = out.sorteo_id.name
+        pais = out.sorteo_id.country_id.name
+        if pais:
+            sorteo = f'{sorteo} ({pais})'
+        title = f'🎯 Resultado {sorteo} disponible'
         body = ' · '.join(partes) + '\n📈 Consulta el análisis actualizado para el próximo sorteo'
         return title, body
 

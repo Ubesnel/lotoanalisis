@@ -30,5 +30,37 @@
             <field name="color">#23395B</field>
             <field name="sequence">30</field>
         </record>
+
+        <!-- Turnos por horario: para las loterías nuevas el nombre es la hora
+             del sorteo, que es lo que muestra la app (no Mañana/Tarde/Noche).
+             La secuencia los intercala por hora con los de arriba. -->
+        <record id="turno_h1100" model="lottery.turno">
+            <field name="name">11:00 AM</field>
+            <field name="code">h1100</field>
+            <field name="name_en">11:00 AM</field>
+            <field name="color">#10B981</field>
+            <field name="sequence">12</field>
+        </record>
+        <record id="turno_h1500" model="lottery.turno">
+            <field name="name">3:00 PM</field>
+            <field name="code">h1500</field>
+            <field name="name_en">3:00 PM</field>
+            <field name="color">#F97316</field>
+            <field name="sequence">18</field>
+        </record>
+        <record id="turno_h1800" model="lottery.turno">
+            <field name="name">6:00 PM</field>
+            <field name="code">h1800</field>
+            <field name="name_en">6:00 PM</field>
+            <field name="color">#EC4899</field>
+            <field name="sequence">22</field>
+        </record>
+        <record id="turno_h2100" model="lottery.turno">
+            <field name="name">9:00 PM</field>
+            <field name="code">h2100</field>
+            <field name="name_en">9:00 PM</field>
+            <field name="color">#6366F1</field>
+            <field name="sequence">25</field>
+        </record>
     </data>
 </odoo>
