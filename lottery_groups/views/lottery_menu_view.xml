@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
 
-    <!-- 2) GRUPOS -->
-    <menuitem name="Grupos" id="menu_grupos_root" sequence="15"
-              parent="lottery_base.home_lottery"
+    <!-- Sección Atrasos de grupos dentro de LotoAnálisis (lottery_base) -->
+    <menuitem name="Atrasos de grupos" id="menu_grupos_root" sequence="30"
+              parent="lottery_base.menu_lotoanalisis_root"
               groups="lottery_base.group_lottery_user"/>
 
     <menuitem id="menu_lottery_groups_item" name="Grupos"

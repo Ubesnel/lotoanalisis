@@ -1,1 +1,2 @@
 # -*- coding: utf-8 -*-
+from . import lottery_output_import

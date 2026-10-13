@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Menú propio de Tómbola, separado de "Números" (que son estadísticas
-         por sorteo de las demás loterías). -->
-    <menuitem name="Tómbola" id="menu_tombola_root" sequence="12"
-              parent="lottery_base.home_lottery"
+    <!-- Sección Tómbola dentro de Uruguay, al lado de Salidas: la Tómbola es
+         de la Quiniela UY y sus atrasos van aparte de los de Atrasos > Números
+         (que son por sorteo de las demás loterías). -->
+    <menuitem name="Atrasos Tómbola" id="menu_tombola_root" sequence="20"
+              parent="lottery_base.menu_country_uy"
               groups="lottery_base.group_lottery_user"/>
 
     <menuitem id="menu_lottery_tombola_number_stat_item" name="Atrasos de números"

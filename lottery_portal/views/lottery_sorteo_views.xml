@@ -18,6 +18,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='source_code']" position="after">
                 <field name="show_in_public"/>
+                <field name="exclude_from_predictions"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Ranking calientes / fríos">

@@ -4,9 +4,23 @@
               web_icon="lottery_base,static/description/icon.png"
               groups="lottery_base.group_lottery_user"/>
 
-    <!-- 1) NÚMEROS -->
-    <menuitem name="Números" id="menu_numeros_root" sequence="10"
+    <!-- 1) LOTOANÁLISIS: lo que alimenta la app. Secciones:
+           · Predicciones       (lottery_portal, sequence 10)
+           · Atrasos de números (acá, sequence 20)
+           · Atrasos de grupos  (lottery_groups, sequence 30)
+           · Contenido          (acá, sequence 40): Curiosidades (lottery_portal)
+                                 y Avisos generales (lottery_api)
+         La barra de Odoo muestra solo sección + ítems: no anidar más niveles. -->
+    <menuitem name="LotoAnálisis" id="menu_lotoanalisis_root" sequence="10"
               parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem name="Atrasos de números" id="menu_numeros_root" sequence="20"
+              parent="lottery_base.menu_lotoanalisis_root"
+              groups="lottery_base.group_lottery_user"/>
+
+    <menuitem name="Contenido" id="menu_contenido_root" sequence="40"
+              parent="lottery_base.menu_lotoanalisis_root"
               groups="lottery_base.group_lottery_user"/>
 
     <menuitem id="menu_lottery_number_item" name="Números"
@@ -15,7 +29,7 @@
               groups="lottery_base.group_lottery_user"/>
     <!-- "Atrasos de números" se agrega aquí desde lottery_delays_number -->
 
-    <!-- 2) GRUPOS se agrega completo desde lottery_groups -->
+    <!-- La sección Atrasos de grupos se agrega dentro de LotoAnálisis desde lottery_groups -->
 
     <!-- 3) SALIDAS, UN MENÚ POR PAÍS -->
     <!-- Estados Unidos -->
@@ -197,6 +211,44 @@
               parent="lottery_base.menu_country_uy_salidas"
               action="lottery_base.action_lottery_tombola_output" sequence="1000"
               groups="lottery_base.group_lottery_user"/>
+    <!-- La sección Tómbola (atrasos) se agrega dentro de Uruguay desde lottery_tombola_delays -->
+
+    <!-- Honduras -->
+    <menuitem name="Honduras" id="menu_country_hn" sequence="5"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_hn_salidas" sequence="10"
+              parent="lottery_base.menu_country_hn"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_diaria_item" name="La Diaria"
+              parent="lottery_base.menu_country_hn_salidas"
+              action="lottery_base.action_lottery_output_la_diaria" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
+    <!-- Nicaragua -->
+    <menuitem name="Nicaragua" id="menu_country_ni" sequence="6"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_ni_salidas" sequence="10"
+              parent="lottery_base.menu_country_ni"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_diaria_nicaragua_item" name="La Diaria"
+              parent="lottery_base.menu_country_ni_salidas"
+              action="lottery_base.action_lottery_output_la_diaria_nicaragua" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
+    <!-- El Salvador -->
+    <menuitem name="El Salvador" id="menu_country_sv" sequence="7"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_sv_salidas" sequence="10"
+              parent="lottery_base.menu_country_sv"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_la_diaria_el_salvador_item" name="La Diaria"
+              parent="lottery_base.menu_country_sv_salidas"
+              action="lottery_base.action_lottery_output_la_diaria_el_salvador" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
     <!-- 5) CONFIGURACIÓN -->
     <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
               parent="lottery_base.home_lottery"
@@ -212,6 +264,11 @@
     <menuitem id="menu_lottery_output_all_item" name="Todas las salidas"
               parent="lottery_base.menu_configuracion_root"
               action="action_lottery_output_all" sequence="10"
+              groups="lottery_base.group_lottery_manager"/>
+
+    <menuitem id="menu_lottery_output_import_item" name="Importar salidas (Excel)"
+              parent="lottery_base.menu_configuracion_root"
+              action="action_lottery_output_import" sequence="15"
               groups="lottery_base.group_lottery_manager"/>
 
     <menuitem id="menu_lottery_turno_item" name="Turnos"

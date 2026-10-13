@@ -254,8 +254,9 @@ class LotteryPrediction(models.Model):
 
     sorteo_id = fields.Many2one(
         'lottery.sorteo', string='Sorteo', required=True, index=True,
-        default=_default_sorteo,
-        help='Sorteo/juego para el que se hace la predicción.')
+        domain=[('exclude_from_predictions', '=', False)],
+        help='Sorteo/juego para el que se hace la predicción. Los sorteos '
+             'marcados como "Excluir de predicciones" no se ofrecen.')
     date = fields.Date(
         string='Fecha de predicción', required=True, index=True,
         default=default_today_local,

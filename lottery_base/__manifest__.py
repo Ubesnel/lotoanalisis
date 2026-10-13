@@ -1,6 +1,6 @@
 {
     'name': 'Base',
-    'version': '2.0',
+    'version': '2.1',
     'description': """º
 Configuraciones iniciales
 """,
@@ -21,6 +21,7 @@ Configuraciones iniciales
         'views/lottery_sorteo_view.xml',
         'views/lottery_output_view.xml',
         'views/lottery_tombola_output_view.xml',
+        'wizard/lottery_output_import_view.xml',
         'views/lottery_menu_view.xml',
         'views/res_users_view.xml',
     ],

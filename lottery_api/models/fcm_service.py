@@ -115,6 +115,20 @@ class LotteryFcmService(models.AbstractModel):
         `send_push` (por sorteo) y los avisos generales
         (lottery.push.announcement, topic fijo 'anuncios') comparten esta
         misma llamada — lo único que cambia entre uno y otro es el topic."""
+        return self._send('topic', topic, title, body)
+
+    @api.model
+    def send_push_to_condition(self, condition, title, body):
+        """Envía UN mensaje a los suscriptos de varios topics, con una
+        condición de FCM ("'sorteo_1' in topics || 'sorteo_2' in topics").
+        A quien sigue varios de esos topics le llega una sola vez. FCM acepta
+        hasta 5 topics por condición."""
+        return self._send('condition', condition, title, body)
+
+    @api.model
+    def _send(self, target_key, topic, title, body):
+        """target_key: 'topic' o 'condition', el campo del mensaje FCM al que
+        va `topic` (un nombre de topic o una condición)."""
         sa = self._get_service_account()
         if not sa:
             _logger.info(
@@ -132,7 +146,7 @@ class LotteryFcmService(models.AbstractModel):
 
         payload = {
             'message': {
-                'topic': topic,
+                target_key: topic,
                 'notification': {
                     'title': title,
                     'body': body,

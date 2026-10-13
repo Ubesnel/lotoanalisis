@@ -30,9 +30,9 @@
         <field name="target">new</field>
     </record>
 
-    <!-- ── Menú nuevo: Informes Quiniela Uruguay ─────────────────────── -->
-    <menuitem id="menu_quiniela_uy_root" name="Informes Quiniela Uruguay"
-              parent="lottery_base.home_lottery" sequence="30"
+    <!-- ── Sección Informes dentro de Uruguay (después de Salidas y Tómbola) ── -->
+    <menuitem id="menu_quiniela_uy_root" name="Informes"
+              parent="lottery_base.menu_country_uy" sequence="30"
               groups="lottery_base.group_lottery_user"/>
 
     <menuitem id="menu_quiniela_uy_resultados" name="Resultados"
