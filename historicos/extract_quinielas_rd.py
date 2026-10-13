@@ -1,9 +1,13 @@
 """Histórico de LoteDom y Quiniela Palé (Leidsa) a Excel, listo para el wizard.
 
-Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional]
+Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional] [--desde=YYYY-MM-DD]
+
+--desde deja afuera del Excel los sorteos anteriores a esa fecha (los cachés
+no se tocan). Se usó --desde=2020-01-01 para importar la Palé sin la isla de
+2015-2016 mientras falta 2016-2019.
 
 --sin-nacional arma los Excel solo con lo que ya está en caché, sin pedirle
-nada a nacionalloteria (para cuando sigue bloqueado).
+nada a nacionalloteria ni a enloteria (para cuando siguen bloqueados).
 
 Los cachés quedan en historicos/cache_quinielas_rd/: pasá esa carpeta como
 <carpeta_cache> para retomar sin volver a bajar lo que ya está.
@@ -19,7 +23,12 @@ Fuentes:
     viernes, Palé sin lunes a jueves).
   · nacionalloteria.com (un día por página): solo Quiniela Palé, desde el
     28/01/2015. Tapa el hueco de conectate y suma 2015-2019.
-Si las dos tienen el día y no coinciden, gana conectate (es la que ya se
+  · enloteria.com (una página por día, /resultados-<slug>-YYYY-MM-DD): solo
+    se pide para los días que les faltan a las otras dos. Tiene desde ~fines
+    de 2022. Coincidió 23 de 23 contra conectate. Un día sin sorteo muestra
+    el sorteo ANTERIOR con su propia fecha: se descarta si la fecha de la
+    página no es la pedida (y por las dudas, si repite el día siguiente).
+Si las dos primeras tienen el día y no coinciden, gana conectate (es la que ya se
 validó contra fuentes oficiales; ver memoria fuentes-loterias-dominicanas)
 y la diferencia queda en Observaciones.
 
@@ -57,16 +66,22 @@ SORTEOS = {
         'turno': 'afternoon', 'turno_nombre': 'Tarde',
         'conectate': '69fd98475e76585b60269638',
         'nacional': None,
+        'enloteria': ('resultados-lotedom-%s', 'LoteDom'),
         'archivo': 'lotedom.xlsx',
     },
     'quiniela_pale': {
         'turno': 'evening', 'turno_nombre': 'Noche',
         'conectate': '69fd98465e76585b6026956d',   # "Quiniela Leidsa"
         'nacional': ('quiniela-leidsa.php', date(2015, 1, 28)),
+        'enloteria': ('resultados-leidsa-%s', 'Leidsa'),
         'archivo': 'quiniela_pale.xlsx',
     },
 }
 NACIONAL_DELAY = 4.0
+ENLOTERIA = 'https://enloteria.com/%s'
+ENLOTERIA_DELAY = 1.5
+MESES_ES = {m: i + 1 for i, m in enumerate(
+    'enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre'.split())}
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0 Safari/537.36')
 
@@ -146,12 +161,51 @@ def bajar_nacional(pagina, desde, cache_path, hasta):
     return cache
 
 
+def completar_enloteria(slug, nombre_web, dias, cache_path, siguiente):
+    """Pide a enloteria solo `dias` (los que faltan). Devuelve {fecha: nums}.
+    `siguiente(fecha)` da los números del día siguiente ya conocidos, para
+    descartar una página que repita ese sorteo."""
+    cache = leer(cache_path)
+    s = requests.Session()
+    s.headers['User-Agent'] = UA
+    patron = re.compile(nombre_web + r' \w+ (\d{1,2}) de (\w+), (\d{4}) \d{1,2}:\d{2}\s*[AP]M '
+                        r'(\d{2}) (\d{2}) (\d{2})', re.I)
+    for k in dias:
+        if k in cache:
+            continue
+        r = s.get(ENLOTERIA % (slug % k), timeout=40)
+        time.sleep(ENLOTERIA_DELAY)
+        if r.status_code == 403:
+            print(f'enloteria: bloqueado (403) en {k}; se corta.', flush=True)
+            break
+        if r.status_code != 200:
+            cache[k] = 'sin_pagina'
+            continue
+        t = re.sub(r'(?s)<(script|style).*?</\1>', '', r.text)
+        t = re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', t)))
+        m = patron.search(t)
+        if not m:
+            cache[k] = 'sin_parsear'
+            continue
+        fecha = date(int(m.group(3)), MESES_ES[m.group(2).lower()], int(m.group(1))).isoformat()
+        cache[k] = [m.group(4), m.group(5), m.group(6)] if fecha == k else 'otra_fecha'
+    guardar(cache_path, cache)
+    return {k: v for k, v in cache.items()
+            if isinstance(v, list) and k in dias and v != siguiente(k)}
+
+
+def leer_enloteria(cache_path, dias, siguiente):
+    cache = leer(cache_path)
+    return {k: v for k, v in cache.items()
+            if isinstance(v, list) and k in dias and v != siguiente(k)}
+
+
 def valido(nums):
     return (isinstance(nums, list) and len(nums) == 3
             and all(n.isdigit() and int(n) <= 99 for n in nums))
 
 
-def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False):
+def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False, desde_excel=None):
     hasta = date.today() - timedelta(days=1)
     cx = bajar_conectate(cfg['conectate'], os.path.join(cache_dir, f'{nombre}_conectate.json'),
                          refrescar)
@@ -182,17 +236,44 @@ def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=Fals
             obs.append((k, 'diferencia entre fuentes (se usa conectate)',
                         'nacionalloteria %s · conectate %s' % (' '.join(otro[0]), ' '.join(nums))))
         data[k] = (nums, 'conectate')
-    data = {k: v for k, v in data.items() if k <= hasta.isoformat()}
+    data = {k: v for k, v in data.items()
+            if k <= hasta.isoformat() and (not desde_excel or k >= desde_excel)}
+
+    # enloteria solo para los días que faltan desde que arranca conectate.
+    if cfg.get('enloteria') and cx:
+        faltan, d = [], date.fromisoformat(min(cx))
+        while d <= hasta:
+            if d.isoformat() not in data:
+                faltan.append(d.isoformat())
+            d += timedelta(days=1)
+
+        def siguiente(k):
+            sig = (date.fromisoformat(k) + timedelta(days=1)).isoformat()
+            return data.get(sig, (None,))[0]
+
+        slug, nombre_web = cfg['enloteria']
+        cache_en = os.path.join(cache_dir, f'{nombre}_enloteria.json')
+        extra = (leer_enloteria(cache_en, faltan, siguiente) if sin_nacional
+                 else completar_enloteria(slug, nombre_web, faltan, cache_en, siguiente))
+        for k, nums in extra.items():
+            data[k] = (nums, 'enloteria')
 
     # Un día sin sorteo solo se anota si alguna fuente lo cubre: los días que
     # nacionalloteria todavía no bajó no son huecos, son pendientes.
     cubierto = set(cx) | {k for k, v in nc.items() if v != 'error'}
+    sin_sorteo_confirmado = set()
+    if cfg.get('enloteria'):
+        cache_en = leer(os.path.join(cache_dir, f'{nombre}_enloteria.json'))
+        sin_sorteo_confirmado = {k for k, v in cache_en.items() if v == 'otra_fecha'}
     desde_cx = min(cx) if cx else hasta.isoformat()
     d = date.fromisoformat(min(data))
     while d <= hasta:
         k = d.isoformat()
         if k not in data and (k in cubierto or k >= desde_cx):
-            obs.append((k, 'sin sorteo', ''))
+            if k in sin_sorteo_confirmado:
+                obs.append((k, 'no hubo sorteo (confirmado en enloteria)', ''))
+            else:
+                obs.append((k, 'sin sorteo', ''))
         d += timedelta(days=1)
 
     wb = Workbook()
@@ -234,8 +315,9 @@ def main():
     cache_dir, salida_dir = sys.argv[1], sys.argv[2]
     refrescar = '--refrescar-conectate' in sys.argv[3:]
     sin_nacional = '--sin-nacional' in sys.argv[3:]
+    desde_excel = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--desde=')), None)
     for nombre, cfg in SORTEOS.items():
-        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional)
+        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional, desde_excel)
 
 
 if __name__ == '__main__':
