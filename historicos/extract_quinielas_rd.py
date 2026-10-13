@@ -1,6 +1,12 @@
 """Histórico de LoteDom y Quiniela Palé (Leidsa) a Excel, listo para el wizard.
 
-Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida>
+Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional]
+
+--sin-nacional arma los Excel solo con lo que ya está en caché, sin pedirle
+nada a nacionalloteria (para cuando sigue bloqueado).
+
+Los cachés quedan en historicos/cache_quinielas_rd/: pasá esa carpeta como
+<carpeta_cache> para retomar sin volver a bajar lo que ya está.
 
 Las dos son quinielas de 3 números de 00 a 99 (premio 1 = el fijo, premios
 2 y 3 = los corridos), un sorteo por día:
@@ -18,6 +24,16 @@ validó contra fuentes oficiales; ver memoria fuentes-loterias-dominicanas)
 y la diferencia queda en Observaciones.
 
 Los cachés (JSON) permiten cortar y retomar sin volver a pedir lo ya bajado.
+conectate se baja entero una sola vez (~220 peticiones); para traer los
+sorteos nuevos, --refrescar-conectate lo vuelve a bajar.
+
+nacionalloteria BLOQUEA (403 "Request blocked") si se le piden muchas páginas
+seguidas: el 12/10/2026 cortó tras ~400. Por eso va lento y, ante un 403,
+deja de pedir y guarda lo que tiene; se retoma otro día con el mismo caché.
+No intentar saltear el bloqueo.
+
+Estado al 12/10/2026: Quiniela Palé de nacionalloteria bajada del 28/01/2015
+al 20/03/2016; falta del 21/03/2016 en adelante.
 """
 import html
 import json
@@ -50,6 +66,7 @@ SORTEOS = {
         'archivo': 'quiniela_pale.xlsx',
     },
 }
+NACIONAL_DELAY = 4.0
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
       'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0 Safari/537.36')
 
@@ -66,8 +83,11 @@ def guardar(path, data):
         json.dump(data, f)
 
 
-def bajar_conectate(game_id, cache_path):
-    """Recorre hacia atrás desde hoy. Siempre completo: son ~220 peticiones."""
+def bajar_conectate(game_id, cache_path, refrescar=False):
+    """Recorre hacia atrás desde hoy (~220 peticiones). Con caché y sin
+    refrescar, usa el caché."""
+    if not refrescar and os.path.exists(cache_path):
+        return leer(cache_path)
     s = requests.Session()
     s.headers.update({'User-Agent': UA, 'Origin': 'https://loterias.conectate.com.do',
                       'Referer': 'https://loterias.conectate.com.do/'})
@@ -101,6 +121,10 @@ def bajar_nacional(pagina, desde, cache_path, hasta):
         if k not in cache or cache[k] == 'error':
             try:
                 r = s.get(NACIONAL % pagina, params={'del-dia': k}, timeout=40)
+                if r.status_code == 403:
+                    print(f'{pagina}: bloqueado (403) en {k}; se corta y se guarda lo bajado.',
+                          flush=True)
+                    break
                 r.raise_for_status()
                 t = html.unescape(r.text)
                 fecha = re.findall(r'<time datetime="(\d{4}-\d{2}-\d{2})"', t)
@@ -116,7 +140,7 @@ def bajar_nacional(pagina, desde, cache_path, hasta):
             if n % 50 == 0:
                 guardar(cache_path, cache)
                 print(pagina, k, n, flush=True)
-            time.sleep(0.8)
+            time.sleep(NACIONAL_DELAY)
         d += timedelta(days=1)
     guardar(cache_path, cache)
     return cache
@@ -127,20 +151,28 @@ def valido(nums):
             and all(n.isdigit() and int(n) <= 99 for n in nums))
 
 
-def armar(nombre, cfg, cache_dir, salida_dir):
+def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False):
     hasta = date.today() - timedelta(days=1)
-    cx = bajar_conectate(cfg['conectate'], os.path.join(cache_dir, f'{nombre}_conectate.json'))
+    cx = bajar_conectate(cfg['conectate'], os.path.join(cache_dir, f'{nombre}_conectate.json'),
+                         refrescar)
     nc = {}
     if cfg['nacional']:
         pagina, desde = cfg['nacional']
-        nc = bajar_nacional(pagina, desde, os.path.join(cache_dir, f'{nombre}_nacional.json'), hasta)
+        cache_nc = os.path.join(cache_dir, f'{nombre}_nacional.json')
+        nc = leer(cache_nc) if sin_nacional else bajar_nacional(pagina, desde, cache_nc, hasta)
 
     data, obs = {}, []
+    pendientes = 0
     for k, nums in nc.items():
         if valido(nums):
             data[k] = (nums, 'nacionalloteria')
         elif nums == 'error':
-            obs.append((k, 'error de descarga en nacionalloteria', ''))
+            pendientes += 1
+    if cfg['nacional']:
+        bajados = [k for k, v in nc.items() if v != 'error']
+        faltan = (hasta - cfg['nacional'][1]).days + 1 - len(bajados)
+        if faltan > 0:
+            print(f'{nombre}: nacionalloteria INCOMPLETO, faltan {faltan} días por bajar.')
     for k, nums in cx.items():
         if not valido(nums):
             obs.append((k, 'números ilegibles en conectate', ' '.join(map(str, nums))))
@@ -152,10 +184,15 @@ def armar(nombre, cfg, cache_dir, salida_dir):
         data[k] = (nums, 'conectate')
     data = {k: v for k, v in data.items() if k <= hasta.isoformat()}
 
+    # Un día sin sorteo solo se anota si alguna fuente lo cubre: los días que
+    # nacionalloteria todavía no bajó no son huecos, son pendientes.
+    cubierto = set(cx) | {k for k, v in nc.items() if v != 'error'}
+    desde_cx = min(cx) if cx else hasta.isoformat()
     d = date.fromisoformat(min(data))
     while d <= hasta:
-        if d.isoformat() not in data:
-            obs.append((d.isoformat(), 'sin sorteo', ''))
+        k = d.isoformat()
+        if k not in data and (k in cubierto or k >= desde_cx):
+            obs.append((k, 'sin sorteo', ''))
         d += timedelta(days=1)
 
     wb = Workbook()
@@ -195,8 +232,10 @@ def armar(nombre, cfg, cache_dir, salida_dir):
 
 def main():
     cache_dir, salida_dir = sys.argv[1], sys.argv[2]
+    refrescar = '--refrescar-conectate' in sys.argv[3:]
+    sin_nacional = '--sin-nacional' in sys.argv[3:]
     for nombre, cfg in SORTEOS.items():
-        armar(nombre, cfg, cache_dir, salida_dir)
+        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional)
 
 
 if __name__ == '__main__':
