@@ -1,6 +1,6 @@
 """Histórico de LoteDom, Quiniela Palé (Leidsa) y Lotería Real a Excel, listo para el wizard.
 
-Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional] [--desde=YYYY-MM-DD] [--solo=<sorteo>]
+Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional] [--nacional-desde=YYYY-MM-DD] [--desde=YYYY-MM-DD] [--solo=<sorteo>]
 
 --solo=loteria_real procesa un solo sorteo (así no se le piden a
 nacionalloteria páginas de los otros, que comparten el límite de 403).
@@ -90,6 +90,26 @@ SORTEOS = {
         'enloteria': ('resultados-real-%s', 'Real'),
         'archivo': 'loteria_real.xlsx',
     },
+    # Lotería Nacional (RD): dos sorteos con números propios, uno por turno.
+    # Gana Más 14:30 → Tarde; Nacional Noche 21:00 → Noche. conectate desde
+    # ene-2020; nacionalloteria desde el 29/01/2015 (Nacional: 28/01/2015).
+    # OJO: en nacionalloteria, loteria-nacional.php (la Noche) repite en los
+    # días recientes los números de Gana Más (visto 14 y 16/10/2026); antes de
+    # 2023-07 coincidió 4/4 con conectate, por eso se limita hasta esa fecha.
+    'gana_mas': {
+        'turno': 'afternoon', 'turno_nombre': 'Tarde',
+        'conectate': '69fd98465e76585b6026958d',
+        'nacional': ('gana-mas.php', date(2015, 1, 29), None),
+        'enloteria': ('resultados-gana-mas-%s', 'Nacional Gana M.s'),
+        'archivo': 'gana_mas.xlsx',
+    },
+    'loteria_nacional': {
+        'turno': 'evening', 'turno_nombre': 'Noche',
+        'conectate': '69fd98465e76585b60269589',
+        'nacional': ('loteria-nacional.php', date(2015, 1, 28), date(2023, 6, 30)),
+        'enloteria': ('resultados-nacional-noche-%s', 'Nacional Noche'),
+        'archivo': 'loteria_nacional.xlsx',
+    },
 }
 NACIONAL_DELAY = 4.0
 ENLOTERIA = 'https://enloteria.com/%s'
@@ -158,6 +178,8 @@ def bajar_nacional(pagina, dias, cache_path):
                 t = html.unescape(r.text)
                 fecha = re.findall(r'<time datetime="(\d{4}-\d{2}-\d{2})"', t)
                 i = t.find('Resultados de Quiniela')
+                if i < 0:   # Gana Más / Lotería Nacional: "Resultados de <nombre>"
+                    i = t.find('Resultados de')
                 nums = re.findall(r'label-numero">(\d{1,2})<', t[i:i + 600] if i >= 0 else '')
                 if fecha and fecha[0] != k:
                     cache[k] = 'otra_fecha'
@@ -218,16 +240,20 @@ def valido(nums):
             and all(n.isdigit() and int(n) <= 99 for n in nums))
 
 
-def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False, desde_excel=None):
+def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False, desde_excel=None,
+          nacional_desde=None):
     hasta = date.today() - timedelta(days=1)
     cx = bajar_conectate(cfg['conectate'], os.path.join(cache_dir, f'{nombre}_conectate.json'),
                          refrescar)
     nc, dias_nc = {}, []
     if cfg['nacional']:
-        pagina, desde = cfg['nacional']
+        pagina, desde, *tope = cfg['nacional']
+        tope = tope[0] if tope and tope[0] else None
+        if nacional_desde:
+            desde = max(desde, date.fromisoformat(nacional_desde))
         # Los días que conectate ya trae no se le piden a nacionalloteria.
         d = desde
-        while d <= hasta:
+        while d <= (tope or hasta):
             if not valido(cx.get(d.isoformat())):
                 dias_nc.append(d.isoformat())
             d += timedelta(days=1)
@@ -334,11 +360,12 @@ def main():
     refrescar = '--refrescar-conectate' in sys.argv[3:]
     sin_nacional = '--sin-nacional' in sys.argv[3:]
     desde_excel = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--desde=')), None)
+    nacional_desde = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--nacional-desde=')), None)
     solo = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--solo=')), None)
     for nombre, cfg in SORTEOS.items():
         if solo and nombre != solo:
             continue
-        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional, desde_excel)
+        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional, desde_excel, nacional_desde)
 
 
 if __name__ == '__main__':
