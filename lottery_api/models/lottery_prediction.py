@@ -154,6 +154,12 @@ class LotteryPrediction(models.Model):
                               ('turno_id', '=', turno.id)]):
             return None
 
+        # El ranking se calculó con el próximo sorteo de ese momento; si
+        # después se movió a mano (un feriado sin sorteo), no coincide con la
+        # fecha que se va a predecir. Se recalcula una vez, ahora que ya se
+        # sabe que toca generar.
+        sorteo.compute_ranking_snapshot()
+
         numeros = self.numbers_by_temperature(sorteo, turno.code, 'remaining')
         if len(numeros) < 5:
             raise UserError(
