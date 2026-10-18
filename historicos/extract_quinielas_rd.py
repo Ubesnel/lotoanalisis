@@ -90,6 +90,15 @@ SORTEOS = {
         'enloteria': ('resultados-real-%s', 'Real'),
         'archivo': 'loteria_real.xlsx',
     },
+    # Quiniela Loteka 19:50 → Noche. El turno Tarde (13:30) arrancó el 28/09/2026
+    # y solo está en enloteria: se arma aparte con extract_loteka_tarde.py.
+    'loteka': {
+        'turno': 'evening', 'turno_nombre': 'Noche',
+        'conectate': '69fd98465e76585b602695d7',
+        'nacional': ('quiniela-loteka.php', date(2015, 1, 28)),
+        'enloteria': ('resultados-loteka-%s', 'Loteka'),
+        'archivo': 'loteka.xlsx',
+    },
     # Lotería Nacional (RD): dos sorteos con números propios, uno por turno.
     # Gana Más 14:30 → Tarde; Nacional Noche 21:00 → Noche. conectate desde
     # ene-2020; nacionalloteria desde el 29/01/2015 (Nacional: 28/01/2015).
