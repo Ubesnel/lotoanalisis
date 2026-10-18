@@ -18,19 +18,38 @@ class LotterySorteoSlot(models.Model):
     turno_id = fields.Many2one('lottery.turno', string='Turno', required=True, ondelete='restrict',
                                domain="[('id', 'in', sorteo_turno_ids)]")
     sorteo_turno_ids = fields.Many2many(related='sorteo_id.turno_ids', string='Turnos del sorteo')
+    hora_h = fields.Selection([(str(h), str(h)) for h in range(1, 13)], string='Hora',
+                              help="Hora del sorteo en formato de 12 horas. Vacía = sin hora: se "
+                                   "muestra el turno solo.")
+    hora_min = fields.Integer(string='Min', default=0)
+    hora_ampm = fields.Selection([('am', 'AM'), ('pm', 'PM')], string='AM/PM', default='pm')
+    hora_sorteo = fields.Float(
+        string='Hora del sorteo (24 h)', compute='_compute_hora_sorteo', store=True,
+        help="Hora a la que se juega este día y turno, en hora local del país del sorteo, como "
+             "número de horas desde la medianoche (14.5 = 14:30). Se calcula desde Hora, Min y "
+             "AM/PM; es lo que usará la app. Con la hora vacía queda en 0 y significa sin hora. "
+             "Sirve para distinguir sorteos que comparten turno, como dos loterías con turno Tarde.")
 
     _sql_constraints = [
         ('lottery_sorteo_slot_unique', 'unique(sorteo_id, dow, turno_id)',
          'Ese día/turno ya está en el calendario del sorteo.'),
     ]
 
-    @api.constrains('turno_id', 'sorteo_id')
-    def _check_turno_del_sorteo(self):
+    @api.depends('hora_h', 'hora_min', 'hora_ampm')
+    def _compute_hora_sorteo(self):
         for slot in self:
-            if slot.turno_id not in slot.sorteo_id.turno_ids:
-                raise ValidationError(
-                    "El turno %s no está habilitado en el sorteo %s."
-                    % (slot.turno_id.name, slot.sorteo_id.name))
+            if not slot.hora_h:
+                slot.hora_sorteo = 0.0
+                continue
+            # 12 AM = 00:xx y 12 PM = 12:xx.
+            h = int(slot.hora_h) % 12 + (12 if slot.hora_ampm == 'pm' else 0)
+            slot.hora_sorteo = h + (slot.hora_min or 0) / 60.0
+
+    @api.constrains('hora_min')
+    def _check_hora_min(self):
+        for slot in self:
+            if not 0 <= slot.hora_min <= 59:
+                raise ValidationError("Los minutos del sorteo deben estar entre 0 y 59.")
 
 
 class LotterySorteo(models.Model):
@@ -52,6 +71,12 @@ class LotterySorteo(models.Model):
              "selector. Se envía solo el código ISO: el nombre y la bandera "
              "los resuelve la app, que ya es bilingüe.")
     country_code = fields.Char(related='country_id.code', string='Código ISO', store=False)
+    image = fields.Image(string='Logo', max_width=512, max_height=512,
+                         help="Logo de la lotería. Pensado para que la app lo muestre junto al "
+                              "nombre del sorteo. Se guarda reducido a 512 px como máximo; "
+                              "conviene subir un PNG cuadrado o con fondo transparente.")
+    image_128 = fields.Image(string='Logo (128 px)', related='image', max_width=128, max_height=128,
+                             store=True)
 
     uses_hundreds = fields.Boolean(string='Usa Centena', default=True,
                                    help="Indica si este sorteo registra Centena. Desactivalo para sorteos "
