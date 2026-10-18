@@ -12,6 +12,36 @@ class LotterySorteo(models.Model):
              "de la app móvil LotoAnálisis y sus análisis quedan disponibles "
              "vía la API pública.",
     )
+    auto_prediction = fields.Boolean(
+        string='Generar predicciones automáticamente',
+        default=False,
+        help="Un cron revisa cada pocos minutos: cuando se registró una salida "
+             "hace más de los minutos de espera y todavía no existe la "
+             "predicción del próximo sorteo, la crea sola con la temperatura "
+             "Restantes, completa los números y elige el algoritmo según las "
+             "dos últimas salidas (comparten dígito → Algoritmo 1; no → 2). "
+             "Si ya hay una predicción cargada a mano, no la toca.",
+    )
+    auto_prediction_publish = fields.Boolean(
+        string='Publicar y notificar',
+        default=False,
+        help="Activo: la predicción automática se publica y manda la "
+             "notificación push (si el sorteo se muestra en la app). "
+             "Apagado: queda creada y sin publicar para revisarla.",
+    )
+    auto_prediction_delay = fields.Integer(
+        string='Minutos de espera',
+        default=30,
+        help="Minutos que deben pasar desde que se registró la última "
+             "salida antes de generar la predicción.",
+    )
+    auto_prediction_error = fields.Text(
+        string='Último error automático',
+        readonly=True,
+        copy=False,
+        help="Por qué no pudo generarse la última predicción automática. "
+             "Se borra solo cuando una sale bien.",
+    )
     proximo_tabla_app = fields.Selection(
         [
             ('calientes', 'Calientes'),

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Predicciones automáticas: cada 5 minutos revisa los sorteos con
+         "Generar predicciones automáticamente" y crea (y publica, si el
+         sorteo lo pide) la del próximo sorteo cuando toca. -->
+    <record id="ir_cron_lottery_auto_prediction" model="ir.cron">
+        <field name="name">Lottery API: generar predicciones automáticas</field>
+        <field name="model_id" ref="lottery_portal.model_lottery_prediction"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_generar_predicciones_automaticas()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

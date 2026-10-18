@@ -612,6 +612,20 @@ class LotteryPrediction(models.Model):
         return self.env['lottery.output'].sudo().search(
             domain, order='date desc, turno_sequence desc, id desc', limit=limit)
 
+    def _algoritmo_por_ultimas_salidas(self):
+        """Algoritmo con el que se generan solas las predicciones ('1' o '2').
+
+        Mira las dos últimas salidas del sorteo, con los turnos mezclados:
+        si comparten algún dígito (en cualquier posición: 98 y 85, 98 y 39,
+        98 y 91) va el Algoritmo 1; si no comparten ninguno (98 y 56) va el 2.
+        Con menos de dos salidas, el 1."""
+        self.ensure_one()
+        ultimas = self._last_output(limit=2)
+        if len(ultimas) < 2:
+            return '1'
+        a, b = (set(_digitos(o.number_id.name)) for o in ultimas)
+        return '1' if a & b else '2'
+
     def _acompanantes(self, turno, numero):
         """{número: distancia en casillas} de los que comparten fila, columna
         o diagonal con `numero` en la Tabla LotoAnálisis — la misma grilla que
