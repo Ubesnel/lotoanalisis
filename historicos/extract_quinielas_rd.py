@@ -1,6 +1,9 @@
-"""Histórico de LoteDom y Quiniela Palé (Leidsa) a Excel, listo para el wizard.
+"""Histórico de LoteDom, Quiniela Palé (Leidsa) y Lotería Real a Excel, listo para el wizard.
 
-Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional] [--desde=YYYY-MM-DD]
+Uso: python extract_quinielas_rd.py <carpeta_cache> <carpeta_salida> [--refrescar-conectate] [--sin-nacional] [--nacional-desde=YYYY-MM-DD] [--desde=YYYY-MM-DD] [--solo=<sorteo>]
+
+--solo=loteria_real procesa un solo sorteo (así no se le piden a
+nacionalloteria páginas de los otros, que comparten el límite de 403).
 
 --desde deja afuera del Excel los sorteos anteriores a esa fecha (los cachés
 no se tocan). Se usó --desde=2020-01-01 para importar la Palé sin la isla de
@@ -16,6 +19,10 @@ Las dos son quinielas de 3 números de 00 a 99 (premio 1 = el fijo, premios
 2 y 3 = los corridos), un sorteo por día:
   · LoteDom: 12:00 (hora RD), todos los días → turno Tarde (afternoon).
   · Quiniela Palé: 20:55, domingos 15:55 → turno Noche (evening).
+  · Lotería Real (Quiniela Real): 12:55 → turno Tarde (afternoon). conectate
+    desde ene-2020, nacionalloteria desde el 29/01/2015. "Real Noche" (20:00)
+    arrancó el 07/10/2026 y no tiene histórico: no se incluye.
+  nacionalloteria solo se pide para los días que conectate no trae.
 
 Fuentes:
   · conectate (api.conectate.com.do, 10 sorteos por petición): desde 2020.
@@ -76,6 +83,33 @@ SORTEOS = {
         'enloteria': ('resultados-leidsa-%s', 'Leidsa'),
         'archivo': 'quiniela_pale.xlsx',
     },
+    'loteria_real': {
+        'turno': 'afternoon', 'turno_nombre': 'Tarde',
+        'conectate': '69fd98465e76585b602695a6',   # "Quiniela Real" (12:55)
+        'nacional': ('quiniela-real.php', date(2015, 1, 29)),
+        'enloteria': ('resultados-real-%s', 'Real'),
+        'archivo': 'loteria_real.xlsx',
+    },
+    # Lotería Nacional (RD): dos sorteos con números propios, uno por turno.
+    # Gana Más 14:30 → Tarde; Nacional Noche 21:00 → Noche. conectate desde
+    # ene-2020; nacionalloteria desde el 29/01/2015 (Nacional: 28/01/2015).
+    # OJO: en nacionalloteria, loteria-nacional.php (la Noche) repite en los
+    # días recientes los números de Gana Más (visto 14 y 16/10/2026); antes de
+    # 2023-07 coincidió 4/4 con conectate, por eso se limita hasta esa fecha.
+    'gana_mas': {
+        'turno': 'afternoon', 'turno_nombre': 'Tarde',
+        'conectate': '69fd98465e76585b6026958d',
+        'nacional': ('gana-mas.php', date(2015, 1, 29), None),
+        'enloteria': ('resultados-gana-mas-%s', 'Nacional Gana M.s'),
+        'archivo': 'gana_mas.xlsx',
+    },
+    'loteria_nacional': {
+        'turno': 'evening', 'turno_nombre': 'Noche',
+        'conectate': '69fd98465e76585b60269589',
+        'nacional': ('loteria-nacional.php', date(2015, 1, 28), date(2023, 6, 30)),
+        'enloteria': ('resultados-nacional-noche-%s', 'Nacional Noche'),
+        'archivo': 'loteria_nacional.xlsx',
+    },
 }
 NACIONAL_DELAY = 4.0
 ENLOTERIA = 'https://enloteria.com/%s'
@@ -126,13 +160,13 @@ def bajar_conectate(game_id, cache_path, refrescar=False):
     return out
 
 
-def bajar_nacional(pagina, desde, cache_path, hasta):
+def bajar_nacional(pagina, dias, cache_path):
+    """Pide solo `dias` (los que conectate no trae) que no estén en caché."""
     cache = leer(cache_path)
     s = requests.Session()
     s.headers['User-Agent'] = UA
-    d, n = desde, 0
-    while d <= hasta:
-        k = d.isoformat()
+    n = 0
+    for k in dias:
         if k not in cache or cache[k] == 'error':
             try:
                 r = s.get(NACIONAL % pagina, params={'del-dia': k}, timeout=40)
@@ -144,6 +178,8 @@ def bajar_nacional(pagina, desde, cache_path, hasta):
                 t = html.unescape(r.text)
                 fecha = re.findall(r'<time datetime="(\d{4}-\d{2}-\d{2})"', t)
                 i = t.find('Resultados de Quiniela')
+                if i < 0:   # Gana Más / Lotería Nacional: "Resultados de <nombre>"
+                    i = t.find('Resultados de')
                 nums = re.findall(r'label-numero">(\d{1,2})<', t[i:i + 600] if i >= 0 else '')
                 if fecha and fecha[0] != k:
                     cache[k] = 'otra_fecha'
@@ -156,7 +192,6 @@ def bajar_nacional(pagina, desde, cache_path, hasta):
                 guardar(cache_path, cache)
                 print(pagina, k, n, flush=True)
             time.sleep(NACIONAL_DELAY)
-        d += timedelta(days=1)
     guardar(cache_path, cache)
     return cache
 
@@ -205,15 +240,25 @@ def valido(nums):
             and all(n.isdigit() and int(n) <= 99 for n in nums))
 
 
-def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False, desde_excel=None):
+def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=False, desde_excel=None,
+          nacional_desde=None):
     hasta = date.today() - timedelta(days=1)
     cx = bajar_conectate(cfg['conectate'], os.path.join(cache_dir, f'{nombre}_conectate.json'),
                          refrescar)
-    nc = {}
+    nc, dias_nc = {}, []
     if cfg['nacional']:
-        pagina, desde = cfg['nacional']
+        pagina, desde, *tope = cfg['nacional']
+        tope = tope[0] if tope and tope[0] else None
+        if nacional_desde:
+            desde = max(desde, date.fromisoformat(nacional_desde))
+        # Los días que conectate ya trae no se le piden a nacionalloteria.
+        d = desde
+        while d <= (tope or hasta):
+            if not valido(cx.get(d.isoformat())):
+                dias_nc.append(d.isoformat())
+            d += timedelta(days=1)
         cache_nc = os.path.join(cache_dir, f'{nombre}_nacional.json')
-        nc = leer(cache_nc) if sin_nacional else bajar_nacional(pagina, desde, cache_nc, hasta)
+        nc = leer(cache_nc) if sin_nacional else bajar_nacional(pagina, dias_nc, cache_nc)
 
     data, obs = {}, []
     pendientes = 0
@@ -223,8 +268,7 @@ def armar(nombre, cfg, cache_dir, salida_dir, refrescar=False, sin_nacional=Fals
         elif nums == 'error':
             pendientes += 1
     if cfg['nacional']:
-        bajados = [k for k, v in nc.items() if v != 'error']
-        faltan = (hasta - cfg['nacional'][1]).days + 1 - len(bajados)
+        faltan = sum(1 for k in dias_nc if nc.get(k, 'error') == 'error')
         if faltan > 0:
             print(f'{nombre}: nacionalloteria INCOMPLETO, faltan {faltan} días por bajar.')
     for k, nums in cx.items():
@@ -316,8 +360,12 @@ def main():
     refrescar = '--refrescar-conectate' in sys.argv[3:]
     sin_nacional = '--sin-nacional' in sys.argv[3:]
     desde_excel = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--desde=')), None)
+    nacional_desde = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--nacional-desde=')), None)
+    solo = next((a.split('=', 1)[1] for a in sys.argv[3:] if a.startswith('--solo=')), None)
     for nombre, cfg in SORTEOS.items():
-        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional, desde_excel)
+        if solo and nombre != solo:
+            continue
+        armar(nombre, cfg, cache_dir, salida_dir, refrescar, sin_nacional, desde_excel, nacional_desde)
 
 
 if __name__ == '__main__':
