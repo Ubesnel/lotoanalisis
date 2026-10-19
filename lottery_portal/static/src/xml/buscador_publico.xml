@@ -67,6 +67,7 @@
                                         <span class="bpr-lot-name" t-esc="l.nombre"/>
                                     </div>
 
+                                    <div t-attf-class="bpr-turnos #{l.tipo === 'quiniela' ? 'bpr-turnos--fila' : ''}">
                                     <t t-foreach="l.turnos" t-as="t" t-key="t.code">
                                         <div class="bpr-turno">
                                             <div class="bpr-thead">
@@ -77,21 +78,34 @@
                                             </div>
                                             <div class="bpr-tbody">
                                                 <t t-if="t.estado === 'salio' and l.tipo === 'quiniela'">
-                                                    <div class="bpr-premios">
-                                                        <t t-foreach="t.premios" t-as="pr" t-key="pr.n">
-                                                            <div class="bpr-premio">
-                                                                <small t-esc="pr.n"/>
-                                                                <span class="bpr-ball bpr-ball--s"
-                                                                      t-att-style="bolaStyle(t.color)" t-esc="pr.num"/>
+                                                    <!-- Quiniela (20 premios, 2 columnas) y Tómbola (20 números,
+                                                         2 columnas) una al lado de la otra -->
+                                                    <div class="bpr-qu">
+                                                        <div class="bpr-qu-col">
+                                                            <div class="bpr-qu-title">Quiniela</div>
+                                                            <div class="bpr-qu-grid" t-att-style="'--filas:' + filas(t.premios.length)">
+                                                                <t t-foreach="t.premios" t-as="pr" t-key="pr.n">
+                                                                    <div class="bpr-qrow">
+                                                                        <span class="bpr-qn" t-esc="pr.n"/>
+                                                                        <span class="bpr-qnum"
+                                                                              t-att-style="'color:' + (t.color or '#4C1D95')"
+                                                                              t-esc="pr.num"/>
+                                                                    </div>
+                                                                </t>
                                                             </div>
-                                                        </t>
-                                                    </div>
-                                                    <div class="bpr-tombola" t-if="t.tombola and t.tombola.length">
-                                                        <div class="bpr-tombola-title">Tómbola</div>
-                                                        <div class="bpr-tombola-nums">
-                                                            <t t-foreach="t.tombola" t-as="n" t-key="n_index">
-                                                                <span class="bpr-ball bpr-ball--xs bpr-ball--tombola" t-esc="n"/>
-                                                            </t>
+                                                        </div>
+                                                        <div class="bpr-qu-col bpr-qu-col--tombola" t-if="t.tombola and t.tombola.length">
+                                                            <div class="bpr-qu-title bpr-qu-title--tombola">
+                                                                <img src="/lottery_portal/static/src/img/logo_tombola.png"
+                                                                     class="bpr-qu-logo" alt="Tómbola"/>
+                                                            </div>
+                                                            <div class="bpr-qu-grid" t-att-style="'--filas:' + filas(t.tombola.length)">
+                                                                <t t-foreach="t.tombola" t-as="n" t-key="n_index">
+                                                                    <div class="bpr-qrow">
+                                                                        <span class="bpr-ball bpr-ball--xs bpr-ball--tombola" t-esc="n"/>
+                                                                    </div>
+                                                                </t>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </t>
@@ -114,6 +128,7 @@
                                             </div>
                                         </div>
                                     </t>
+                                    </div>
                                 </article>
                             </t>
                         </div>

@@ -98,6 +98,11 @@ export class BuscadorPublico extends Component {
         this.state.pais = codigo;
     }
 
+    /** Filas de una lista repartida en 2 columnas (20 → 10 + 10). */
+    filas(n) {
+        return Math.max(1, Math.ceil(n / 2));
+    }
+
     /** Hay dato para mostrar: el 0 es una centena / bola extra válida. */
     tiene(valor) {
         return valor !== null && valor !== undefined && valor !== "" && valor !== "-";

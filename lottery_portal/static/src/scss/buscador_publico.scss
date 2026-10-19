@@ -103,23 +103,23 @@
 
 .bp-char-eli {
     left: 0;
-    transform: translateX(-12%);
+    transform: translateX(20%);
     animation: bp-float-eli 6s ease-in-out infinite;
 }
 
 .bp-char-ube {
     right: 0;
-    transform: translateX(12%);
+    transform: translateX(-8%);
     animation: bp-float-ube 6s ease-in-out infinite 1.8s;
 }
 
 @keyframes bp-float-eli {
-    0%, 100% { transform: translateX(-12%) translateY(0); }
-    50%       { transform: translateX(-12%) translateY(-18px); }
+    0%, 100% { transform: translateX(20%) translateY(0); }
+    50%       { transform: translateX(20%) translateY(-18px); }
 }
 @keyframes bp-float-ube {
-    0%, 100% { transform: translateX(12%) translateY(0); }
-    50%       { transform: translateX(12%) translateY(-18px); }
+    0%, 100% { transform: translateX(-8%) translateY(0); }
+    50%       { transform: translateX(-8%) translateY(-18px); }
 }
 
 /* ── CONTENIDO CENTRAL ──────────────────────────────────────── */
@@ -595,16 +595,16 @@
    los personajes a tamaño completo, así que se achican y se abren. */
 @media (min-width: 1200px) and (max-width: 1700px) {
     .bp-char     { height: 60%; max-height: 430px; }
-    .bp-char-eli { transform: translateX(-28%); animation-name: bp-float-eli-md; }
-    .bp-char-ube { transform: translateX(28%);  animation-name: bp-float-ube-md; }
+    .bp-char-eli { transform: translateX(0%); animation-name: bp-float-eli-md; }
+    .bp-char-ube { transform: translateX(10%);  animation-name: bp-float-ube-md; }
 }
 @keyframes bp-float-eli-md {
-    0%, 100% { transform: translateX(-28%) translateY(0); }
-    50%       { transform: translateX(-28%) translateY(-14px); }
+    0%, 100% { transform: translateX(0%) translateY(0); }
+    50%       { transform: translateX(0%) translateY(-14px); }
 }
 @keyframes bp-float-ube-md {
-    0%, 100% { transform: translateX(28%) translateY(0); }
-    50%       { transform: translateX(28%) translateY(-14px); }
+    0%, 100% { transform: translateX(10%) translateY(0); }
+    50%       { transform: translateX(10%) translateY(-14px); }
 }
 
 /* ── ÚLTIMAS SALIDAS (buscador, antes de elegir fecha) ── */
@@ -1343,29 +1343,58 @@
 }
 .bpr-nosale { font-size: 12px; font-weight: 700; color: #9a93ad; }
 
-/* Quiniela Uruguaya: 20 premios y la Tómbola */
-.bpr-premios {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
-    gap: 6px 4px;
-}
-.bpr-premio {
+/* Quiniela Uruguaya: 20 premios en dos columnas de 10 y, al lado, la Tómbola
+   (sus 20 números también en dos columnas de 10). */
+/* Los dos turnos de la Quiniela, uno al lado del otro (se apilan si no caben). */
+.bpr-turnos--fila {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-    small { font-size: 9.5px; font-weight: 800; color: #8a82a0; }
+    flex-wrap: wrap;
+    gap: 0 34px;
+    .bpr-turno { flex: 1 1 400px; min-width: 0; }
 }
-.bpr-tombola { margin-top: 10px; }
-.bpr-tombola-title {
+.bpr-qu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 30px;
+    padding: 4px 0 2px;
+}
+.bpr-qu-col { flex: 0 1 auto; min-width: 0; }
+.bpr-qu-title {
     font-size: 11px;
     font-weight: 900;
-    letter-spacing: .8px;
+    letter-spacing: .9px;
     text-transform: uppercase;
-    color: #dc2626;
+    color: #4C1D95;
+    height: 30px;
+    display: flex;
+    align-items: center;
     margin-bottom: 4px;
 }
-.bpr-tombola-nums { display: flex; flex-wrap: wrap; gap: 5px; }
+.bpr-qu-logo { height: 30px; width: auto; display: block; }
+/* Se llena por columnas: 1-10 a la izquierda y 11-20 a la derecha. */
+.bpr-qu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    grid-template-rows: repeat(var(--filas, 10), auto);
+    grid-auto-flow: column;
+    gap: 5px 30px;
+}
+.bpr-qrow { display: flex; align-items: center; gap: 9px; min-height: 28px; }
+.bpr-qn {
+    flex: none;
+    min-width: 26px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: #4C1D95;
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.bpr-qnum { font-size: 18px; font-weight: 900; letter-spacing: .5px; font-variant-numeric: tabular-nums; }
 
 .bpr-nota { margin: 4px 14px 12px; font-size: 11.5px; color: #8a82a0; text-align: center; }
 
