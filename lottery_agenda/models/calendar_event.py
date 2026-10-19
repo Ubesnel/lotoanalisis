@@ -150,6 +150,19 @@ class CalendarEvent(models.Model):
         return alarmas
 
     @staticmethod
+    def _agenda_fin(inicio_utc, tz):
+        """Fin (UTC, sin zona) del bloque que arranca en `inicio_utc`: dura
+        DURACION_MIN pero no pasa de las 23:59 del mismo día local. Un bloque
+        que cruzara la medianoche se dibujaría también en la columna del día
+        siguiente, como si la tarea fuera de ahí."""
+        inicio = pytz.utc.localize(inicio_utc).astimezone(tz)
+        limite = tz.localize(datetime(inicio.year, inicio.month, inicio.day, 23, 59))
+        fin = min(inicio + timedelta(minutes=DURACION_MIN), limite)
+        if fin <= inicio:
+            fin = inicio + timedelta(minutes=1)
+        return fin.astimezone(pytz.utc).replace(tzinfo=None)
+
+    @staticmethod
     def _agenda_inicio(slot, dia, tz):
         """Inicio (con zona horaria) de la tarea de `slot` para el sorteo del
         `dia`.
@@ -215,7 +228,7 @@ class CalendarEvent(models.Model):
                     nuevos.append({
                         'name': '%s %s' % (EMOJI[estado], etiqueta),
                         'start': inicio,
-                        'stop': inicio + timedelta(minutes=DURACION_MIN),
+                        'stop': self._agenda_fin(inicio, tz),
                         'user_id': usuarios[0].id,
                         'partner_ids': [(6, 0, usuarios.partner_id.ids)],
                         'alarm_ids': [(6, 0, [] if hecha else alarmas.ids)],
@@ -252,7 +265,7 @@ class CalendarEvent(models.Model):
                 if ev.start != esperado:
                     ev.with_context(no_mail_to_attendees=True, mail_notrack=True).write({
                         'start': esperado,
-                        'stop': esperado + timedelta(minutes=DURACION_MIN)})
+                        'stop': self._agenda_fin(esperado, tz)})
             etiqueta = 'Registrar %s – %s · %s' % (
                 ev.lottery_sorteo_id.name, ev.lottery_turno_id.name,
                 _hora_12h(pytz.utc.localize(ev.start).astimezone(tz)))
@@ -262,7 +275,7 @@ class CalendarEvent(models.Model):
                     'lottery_label': etiqueta,
                     'name': '%s %s' % (EMOJI[ev.lottery_state or 'pending'], etiqueta),
                 })
-            stop = ev.start + timedelta(minutes=DURACION_MIN)
+            stop = self._agenda_fin(ev.start, tz)
             if ev.stop != stop:
                 ev.with_context(no_mail_to_attendees=True, dont_notify=True,
                                 mail_notrack=True).write({'stop': stop})
