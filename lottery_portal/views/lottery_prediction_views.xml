@@ -209,11 +209,30 @@
         </field>
     </record>
 
+    <!-- ── Vista calendario ─────────────────────────────────────── -->
+    <!-- Una predicción por día de sorteo; el color y el filtro lateral son por
+         sorteo. Se abre el formulario completo (no popup): es un form pesado. -->
+    <record id="view_lottery_prediction_calendar" model="ir.ui.view">
+        <field name="name">lottery.prediction.calendar</field>
+        <field name="model">lottery.prediction</field>
+        <field name="arch" type="xml">
+            <calendar string="Predicciones" date_start="date" color="sorteo_id"
+                      create_name_field="calendar_title"
+                      mode="day" quick_create="false">
+                <field name="sorteo_id" filters="1"/>
+                <field name="turno_id"/>
+                <field name="algoritmo"/>
+                <field name="published"/>
+                <field name="cumplida"/>
+            </calendar>
+        </field>
+    </record>
+
     <!-- ── Acción y menú ─────────────────────────────────────────── -->
     <record id="action_lottery_prediction" model="ir.actions.act_window">
         <field name="name">Predicciones</field>
         <field name="res_model">lottery.prediction</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,calendar,form</field>
         <field name="context">{'search_default_pred_remaining': 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

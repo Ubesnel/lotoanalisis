@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Cada 5 minutos: crea los eventos de hoy y mañana de los sorteos con
+         "Crear tareas en el calendario" y marca como atrasadas las tareas
+         cuya hora ya pasó sin salida registrada. -->
+    <record id="ir_cron_lottery_agenda" model="ir.cron">
+        <field name="name">Lottery Agenda: crear eventos del día</field>
+        <field name="model_id" ref="calendar.model_calendar_event"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_agenda_loteria()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

@@ -471,6 +471,17 @@ class LotteryPrediction(models.Model):
         for rec in self:
             rec.numbers_count_5 = len(rec.number_ids_5)
 
+    calendar_title = fields.Char(
+        string='Título en el calendario', compute='_compute_calendar_title')
+
+    @api.depends('turno_id.name', 'sorteo_id.name')
+    def _compute_calendar_title(self):
+        """Sorteo y turno, sin la fecha: en la vista calendario la fecha ya
+        es el día donde cae la entrada."""
+        for rec in self:
+            rec.calendar_title = ' / '.join(
+                p for p in (rec.sorteo_id.name, rec.turno_id.name) if p)
+
     @api.depends('date', 'turno_id.name', 'sorteo_id.name')
     def _compute_display_name(self):
         for rec in self:
