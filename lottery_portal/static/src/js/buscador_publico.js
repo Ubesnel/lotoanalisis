@@ -98,6 +98,11 @@ export class BuscadorPublico extends Component {
         this.state.pais = codigo;
     }
 
+    /** País con una tarjeta ancha (Quiniela Uruguaya): ocupa toda la fila. */
+    esAncha(pais) {
+        return pais.loterias.some((l) => l.tipo === "quiniela");
+    }
+
     /** Filas de una lista repartida en 2 columnas (20 → 10 + 10). */
     filas(n) {
         return Math.max(1, Math.ceil(n / 2));
