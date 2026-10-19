@@ -210,8 +210,14 @@ class LotteryOutputImport(models.TransientModel):
             return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=False,
                                    completadas=len(completadas))
 
+        # Un write por (campo, número) y no por salida: son miles de filas y
+        # uno por uno excede el tiempo máximo de la petición.
+        por_valor = {}
         for out_id, vals in completadas:
-            Output.browse(out_id).with_context(skip_prediction_validation=True).write(vals)
+            for campo, numero_id in vals.items():
+                por_valor.setdefault((campo, numero_id), []).append(out_id)
+        for (campo, numero_id), ids in por_valor.items():
+            Output.browse(ids).with_context(skip_prediction_validation=True).write({campo: numero_id})
         if completadas:
             _logger.info('Importación Excel (%s): %d salidas con premios completados.',
                          sorteo.name, len(completadas))
