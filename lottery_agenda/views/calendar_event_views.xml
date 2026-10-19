@@ -103,8 +103,8 @@
                             context="{'group_by': 'lottery_state'}"/>
                     <filter name="group_sorteo" string="Sorteo"
                             context="{'group_by': 'lottery_sorteo_id'}"/>
-                    <filter name="group_fecha" string="Fecha"
-                            context="{'group_by': 'lottery_date:day'}"/>
+                    <filter name="group_dia" string="Día"
+                            context="{'group_by': 'start:day'}"/>
                 </group>
             </search>
         </field>
@@ -142,7 +142,7 @@
         <field name="view_mode">tree,calendar,form</field>
         <field name="domain">[('lottery_sorteo_id', '!=', False)]</field>
         <field name="search_view_id" ref="view_lottery_agenda_search"/>
-        <field name="context">{'search_default_hoy': 1}</field>
+        <field name="context">{'search_default_group_dia': 1}</field>
     </record>
     <record id="action_lottery_agenda_lista_view_tree" model="ir.actions.act_window.view">
         <field name="sequence" eval="1"/>
@@ -163,10 +163,12 @@
         <field name="act_window_id" ref="action_lottery_agenda_lista"/>
     </record>
 
+    <!-- Primero del menú (antes de Estados Unidos, que va en 1). Al pulsar
+         "Agenda" abre su primer submenú: la lista agrupada por día. -->
     <menuitem id="menu_lottery_agenda_root" name="Agenda"
-              parent="lottery_base.home_lottery" sequence="5"/>
-    <menuitem id="menu_lottery_agenda_dia" name="Agenda del día"
-              parent="menu_lottery_agenda_root" action="action_lottery_agenda" sequence="10"/>
+              parent="lottery_base.home_lottery" sequence="0"/>
     <menuitem id="menu_lottery_agenda_lista" name="Tareas de lotería"
-              parent="menu_lottery_agenda_root" action="action_lottery_agenda_lista" sequence="20"/>
+              parent="menu_lottery_agenda_root" action="action_lottery_agenda_lista" sequence="10"/>
+    <menuitem id="menu_lottery_agenda_dia" name="Agenda del día"
+              parent="menu_lottery_agenda_root" action="action_lottery_agenda" sequence="20"/>
 </odoo>
