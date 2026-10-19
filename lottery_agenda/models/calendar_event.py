@@ -149,6 +149,22 @@ class CalendarEvent(models.Model):
             alarmas |= self._agenda_alarma(m)
         return alarmas
 
+    @staticmethod
+    def _agenda_inicio(slot, dia, tz):
+        """Inicio (con zona horaria) de la tarea de `slot` para el sorteo del
+        `dia`.
+
+        La hora de publicar es la de Uruguay y la del sorteo es la de su país,
+        y Uruguay va por delante (Georgia a las 11:35 PM es la 00:35 AM
+        siguiente en Uruguay). Si la hora de publicar es menor que la del
+        sorteo, cruzó la medianoche: la tarea cae el día siguiente al del
+        sorteo, aunque en el calendario del sorteo se cargue en la fila del
+        mismo día."""
+        horas, minutos = divmod(round(slot.hora_publicacion * 60), 60)
+        cruza = bool(slot.hora_sorteo) and slot.hora_publicacion < slot.hora_sorteo
+        dia_ev = dia + timedelta(days=1) if cruza else dia
+        return tz.localize(datetime(dia_ev.year, dia_ev.month, dia_ev.day, horas, minutos))
+
     @api.model
     def _agenda_crear_eventos(self):
         sorteos = self.env['lottery.sorteo'].sudo().search([('agenda_enabled', '=', True)])
@@ -161,7 +177,9 @@ class CalendarEvent(models.Model):
 
         tz = self._agenda_tz()
         hoy = pytz.utc.localize(fields.Datetime.now()).astimezone(tz).date()
-        dias = [hoy + timedelta(days=i) for i in range(DIAS_ADELANTE)]
+        # Ayer también: sus sorteos tardíos pueden tener la tarea pasada la
+        # medianoche, o sea hoy (ver _agenda_inicio).
+        dias = [hoy - timedelta(days=1)] + [hoy + timedelta(days=i) for i in range(DIAS_ADELANTE)]
         alarmas = self._agenda_alarmas()
 
         Event = self.sudo().with_context(active_test=False)
@@ -182,9 +200,11 @@ class CalendarEvent(models.Model):
                     clave = (sorteo.id, slot.turno_id.id, dia)
                     if clave in existentes:
                         continue
+                    inicio_local = self._agenda_inicio(slot, dia, tz)
+                    # De ayer solo las tareas que caen hoy (pasada la medianoche).
+                    if dia < hoy and inicio_local.date() <= dia:
+                        continue
                     existentes.add(clave)
-                    horas, minutos = divmod(round(slot.hora_publicacion * 60), 60)
-                    inicio_local = tz.localize(datetime(dia.year, dia.month, dia.day, horas, minutos))
                     inicio = inicio_local.astimezone(pytz.utc).replace(tzinfo=None)
                     hecha = bool(Output.search_count([
                         ('sorteo_id', '=', sorteo.id), ('turno_id', '=', slot.turno_id.id),
@@ -221,6 +241,18 @@ class CalendarEvent(models.Model):
         alarmas = self._agenda_alarmas()
         tz = self._agenda_tz()
         for ev in eventos:
+            # Hora de inicio: una tarea que cruza la medianoche creada el día
+            # del sorteo (antes de este arreglo) se pasa al día siguiente.
+            slot = ev.lottery_sorteo_id.slot_ids.filtered(
+                lambda sl: sl.dow == str(ev.lottery_date.weekday())
+                and sl.turno_id == ev.lottery_turno_id)[:1]
+            if slot and slot.pub_h and ev.lottery_state != 'done':
+                esperado = self._agenda_inicio(slot, ev.lottery_date, tz) \
+                    .astimezone(pytz.utc).replace(tzinfo=None)
+                if ev.start != esperado:
+                    ev.with_context(no_mail_to_attendees=True, mail_notrack=True).write({
+                        'start': esperado,
+                        'stop': esperado + timedelta(minutes=DURACION_MIN)})
             etiqueta = 'Registrar %s – %s · %s' % (
                 ev.lottery_sorteo_id.name, ev.lottery_turno_id.name,
                 _hora_12h(pytz.utc.localize(ev.start).astimezone(tz)))
