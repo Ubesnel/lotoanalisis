@@ -1376,6 +1376,12 @@
     gap: 0 34px;
     .bpr-turno { flex: 1 1 400px; min-width: 0; }
 }
+/* Loterías de solo un número y 3 o más turnos (La Diaria): de a dos por fila. */
+.bpr-turnos--dos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 18px;
+}
 .bpr-qu {
     display: flex;
     flex-wrap: wrap;

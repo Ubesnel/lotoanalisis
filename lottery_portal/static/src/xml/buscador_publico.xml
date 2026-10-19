@@ -71,7 +71,7 @@
                                         <span class="bpr-lot-name" t-esc="l.nombre"/>
                                     </div>
 
-                                    <div t-attf-class="bpr-turnos #{l.tipo === 'quiniela' ? 'bpr-turnos--fila' : ''}">
+                                    <div t-attf-class="bpr-turnos #{l.tipo === 'quiniela' ? 'bpr-turnos--fila' : (l.simple and l.turnos.length >= 3 ? 'bpr-turnos--dos' : '')}">
                                     <t t-foreach="l.turnos" t-as="t" t-key="t.code">
                                         <div class="bpr-turno">
                                             <div class="bpr-thead">
