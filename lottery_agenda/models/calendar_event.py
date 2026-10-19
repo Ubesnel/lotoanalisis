@@ -28,6 +28,12 @@ ATRASO_MIN = 15
 DIAS_ADELANTE = 2
 
 
+def _hora_12h(dt_local):
+    """datetime local → '7:40 PM'."""
+    h12 = dt_local.hour % 12 or 12
+    return '%d:%02d %s' % (h12, dt_local.minute, 'AM' if dt_local.hour < 12 else 'PM')
+
+
 class CalendarEvent(models.Model):
     _inherit = 'calendar.event'
 
@@ -44,6 +50,9 @@ class CalendarEvent(models.Model):
              "salida ya está registrada.")
     lottery_color = fields.Integer(
         string='Color', compute='_compute_lottery_color', store=True)
+    lottery_hora = fields.Char(
+        string='Hora (Uruguay)', compute='_compute_lottery_hora',
+        help="Hora de publicar, en la hora local de la empresa (Uruguay).")
 
     _sql_constraints = [
         ('lottery_agenda_unique',
@@ -55,6 +64,14 @@ class CalendarEvent(models.Model):
     def _compute_lottery_color(self):
         for ev in self:
             ev.lottery_color = COLOR.get(ev.lottery_state, 0)
+
+    @api.depends('start', 'lottery_sorteo_id')
+    def _compute_lottery_hora(self):
+        tz = self._agenda_tz()
+        for ev in self:
+            ev.lottery_hora = (
+                _hora_12h(pytz.utc.localize(ev.start).astimezone(tz))
+                if ev.lottery_sorteo_id and ev.start else False)
 
     # ── Estado ─────────────────────────────────────────────────────────────
 
@@ -172,7 +189,8 @@ class CalendarEvent(models.Model):
                         ('sorteo_id', '=', sorteo.id), ('turno_id', '=', slot.turno_id.id),
                         ('date', '=', dia)]))
                     estado = 'done' if hecha else 'pending'
-                    etiqueta = 'Registrar %s – %s' % (sorteo.name, slot.turno_id.name)
+                    etiqueta = 'Registrar %s – %s · %s' % (
+                        sorteo.name, slot.turno_id.name, _hora_12h(inicio_local))
                     nuevos.append({
                         'name': '%s %s' % (EMOJI[estado], etiqueta),
                         'start': inicio,
@@ -200,7 +218,17 @@ class CalendarEvent(models.Model):
             ('lottery_sorteo_id', '!=', False),
             ('start', '>=', ahora - timedelta(days=1))])
         alarmas = self._agenda_alarmas()
+        tz = self._agenda_tz()
         for ev in eventos:
+            etiqueta = 'Registrar %s – %s · %s' % (
+                ev.lottery_sorteo_id.name, ev.lottery_turno_id.name,
+                _hora_12h(pytz.utc.localize(ev.start).astimezone(tz)))
+            if ev.lottery_label != etiqueta:
+                ev.with_context(no_mail_to_attendees=True, dont_notify=True,
+                                mail_notrack=True).write({
+                    'lottery_label': etiqueta,
+                    'name': '%s %s' % (EMOJI[ev.lottery_state or 'pending'], etiqueta),
+                })
             stop = ev.start + timedelta(minutes=DURACION_MIN)
             if ev.stop != stop:
                 ev.with_context(no_mail_to_attendees=True, dont_notify=True,

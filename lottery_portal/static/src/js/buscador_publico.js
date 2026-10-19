@@ -1,105 +1,112 @@
 /** @odoo-module **/
 
-import { Component, useState, onWillStart } from "@odoo/owl";
+import { Component, useState, onWillStart, onMounted, onWillUnmount } from "@odoo/owl";
 import { jsonrpc } from "@web/core/network/rpc_service";
 import { registry } from "@web/core/registry";
 
+// Cada cuánto se vuelve a pedir el día cuando se está mirando "hoy".
+const REFRESCO_MS = 60000;
+
+/**
+ * Portada: resultados de todas las loterías habilitadas para la web en una
+ * fecha (hoy por defecto), agrupados por país y turno, con el buscador por
+ * fecha integrado. Quiniela Uruguaya llega como una sola lotería con sus 20
+ * premios y la Tómbola.
+ */
 export class BuscadorPublico extends Component {
     setup() {
         this.state = useState({
-            sorteos: [],
-            sorteoId: null,
-            fecha: '',
-            resultados: null,
+            data: null,
+            fecha: "",
+            pais: "todos",
             cargando: false,
-            // Últimas salidas del sorteo: se muestran mientras no se elige fecha.
-            ultimas: [],
+            error: false,
         });
+        this.timer = null;
 
-        onWillStart(async () => {
-            try {
-                const data = await jsonrpc("/lottery/sorteos-publicos", {});
-                this.state.sorteos = data.sorteos || [];
-                this.state.sorteoId = data.default_id || null;
-            } catch (e) {
-                this.state.sorteos = [];
+        onWillStart(() => this.cargar(""));
+        onMounted(() => {
+            this.timer = setInterval(() => {
+                if (this.state.data && this.state.data.es_hoy && !document.hidden) {
+                    this.cargar(this.state.fecha, true);
+                }
+            }, REFRESCO_MS);
+        });
+        onWillUnmount(() => clearInterval(this.timer));
+    }
+
+    /** Pide un día al servidor. `silencioso` no muestra el "cargando". */
+    async cargar(fecha, silencioso = false) {
+        if (!silencioso) {
+            this.state.cargando = true;
+        }
+        try {
+            const data = await jsonrpc("/salidas/dia", { fecha: fecha || false });
+            this.state.data = data;
+            this.state.fecha = data.fecha;
+            this.state.error = false;
+            // Si el país elegido no tiene loterías ese día, vuelve a "todos".
+            if (
+                this.state.pais !== "todos" &&
+                !data.paises.some((p) => p.codigo === this.state.pais)
+            ) {
+                this.state.pais = "todos";
             }
-            await this.cargarUltimas();
-            await this.precargarFecha();
-        });
-    }
-
-    /**
-     * Arranca con la fecha de la última salida registrada ya elegida, así el
-     * input nunca queda vacío mostrando resultados. Si el sorteo todavía no
-     * tiene salidas, queda vacío y no se muestra nada.
-     */
-    async precargarFecha() {
-        const ultima = this.state.ultimas[this.state.ultimas.length - 1];
-        await this.consultar(ultima ? ultima.fecha_iso : '');
-    }
-
-    async cargarUltimas() {
-        if (!this.state.sorteoId) {
-            this.state.ultimas = [];
-            return;
-        }
-        try {
-            this.state.ultimas = await jsonrpc("/salidas/ultimas", {
-                sorteo_id: this.state.sorteoId,
-                limit: 2,
-            }) || [];
         } catch (e) {
-            this.state.ultimas = [];
-        }
-    }
-
-    async onSorteoChange(ev) {
-        this.state.sorteoId = parseInt(ev.target.value) || null;
-        this.state.fecha = '';
-        this.state.resultados = null;
-        await this.cargarUltimas();
-        await this.precargarFecha();
-    }
-
-    /**
-     * Hay dato para mostrar. Ojo: el 0 es una centena / bola extra válida;
-     * solo "-" (o vacío) significa que esa salida no la tiene.
-     */
-    tiene(valor) {
-        return valor !== null && valor !== undefined && valor !== false && valor !== "-" && valor !== "";
-    }
-
-    /**
-     * Salidas de la fecha elegida, una por turno y ya en orden del día: el
-     * servidor las devuelve con la misma forma que las últimas salidas.
-     */
-    get resultadosLista() {
-        return this.state.resultados || [];
-    }
-
-    async buscarSalida(ev) {
-        await this.consultar(ev.target.value);
-    }
-
-    async consultar(fecha) {
-        this.state.fecha = fecha || '';
-        if (!this.state.fecha || !this.state.sorteoId) {
-            this.state.resultados = null;
-            return;
-        }
-        this.state.cargando = true;
-        try {
-            const data = await jsonrpc("/salidas/buscar", {
-                fecha: this.state.fecha,
-                sorteo_id: this.state.sorteoId,
-            });
-            this.state.resultados = data;
-        } catch (e) {
-            this.state.resultados = null;
+            if (!silencioso) {
+                this.state.error = true;
+            }
         } finally {
             this.state.cargando = false;
         }
+    }
+
+    get paises() {
+        const todos = (this.state.data && this.state.data.paises) || [];
+        return this.state.pais === "todos"
+            ? todos
+            : todos.filter((p) => p.codigo === this.state.pais);
+    }
+
+    get esHoy() {
+        return !!(this.state.data && this.state.data.es_hoy);
+    }
+
+    onFecha(ev) {
+        if (ev.target.value) {
+            this.cargar(ev.target.value);
+        }
+    }
+
+    /** Mueve la fecha `dias` días (±1) a partir de la que se está viendo. */
+    mover(dias) {
+        const [a, m, d] = this.state.fecha.split("-").map(Number);
+        const f = new Date(a, m - 1, d + dias);
+        const iso = [
+            f.getFullYear(),
+            String(f.getMonth() + 1).padStart(2, "0"),
+            String(f.getDate()).padStart(2, "0"),
+        ].join("-");
+        this.cargar(iso);
+    }
+
+    irAHoy() {
+        this.cargar("");
+    }
+
+    setPais(codigo) {
+        this.state.pais = codigo;
+    }
+
+    /** Hay dato para mostrar: el 0 es una centena / bola extra válida. */
+    tiene(valor) {
+        return valor !== null && valor !== undefined && valor !== "" && valor !== "-";
+    }
+
+    /** Fondo de la bola con el color del turno (o el violeta de la marca). */
+    bolaStyle(color) {
+        const c = color || "#7B2FF7";
+        return `background: radial-gradient(circle at 35% 30%, color-mix(in srgb, ${c} 55%, white), ${c} 70%);`;
     }
 }
 

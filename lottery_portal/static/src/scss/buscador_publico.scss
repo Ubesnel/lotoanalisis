@@ -88,7 +88,10 @@
 
 .bp-char {
     position: absolute;
-    bottom: 0;
+    /* Arriba, junto a los resultados (antes iban pegados al pie, que ahora
+       queda muy abajo). En pantallas chicas vuelven al pie (ver abajo). */
+    top: 70px;
+    bottom: auto;
     height: 78%;
     max-height: 560px;
     object-fit: contain;
@@ -100,23 +103,23 @@
 
 .bp-char-eli {
     left: 0;
-    transform: translateX(-4%);
+    transform: translateX(-12%);
     animation: bp-float-eli 6s ease-in-out infinite;
 }
 
 .bp-char-ube {
     right: 0;
-    transform: translateX(4%);
+    transform: translateX(12%);
     animation: bp-float-ube 6s ease-in-out infinite 1.8s;
 }
 
 @keyframes bp-float-eli {
-    0%, 100% { transform: translateX(-4%) translateY(0); }
-    50%       { transform: translateX(-4%) translateY(-18px); }
+    0%, 100% { transform: translateX(-12%) translateY(0); }
+    50%       { transform: translateX(-12%) translateY(-18px); }
 }
 @keyframes bp-float-ube {
-    0%, 100% { transform: translateX(4%) translateY(0); }
-    50%       { transform: translateX(4%) translateY(-18px); }
+    0%, 100% { transform: translateX(12%) translateY(0); }
+    50%       { transform: translateX(12%) translateY(-18px); }
 }
 
 /* ── CONTENIDO CENTRAL ──────────────────────────────────────── */
@@ -592,16 +595,16 @@
    los personajes a tamaño completo, así que se achican y se abren. */
 @media (min-width: 1200px) and (max-width: 1700px) {
     .bp-char     { height: 60%; max-height: 430px; }
-    .bp-char-eli { transform: translateX(-18%); animation-name: bp-float-eli-md; }
-    .bp-char-ube { transform: translateX(18%);  animation-name: bp-float-ube-md; }
+    .bp-char-eli { transform: translateX(-28%); animation-name: bp-float-eli-md; }
+    .bp-char-ube { transform: translateX(28%);  animation-name: bp-float-ube-md; }
 }
 @keyframes bp-float-eli-md {
-    0%, 100% { transform: translateX(-18%) translateY(0); }
-    50%       { transform: translateX(-18%) translateY(-14px); }
+    0%, 100% { transform: translateX(-28%) translateY(0); }
+    50%       { transform: translateX(-28%) translateY(-14px); }
 }
 @keyframes bp-float-ube-md {
-    0%, 100% { transform: translateX(18%) translateY(0); }
-    50%       { transform: translateX(18%) translateY(-14px); }
+    0%, 100% { transform: translateX(28%) translateY(0); }
+    50%       { transform: translateX(28%) translateY(-14px); }
 }
 
 /* ── ÚLTIMAS SALIDAS (buscador, antes de elegir fecha) ── */
@@ -890,7 +893,7 @@
 
 @media (max-width: 991px) {
     .bp-hero          { padding: 60px 16px 220px; align-items: flex-start; min-height: auto; }
-    .bp-char          { height: 44%; max-height: 300px; opacity: .7; }
+    .bp-char          { height: 44%; max-height: 300px; opacity: .7; top: auto; bottom: 0; }
     .bp-char-eli      { left: -10px; }
     .bp-char-ube      { right: -10px; }
     .bp-hero-center   { max-width: 520px; }
@@ -1074,4 +1077,312 @@
     background: #86efac;          /* verde claro */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
     line-height: 1;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PORTADA · RESULTADOS DEL DÍA (componente BuscadorPublico)
+   Todas las loterías habilitadas para la web en una fecha, por país y turno.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Resultados a todo el ancho y, debajo, las dos apps una al lado de la otra. */
+.bp-hero-grid--results {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 22px;
+
+    .bp-hero-col--results { flex: 0 0 auto; max-width: 100%; width: 100%; }
+    .bp-hero-col--apps {
+        flex: 0 0 auto;
+        max-width: 100%;
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: stretch;
+        gap: 22px;
+    }
+    .bp-hero-col--apps > .bp-app-card,
+    .bp-hero-col--apps > .bp-fb-card { flex: 1 1 300px; max-width: 520px; }
+
+    /* Botones alineados: en cada tarjeta, botón y línea de abajo (pista o
+       enlace) van pegados al pie con las mismas medidas, así los tres botones
+       quedan a la misma altura aunque el texto de arriba mida distinto. */
+    .bp-hero-col--apps > .bp-app-card > .bp-app-btn {
+        margin-top: auto;
+        min-height: 72px;
+        box-sizing: border-box;
+    }
+    .bp-hero-col--apps > .bp-app-card > .bp-app-hint {
+        margin-top: 12px;
+        line-height: 20px;
+    }
+    .bp-hero-col--apps > .bp-fb-card .bp-fb-footer {
+        margin-top: auto;
+        padding: 22px 24px 24px;
+        gap: 12px;
+    }
+    .bp-hero-col--apps > .bp-fb-card .bp-fb-btn {
+        min-height: 72px;
+        box-sizing: border-box;
+    }
+    .bp-hero-col--apps > .bp-fb-card .bp-fb-page-link { line-height: 20px; }
+    .bp-hero-col--apps > .bp-fb-card {
+        display: flex;
+        flex-direction: column;
+        /* Ficha angosta: los tres puntos van uno debajo del otro (en la sección
+           ancha de antes iban en fila y se cortaban). */
+        .bp-fb-body {
+            flex: 1 1 auto;
+            flex-direction: column;
+            justify-content: center;
+            gap: 16px;
+            padding: 20px 24px;
+        }
+        .bp-fb-feature { flex: 0 0 auto; }
+    }
+}
+
+.bpr {
+    text-align: left;
+    color: #2D2440;
+}
+
+/* Barra de fecha */
+.bpr-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #eee8f8;
+}
+.bpr-fecha { flex: 1 1 auto; min-width: 0; line-height: 1.15; }
+.bpr-fecha-top {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #7B2FF7;
+}
+.bpr-fecha-main { font-size: 17px; font-weight: 800; color: #2D2440; }
+.bpr-nav {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border: 1px solid #e3d9f7;
+    background: #fff;
+    color: #4C1D95;
+    border-radius: 10px;
+    cursor: pointer;
+    &:hover { background: #f3ecff; }
+}
+.bpr-date {
+    width: 138px;
+    flex: none;
+    height: 34px;
+    border: 1px solid #e3d9f7;
+    border-radius: 10px;
+    padding: 0 8px;
+    font-size: 13px;
+    color: #2D2440;
+}
+.bpr-hoy {
+    flex: none;
+    height: 34px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #FF8A00;
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* Chips por país */
+.bpr-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 2px; }
+.bpr-chip-flag { font-size: 20px; line-height: 1; vertical-align: -3px; margin-right: 2px; }
+.bpr-chip {
+    border: 1px solid #d9ccf3;
+    background: #fff;
+    color: #4C1D95;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    &:hover { background: #f3ecff; }
+    &.on { background: #7B2FF7; border-color: #7B2FF7; color: #fff; }
+}
+
+.bpr-cuerpo { padding-bottom: 6px; transition: opacity .15s; }
+.bpr-cuerpo--carga { opacity: .55; }
+.bpr-estado { padding: 28px 16px; text-align: center; color: #7A7290; font-weight: 700; }
+
+/* Sección de un país */
+.bpr-pais-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 14px 6px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    color: #4C1D95;
+    small { font-size: 11px; font-weight: 700; color: #7A7290; letter-spacing: 0; text-transform: none; }
+}
+.bpr-flag { font-size: 26px; line-height: 1; vertical-align: -4px; margin-right: 4px; }
+.bpr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: 10px;
+    padding: 0 14px 6px;
+}
+
+/* Tarjeta de una lotería */
+.bpr-lot {
+    background: #faf7ff;
+    border: 1px solid #ece4fa;
+    border-radius: 14px;
+    padding: 10px 12px 6px;
+    min-width: 0;
+}
+.bpr-lot--wide { grid-column: 1 / -1; }
+.bpr-lot-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.bpr-logo {
+    width: 38px;
+    height: 38px;
+    flex: none;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #ece4fa;
+}
+/* El logo se ve entero (proporción original): caja de alto fijo y ancho libre. */
+.bpr-logo--img {
+    width: auto;
+    max-width: 92px;
+    height: 38px;
+    border: 0;
+    border-radius: 6px;
+    object-fit: contain;
+    background: transparent;
+}
+.bpr-logo--ini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ede3ff;
+    color: #4C1D95;
+    font-size: 11px;
+    font-weight: 900;
+}
+.bpr-lot-name { font-weight: 800; font-size: 14px; line-height: 1.2; }
+
+/* Un turno dentro de la lotería */
+.bpr-turno {
+    padding: 8px 0 9px;
+    border-top: 1px dashed #e3d9f7;
+}
+/* Etiqueta del turno y su hora arriba; el resultado abajo con todo el ancho. */
+.bpr-thead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+.bpr-tlabel { font-size: 12.5px; font-weight: 900; color: #4C1D95; }
+.bpr-thora { font-size: 11px; font-weight: 700; color: #8a82a0; white-space: nowrap; }
+.bpr-tbody { min-width: 0; }
+/* Centena, número, extra y corridos en una sola línea. */
+.bpr-balls { display: flex; align-items: center; flex-wrap: nowrap; gap: 6px; }
+
+/* Bolillas: del color del turno, más chicas que las de "Últimas salidas". */
+.bpr-ball {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 900;
+    font-size: 16px;
+    background: radial-gradient(circle at 35% 30%, #c4a0ff, #7B2FF7 70%);
+    box-shadow: inset 0 -3px 6px rgba(0, 0, 0, .18), 0 2px 6px rgba(0, 0, 0, .15);
+}
+.bpr-ball--s { width: 34px; height: 34px; font-size: 12.5px; }
+.bpr-ball--xs { width: 26px; height: 26px; font-size: 11.5px; }
+.bpr-ball--extra { background: radial-gradient(circle at 35% 30%, #f87171, #dc2626 70%); }
+.bpr-ball--corrido { background: radial-gradient(circle at 35% 30%, #a78bfa, #5b21b6 70%); }
+.bpr-ball--tombola { background: radial-gradient(circle at 35% 30%, #f87171, #dc2626 70%); }
+.bpr-ball--tres { width: 48px; height: 48px; font-size: 17px; }
+.bpr-ball--extra { width: 30px; height: 30px; font-size: 13px; }
+.bpr-corridos {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 6px;
+    padding-left: 8px;
+    border-left: 2px solid #e3d9f7;
+}
+
+/* Pendiente / sin resultado */
+.bpr-pend {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 11px;
+    border-radius: 20px;
+    background: #fff3d6;
+    color: #8a5a00;
+    font-size: 12px;
+    font-weight: 800;
+}
+.bpr-nosale { font-size: 12px; font-weight: 700; color: #9a93ad; }
+
+/* Quiniela Uruguaya: 20 premios y la Tómbola */
+.bpr-premios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 6px 4px;
+}
+.bpr-premio {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    small { font-size: 9.5px; font-weight: 800; color: #8a82a0; }
+}
+.bpr-tombola { margin-top: 10px; }
+.bpr-tombola-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #dc2626;
+    margin-bottom: 4px;
+}
+.bpr-tombola-nums { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.bpr-nota { margin: 4px 14px 12px; font-size: 11.5px; color: #8a82a0; text-align: center; }
+
+@media (max-width: 575px) {
+    .bpr-bar { flex-wrap: wrap; }
+    .bpr-fecha { flex: 1 0 100%; order: -1; }
+    .bpr-date { flex: 1 1 auto; width: auto; }
+    .bpr-grid { grid-template-columns: 1fr; }
+}
+
+/* El cuerpo blanco de la tarjeta lo llena el componente (sin el margen de
+   22 px del buscador viejo) y su input de fecha pisa el estilo grande de los
+   formularios de esta tarjeta. */
+.bp-hero-col--results .bp-search-body { padding: 0; }
+.bp-search-body .bpr-date {
+    height: 34px;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
 }

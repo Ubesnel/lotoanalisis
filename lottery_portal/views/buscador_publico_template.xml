@@ -22,24 +22,13 @@
 
                 <div class="bp-hero-center">
 
-                    <!-- Badge dinámico con los sorteos habilitados -->
-                    <div class="bp-hero-badge">
-                        <i class="fa fa-star"/>
-                        <t t-if="sorteos_publicos">
-                            <t t-foreach="sorteos_publicos" t-as="s">
-                                <t t-if="not s_first"> · </t>
-                                <t t-esc="s.name"/>
-                            </t>
-                        </t>
-                        <t t-else="">Búsqueda de salidas</t>
-                    </div>
-
-                    <div t-attf-class="bp-hero-grid #{'bp-hero-grid--3' if rifazo_release else ''}">
-                        <!-- Columna izquierda: buscador histórico -->
-                        <div class="bp-hero-col bp-hero-col--search">
+                    <div class="bp-hero-grid bp-hero-grid--results">
+                        <!-- Arriba, a todo el ancho: resultados del día de todas las
+                             loterías y búsqueda por fecha -->
+                        <div class="bp-hero-col bp-hero-col--results">
                             <div class="bp-search-card">
                                 <div class="bp-search-header">
-                                    <i class="fa fa-search me-2"/>Buscar salida histórica
+                                    <i class="fa fa-trophy me-2"/>Resultados de las loterías
                                 </div>
                                 <div class="bp-search-body">
                                     <owl-component name="lottery_portal.BuscadorPublico"/>
@@ -47,9 +36,10 @@
                             </div>
                         </div>
 
-                        <!-- Columna derecha: descarga de la app (protagonista) -->
-                        <t t-if="play_store_url">
-                            <div class="bp-hero-col bp-hero-col--app">
+                        <!-- Debajo: las dos apps, una al lado de la otra -->
+                        <t t-if="play_store_url or rifazo_release or facebook_group_url or facebook_page_url">
+                          <div class="bp-hero-col bp-hero-col--apps">
+                            <t t-if="play_store_url">
                                 <div class="bp-app-card">
                                     <div class="bp-app-badge">
                                         <i class="fa fa-android me-1"/>¡Ya disponible!
@@ -81,13 +71,11 @@
                                         Buscá: <strong>LOTOANÁLISIS</strong>
                                     </div>
                                 </div>
-                            </div>
-                        </t>
+                            </t>
 
                         <!-- App hermana Rifazo: mismo formato de tarjeta, con sus
                              colores; lleva a /rifazo (descarga directa del APK). -->
-                        <t t-if="rifazo_release">
-                            <div class="bp-hero-col bp-hero-col--app">
+                            <t t-if="rifazo_release">
                                 <div class="bp-app-card bp-rifazo-card">
                                     <div class="bp-app-badge bp-rifazo-badge">
                                         <i class="fa fa-ticket me-1"/>¡Nuevo!
@@ -116,45 +104,8 @@
                                         Versión <strong t-esc="rifazo_release.name"/>
                                     </div>
                                 </div>
-                            </div>
-                        </t>
-                    </div>
-
-                    <!-- Strip Facebook — visible sin bajar -->
-                    <t t-if="facebook_group_url or facebook_page_url">
-                        <div class="bp-fb-strip">
-                            <div class="bp-fb-strip-info">
-                                <strong>
-                                    <i class="fa fa-facebook-square"/>LotoAnalisis
-                                </strong>
-                                <span>Análisis diarios · Estrategias · Comunidad</span>
-                            </div>
-                            <t t-if="facebook_group_url">
-                                <a t-att-href="facebook_group_url"
-                                   target="_blank" rel="noopener noreferrer"
-                                   class="bp-fb-strip-btn">
-                                    <i class="fa fa-users"/>Unirse al grupo
-                                </a>
                             </t>
-                            <t t-elif="facebook_page_url">
-                                <a t-att-href="facebook_page_url"
-                                   target="_blank" rel="noopener noreferrer"
-                                   class="bp-fb-strip-btn">
-                                    <i class="fa fa-thumbs-up"/>Seguir @LotoAnalisis
-                                </a>
-                            </t>
-                        </div>
-                    </t>
-
-                </div>
-            </div>
-
-            <!-- ══ SECCIÓN SOCIAL ══ -->
-            <t t-if="facebook_group_url or facebook_page_url">
-                <div class="bp-social-section">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-12 col-md-8 col-lg-6">
+                            <t t-if="facebook_group_url or facebook_page_url">
                                 <div class="bp-fb-card">
                                     <div class="bp-fb-header">
                                         <div class="bp-fb-badge">
@@ -209,11 +160,13 @@
                                         </t>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </t>
+                          </div>
+                        </t>
                     </div>
+
                 </div>
-            </t>
+            </div>
 
         </t>
     </template>

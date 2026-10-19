@@ -11,6 +11,7 @@
             <calendar string="Agenda de loterías" date_start="start" date_stop="stop"
                       mode="day" color="lottery_color" event_open_popup="true"
                       quick_create="false">
+                <field name="lottery_hora"/>
                 <field name="lottery_state"/>
                 <field name="lottery_sorteo_id"/>
             </calendar>
@@ -27,6 +28,7 @@
                   decoration-danger="lottery_state == 'late'"
                   create="false">
                 <field name="start"/>
+                <field name="lottery_hora"/>
                 <field name="name"/>
                 <field name="lottery_sorteo_id"/>
                 <field name="lottery_turno_id"/>
@@ -60,6 +62,7 @@
                             <field name="lottery_sorteo_id" readonly="1"/>
                             <field name="lottery_turno_id" readonly="1"/>
                             <field name="lottery_date" readonly="1"/>
+                            <field name="lottery_hora"/>
                             <field name="start"/>
                             <field name="stop"/>
                         </group>

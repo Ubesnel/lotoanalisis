@@ -1,91 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="lottery_portal.BuscadorPublico" owl="1">
-        <div class="buscador-publico-widget">
-            <!-- Selector de sorteo -->
-            <div class="mb-3" t-if="state.sorteos.length">
-                <select class="form-select buscador-publico-select"
-                        t-on-change="onSorteoChange">
-                    <t t-foreach="state.sorteos" t-as="s" t-key="s.id">
-                        <option t-att-value="s.id"
-                                t-att-selected="s.id === state.sorteoId">
-                            <t t-esc="s.name"/>
-                        </option>
-                    </t>
-                </select>
-            </div>
-
-            <!-- Input de fecha -->
-            <div class="mb-3">
-                <input type="date"
-                       class="form-control buscador-publico-date"
-                       t-att-value="state.fecha"
-                       t-on-change="buscarSalida"
-                       t-att-disabled="!state.sorteoId"
-                />
-            </div>
-
-            <!-- Cargando -->
-            <t t-if="state.cargando">
-                <div class="text-center text-muted py-2">
-                    <i class="fa fa-spinner fa-spin me-2"/>Buscando...
-                </div>
-            </t>
-
-            <!-- Resultado de la fecha elegida -->
-            <t t-elif="state.fecha and resultadosLista.length">
-                <div class="bp-ultimas">
-                    <t t-foreach="resultadosLista" t-as="r" t-key="r.id">
-                        <t t-call="lottery_portal.BuscadorPublico.Salida"/>
-                    </t>
-                </div>
-            </t>
-            <t t-elif="state.fecha">
-                <div class="alert alert-warning mt-3 mb-0">
-                    <i class="fa fa-info-circle me-2"/>
-                    No se encontró salida para la fecha seleccionada.
-                </div>
-            </t>
-
-            <!-- Sin fecha elegida: las últimas salidas registradas del sorteo -->
-            <t t-elif="state.ultimas.length">
-                <div class="bp-ultimas">
-                    <div class="bp-ultimas-title">
-                        <i class="fa fa-clock-o me-1"/>Últimas salidas
+        <div class="bpr">
+            <!-- Barra de fecha: hoy por defecto, con flechas y "Hoy" -->
+            <div class="bpr-bar">
+                <button type="button" class="bpr-nav" aria-label="Día anterior"
+                        t-on-click="() => this.mover(-1)">
+                    <i class="fa fa-chevron-left"/>
+                </button>
+                <div class="bpr-fecha">
+                    <div class="bpr-fecha-top">
+                        <t t-if="state.data">
+                            <t t-esc="esHoy ? 'Hoy' : 'Resultados del día'"/>
+                        </t>
                     </div>
-                    <t t-foreach="state.ultimas" t-as="r" t-key="r.id">
-                        <t t-call="lottery_portal.BuscadorPublico.Salida"/>
-                    </t>
+                    <div class="bpr-fecha-main" t-if="state.data" t-esc="state.data.fecha_larga"/>
                 </div>
-            </t>
-        </div>
-    </t>
+                <input type="date" class="bpr-date" aria-label="Elegir fecha"
+                       t-att-value="state.fecha" t-on-change="onFecha"/>
+                <button type="button" class="bpr-nav" aria-label="Día siguiente"
+                        t-on-click="() => this.mover(1)">
+                    <i class="fa fa-chevron-right"/>
+                </button>
+                <button type="button" class="bpr-hoy" t-if="state.data and !esHoy"
+                        t-on-click="irAHoy">Hoy</button>
+            </div>
 
-    <t t-name="lottery_portal.BuscadorPublico.Salida" owl="1">
-        <div t-att-class="'bp-ultima ' + (r.turno === 'evening' ? 'bp-ultima--noche' : 'bp-ultima--dia')">
-            <div class="bp-ultima-head">
-                <i t-att-class="r.turno === 'evening' ? 'fa fa-moon-o' : 'fa fa-sun-o'"/>
-                <span><t t-esc="r.dia_semana"/> <t t-esc="r.fecha"/> · <t t-esc="r.turno_label"/></span>
+            <!-- Chips por país -->
+            <div class="bpr-chips" t-if="state.data and state.data.paises.length > 1">
+                <button type="button"
+                        t-attf-class="bpr-chip #{state.pais === 'todos' ? 'on' : ''}"
+                        t-on-click="() => this.setPais('todos')">Todos</button>
+                <t t-foreach="state.data.paises" t-as="p" t-key="p.codigo">
+                    <button type="button"
+                            t-attf-class="bpr-chip #{state.pais === p.codigo ? 'on' : ''}"
+                            t-on-click="() => this.setPais(p.codigo)">
+                        <span class="bpr-chip-flag" t-if="p.flag" t-esc="p.flag"/> <t t-esc="p.nombre"/>
+                    </button>
+                </t>
             </div>
-            <div class="bp-ultima-balls">
-                <div class="bp-ultima-ball" t-if="tiene(r.centena)">
-                    <span class="bp-ball-box"><span class="bp-ball bp-ball--cen"><t t-esc="r.centena"/></span></span>
-                    <small>Centena</small>
-                </div>
-                <div class="bp-ultima-ball">
-                    <span class="bp-ball-box"><span class="bp-ball bp-ball--fijo"><t t-esc="r.numero"/></span></span>
-                    <small>Fijo</small>
-                </div>
-                <div class="bp-ultima-ball" t-if="tiene(r.bola_extra)">
-                    <span class="bp-ball-box"><span class="bp-ball bp-ball--extra"><t t-esc="r.bola_extra"/></span></span>
-                    <small>Extra</small>
-                </div>
+
+            <div class="bpr-estado" t-if="state.cargando and !state.data">
+                <i class="fa fa-spinner fa-spin me-2"/>Cargando resultados...
             </div>
-            <div class="bp-ultima-corridos" t-if="r.premio_2 or r.premio_3">
-                Corridos:
-                <b t-if="r.premio_2"><t t-esc="r.premio_2"/></b>
-                <t t-if="r.premio_2 and r.premio_3"> · </t>
-                <b t-if="r.premio_3"><t t-esc="r.premio_3"/></b>
+            <div class="bpr-estado" t-elif="state.error and !state.data">
+                <i class="fa fa-exclamation-circle me-2"/>No se pudieron cargar los resultados.
+                <a href="#" t-on-click.prevent="irAHoy">Reintentar</a>
+            </div>
+            <div t-else="" t-attf-class="bpr-cuerpo #{state.cargando ? 'bpr-cuerpo--carga' : ''}">
+                <div class="bpr-estado" t-if="state.data and !paises.length">
+                    <i class="fa fa-info-circle me-2"/>No hay loterías con sorteo para esta fecha.
+                </div>
+
+                <t t-foreach="paises" t-as="p" t-key="p.codigo">
+                    <section class="bpr-pais">
+                        <header class="bpr-pais-head">
+                            <span><span class="bpr-flag" t-if="p.flag" t-esc="p.flag"/> <t t-esc="p.nombre"/></span>
+                            <small><t t-esc="p.loterias.length"/> <t t-esc="p.loterias.length === 1 ? 'lotería' : 'loterías'"/></small>
+                        </header>
+                        <div class="bpr-grid">
+                            <t t-foreach="p.loterias" t-as="l" t-key="l.tipo + l.id">
+                                <article t-attf-class="bpr-lot #{l.tipo === 'quiniela' ? 'bpr-lot--wide' : ''}">
+                                    <div class="bpr-lot-head">
+                                        <img t-if="l.logo" class="bpr-logo bpr-logo--img" t-att-src="l.logo" t-att-alt="l.nombre"/>
+                                        <span t-else="" class="bpr-logo bpr-logo--ini" t-esc="l.iniciales"/>
+                                        <span class="bpr-lot-name" t-esc="l.nombre"/>
+                                    </div>
+
+                                    <t t-foreach="l.turnos" t-as="t" t-key="t.code">
+                                        <div class="bpr-turno">
+                                            <div class="bpr-thead">
+                                                <span class="bpr-tlabel" t-esc="t.label"/>
+                                                <small class="bpr-thora" t-if="t.hora">
+                                                    <i class="fa fa-clock-o"/> <t t-esc="t.hora"/>
+                                                </small>
+                                            </div>
+                                            <div class="bpr-tbody">
+                                                <t t-if="t.estado === 'salio' and l.tipo === 'quiniela'">
+                                                    <div class="bpr-premios">
+                                                        <t t-foreach="t.premios" t-as="pr" t-key="pr.n">
+                                                            <div class="bpr-premio">
+                                                                <small t-esc="pr.n"/>
+                                                                <span class="bpr-ball bpr-ball--s"
+                                                                      t-att-style="bolaStyle(t.color)" t-esc="pr.num"/>
+                                                            </div>
+                                                        </t>
+                                                    </div>
+                                                    <div class="bpr-tombola" t-if="t.tombola and t.tombola.length">
+                                                        <div class="bpr-tombola-title">Tómbola</div>
+                                                        <div class="bpr-tombola-nums">
+                                                            <t t-foreach="t.tombola" t-as="n" t-key="n_index">
+                                                                <span class="bpr-ball bpr-ball--xs bpr-ball--tombola" t-esc="n"/>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                                <t t-elif="t.estado === 'salio'">
+                                                    <div class="bpr-balls">
+                                                        <span t-attf-class="bpr-ball #{tiene(t.centena) ? 'bpr-ball--tres' : ''}"
+                                                              t-att-style="bolaStyle(t.color)"
+                                                              t-esc="(tiene(t.centena) ? t.centena : '') + t.numero"/>
+                                                        <span t-if="tiene(t.extra)" class="bpr-ball bpr-ball--extra" t-esc="t.extra"/>
+                                                        <span t-if="t.premio_2 or t.premio_3" class="bpr-corridos">
+                                                            <span t-if="t.premio_2" class="bpr-ball bpr-ball--corrido" t-esc="t.premio_2"/>
+                                                            <span t-if="t.premio_3" class="bpr-ball bpr-ball--corrido" t-esc="t.premio_3"/>
+                                                        </span>
+                                                    </div>
+                                                </t>
+                                                <span t-elif="t.estado === 'pendiente'" class="bpr-pend">
+                                                    <i class="fa fa-clock-o"/> Pendiente
+                                                </span>
+                                                <span t-else="" class="bpr-nosale">Sin resultado</span>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </article>
+                            </t>
+                        </div>
+                    </section>
+                </t>
+                <p class="bpr-nota" t-if="state.data and paises.length">
+                    Las horas son las del sorteo en cada país.
+                    <t t-if="esHoy">Se actualiza solo cada minuto.</t>
+                </p>
             </div>
         </div>
     </t>
