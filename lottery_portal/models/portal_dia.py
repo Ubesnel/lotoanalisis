@@ -154,6 +154,10 @@ def construir_dia(env, dia, hoy):
             'nombre': sorteo.name,
             'logo': _logo_url(sorteo),
             'iniciales': _iniciales(sorteo.name),
+            # Solo un número de 2 cifras (sin centena, bola extra ni corridos):
+            # la portada junta sus turnos de a dos para que no queden en una
+            # columna larguísima (La Diaria tiene 3 o 4 por día).
+            'simple': not (sorteo.uses_hundreds or sorteo.uses_fireball or sorteo.is_pick3),
             'turnos': turnos,
         })
     if quiniela:
