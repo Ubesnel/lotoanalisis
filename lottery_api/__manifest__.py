@@ -12,6 +12,7 @@
     "data": [
         "security/ir.model.access.csv",
         "data/ir_cron_api_log.xml",
+        "data/ir_cron_auto_prediction.xml",
         "views/lottery_sorteo_views.xml",
         "views/lottery_output_views.xml",
         "views/lottery_prediction_views.xml",

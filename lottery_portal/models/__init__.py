@@ -18,3 +18,4 @@ from . import quiniela_uy_tombola
 from . import quiniela_uy_ternas
 from . import lottery_sorteo
 from . import website_menu
+from . import portal_dia

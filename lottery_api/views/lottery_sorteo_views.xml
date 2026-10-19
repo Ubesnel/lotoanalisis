@@ -8,6 +8,10 @@
             <xpath expr="//field[@name='show_in_public']" position="after">
                 <field name="show_in_app"/>
                 <field name="proximo_tabla_app"/>
+                <field name="auto_prediction"/>
+                <field name="auto_prediction_publish" invisible="not auto_prediction"/>
+                <field name="auto_prediction_delay" invisible="not auto_prediction"/>
+                <field name="auto_prediction_error" invisible="not auto_prediction_error"/>
             </xpath>
         </field>
     </record>

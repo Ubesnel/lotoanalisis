@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Agenda diaria de loterías: los eventos del calendario que crea el cron
+         (uno por sorteo y turno) y su estado (pendiente / atrasada / hecha). -->
+
+    <record id="view_lottery_agenda_calendar" model="ir.ui.view">
+        <field name="name">lottery.agenda.calendar</field>
+        <field name="model">calendar.event</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <calendar string="Agenda de loterías" date_start="start" date_stop="stop"
+                      mode="day" color="lottery_color" event_open_popup="true"
+                      quick_create="false">
+                <field name="lottery_hora"/>
+                <field name="lottery_state"/>
+                <field name="lottery_sorteo_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_lottery_agenda_tree" model="ir.ui.view">
+        <field name="name">lottery.agenda.tree</field>
+        <field name="model">calendar.event</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <tree string="Tareas de lotería" default_order="start"
+                  decoration-success="lottery_state == 'done'"
+                  decoration-danger="lottery_state == 'late'"
+                  create="false">
+                <field name="start"/>
+                <field name="lottery_hora"/>
+                <field name="name"/>
+                <field name="lottery_sorteo_id"/>
+                <field name="lottery_turno_id"/>
+                <field name="lottery_state" widget="badge"
+                       decoration-success="lottery_state == 'done'"
+                       decoration-danger="lottery_state == 'late'"
+                       decoration-info="lottery_state == 'pending'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_agenda_form" model="ir.ui.view">
+        <field name="name">lottery.agenda.form</field>
+        <field name="model">calendar.event</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <form string="Tarea de lotería">
+                <header>
+                    <button name="action_lottery_marcar_hecha" type="object"
+                            string="Marcar como hecha" class="btn-primary"
+                            invisible="lottery_state == 'done'"/>
+                    <button name="action_lottery_reabrir" type="object"
+                            string="Reabrir" invisible="lottery_state != 'done'"/>
+                    <field name="lottery_state" widget="statusbar"
+                           statusbar_visible="pending,done"/>
+                </header>
+                <sheet>
+                    <h1><field name="name"/></h1>
+                    <group>
+                        <group>
+                            <field name="lottery_sorteo_id" readonly="1"/>
+                            <field name="lottery_turno_id" readonly="1"/>
+                            <field name="lottery_date" readonly="1"/>
+                            <field name="lottery_hora"/>
+                            <field name="start"/>
+                            <field name="stop"/>
+                        </group>
+                        <group>
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="alarm_ids" widget="many2many_tags"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        Archivar esta tarea (por ejemplo un feriado sin sorteo) hace que
+                        no vuelva a crearse para ese día.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lottery_agenda_search" model="ir.ui.view">
+        <field name="name">lottery.agenda.search</field>
+        <field name="model">calendar.event</field>
+        <field name="priority">90</field>
+        <field name="arch" type="xml">
+            <search string="Agenda de loterías">
+                <field name="name"/>
+                <field name="lottery_sorteo_id"/>
+                <filter name="hoy" string="Hoy"
+                        domain="[('lottery_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <separator/>
+                <filter name="pendientes" string="Pendientes"
+                        domain="[('lottery_state', '=', 'pending')]"/>
+                <filter name="atrasadas" string="Atrasadas"
+                        domain="[('lottery_state', '=', 'late')]"/>
+                <filter name="hechas" string="Hechas"
+                        domain="[('lottery_state', '=', 'done')]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_estado" string="Estado"
+                            context="{'group_by': 'lottery_state'}"/>
+                    <filter name="group_sorteo" string="Sorteo"
+                            context="{'group_by': 'lottery_sorteo_id'}"/>
+                    <filter name="group_fecha" string="Fecha"
+                            context="{'group_by': 'lottery_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lottery_agenda" model="ir.actions.act_window">
+        <field name="name">Agenda del día</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">calendar,tree,form</field>
+        <field name="domain">[('lottery_sorteo_id', '!=', False)]</field>
+        <field name="search_view_id" ref="view_lottery_agenda_search"/>
+    </record>
+    <record id="action_lottery_agenda_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="view_lottery_agenda_calendar"/>
+        <field name="act_window_id" ref="action_lottery_agenda"/>
+    </record>
+    <record id="action_lottery_agenda_view_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_lottery_agenda_tree"/>
+        <field name="act_window_id" ref="action_lottery_agenda"/>
+    </record>
+    <record id="action_lottery_agenda_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_lottery_agenda_form"/>
+        <field name="act_window_id" ref="action_lottery_agenda"/>
+    </record>
+
+    <record id="action_lottery_agenda_lista" model="ir.actions.act_window">
+        <field name="name">Tareas de lotería</field>
+        <field name="res_model">calendar.event</field>
+        <field name="view_mode">tree,calendar,form</field>
+        <field name="domain">[('lottery_sorteo_id', '!=', False)]</field>
+        <field name="search_view_id" ref="view_lottery_agenda_search"/>
+        <field name="context">{'search_default_hoy': 1}</field>
+    </record>
+    <record id="action_lottery_agenda_lista_view_tree" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_lottery_agenda_tree"/>
+        <field name="act_window_id" ref="action_lottery_agenda_lista"/>
+    </record>
+    <record id="action_lottery_agenda_lista_view_calendar" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">calendar</field>
+        <field name="view_id" ref="view_lottery_agenda_calendar"/>
+        <field name="act_window_id" ref="action_lottery_agenda_lista"/>
+    </record>
+    <record id="action_lottery_agenda_lista_view_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="3"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_lottery_agenda_form"/>
+        <field name="act_window_id" ref="action_lottery_agenda_lista"/>
+    </record>
+
+    <menuitem id="menu_lottery_agenda_root" name="Agenda"
+              parent="lottery_base.home_lottery" sequence="5"/>
+    <menuitem id="menu_lottery_agenda_dia" name="Agenda del día"
+              parent="menu_lottery_agenda_root" action="action_lottery_agenda" sequence="10"/>
+    <menuitem id="menu_lottery_agenda_lista" name="Tareas de lotería"
+              parent="menu_lottery_agenda_root" action="action_lottery_agenda_lista" sequence="20"/>
+</odoo>

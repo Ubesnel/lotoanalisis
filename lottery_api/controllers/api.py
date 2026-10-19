@@ -70,6 +70,40 @@ def _turno_dict(turno):
     }
 
 
+def _hora_slot(slot):
+    """Hora de una línea del calendario del sorteo ('12:27 PM'), o None."""
+    if not slot or not slot.hora_h:
+        return None
+    return '%s:%02d %s' % (slot.hora_h, slot.hora_min or 0, (slot.hora_ampm or 'pm').upper())
+
+
+def _hora_turno(sorteo, turno, fecha):
+    """Hora del sorteo para ese día y turno, tal como está en el calendario
+    del sorteo ('12:27 PM'), o None si el slot no tiene hora cargada. Es la
+    hora local del país del sorteo: la app la muestra tal cual."""
+    dow = str(fecha.weekday())
+    slot = sorteo.slot_ids.filtered(lambda sl: sl.dow == dow and sl.turno_id == turno)[:1]
+    return _hora_slot(slot)
+
+
+def _logo_b64(sorteo):
+    """Logo reducido (128 px) del sorteo en base64, o None si no tiene."""
+    logo = sorteo.image_128
+    if not logo:
+        return None
+    return logo.decode() if isinstance(logo, bytes) else logo
+
+
+def _turno_con_resultado(sorteo, turno, salida, fecha_vacia=None):
+    """Turno + su hora + su última salida, para results/latest y /search.
+    La hora sale del día de la semana de la salida; sin salida, de
+    `fecha_vacia` (hoy en /latest)."""
+    fecha = salida.date if salida else fecha_vacia
+    return dict(_turno_dict(turno),
+                hora=_hora_turno(sorteo, turno, fecha) if fecha else None,
+                result=_serialize_output(salida))
+
+
 def _turno_by_code(code):
     """lottery.turno con ese código, o vacío."""
     if not code:
@@ -147,6 +181,8 @@ class LotteryAppApi(http.Controller):
                 # Solo el ISO: el nombre del país y la bandera los resuelve la
                 # app, que ya es bilingüe y arma el emoji desde el código.
                 'country_code': s.country_id.code or None,
+                # Logo de 128 px en base64 (null = la app muestra la bandera).
+                'logo': _logo_b64(s),
                 # Turnos del sorteo en orden del día: la app arma una
                 # pestaña por turno a partir de esta lista.
                 'turnos': [_turno_dict(t) for t in s._ordered_turnos()],
@@ -179,9 +215,10 @@ class LotteryAppApi(http.Controller):
                        'uses_fireball': sorteo.uses_fireball,
                        'uses_hundreds': sorteo.uses_hundreds},
             # Última salida de cada turno del sorteo, en orden del día.
-            'turnos': [dict(_turno_dict(t), result=_serialize_output(Output.search(
+            'turnos': [_turno_con_resultado(sorteo, t, Output.search(
                 [('turno_id', '=', t.id), ('sorteo_id', '=', sorteo.id)],
-                order='date desc', limit=1))) for t in sorteo._ordered_turnos()],
+                order='date desc', limit=1), fecha_vacia=_now_local().date())
+                for t in sorteo._ordered_turnos()],
             'next_draw': {'date': next_date, 'turn': next_turno.code or None,
                           'turn_label': next_turno.name or ''},
         })
@@ -207,9 +244,9 @@ class LotteryAppApi(http.Controller):
             'sorteo': {'id': sorteo.id, 'name': sorteo.name, 'code': sorteo.code},
             'date': date,
             'weekday': WEEKDAYS_ES[date_dt.weekday()],
-            'turnos': [dict(_turno_dict(t), result=_serialize_output(
-                salidas.filtered(lambda o, t=t: o.turno_id == t)[:1]))
-                for t in sorteo._ordered_turnos()],
+            'turnos': [_turno_con_resultado(
+                sorteo, t, salidas.filtered(lambda o, t=t: o.turno_id == t)[:1],
+                fecha_vacia=date_dt) for t in sorteo._ordered_turnos()],
         })
 
     # ── Estadísticas (mismos servicios que la homepage /inicio) ──────────
@@ -261,9 +298,15 @@ class LotteryAppApi(http.Controller):
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         day = self._resolve_day(day)
+        # Todas las filas son del mismo día de la semana, así que la hora de
+        # cada turno es una sola para toda la pantalla.
+        dow = VALID_DAYS.index(day)
+        slots = sorteo.slot_ids.filtered(lambda sl: sl.dow == str(dow))
         return _json_response({
             'day': day,
             'items': self._stats().get_ultimas_salidas(sorteo_id=sorteo.id, day=day),
+            'horas': {sl.turno_id.code: _hora_slot(sl) for sl in slots
+                      if _hora_slot(sl)},
         })
 
     @http.route('/api/lottery/v1/stats/ultimas-salidas', type='http',
@@ -361,6 +404,9 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
             'turn': turno.code or None,
             'turn_label': turno.name or '',
+            # Hora del sorteo que se predice (hora local de su país), o null.
+            'turn_hora': _hora_turno(
+                sorteo, turno, datetime.strptime(date_str, '%Y-%m-%d').date()),
         }
 
         prediction = request.env['lottery.prediction'].sudo().search([
@@ -964,6 +1010,11 @@ class LotteryAppApi(http.Controller):
         evaluadas = 0
         periodos = {}
         by_date = {}
+        # Todos los turnos con predicción de cada fecha, hayan acertado o no:
+        # con "solo aciertos" la lista de turnos de una fecha trae únicamente
+        # los que acertaron, y el detalle necesita los demás para poder
+        # cambiar de turno.
+        turnos_dia = {}
 
         for pred in preds:
             key = (pred.date, pred.turno_id.id)
@@ -989,6 +1040,12 @@ class LotteryAppApi(http.Controller):
                 continue
             if month and pred.date.month != month:
                 continue
+            turnos_dia.setdefault(pred.date, []).append({
+                'turn': pred.turno_id.code,
+                'turn_label': pred.turno_id.name or '',
+                'sequence': pred.turno_id.sequence,
+                'hora': _hora_turno(sorteo, pred.turno_id, pred.date),
+            })
             hit = any(pred[flag] for _n, _f, flag in levels)
             if only_hits and not hit:
                 continue
@@ -997,6 +1054,7 @@ class LotteryAppApi(http.Controller):
                 'turn': pred.turno_id.code,
                 'turn_label': pred.turno_id.name or '',
                 'sequence': pred.turno_id.sequence,
+                'hora': _hora_turno(sorteo, pred.turno_id, pred.date),
                 'result_number': results.get(key),
                 'evaluada': evaluada,
                 'cumplida':    pred.cumplida,
@@ -1067,6 +1125,8 @@ class LotteryAppApi(http.Controller):
                 'date': d.isoformat(),
                 'weekday': WEEKDAYS_ES[d.weekday()],
                 'turnos': sorted(turnos, key=lambda t: t['sequence']),
+                'turnos_dia': sorted(turnos_dia.get(d, []),
+                                     key=lambda t: t['sequence']),
             } for d, turnos in sorted(by_date.items(), reverse=True)],
         })
 
@@ -1095,6 +1155,7 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
             'turn': turno.code,
             'turn_label': turno.name or '',
+            'hora': _hora_turno(sorteo, turno, date_obj.date()),
             'premios': [{'premio': p, 'numero': n} for p, n in premios],
             'total_esperado': self.QUINIELA_UY_TOTAL_PREMIOS,
             'completo': len(premios) == self.QUINIELA_UY_TOTAL_PREMIOS,

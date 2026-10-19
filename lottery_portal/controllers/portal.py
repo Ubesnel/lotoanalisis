@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import base64
+
 from odoo import http
 from odoo.http import request
+from odoo.tools.mimetypes import guess_mimetype
+
+from ..models.portal_dia import QUINIELA_UY
 
 _DIAS = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
 
@@ -87,6 +92,35 @@ class LotteryPortal(http.Controller):
         # Se buscan las más recientes, pero se muestran en orden cronológico
         # (la más vieja arriba).
         return [_salida_dict(r) for r in reversed(salidas)]
+
+    # ── Resultados del día de todas las loterías públicas ─────────────────
+
+    @http.route('/lottery/logo/<int:sorteo_id>', type='http', auth='public')
+    def logo_sorteo(self, sorteo_id, **kwargs):
+        """Logo (128 px) de un sorteo público. Va por una ruta propia porque
+        el usuario público no puede leer lottery.sorteo; el `?v=` de la URL
+        cambia al editar el sorteo y deja el caché del navegador largo."""
+        sorteo = request.env['lottery.sorteo'].sudo().browse(sorteo_id).exists()
+        if not sorteo or not (sorteo.show_in_public or sorteo.source_code == QUINIELA_UY):
+            return request.not_found()
+        imagen = sorteo.image_128
+        if not imagen:
+            return request.not_found()
+        datos = base64.b64decode(imagen)
+        return request.make_response(datos, [
+            ('Content-Type', guess_mimetype(datos, default='image/png')),
+            ('Cache-Control', 'public, max-age=604800'),
+        ])
+
+    @http.route('/salidas/dia', type='json', auth='public')
+    def salidas_dia(self, fecha=None):
+        """Todo lo que salió (y lo que falta) en una fecha, de todas las
+        loterías habilitadas para la web, agrupado por país. Sin fecha, hoy.
+
+        Una sola llamada alimenta la portada. El armado (y su caché) vive en
+        `lottery.portal.dia`: dos visitas a la misma fecha no repiten las
+        búsquedas hasta que se registra una salida."""
+        return request.env['lottery.portal.dia'].sudo().get_dia(fecha)
 
     @http.route('/mantenimiento', type='http', auth='public', website=True)
     def maintenance_page(self, **kwargs):
