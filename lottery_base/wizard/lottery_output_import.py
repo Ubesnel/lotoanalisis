@@ -35,6 +35,10 @@ class LotteryOutputImport(models.TransientModel):
     sorteo_id = fields.Many2one('lottery.sorteo', string='Sorteo', required=True)
     file = fields.Binary(string='Archivo Excel (.xlsx)', required=True)
     filename = fields.Char(string='Nombre del archivo')
+    complete_premios = fields.Boolean(
+        string='Completar premios faltantes',
+        help='En las salidas que ya existen y tienen vacío el premio 2 o el premio 3, '
+             'carga el que trae el Excel. No toca el número, la centena ni los premios ya cargados.')
     # El resultado va en campos simples y la vista arma el aviso: un campo
     # Html obliga a cargar el editor de Odoo (web_editor) solo para mostrarlo.
     state = fields.Selection([
@@ -136,11 +140,14 @@ class LotteryOutputImport(models.TransientModel):
 
         Output = self.env['lottery.output']
         existentes = {
-            (fields.Date.to_date(r['date']), r['turno_id'][0])
-            for r in Output.search_read([('sorteo_id', '=', sorteo.id)], ['date', 'turno_id'])
+            (fields.Date.to_date(r['date']), r['turno_id'][0]): r
+            for r in Output.search_read([('sorteo_id', '=', sorteo.id)],
+                                        ['date', 'turno_id', 'premio_2_id', 'premio_3_id'])
         }
+        completar = self.complete_premios and sorteo.is_pick3
 
         vals_list, errores, omitidas = [], [], 0
+        completadas = []   # (id, vals) de salidas existentes a las que les faltan premios
         vistos = set()
         for nro, fila in self._read_rows():
             fecha = self._parse_date(fila[COL_FECHA])
@@ -161,6 +168,21 @@ class LotteryOutputImport(models.TransientModel):
                 continue
             vistos.add(clave)
             if clave in existentes:
+                if completar:
+                    actual = existentes[clave]
+                    faltan = {}
+                    for campo, col in (('premio_2_id', COL_PREMIO_2), ('premio_3_id', COL_PREMIO_3)):
+                        if actual[campo]:
+                            continue
+                        p = self._parse_int(fila.get(col))
+                        if p not in numeros:
+                            errores.append(f'Fila {nro}: {col} inválido ({fila.get(col)}).')
+                            break
+                        faltan[campo] = numeros[p]
+                    else:
+                        if faltan:
+                            completadas.append((actual['id'], faltan))
+                            continue
                 omitidas += 1
                 continue
             vals = {'sorteo_id': sorteo.id, 'date': fecha,
@@ -185,7 +207,14 @@ class LotteryOutputImport(models.TransientModel):
         # Con errores no se importa nada: se corrige el Excel y se vuelve a
         # subir, así no queda un histórico a medias.
         if errores or dry_run:
-            return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=False)
+            return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=False,
+                                   completadas=len(completadas))
+
+        for out_id, vals in completadas:
+            Output.browse(out_id).with_context(skip_prediction_validation=True).write(vals)
+        if completadas:
+            _logger.info('Importación Excel (%s): %d salidas con premios completados.',
+                         sorteo.name, len(completadas))
 
         if vals_list:
             # Mismos contextos que los backfills de los importadores: no
@@ -195,16 +224,19 @@ class LotteryOutputImport(models.TransientModel):
                                 skip_prediction_validation=True).create(vals_list)
             sorteo._recompute_next_draw()
             _logger.info('Importación Excel (%s): %d salidas creadas.', sorteo.name, len(vals_list))
-        return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=True)
+        return self._resultado(sorteo, len(vals_list), omitidas, errores, importado=True,
+                               completadas=len(completadas))
 
     @staticmethod
-    def _resultado(sorteo, nuevas, omitidas, errores, importado):
+    def _resultado(sorteo, nuevas, omitidas, errores, importado, completadas=0):
+        extra = f' Con premios completados: {completadas}.' if completadas else ''
         if errores:
             state, titulo = 'error', f'Hay {len(errores)} errores: no se importó nada.'
         elif importado:
-            state, titulo = 'imported', f'Importadas {nuevas} salidas de {sorteo.name}.'
+            state, titulo = 'imported', f'Importadas {nuevas} salidas de {sorteo.name}.{extra}'
         else:
-            state, titulo = 'validated', f'Validación OK: se importarían {nuevas} salidas de {sorteo.name}.'
+            state, titulo = 'validated', (f'Validación OK: se importarían {nuevas} salidas de '
+                                          f'{sorteo.name}.{extra}')
         detalle = errores[:_MAX_DETAIL_LINES]
         if len(errores) > _MAX_DETAIL_LINES:
             detalle.append(f'… y {len(errores) - _MAX_DETAIL_LINES} más.')
