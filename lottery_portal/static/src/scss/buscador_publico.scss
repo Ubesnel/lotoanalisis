@@ -1220,26 +1220,40 @@
 .bpr-cuerpo--carga { opacity: .55; }
 .bpr-estado { padding: 28px 16px; text-align: center; color: #7A7290; font-weight: 700; }
 
-/* Sección de un país */
+/* Países: bloques que se acomodan uno a continuación del otro. Un país de una
+   sola lotería ocupa solo lo que mide su tarjeta, así que varios comparten
+   fila; uno con tres llena la fila; Uruguay (Quiniela) va a todo el ancho. */
+.bpr-paises {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 2px 22px;
+    padding: 0 14px 6px;
+}
+.bpr-pais { flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.bpr-pais--wide { flex: 1 1 100%; }
 .bpr-pais-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding: 14px 14px 6px;
+    gap: 14px;
+    padding: 14px 0 6px;
     font-size: 13px;
     font-weight: 900;
     letter-spacing: .6px;
     text-transform: uppercase;
     color: #4C1D95;
-    small { font-size: 11px; font-weight: 700; color: #7A7290; letter-spacing: 0; text-transform: none; }
+    small { font-size: 11px; font-weight: 700; color: #7A7290; letter-spacing: 0; text-transform: none; white-space: nowrap; }
 }
 .bpr-flag { font-size: 26px; line-height: 1; vertical-align: -4px; margin-right: 4px; }
 .bpr-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    grid-template-columns: repeat(var(--n, 1), minmax(215px, 300px));
     gap: 10px;
-    padding: 0 14px 6px;
+    align-items: start;
+    padding: 0 0 6px;
 }
+.bpr-pais--wide .bpr-grid { grid-template-columns: 1fr; }
 
 /* Tarjeta de una lotería */
 .bpr-lot {
@@ -1402,6 +1416,8 @@
     .bpr-bar { flex-wrap: wrap; }
     .bpr-fecha { flex: 1 0 100%; order: -1; }
     .bpr-date { flex: 1 1 auto; width: auto; }
+    .bpr-paises { gap: 2px 0; }
+    .bpr-pais { flex: 1 1 100%; }
     .bpr-grid { grid-template-columns: 1fr; }
 }
 

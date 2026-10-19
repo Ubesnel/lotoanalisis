@@ -52,13 +52,16 @@
                     <i class="fa fa-info-circle me-2"/>No hay loterías con sorteo para esta fecha.
                 </div>
 
+                <!-- Los países van uno a continuación del otro y se acomodan en la
+                     misma fila mientras quepan (los de una sola lotería, juntos). -->
+                <div class="bpr-paises">
                 <t t-foreach="paises" t-as="p" t-key="p.codigo">
-                    <section class="bpr-pais">
+                    <section t-attf-class="bpr-pais #{esAncha(p) ? 'bpr-pais--wide' : ''}">
                         <header class="bpr-pais-head">
                             <span><span class="bpr-flag" t-if="p.flag" t-esc="p.flag"/> <t t-esc="p.nombre"/></span>
                             <small><t t-esc="p.loterias.length"/> <t t-esc="p.loterias.length === 1 ? 'lotería' : 'loterías'"/></small>
                         </header>
-                        <div class="bpr-grid">
+                        <div class="bpr-grid" t-att-style="'--n:' + p.loterias.length">
                             <t t-foreach="p.loterias" t-as="l" t-key="l.tipo + l.id">
                                 <article t-attf-class="bpr-lot #{l.tipo === 'quiniela' ? 'bpr-lot--wide' : ''}">
                                     <div class="bpr-lot-head">
@@ -134,6 +137,7 @@
                         </div>
                     </section>
                 </t>
+                </div>
                 <p class="bpr-nota" t-if="state.data and paises.length">
                     Las horas son las del sorteo en cada país.
                     <t t-if="esHoy">Se actualiza solo cada minuto.</t>
