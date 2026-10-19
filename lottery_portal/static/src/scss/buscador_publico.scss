@@ -1230,8 +1230,16 @@
     gap: 2px 22px;
     padding: 0 14px 6px;
 }
-.bpr-pais { flex: 0 1 auto; min-width: 0; max-width: 100%; }
-.bpr-pais--wide { flex: 1 1 100%; }
+/* El ancho de un país es el de sus tarjetas (unos 310 px cada una), sin pasar
+   del ancho disponible: --n es la cantidad de loterías. */
+.bpr-pais {
+    flex: 0 1 auto;
+    min-width: 0;
+    /* Interpolado: el compilador de Sass de Odoo (libsass) trata min() como una
+       función suya y no entiende var(); así llega tal cual al navegador. */
+    width: #{"min(100%, calc(var(--n, 1) * 310px))"};
+}
+.bpr-pais--wide { flex: 1 1 100%; width: 100%; }
 .bpr-pais-head {
     display: flex;
     justify-content: space-between;
@@ -1248,7 +1256,9 @@
 .bpr-flag { font-size: 26px; line-height: 1; vertical-align: -4px; margin-right: 4px; }
 .bpr-grid {
     display: grid;
-    grid-template-columns: repeat(var(--n, 1), minmax(215px, 300px));
+    /* auto-fit: las tarjetas se reparten el ancho del país y, si no caben en
+       una fila, pasan a la siguiente en vez de salirse del recuadro. */
+    grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
     gap: 10px;
     align-items: start;
     padding: 0 0 6px;
@@ -1417,7 +1427,7 @@
     .bpr-fecha { flex: 1 0 100%; order: -1; }
     .bpr-date { flex: 1 1 auto; width: auto; }
     .bpr-paises { gap: 2px 0; }
-    .bpr-pais { flex: 1 1 100%; }
+    .bpr-pais { flex: 1 1 100%; width: 100%; }
     .bpr-grid { grid-template-columns: 1fr; }
 }
 
