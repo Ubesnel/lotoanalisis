@@ -56,12 +56,13 @@
                      misma fila mientras quepan (los de una sola lotería, juntos). -->
                 <div class="bpr-paises">
                 <t t-foreach="paises" t-as="p" t-key="p.codigo">
-                    <section t-attf-class="bpr-pais #{esAncha(p) ? 'bpr-pais--wide' : ''}">
+                    <section t-attf-class="bpr-pais #{esAncha(p) ? 'bpr-pais--wide' : ''}"
+                             t-att-style="'--n:' + p.loterias.length">
                         <header class="bpr-pais-head">
                             <span><span class="bpr-flag" t-if="p.flag" t-esc="p.flag"/> <t t-esc="p.nombre"/></span>
                             <small><t t-esc="p.loterias.length"/> <t t-esc="p.loterias.length === 1 ? 'lotería' : 'loterías'"/></small>
                         </header>
-                        <div class="bpr-grid" t-att-style="'--n:' + p.loterias.length">
+                        <div class="bpr-grid">
                             <t t-foreach="p.loterias" t-as="l" t-key="l.tipo + l.id">
                                 <article t-attf-class="bpr-lot #{l.tipo === 'quiniela' ? 'bpr-lot--wide' : ''}">
                                     <div class="bpr-lot-head">
