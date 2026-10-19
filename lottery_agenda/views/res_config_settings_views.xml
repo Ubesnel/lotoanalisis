@@ -16,6 +16,10 @@
                              help="Minutos antes de la hora de publicar a los que suena el aviso en Odoo.">
                         <field name="agenda_aviso_min"/> minutos antes
                     </setting>
+                    <setting string="Aviso también a la hora"
+                             help="Además del aviso anticipado, suena otro justo a la hora de publicar.">
+                        <field name="agenda_aviso_hora"/>
+                    </setting>
                 </block>
             </xpath>
         </field>

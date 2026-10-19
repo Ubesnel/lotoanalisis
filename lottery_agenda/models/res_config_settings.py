@@ -9,3 +9,5 @@ class ResConfigSettings(models.TransientModel):
         related='company_id.agenda_user_ids', readonly=False)
     agenda_aviso_min = fields.Integer(
         related='company_id.agenda_aviso_min', readonly=False)
+    agenda_aviso_hora = fields.Boolean(
+        related='company_id.agenda_aviso_hora', readonly=False)

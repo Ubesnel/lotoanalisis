@@ -18,8 +18,12 @@ EMOJI = {'pending': '🕒', 'late': '⚠️', 'done': '✅'}
 # Índice de color del calendario por estado (0-11). Si en pantalla no
 # combinan, se cambia acá.
 COLOR = {'pending': 4, 'late': 1, 'done': 10}
-# Cuánto dura el evento en la agenda.
-DURACION_MIN = 15
+# Cuánto dura el evento en la agenda. Con menos de media hora el bloque del
+# calendario queda tan bajo que no se lee el título.
+DURACION_MIN = 30
+# Minutos que pasan desde la hora de publicar para que la tarea figure como
+# atrasada (independiente de lo que dure el bloque en la agenda).
+ATRASO_MIN = 15
 # Cuántos días (hoy incluido) se crean por adelantado.
 DIAS_ADELANTE = 2
 
@@ -73,13 +77,15 @@ class CalendarEvent(models.Model):
     def action_lottery_reabrir(self):
         ahora = fields.Datetime.now()
         for ev in self:
-            ev._lottery_set_state('late' if ev.stop and ev.stop < ahora else 'pending')
+            pasada = ev.start and ev.start < ahora - timedelta(minutes=ATRASO_MIN)
+            ev._lottery_set_state('late' if pasada else 'pending')
 
     # ── Cron: crear los eventos del día y marcar los atrasados ────────────
 
     @api.model
     def cron_agenda_loteria(self):
         self._agenda_crear_eventos()
+        self._agenda_ajustar_eventos()
         self._agenda_marcar_atrasados()
 
     @api.model
@@ -103,11 +109,27 @@ class CalendarEvent(models.Model):
             ('duration', '=', minutos),
         ], limit=1)
         return alarma or Alarm.create({
-            'name': 'Lotería: %d minutos antes' % minutos,
+            'name': ('Lotería: %d minutos antes' % minutos) if minutos
+                    else 'Lotería: a la hora',
             'alarm_type': 'notification',
             'interval': 'minutes',
             'duration': minutos,
         })
+
+    @api.model
+    def _agenda_alarmas(self):
+        """Los avisos de cada evento: el anticipado (minutos antes) y, si
+        está activo, otro justo a la hora de publicar."""
+        empresa = self.env.company
+        minutos = set()
+        if (empresa.agenda_aviso_min or 0) > 0:
+            minutos.add(empresa.agenda_aviso_min)
+        if empresa.agenda_aviso_hora:
+            minutos.add(0)
+        alarmas = self.env['calendar.alarm']
+        for m in sorted(minutos, reverse=True):
+            alarmas |= self._agenda_alarma(m)
+        return alarmas
 
     @api.model
     def _agenda_crear_eventos(self):
@@ -122,7 +144,7 @@ class CalendarEvent(models.Model):
         tz = self._agenda_tz()
         hoy = pytz.utc.localize(fields.Datetime.now()).astimezone(tz).date()
         dias = [hoy + timedelta(days=i) for i in range(DIAS_ADELANTE)]
-        alarma = self._agenda_alarma(max(self.env.company.agenda_aviso_min or 0, 0))
+        alarmas = self._agenda_alarmas()
 
         Event = self.sudo().with_context(active_test=False)
         # Incluye los archivados: archivar una tarea (un feriado, por ejemplo)
@@ -157,7 +179,7 @@ class CalendarEvent(models.Model):
                         'stop': inicio + timedelta(minutes=DURACION_MIN),
                         'user_id': usuarios[0].id,
                         'partner_ids': [(6, 0, usuarios.partner_id.ids)],
-                        'alarm_ids': [(6, 0, [] if hecha else [alarma.id])],
+                        'alarm_ids': [(6, 0, [] if hecha else alarmas.ids)],
                         'lottery_sorteo_id': sorteo.id,
                         'lottery_turno_id': slot.turno_id.id,
                         'lottery_date': dia,
@@ -169,9 +191,31 @@ class CalendarEvent(models.Model):
             _logger.info('lottery_agenda: %d eventos creados.', len(nuevos))
 
     @api.model
+    def _agenda_ajustar_eventos(self):
+        """Deja los eventos ya creados al día con la configuración: la
+        duración del bloque y, en los pendientes que todavía no pasaron, los
+        avisos (para que un cambio en Ajustes alcance a los de hoy)."""
+        ahora = fields.Datetime.now()
+        eventos = self.sudo().search([
+            ('lottery_sorteo_id', '!=', False),
+            ('start', '>=', ahora - timedelta(days=1))])
+        alarmas = self._agenda_alarmas()
+        for ev in eventos:
+            stop = ev.start + timedelta(minutes=DURACION_MIN)
+            if ev.stop != stop:
+                ev.with_context(no_mail_to_attendees=True, dont_notify=True,
+                                mail_notrack=True).write({'stop': stop})
+            # Sin dont_notify: al cambiar los avisos Odoo tiene que
+            # reprogramarlos. No manda mails (no_mail_to_attendees).
+            if (ev.lottery_state == 'pending' and ev.start > ahora
+                    and set(ev.alarm_ids.ids) != set(alarmas.ids)):
+                ev.with_context(no_mail_to_attendees=True, mail_notrack=True).write(
+                    {'alarm_ids': [(6, 0, alarmas.ids)]})
+
+    @api.model
     def _agenda_marcar_atrasados(self):
         atrasados = self.sudo().search([
             ('lottery_state', '=', 'pending'),
-            ('stop', '<', fields.Datetime.now()),
+            ('start', '<', fields.Datetime.now() - timedelta(minutes=ATRASO_MIN)),
         ])
         atrasados._lottery_set_state('late')

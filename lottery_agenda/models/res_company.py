@@ -13,3 +13,6 @@ class ResCompany(models.Model):
     agenda_aviso_min = fields.Integer(
         string='Aviso (minutos antes)', default=10,
         help="Cuántos minutos antes de la hora de publicar suena el aviso.")
+    agenda_aviso_hora = fields.Boolean(
+        string='Aviso también a la hora', default=True,
+        help="Además del aviso anticipado, suena otro justo a la hora de publicar.")
