@@ -18,9 +18,10 @@ EMOJI = {'pending': '🕒', 'late': '⚠️', 'done': '✅'}
 # Índice de color del calendario por estado (0-11). Si en pantalla no
 # combinan, se cambia acá.
 COLOR = {'pending': 4, 'late': 1, 'done': 10}
-# Cuánto dura el evento en la agenda. Con menos de media hora el bloque del
-# calendario queda tan bajo que no se lee el título.
-DURACION_MIN = 30
+# Cuánto dura el evento en la agenda. Es solo el alto del bloque: con menos de
+# una hora, según la versión del calendario el bloque queda en una línea (la de
+# la hora) y el título no se ve.
+DURACION_MIN = 60
 # Minutos que pasan desde la hora de publicar para que la tarea figure como
 # atrasada (independiente de lo que dure el bloque en la agenda).
 ATRASO_MIN = 15
