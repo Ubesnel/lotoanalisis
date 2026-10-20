@@ -1150,12 +1150,18 @@ class LotteryAppApi(http.Controller):
 
         premios = request.env['lottery.quiniela.uy.resultados'].sudo() \
             .get_premios(date, turn)
+        # La hora es la del sorteo completo: se toma del calendario del
+        # premio 1, igual que quiniela_uy_ternas_tombola.
+        sorteo = request.env['lottery.sorteo'].sudo().search([
+            ('source_code', '=', 'quiniela_uy'),
+            ('code', '=', 'quiniela_uy_1'),
+        ], limit=1)
         return _json_response({
             'date': date,
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
             'turn': turno.code,
             'turn_label': turno.name or '',
-            'hora': _hora_turno(sorteo, turno, date_obj.date()),
+            'hora': _hora_turno(sorteo, turno, date_obj.date()) if sorteo else None,
             'premios': [{'premio': p, 'numero': n} for p, n in premios],
             'total_esperado': self.QUINIELA_UY_TOTAL_PREMIOS,
             'completo': len(premios) == self.QUINIELA_UY_TOTAL_PREMIOS,
