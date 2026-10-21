@@ -64,7 +64,7 @@ class LotteryPrediction(models.Model):
         })
 
     def _build_push_message(self, pred):
-        turn_label = pred.turno_id.name or ''
+        turn_label = pred.sorteo_id._turno_con_hora(pred.turno_id, pred.date)
         fecha = pred.date.strftime('%d/%m/%Y') if pred.date else ''
 
         title = '🔮 Números Mágicos disponibles'
