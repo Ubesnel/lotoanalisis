@@ -194,6 +194,21 @@ class LotterySorteo(models.Model):
                 return d, turnos[idx]
         return False, self.env['lottery.turno']
 
+    def _turno_con_hora(self, turno, fecha):
+        """Nombre del turno con la hora real del sorteo ese día, según el
+        calendario: 'Tarde 12:00 PM'. Sin hora cargada en el slot, el turno
+        solo ('Tarde'). Es la hora local del país del sorteo."""
+        self.ensure_one()
+        nombre = turno.name or ''
+        if not fecha:
+            return nombre
+        dow = str(fecha.weekday())
+        slot = self.slot_ids.filtered(lambda sl: sl.dow == dow and sl.turno_id == turno)[:1]
+        if not slot.hora_h:
+            return nombre
+        hora = '%s:%02d %s' % (slot.hora_h, slot.hora_min or 0, (slot.hora_ampm or 'pm').upper())
+        return f'{nombre} {hora}'.strip()
+
     def _next_slot(self, from_date, from_turno):
         return self._step_slot(from_date, from_turno, forward=True)
 

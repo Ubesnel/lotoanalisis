@@ -73,7 +73,7 @@ class LotteryOutput(models.Model):
         })
 
     def _build_push_message(self, out):
-        turn_label = out.turno_id.name or ''
+        turn_label = out.sorteo_id._turno_con_hora(out.turno_id, out.date)
         centena = out.hundreds_id.name if out.hundreds_id else ''
         numero = str(out.number_id.name).zfill(2) if out.number_id else ''
         numero_completo = f'{centena}{numero}'
