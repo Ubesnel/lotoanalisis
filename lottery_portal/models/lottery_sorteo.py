@@ -41,15 +41,16 @@ class LotterySorteo(models.Model):
             return None
 
     def compute_ranking_snapshot(self):
-        """Calcula y guarda el snapshot completo de rankings de cada turno del
-        sorteo (indexado por el código del turno).
+        """Calcula y guarda el snapshot de rankings del PRÓXIMO sorteo
+        (fecha y turno de get_next_draw), indexado por el código del turno:
+        los demás turnos no se calculan, se recalculan al llegar su turno.
         Almacena la salida completa de get_calientes_all (con scores, remaining,
         uses_fireball, next_draw) para que el portal lo lea directamente."""
         service = self.env['lottery.stats.service']
         for sorteo in self:
-            nd, _nt = sorteo.get_next_draw()
+            nd, nt = sorteo.get_next_draw()
             try:
-                snapshot = service.get_calientes_all(nd, sorteo_id=sorteo.id)
+                snapshot = service.get_calientes_all(nd, sorteo_id=sorteo.id, turno_id=nt.id)
             except Exception:
                 _logger.exception('Error calculando ranking para sorteo %s', sorteo.name)
                 continue
@@ -93,6 +94,8 @@ class LotterySorteo(models.Model):
             be_cold = data.get('bola_extra_cold', [])
             fmt = self._fmt_item
 
+            if data.get('next_draw'):
+                label = f"{label} · {data['next_draw']}"
             parts.append(f'<h4 style="margin-top:12px">{label}</h4>')
             parts.append('<table class="table table-sm table-bordered" style="width:auto">')
             parts.append('<thead><tr><th></th><th>Calientes</th><th>Fríos</th></tr></thead>')

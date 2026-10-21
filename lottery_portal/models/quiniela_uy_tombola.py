@@ -1,57 +1,49 @@
 # -*- coding: utf-8 -*-
-"""Tómbola de la Quiniela Uruguay: los 20 premios evaluados de una sola vez.
+"""Tómbola de la Quiniela Uruguay: 10 combinaciones de 3 armadas con los 20
+premios evaluados de una sola vez.
 
 Es un agrupador de `lottery.prediction`. La quiniela uruguaya tiene 20
 premios y cada uno es su propio `lottery.sorteo` (`quiniela_uy_1` …
-`quiniela_uy_20`), así que predecirlos a mano serían 20 predicciones
-individuales. Acá se corre para los 20 la MISMA lógica que el botón
-"Completar números" de la predicción individual, con el algoritmo que se
-elija (1 o 2, campo `algoritmo`; ver `_calcular_listas` en
-lottery_prediction.py), y de cada premio se toman sus 5 Números a predecir
-con su Súper Mágico: 20 grupos de 5.
+`quiniela_uy_20`). Acá se corre para los 20 la MISMA lógica que el botón
+"Completar números" de la predicción individual, y de cada premio se toman
+sus 5 Números a predecir con su Súper Mágico: 20 grupos de 5.
 
-Con esos 100 números (muchos repetidos entre premios) se arman 10
-combinaciones de 7 para jugar a la tómbola. El sorteo es al azar pero
-ponderado, con dos prioridades:
+El algoritmo (1 o 2) no se elige: cada premio usa el que le tocaría en las
+predicciones automáticas (`_algoritmo_por_ultimas_salidas`: el 1 si sus dos
+últimas salidas comparten algún dígito, el 2 si no).
 
-  1. Cuántas veces se repite el número entre los 20 grupos. Es la señal que
-     manda: si el número quedó entre los 5 mejores de ocho premios, es
-     porque ocho análisis independientes lo marcaron.
-  2. Cuántas de las últimas 6 salidas de SU premio comparten decena o unidad
-     con él. Es un empujón secundario: como mucho pesa lo que 1.5
-     repeticiones, así que puede dar vuelta a un número con una repetición
-     más, nunca a uno con tres.
-  3. Si es un "interesante del mes" de su premio: los que llevan años sin
-     salir en el mes que se predice, leídos con `atrasos_del_mes` de
-     lottery.prediction — la misma lista que la app muestra en Números del
-     mes atrasados y que el botón "Completar números" usa para elegir los
-     10 y los 5. Es el criterio más flojo de los tres: aporta hasta 0.9,
-     menos que una repetición.
+Con esos 100 números (muchos repetidos entre premios) se puntúa cada
+candidato distinto con cinco señales:
 
-De la misma evaluación salen otros dos informes, que no son al azar sino
-listas fijas:
+  - Repetición: en cuántos de los 20 grupos está. Manda.
+  - A. Últimas tómbolas: en cuántas de las últimas 3 tómbolas salió, igual
+    o al revés (21 cuenta si salió el 21 o el 12). Las tómbolas van en
+    orden, sin importar el turno. También manda.
+  - B. Dígitos: cuántos premios tuvieron una última salida que comparte
+    decena o unidad con él (estilo Algoritmo 2: si el premio 3 salió 45,
+    suman los candidatos con un 4 o un 5). No cuentan los premios donde el
+    número es candidato.
+  - C. Mes y atraso en la tómbola: los que menos salieron en lo que va del
+    mes y los más atrasados. Peso bajo.
+  - D. Líneas y terminales más atrasadas de la tómbola. Peso bajo.
 
-  - 5 Números probables a salir en los 5 Primeros Premios: de los 25 números
-    que dan los premios 1 a 5, los 5 que más se repiten entre ellos; a
-    igualdad de repeticiones va primero el que todavía no salió en el mes.
-  - 2 Números probables a salir entre los 20 Premios: se toma la pinta más
-    atrasada de cada premio (la general y la del turno que se evalúa, dos
-    votos por premio), gana la que más veces aparece y de ahí salen los 2
-    números que más se repiten entre los 100.
+Las 10 combinaciones no son al azar: se recorren las ternas de candidatos
+de mayor a menor puntaje (la suma de los tres) y se toman con dos topes. Un
+número entra como mucho en 3 combinaciones, para que si el más fuerte no
+sale todavía queden otras que no dependen de él. Y dos combinaciones
+comparten como mucho un número, para que no salgan casi iguales. Así los
+principales quedan repartidos, cada uno con distintos compañeros.
 """
 
+import itertools
 import json
-import math
-import random
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-from .lottery_prediction import ANIOS_MES_NUNCA, WEEKDAY_CODES
 from .quiniela_uy_ui import (
-    COLOR_TOMBOLA, DORADO, FUENTE, MESES, TEXTO,
-    TEXTO_SUAVE, turno_color, turno_label,
-    badge, bola, cabezal, tarjeta,
+    COLOR_TOMBOLA, DORADO, FUENTE, TEXTO, TEXTO_SUAVE, turno_color,
+    turno_label, badge, bola, cabezal, tarjeta,
 )
 
 SOURCE_CODE = 'quiniela_uy'
@@ -59,57 +51,51 @@ TOTAL_PREMIOS = 20
 TOP_POR_PREMIO = 5
 
 COMBINACIONES = 10
-NUMEROS_POR_COMBINACION = 7
+NUMEROS_POR_COMBINACION = 3
 # Combinaciones por columna en la tarjeta: 10 en dos columnas de 5.
 COMBINACIONES_POR_COLUMNA = 5
+# Topes del armado: en cuántas combinaciones puede estar un mismo número, y
+# cuántos números pueden compartir dos combinaciones.
+MAX_COMBOS_POR_NUMERO = 3
+MAX_COMPARTIDOS = 1
 
-# Informe "5 probables en los 5 primeros premios": los premios que entran,
-# y cuántos números se sacan de los 25 que dan entre todos.
-PREMIOS_PRIMEROS = 5
-PROBABLES_PRIMEROS = 5
-
-# Informe "2 probables entre los 20 premios": cuántos números salen de la
-# pinta ganadora y cuántas pintas se muestran en el ranking.
-PROBABLES_VEINTE = 2
-PINTAS_EN_RANKING = 5
-
-# Cuántas salidas hacia atrás de cada premio se miran para el cruce de
-# dígitos. Son las 6 anteriores al sorteo que se predice, nunca la propia.
+# Cuántas salidas hacia atrás de cada premio se guardan al evaluar. Para la
+# señal B se usa solo la última; las demás quedan para el algoritmo.
 ULTIMAS_SALIDAS = 6
+# Señal A: cuántas tómbolas hacia atrás se miran (en orden, sin turnos).
+TOMBOLAS_ATRAS = 3
+# Señal D: cuántas líneas y cuántos terminales atrasados cuentan.
+LINEAS_ATRASADAS = 3
 
-# Peso de cada señal en el sorteo ponderado. La repetición vale 1 por grupo
-# (va de 1 a 20) y los dígitos suman el promedio de coincidencias (0 a 6)
-# multiplicado por 0.25, o sea hasta 1.5. Elegido así a propósito: un número
-# que comparte dígito con las 6 últimas salidas de su premio pesa como hasta
-# una repetición y media extra — mueve el orden entre números parejos y no
-# alcanza para tapar a uno que aparece en dos grupos más.
+# Pesos. La repetición vale 1 por grupo (de 1 a 20) y la señal A 1 por
+# tómbola (hasta 3): son las que mandan. B, C y D ordenan números parejos.
 PESO_REPETICION = 1.0
-PESO_DIGITOS = 0.25
-# Tercera señal: ser "interesante del mes" en su premio. Aporta hasta 0.9,
-# menos que una repetición y menos que el cruce de dígitos, que es el lugar
-# que le toca en la jerarquía.
-#
-# El atraso del mes en sí (qué números entran y cuánto valen los años) sale
-# de lottery.prediction: es el mismo criterio que usa el botón "Completar
-# números" para elegir los 10 y los 5, y tiene que haber uno solo.
-PESO_MES = 0.9
+PESO_TOMBOLA = 1.0
+PESO_DIGITO = 0.25
+TOPE_DIGITOS = 2.0
+PESO_MES = 0.5
+PESO_ATRASO = 0.5
+PESO_LINEA = 0.25
+PESO_TERMINAL = 0.25
 
 # Bola del Súper Mágico en la tarjeta de los 5 de cada premio: dorada y con
 # aro, para encontrarla de un vistazo entre las otras cuatro (que van con el
 # color del turno).
 COLOR_SUPER_MAGICO = (0xF5, 0xB0, 0x0B)
 
-# Tope de tiradas para juntar 10 combinaciones distintas. Con un puñado de
-# decenas de números en el bombo las repetidas son rarísimas; el tope está
-# para que un pool chico no deje el botón girando.
-INTENTOS_MAX = 2000
+TOMBOLA_STATS_START_PARAM = 'lottery_portal.tombola_stats_start_date'
 
 
-def _coincidencias(numero, salidas):
-    """Cuántas de esas salidas comparten decena o unidad con el número."""
+def _reves(numero):
+    """21 → 12, 7 → 70. Un capicúa queda igual."""
     decena, unidad = divmod(numero, 10)
-    return sum(1 for s in salidas
-               if s // 10 == decena or s % 10 == unidad)
+    return unidad * 10 + decena
+
+
+def _comparte_digito(numero, salida):
+    """True si `numero` tiene algún dígito de `salida`, en cualquier
+    posición (45 → los que tienen un 4 o un 5)."""
+    return bool(set(divmod(numero, 10)) & set(divmod(salida, 10)))
 
 
 class LotteryPredictionTombolaUy(models.Model):
@@ -135,17 +121,10 @@ class LotteryPredictionTombolaUy(models.Model):
         ('remaining', 'Restantes'),
         ('cold', 'Fríos'),
         ('all', 'Todos (100)'),
-    ], string='Candidatos', required=True, default='hot',
+    ], string='Candidatos', required=True, default='remaining',
         help='De dónde salen los números que se puntean en cada premio, '
              'igual que el campo Temperatura de la predicción individual. '
              '"Todos" saltea el ranking y evalúa los 100 números.')
-    algoritmo = fields.Selection([
-        ('1', 'Algoritmo 1'),
-        ('2', 'Algoritmo 2'),
-    ], string='Algoritmo', default='1', required=True,
-        help='Con qué algoritmo de "Completar números" se calculan los 5 y '
-             'el Súper Mágico de cada premio (los mismos de la predicción '
-             'individual).')
     combinaciones_window = fields.Integer(
         string='Ventana de combinaciones', default=50, required=True,
         help='Cuántas salidas hacia atrás mira el puntaje de combinaciones '
@@ -157,20 +136,14 @@ class LotteryPredictionTombolaUy(models.Model):
 
     top_json = fields.Text(
         string='Top por premio (JSON)', readonly=True, copy=False,
-        help='Los 5 mejores de cada premio y las últimas salidas que se '
-             'usaron. Se guarda para poder volver a tirar las combinaciones '
-             'sin recalcular los 20 sorteos.')
+        help='Los 5 mejores de cada premio, su algoritmo y las últimas '
+             'salidas que se usaron. Se guarda para poder volver a armar '
+             'las combinaciones sin recalcular los 20 sorteos.')
     groups_html = fields.Html(
         string='Los 5 de cada premio', readonly=True, sanitize=False,
         copy=False)
     combos_html = fields.Html(
         string='Combinaciones Tómbola', readonly=True, sanitize=False,
-        copy=False)
-    probables_primeros_html = fields.Html(
-        string='5 probables · primeros 5 premios', readonly=True,
-        sanitize=False, copy=False)
-    probables_veinte_html = fields.Html(
-        string='2 probables · 20 premios', readonly=True, sanitize=False,
         copy=False)
 
     _sql_constraints = [
@@ -204,8 +177,7 @@ class LotteryPredictionTombolaUy(models.Model):
             rec.display_name = 'Tómbola %s / %s' % (
                 fecha, turno_label(rec.turno_code))
 
-    @api.onchange('date', 'turno_id', 'temperature', 'combinaciones_window',
-                  'algoritmo')
+    @api.onchange('date', 'turno_id', 'temperature', 'combinaciones_window')
     def _onchange_parametros(self):
         """Si se cambia un parámetro, lo calculado ya no corresponde: se
         limpia. Si no, quedaría en pantalla una tarjeta con la fecha vieja en
@@ -213,8 +185,6 @@ class LotteryPredictionTombolaUy(models.Model):
         self.top_json = False
         self.groups_html = False
         self.combos_html = False
-        self.probables_primeros_html = False
-        self.probables_veinte_html = False
 
     # ── Los 20 premios ────────────────────────────────────────────────────
 
@@ -242,61 +212,53 @@ class LotteryPredictionTombolaUy(models.Model):
             sorteo, self.turno_code, self.temperature)
 
     def _prediccion(self, sorteo, candidatos):
-        """Una `lottery.prediction` en memoria (`new`) para ese premio.
+        """Una `lottery.prediction` en memoria (`new`) para ese premio, con
+        el algoritmo que le toca según sus últimas salidas.
 
         No se graba nada: sólo se usa para llamar a `_calcular_listas`, que
-        es la lógica del botón "Completar números" con el algoritmo elegido
-        acá. Así la tómbola y la predicción individual puntean
-        exactamente igual, y no quedan 20 predicciones basura en la base ni
-        choca la constraint de fecha + turno + sorteo."""
+        es la lógica del botón "Completar números". Así la tómbola y la
+        predicción individual puntean exactamente igual, y no quedan 20
+        predicciones basura en la base ni choca la constraint de fecha +
+        turno + sorteo."""
         self.ensure_one()
-        return self.env['lottery.prediction'].new({
+        pred = self.env['lottery.prediction'].new({
             'sorteo_id': sorteo.id,
             'date': self.date,
             'turno_id': self.turno_id.id,
             'combinaciones_window': self.combinaciones_window,
-            'algoritmo': self.algoritmo,
             'number_ids': [(6, 0, candidatos.ids)],
         })
+        pred.algoritmo = pred._algoritmo_por_ultimas_salidas()
+        return pred
 
     # ── Acción 1: evaluar los 20 sorteos ──────────────────────────────────
 
     def action_evaluar(self):
-        """Corre "Completar números" (algoritmo elegido) en los 20 premios y
-        se queda con los 5 Números a predecir y el Súper Mágico de cada uno.
+        """Corre "Completar números" en los 20 premios, cada uno con su
+        algoritmo, y se queda con los 5 Números a predecir y el Súper
+        Mágico de cada uno.
 
         Es la parte cara: cada premio corre el mismo cálculo que la
         predicción individual, y la primera vez arma además las tablas
         LotoAnálisis que le falten (quedan cacheadas, así que la segunda
         corrida es mucho más rápida)."""
         self.ensure_one()
-        sorteos = self._sorteos()
         grupos, sin_datos = [], []
-        for premio, sorteo in sorteos:
+        for premio, sorteo in self._sorteos():
             candidatos = self._candidatos(sorteo)
             if len(candidatos) < TOP_POR_PREMIO:
                 sin_datos.append(premio)
                 continue
             pred = self._prediccion(sorteo, candidatos)
             res = pred._calcular_listas()
-            # Los 5 vienen con el Súper Mágico primero.
-            top = res['listas'][5][:TOP_POR_PREMIO]
-            # Los mismos "interesantes del mes" que la app muestra y que el
-            # botón Completar números usa para los 10 y los 5, pero mirando
-            # el mes de la fecha que se predice y el premio de este sorteo.
-            interesantes = self.env['lottery.prediction'].atrasos_del_mes(
-                sorteo, self.date)
             grupos.append({
                 'premio': premio,
-                'top': top,
+                'algoritmo': pred.algoritmo,
+                # Los 5 vienen con el Súper Mágico primero.
+                'top': res['listas'][5][:TOP_POR_PREMIO],
                 'super_magico': res['super_magico'],
                 'salidas': pred._last_output(
                     limit=ULTIMAS_SALIDAS).mapped('number_id.name'),
-                # Sólo los elegidos: es lo único que se usa después y deja
-                # el JSON chico. Lista de pares y no diccionario porque en
-                # JSON las claves serían texto.
-                'mes': [[n, interesantes[n]] for n in top
-                        if n in interesantes],
             })
 
         if not grupos:
@@ -312,10 +274,6 @@ class LotteryPredictionTombolaUy(models.Model):
         self.write({
             'top_json': json.dumps(grupos),
             'groups_html': self._render_grupos(grupos, sin_datos),
-            'probables_primeros_html': self._render_probables_primeros(
-                grupos, sorteos),
-            'probables_veinte_html': self._render_probables_veinte(
-                grupos, sorteos),
             'combos_html': False,
         })
         return True
@@ -328,219 +286,174 @@ class LotteryPredictionTombolaUy(models.Model):
         except (ValueError, TypeError):
             return []
 
-    # ── Acción 2: generar las combinaciones ───────────────────────────────
+    # ── Acción 2: armar las combinaciones ─────────────────────────────────
 
     def action_generar_combinaciones(self):
-        """10 combinaciones de 7 números, al azar pero ponderado.
-
-        Cada vez que se aprieta sale una tanda distinta: el azar es de
-        verdad, lo que se fija es el peso de cada número. Las 10 no se
-        repiten entre sí; los números sí se repiten de una combinación a
-        otra, y dentro de una combinación los 7 son distintos."""
+        """10 combinaciones de 3, fijas: la misma evaluación da siempre las
+        mismas. Ver el docstring del módulo."""
         self.ensure_one()
         grupos = self._grupos()
         if not grupos:
             self.action_evaluar()
             grupos = self._grupos()
 
-        pesos, info = self._pesos(grupos)
-        combos = self._combinaciones(pesos, random.Random())
-        self.combos_html = self._render_combinaciones(combos, pesos, info)
+        info = self._puntajes(grupos)
+        combos = self._combinaciones(
+            {n: datos['puntaje'] for n, datos in info.items()})
+        self.combos_html = self._render_combinaciones(combos, info)
         return True
 
-    def _pesos(self, grupos):
-        """({número: peso}, {número: detalle}) para el sorteo ponderado.
+    # ── La tómbola hasta el sorteo que se predice ─────────────────────────
 
-        El detalle es lo que explica el peso y lo que después se muestra:
-        en cuántos grupos está, cuántas coincidencias de dígito juntó y cuál
-        es su mayor atraso del mes (None si no es interesante en ninguno de
-        sus premios).
+    def _tombola_previa(self):
+        """(sorteos, salidas): la tómbola ANTERIOR al sorteo que se predice,
+        desde la fecha de inicio de estadísticas de Ajustes.
 
-        Dígitos y mes se promedian por grupo en vez de sumarse: si se
-        sumaran, un número que aparece en muchos premios cobraría dos veces
-        por lo mismo, y la repetición ya la paga la señal 1."""
-        info = {}
-        Prediction = self.env['lottery.prediction']
-        for grupo in grupos:
-            salidas = grupo.get('salidas') or []
-            mes = dict(grupo.get('mes') or [])
-            for numero in grupo.get('top') or []:
-                datos = info.setdefault(
-                    numero, {'veces': 0, 'digitos': 0, 'mes_puntos': 0.0,
-                             'mes': None})
-                datos['veces'] += 1
-                datos['digitos'] += _coincidencias(numero, salidas)
-                anios = mes.get(numero)
-                if anios is not None:
-                    # Con peso 1 devuelve la fracción: 2 años un cuarto,
-                    # 4 la mitad, 8 o más (y "nunca") entero.
-                    datos['mes_puntos'] += Prediction.puntos_por_atraso_mes(
-                        anios, 1.0)
-                    datos['mes'] = max(datos['mes'] or 0, anios)
-
-        pesos = {}
-        for numero, datos in info.items():
-            cuantas = datos['veces']
-            pesos[numero] = round(
-                PESO_REPETICION * cuantas
-                + PESO_DIGITOS * datos['digitos'] / cuantas
-                + PESO_MES * datos['mes_puntos'] / cuantas, 3)
-        return pesos, info
+        `sorteos` es [(fecha, secuencia del turno), …] de más viejo a más
+        nuevo y `salidas` es {(fecha, secuencia): {números}}. Se lee una vez y
+        de acá salen las señales A, C y D."""
+        self.ensure_one()
+        inicio = self.env['ir.config_parameter'].sudo().get_param(
+            TOMBOLA_STATS_START_PARAM) or '1900-01-01'
+        self.env.cr.execute("""
+            SELECT o.date, o.turno_sequence, ln.name::int AS numero
+            FROM lottery_tombola_output o
+            JOIN lottery_number ln ON ln.id = o.number_id
+            WHERE o.date >= %(inicio)s
+              AND (o.date < %(fecha)s
+                   OR (o.date = %(fecha)s AND o.turno_sequence < %(seq)s))
+        """, {'inicio': inicio, 'fecha': self.date,
+              'seq': self.turno_id.sequence})
+        salidas = {}
+        for fecha, seq, numero in self.env.cr.fetchall():
+            salidas.setdefault((fecha, seq), set()).add(numero)
+        return sorted(salidas), salidas
 
     @staticmethod
-    def _combinaciones(pesos, rnd):
-        """`COMBINACIONES` tuplas distintas de `NUMEROS_POR_COMBINACION`
-        números, ordenadas de menor a mayor.
+    def _atrasos(sorteos, salidas, clave):
+        """{valor: sorteos de tómbola sin salir} para cada valor de
+        `clave(número)` (el número mismo, su línea o su terminal). El que
+        nunca salió cuenta todos los sorteos."""
+        ultimo = {}
+        for i, sorteo in enumerate(sorteos):
+            for numero in salidas[sorteo]:
+                ultimo[clave(numero)] = i
+        total = len(sorteos)
+        return lambda valor: total - 1 - ultimo[valor] if valor in ultimo else total
 
-        El sorteo ponderado sin reposición se hace con la clave de
-        Efraimidis-Spirakis: a cada número se le tira `random() ** (1/peso)`
-        y se toman las claves más altas. Da exactamente la misma
-        distribución que ir sacando bolillas de a una sin devolverlas, en
-        una línea y sin sesgo."""
-        bombo = list(pesos)
-        posibles = (math.comb(len(bombo), NUMEROS_POR_COMBINACION)
-                    if len(bombo) >= NUMEROS_POR_COMBINACION else 0)
-        if posibles < COMBINACIONES:
-            raise UserError(
-                'Con %d números distintos entre los 20 grupos no se pueden '
-                'armar %d combinaciones diferentes de %d. Probá con '
-                'Candidatos = Restantes o Todos (100).' % (
-                    len(bombo), COMBINACIONES, NUMEROS_POR_COMBINACION))
+    # ── Puntaje de cada candidato ─────────────────────────────────────────
 
-        vistas, intentos = set(), 0
-        while len(vistas) < COMBINACIONES and intentos < INTENTOS_MAX:
-            intentos += 1
-            elegidos = sorted(
-                bombo, key=lambda n: rnd.random() ** (1.0 / pesos[n]),
-                reverse=True)[:NUMEROS_POR_COMBINACION]
-            vistas.add(tuple(sorted(elegidos)))
-        if len(vistas) < COMBINACIONES:
-            raise UserError(
-                'No se pudieron armar %d combinaciones distintas en %d '
-                'tiradas: hay muy pocos números en juego.' % (
-                    COMBINACIONES, INTENTOS_MAX))
-        return sorted(vistas)
-
-    # ── Informe: 5 probables en los 5 primeros premios ────────────────────
-
-    def _salidos_en_el_mes(self, sorteo_ids):
-        """Números que ya salieron en el mes de la predicción en esos
-        premios, mirando sólo salidas ANTERIORES a la fecha que se evalúa."""
+    def _puntajes(self, grupos):
+        """{número: detalle} de cada candidato distinto de los 20 grupos,
+        con el puntaje total y lo que suma cada señal."""
         self.ensure_one()
-        outputs = self.env['lottery.output'].sudo().search([
-            ('sorteo_id', 'in', list(sorteo_ids)),
-            ('month', '=', str(self.date.month)),
-            ('year', '=', self.date.year),
-            ('date', '<', self.date),
-        ])
-        return set(outputs.mapped('number_id.name'))
+        sorteos, salidas = self._tombola_previa()
 
-    def _probables_primeros(self, grupos, sorteos):
-        """Los `PROBABLES_PRIMEROS` números más probables de los primeros
-        premios, con el detalle que los justifica.
-
-        De los premios 1 a `PREMIOS_PRIMEROS` salen 25 números (5 por
-        premio) con repetidos. Manda cuántas veces se repite entre esos
-        premios; a igualdad de repeticiones va primero el que TODAVÍA no
-        salió en el mes, y después el que quedó mejor rankeado en su premio.
-        No hay azar acá: la misma evaluación da siempre la misma lista."""
-        self.ensure_one()
-        primeros = [(premio, sorteo) for premio, sorteo in sorteos
-                    if premio <= PREMIOS_PRIMEROS]
-        elegidos = {premio for premio, _sorteo in primeros}
-        salidos = self._salidos_en_el_mes(
-            [sorteo.id for _premio, sorteo in primeros])
-
-        detalle = {}
+        info = {}
         for grupo in grupos:
-            if grupo['premio'] not in elegidos:
+            for numero in grupo.get('top') or []:
+                datos = info.setdefault(numero, {'premios': set()})
+                datos['premios'].add(grupo['premio'])
+
+        # A. Últimas tómbolas, igual o al revés.
+        recientes = [salidas[s] for s in sorteos[-TOMBOLAS_ATRAS:]]
+        # B. Última salida de cada premio.
+        ultimas = {g['premio']: g['salidas'][0]
+                   for g in grupos if g.get('salidas')}
+        # C. Salidas del mes en la tómbola y atraso de cada número.
+        mes = {}
+        for fecha, seq in sorteos:
+            if (fecha.year, fecha.month) == (self.date.year, self.date.month):
+                for numero in salidas[(fecha, seq)]:
+                    mes[numero] = mes.get(numero, 0) + 1
+        atraso = self._atrasos(sorteos, salidas, lambda n: n)
+        # D. Líneas y terminales más atrasadas de la tómbola.
+        atraso_linea = self._atrasos(sorteos, salidas, lambda n: n // 10)
+        atraso_term = self._atrasos(sorteos, salidas, lambda n: n % 10)
+        lineas = set(sorted(range(10), key=lambda d: -atraso_linea(d))[:LINEAS_ATRASADAS])
+        terminales = set(sorted(range(10), key=lambda d: -atraso_term(d))[:LINEAS_ATRASADAS])
+
+        for numero, datos in info.items():
+            datos['veces'] = len(datos['premios'])
+            datos['tombolas'] = sum(
+                1 for s in recientes if numero in s or _reves(numero) in s)
+            datos['digitos'] = sum(
+                1 for premio, salida in ultimas.items()
+                if premio not in datos['premios']
+                and _comparte_digito(numero, salida))
+            datos['mes'] = mes.get(numero, 0)
+            datos['atraso'] = atraso(numero)
+            datos['linea'] = numero // 10 in lineas
+            datos['terminal'] = numero % 10 in terminales
+
+        # C se mide entre los candidatos: el que menos salió en el mes y el
+        # más atrasado se llevan el peso entero, el otro extremo nada.
+        def _escala(valor, valores, al_reves=False):
+            bajo, alto = min(valores), max(valores)
+            if alto == bajo:
+                return 0.0
+            t = (valor - bajo) / (alto - bajo)
+            return 1 - t if al_reves else t
+
+        meses = [d['mes'] for d in info.values()]
+        atrasos = [d['atraso'] for d in info.values()]
+        for numero, datos in info.items():
+            partes = {
+                'repeticion': PESO_REPETICION * datos['veces'],
+                'tombola': PESO_TOMBOLA * datos['tombolas'],
+                'digitos': min(PESO_DIGITO * datos['digitos'], TOPE_DIGITOS),
+                'mes': PESO_MES * _escala(datos['mes'], meses, al_reves=True),
+                'atraso': PESO_ATRASO * _escala(datos['atraso'], atrasos),
+                'linea_terminal': (PESO_LINEA * datos['linea']
+                                   + PESO_TERMINAL * datos['terminal']),
+            }
+            datos['partes'] = {k: round(v, 2) for k, v in partes.items()}
+            datos['puntaje'] = round(sum(partes.values()), 2)
+            datos['premios'] = sorted(datos['premios'])
+        return info
+
+    # ── Armado de las combinaciones ───────────────────────────────────────
+
+    @staticmethod
+    def _combinaciones(puntajes):
+        """`COMBINACIONES` ternas de mayor a menor puntaje, con los topes
+        `MAX_COMBOS_POR_NUMERO` y `MAX_COMPARTIDOS`. Cada terna va ordenada
+        de menor a mayor; las ternas, en el orden en que se eligieron (la
+        primera es la más fuerte)."""
+        if len(puntajes) < NUMEROS_POR_COMBINACION:
+            raise UserError(
+                'Hay %d números distintos entre los 20 grupos: no alcanzan '
+                'para armar combinaciones de %d.' % (
+                    len(puntajes), NUMEROS_POR_COMBINACION))
+        # A igual puntaje, el número más chico primero: así la misma
+        # evaluación da siempre las mismas combinaciones.
+        orden = sorted(puntajes, key=lambda n: (-puntajes[n], n))
+        puesto = {n: i for i, n in enumerate(orden)}
+        ternas = sorted(
+            itertools.combinations(orden, NUMEROS_POR_COMBINACION),
+            key=lambda t: (-sum(puntajes[n] for n in t),
+                           [puesto[n] for n in t]))
+
+        elegidas, usos = [], {}
+        for terna in ternas:
+            if any(usos.get(n, 0) >= MAX_COMBOS_POR_NUMERO for n in terna):
                 continue
-            for puesto, numero in enumerate(grupo['top'], 1):
-                datos = detalle.setdefault(
-                    numero, {'numero': numero, 'veces': 0, 'puesto': 99,
-                             'premios': []})
-                datos['veces'] += 1
-                datos['puesto'] = min(datos['puesto'], puesto)
-                datos['premios'].append(grupo['premio'])
-        for datos in detalle.values():
-            datos['salio_mes'] = datos['numero'] in salidos
-
-        orden = sorted(detalle.values(),
-                       key=lambda d: (-d['veces'], d['salio_mes'],
-                                      d['puesto'], d['numero']))
-        return orden[:PROBABLES_PRIMEROS]
-
-    # ── Informe: 2 probables entre los 20 premios ─────────────────────────
-
-    def _ranking_pintas(self, sorteos):
-        """[{id, name, votos, general, turno}, …] de más votada a menos.
-
-        Cada premio vota dos veces: por su pinta más atrasada en general y
-        por la más atrasada en el turno que se evalúa. Con 20 premios son 40
-        votos, y la pinta que más se repite es la que más "coincide".
-
-        Los dos tops salen de `get_top_3_pintas`, la misma función que ya usa
-        el puntaje de cada premio, así que vienen de la caché y no cuestan
-        consultas nuevas."""
-        self.ensure_one()
-        stats = self.env['lottery.stats.service'].sudo()
-        day = WEEKDAY_CODES[self.date.weekday()]
-        votos = {}
-        for _premio, sorteo in sorteos:
-            for turno_id, clave in ((False, 'general'),
-                                    (self.turno_id.id, 'turno')):
-                filas = stats.get_top_3_pintas(turno_id, day,
-                                               sorteo_id=sorteo.id)
-                if not filas:
-                    continue
-                pinta = filas[0]
-                entrada = votos.setdefault(
-                    pinta['id'], {'id': pinta['id'], 'name': pinta['name'],
-                                  'votos': 0, 'general': 0, 'turno': 0})
-                entrada['votos'] += 1
-                entrada[clave] += 1
-        return sorted(votos.values(),
-                      key=lambda p: (-p['votos'], p['name']))
-
-    def _probables_veinte(self, grupos, sorteos):
-        """(pinta ganadora, [números], ranking, repeticiones).
-
-        Gana la pinta más votada que tenga al menos `PROBABLES_VEINTE`
-        números entre los 100 de la evaluación — si la primera no los tiene,
-        se baja a la siguiente del ranking, porque el informe pide números
-        que además hayan quedado bien puntuados, no cualquiera de la pinta.
-        Entre los de la pinta ganadora eligen los que más se repiten."""
-        self.ensure_one()
-        veces = {}
-        for grupo in grupos:
-            for numero in grupo['top']:
-                veces[numero] = veces.get(numero, 0) + 1
-
-        ranking = self._ranking_pintas(sorteos)
-        Group = self.env['lottery.group'].sudo()
-        mejor = None
-        for pinta in ranking:
-            numeros = set(Group.browse(pinta['id']).number_ids.mapped('name'))
-            candidatos = sorted((n for n in veces if n in numeros),
-                                key=lambda n: (-veces[n], n))
-            if mejor is None or len(candidatos) > len(mejor[1]):
-                mejor = (pinta, candidatos)
-            if len(candidatos) >= PROBABLES_VEINTE:
-                mejor = (pinta, candidatos)
+            if any(len(set(terna) & set(otra)) > MAX_COMPARTIDOS
+                   for otra in elegidas):
+                continue
+            elegidas.append(terna)
+            for n in terna:
+                usos[n] = usos.get(n, 0) + 1
+            if len(elegidas) == COMBINACIONES:
                 break
-        if not mejor:
-            return None, [], ranking, veces
-        pinta, candidatos = mejor
-        return pinta, candidatos[:PROBABLES_VEINTE], ranking, veces
+        if len(elegidas) < COMBINACIONES:
+            raise UserError(
+                'Con %d números distintos sólo se pudieron armar %d '
+                'combinaciones respetando los topes. Probá con Candidatos = '
+                'Todos (100).' % (len(puntajes), len(elegidas)))
+        return [tuple(sorted(t)) for t in elegidas]
 
     # ── Render ────────────────────────────────────────────────────────────
-
-    @staticmethod
-    def _texto_anios(anios):
-        """'nunca' o '5 años': cómo se lee un atraso del mes."""
-        if anios is None:
-            return ''
-        return 'nunca' if anios >= ANIOS_MES_NUNCA else '%d años' % anios
 
     def _pie(self, texto):
         return (
@@ -548,40 +461,6 @@ class LotteryPredictionTombolaUy(models.Model):
             'border-radius:9px;background:#FFFFFF;border:1px solid #C6E4CF;'
             'font:600 11px/1.45 %s;color:%s;text-align:center;">%s</div>'
             % (FUENTE, TEXTO_SUAVE, texto)
-        )
-
-    def _panel_mes(self, destacados):
-        """Franja dorada con los interesantes del mes.
-
-        `destacados` es [(número, años), …] ya ordenado. Es la parte vistosa
-        del criterio 3: qué números de los que salieron llevan años sin
-        aparecer en el mes, y cuántos."""
-        self.ensure_one()
-        if not destacados:
-            return ''
-        mes = MESES[self.date.month - 1]
-        chips = ''.join(
-            '<span style="display:inline-block;margin:4px 3px 0;'
-            'padding:5px 11px;border-radius:50px;'
-            'background:linear-gradient(135deg,#FFFDF3,#FFF1C9);'
-            'border:1px solid %s;font:800 11.5px/1 %s;color:#7A5A10;'
-            'box-shadow:0 1px 3px rgba(196,150,20,.25);">'
-            '%02d <span style="font-weight:600;opacity:.75;">%s</span>'
-            '</span>' % (DORADO, FUENTE, numero, self._texto_anios(anios))
-            for numero, anios in destacados)
-        return (
-            '<div style="margin:10px 14px 0;padding:10px 10px 12px;'
-            'border-radius:12px;'
-            'background:linear-gradient(135deg,rgba(255,201,60,.16),'
-            'rgba(255,201,60,.06));border:1px solid %s;text-align:center;">'
-            '<div style="font:900 11.5px/1.3 %s;color:#7A5A10;'
-            'letter-spacing:1.1px;text-transform:uppercase;">'
-            'Interesantes de %s</div>'
-            '<div style="margin-top:3px;font:600 10.5px/1.4 %s;'
-            'color:#8A6416;">De los que entraron, los que llevan años sin '
-            'salir en %s</div>'
-            '<div>%s</div></div>'
-            % (DORADO, FUENTE, mes, FUENTE, mes, chips)
         )
 
     @staticmethod
@@ -596,8 +475,22 @@ class LotteryPredictionTombolaUy(models.Model):
                 'box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px %s;">%s</div>'
                 % (DORADO, bola('%02d' % numero, COLOR_SUPER_MAGICO, diam=34)))
 
+    @staticmethod
+    def _etiqueta_algoritmo(grupo):
+        """Cápsula 'A1' / 'A2' con el algoritmo que usó el premio. Las
+        tómbolas evaluadas antes de que cada premio eligiera el suyo no lo
+        traen."""
+        algoritmo = grupo.get('algoritmo')
+        if not algoritmo:
+            return ''
+        return ('<span style="padding:3px 7px;border-radius:50px;'
+                'background:#FFFFFF;border:1px solid #C6E4CF;'
+                'font:800 10px/1 %s;color:%s;">A%s</span>'
+                % (FUENTE, TEXTO_SUAVE, algoritmo))
+
     def _render_grupos(self, grupos, sin_datos):
-        """Tarjeta con los 5 mejores de cada premio, en dos columnas de 10."""
+        """Tarjeta con los 5 mejores de cada premio y su algoritmo, en dos
+        columnas de 10."""
         self.ensure_one()
         color = turno_color(self.turno_code)
         por_premio = {g['premio']: g for g in grupos}
@@ -609,25 +502,25 @@ class LotteryPredictionTombolaUy(models.Model):
                 grupo = por_premio.get(premio)
                 if grupo:
                     # Se muestran de menor a mayor (el Súper Mágico ya se
-                    # distingue por el color). En el JSON quedan en el orden
-                    # del algoritmo, que el informe de probables usa para
-                    # desempatar por puesto.
+                    # distingue por el color).
                     bolas = ''.join(self._bola_grupo(n, grupo, color)
                                     for n in sorted(grupo['top']))
+                    algoritmo = self._etiqueta_algoritmo(grupo)
                 else:
                     bolas = ('<span style="font:600 11px/1 %s;color:%s;">'
                              'sin datos</span>' % (FUENTE, TEXTO_SUAVE))
+                    algoritmo = ''
                 celdas.append(
                     '<td style="padding:6px 5px;">'
                     '<div style="display:flex;align-items:center;gap:8px;">'
-                    '%s<div style="display:flex;gap:7px;">%s</div></div>'
-                    '</td>' % (badge(premio, lado=24), bolas))
+                    '%s<div style="display:flex;gap:7px;">%s</div>%s</div>'
+                    '</td>' % (badge(premio, lado=24), bolas, algoritmo))
             filas.append('<tr>%s</tr>' % ''.join(celdas))
 
         pie = self._pie(
-            'Los 5 de cada premio · <b>dorada: Súper Mágico</b> · %s · '
-            'Candidatos: %s · ventana de combinaciones: %d' % (
-                dict(self._fields['algoritmo'].selection)[self.algoritmo],
+            'Los 5 de cada premio · <b>dorada: Súper Mágico</b> · '
+            'A1 / A2: algoritmo de cada premio · Candidatos: %s · '
+            'ventana de combinaciones: %d' % (
                 dict(self._fields['temperature'].selection)[self.temperature],
                 self.combinaciones_window))
         if sin_datos:
@@ -637,7 +530,7 @@ class LotteryPredictionTombolaUy(models.Model):
                 'border:1px solid #F5E3B3;font:600 11px/1.45 %s;'
                 'color:#8A6416;text-align:center;">'
                 'Sin candidatos suficientes en los premios %s: quedaron '
-                'afuera del sorteo.</div>'
+                'afuera.</div>'
                 % (FUENTE, ', '.join(str(p) for p in sin_datos)))
 
         cuerpo = (
@@ -647,187 +540,81 @@ class LotteryPredictionTombolaUy(models.Model):
         return tarjeta(
             cabezal(self.turno_code, self.date,
                     titulo='Tómbola · los 5 de cada premio'),
-            cuerpo, ancho=524)
+            cuerpo, ancho=580)
 
-    def _render_combinaciones(self, combos, pesos, info):
-        """Tarjeta publicable: 10 combinaciones en dos columnas de 5, cada
-        una con sus 7 bolas rojas ordenadas de menor a mayor."""
+    def _render_combinaciones(self, combos, info):
+        """Tarjeta publicable con las 10 combinaciones de 3, y debajo el
+        detalle de por qué entró cada número."""
         self.ensure_one()
         filas = []
         for i in range(COMBINACIONES_POR_COLUMNA):
             celdas = []
             for j in (i, i + COMBINACIONES_POR_COLUMNA):
-                bolas = ''.join(bola('%02d' % n, COLOR_TOMBOLA, diam=40)
+                bolas = ''.join(bola('%02d' % n, COLOR_TOMBOLA, diam=44)
                                 for n in combos[j])
                 celdas.append(
-                    '<td style="padding:6px 6px;">'
+                    '<td style="padding:6px 10px;">'
                     '<div style="display:flex;align-items:center;gap:8px;">'
                     '%s<div style="display:flex;gap:8px;">%s</div></div>'
                     '</td>' % (badge(j + 1, lado=24), bolas))
             filas.append('<tr>%s</tr>' % ''.join(celdas))
 
-        # Los interesantes del mes que de verdad entraron en alguna
-        # combinación, del más atrasado al menos.
-        jugados = {n for combo in combos for n in combo}
-        destacados = sorted(
-            ((n, info[n]['mes']) for n in jugados
-             if info[n]['mes'] is not None),
-            key=lambda par: (-par[1], par[0]))
-
-        # Los que más mandaron en el sorteo, para poder contar de dónde
-        # salieron las combinaciones cuando se publican.
-        mejores = sorted(pesos, key=lambda n: (-pesos[n], n))[:6]
-        detalle = ' · '.join(
-            '%02d (%d grupos%s)' % (
-                n, info[n]['veces'],
-                ', %d dígitos' % info[n]['digitos'] if info[n]['digitos']
-                else '')
-            for n in mejores)
+        jugados = sorted({n for combo in combos for n in combo},
+                         key=lambda n: (-info[n]['puntaje'], n))
+        usos = {n: sum(1 for c in combos if n in c) for n in jugados}
+        detalle = ''.join(self._fila_detalle(n, info[n], usos[n])
+                          for n in jugados)
 
         cuerpo = (
             '<div style="padding:12px 8px 12px;">'
             '<table style="border-collapse:collapse;margin:0 auto;">'
-            '<tbody>%s</tbody></table>%s%s</div>'
-            % (''.join(filas), self._panel_mes(destacados),
-               self._pie('Más pesados: %s' % detalle)))
+            '<tbody>%s</tbody></table>'
+            '<div style="margin:12px 14px 0;">'
+            '<table style="width:100%%;border-collapse:collapse;'
+            'font:600 11px/1.3 %s;color:%s;">'
+            '<thead><tr style="font-weight:800;color:%s;">'
+            '<td style="padding:4px;">Nº</td>'
+            '<td style="padding:4px;">Puntaje</td>'
+            '<td style="padding:4px;">Premios</td>'
+            '<td style="padding:4px;">Tómbolas</td>'
+            '<td style="padding:4px;">Dígitos</td>'
+            '<td style="padding:4px;">Mes · atraso</td>'
+            '<td style="padding:4px;">Línea / terminal</td>'
+            '<td style="padding:4px;">Combinaciones</td>'
+            '</tr></thead><tbody>%s</tbody></table></div>%s</div>'
+            % (''.join(filas), FUENTE, TEXTO_SUAVE, TEXTO, detalle,
+               self._pie(
+                   'Premios: en cuántos de los 20 grupos está · Tómbolas: '
+                   'en cuántas de las últimas %d salió, igual o al revés · '
+                   'Dígitos: cuántos premios tuvieron una última salida con '
+                   'un dígito suyo · Mes y atraso: en la tómbola · Línea / '
+                   'terminal: entre las %d más atrasadas de la tómbola. Un '
+                   'número entra como mucho en %d combinaciones.'
+                   % (TOMBOLAS_ATRAS, LINEAS_ATRASADAS,
+                      MAX_COMBOS_POR_NUMERO))))
         return tarjeta(
             cabezal(self.turno_code, self.date,
                     titulo='Combinaciones Tómbola'),
             cuerpo, ancho=780)
 
-    def _chips(self, textos, color_borde='#C6E4CF', color_texto=None):
-        """Fila de cápsulas con el detalle de cada número."""
-        return ''.join(
-            '<span style="display:inline-block;margin:4px 3px 0;'
-            'padding:5px 11px;border-radius:50px;background:#FFFFFF;'
-            'border:1px solid %s;font:700 11px/1 %s;color:%s;">%s</span>'
-            % (color_borde, FUENTE, color_texto or TEXTO_SUAVE, texto)
-            for texto in textos)
-
-    def _render_probables_primeros(self, grupos, sorteos):
-        """Tarjeta de los 5 probables de los primeros 5 premios."""
-        self.ensure_one()
-        probables = self._probables_primeros(grupos, sorteos)
-        mes = MESES[self.date.month - 1]
-        if not probables:
-            cuerpo = (
-                '<div style="padding:22px 18px;text-align:center;'
-                'font:700 13px/1.5 %s;color:%s;">Todavía no hay números '
-                'evaluados en los primeros %d premios.</div>'
-                % (FUENTE, TEXTO_SUAVE, PREMIOS_PRIMEROS))
-            return tarjeta(
-                cabezal(self.turno_code, self.date,
-                        titulo='Probables · primeros %d premios'
-                               % PREMIOS_PRIMEROS),
-                cuerpo, ancho=452)
-
-        color = turno_color(self.turno_code)
-        bolas = ''.join(bola('%02d' % d['numero'], color, diam=56)
-                        for d in probables)
-        detalle = self._chips(
-            '%02d · %s · %s' % (
-                d['numero'],
-                ('%d premios' % d['veces'] if d['veces'] > 1
-                 else 'premio %d' % d['premios'][0]),
-                'salió en %s' % mes if d['salio_mes']
-                else 'sin salir en %s' % mes)
-            for d in probables)
-
-        cuerpo = (
-            '<div style="padding:16px 12px 14px;">'
-            '<div style="font:900 13px/1.2 %s;color:%s;text-align:center;'
-            'letter-spacing:.4px;margin-bottom:12px;">'
-            '%d números probables en los %d primeros premios</div>'
-            '<div style="display:flex;justify-content:center;gap:10px;">'
-            '%s</div>'
-            '<div style="text-align:center;margin-top:6px;">%s</div>'
-            '%s</div>'
-            % (FUENTE, TEXTO, PROBABLES_PRIMEROS, PREMIOS_PRIMEROS, bolas,
-               detalle,
-               self._pie('De los %d números que dan los premios 1 a %d. '
-                         'Manda cuántas veces se repite entre ellos; '
-                         'a igualdad, primero el que no salió en %s.'
-                         % (PREMIOS_PRIMEROS * TOP_POR_PREMIO,
-                            PREMIOS_PRIMEROS, mes))))
-        return tarjeta(
-            cabezal(self.turno_code, self.date,
-                    titulo='Probables · primeros %d premios'
-                           % PREMIOS_PRIMEROS),
-            cuerpo, ancho=452)
-
-    def _render_probables_veinte(self, grupos, sorteos):
-        """Tarjeta de los 2 probables entre los 20 premios, con el ranking
-        de pintas que los eligió."""
-        self.ensure_one()
-        pinta, numeros, ranking, veces = self._probables_veinte(
-            grupos, sorteos)
-        titulo = 'Probables · %d premios' % TOTAL_PREMIOS
-        if not pinta or not numeros:
-            cuerpo = (
-                '<div style="padding:22px 18px;text-align:center;'
-                'font:700 13px/1.5 %s;color:%s;">No hay pintas atrasadas '
-                'cargadas para estos premios.</div>' % (FUENTE, TEXTO_SUAVE))
-            return tarjeta(cabezal(self.turno_code, self.date, titulo=titulo),
-                           cuerpo, ancho=452)
-
-        color = turno_color(self.turno_code)
-        bolas = ''.join(bola('%02d' % n, color, diam=64) for n in numeros)
-        detalle = self._chips(
-            '%02d · %d de %d premios' % (n, veces[n], TOTAL_PREMIOS)
-            for n in numeros)
-
-        total_votos = sum(p['votos'] for p in ranking) or 1
-        tope = ranking[0]['votos'] or 1
-        barras = []
-        for p in ranking[:PINTAS_EN_RANKING]:
-            gana = p['id'] == pinta['id']
-            barras.append(
-                '<tr>'
-                '<td style="padding:3px 6px 3px 0;font:%s 11.5px/1 %s;'
-                'color:%s;white-space:nowrap;">%s</td>'
-                '<td style="padding:3px 0;width:100%%;">'
-                '<div style="height:9px;border-radius:5px;background:#E4F1E8;'
-                'overflow:hidden;">'
-                '<div style="height:9px;width:%d%%;border-radius:5px;'
-                'background:%s;"></div></div></td>'
-                '<td style="padding:3px 0 3px 8px;font:800 11px/1 %s;'
-                'color:%s;white-space:nowrap;">%d</td></tr>'
-                % ('900' if gana else '600', FUENTE,
-                   TEXTO if gana else TEXTO_SUAVE, p['name'].title(),
-                   round(100.0 * p['votos'] / tope),
-                   DORADO if gana else '#9CCBA9', FUENTE,
-                   TEXTO if gana else TEXTO_SUAVE, p['votos']))
-
-        cuerpo = (
-            '<div style="padding:16px 14px 14px;">'
-            '<div style="font:900 13px/1.2 %s;color:%s;text-align:center;'
-            'letter-spacing:.4px;">%d números probables entre los %d '
-            'premios</div>'
-            '<div style="text-align:center;margin-top:8px;">'
-            '<span style="display:inline-block;padding:6px 14px;'
-            'border-radius:50px;background:linear-gradient(135deg,'
-            '#FFFDF3,#FFF1C9);border:1px solid %s;font:900 11.5px/1 %s;'
-            'color:#7A5A10;letter-spacing:.8px;text-transform:uppercase;">'
-            '%s · la más atrasada en %d de %d</span></div>'
-            '<div style="display:flex;justify-content:center;gap:14px;'
-            'margin-top:12px;">%s</div>'
-            '<div style="text-align:center;margin-top:6px;">%s</div>'
-            '<div style="margin:12px 4px 0;">'
-            '<div style="font:800 10.5px/1 %s;color:%s;letter-spacing:1px;'
-            'text-transform:uppercase;margin-bottom:5px;">'
-            'Ranking de pintas · %d votos</div>'
-            '<table style="width:100%%;border-collapse:collapse;">'
-            '<tbody>%s</tbody></table></div>'
-            '%s</div>'
-            % (FUENTE, TEXTO, PROBABLES_VEINTE, TOTAL_PREMIOS,
-               DORADO, FUENTE, pinta['name'].title(), pinta['votos'],
-               total_votos, bolas, detalle, FUENTE, TEXTO_SUAVE, total_votos,
-               ''.join(barras),
-               self._pie('Cada premio vota dos veces: su pinta más atrasada '
-                         'en general y la más atrasada de la %s. De la pinta '
-                         'ganadora salen los números que más se repiten '
-                         'entre los %d de la evaluación.'
-                         % (turno_label(self.turno_code).lower(),
-                            TOTAL_PREMIOS * TOP_POR_PREMIO))))
-        return tarjeta(cabezal(self.turno_code, self.date, titulo=titulo),
-                       cuerpo, ancho=452)
+    @staticmethod
+    def _fila_detalle(numero, datos, usos):
+        """Una fila del detalle: el valor de cada señal y lo que sumó."""
+        partes = datos['partes']
+        lt = '/'.join(filter(None, (
+            'L%d' % (numero // 10) if datos['linea'] else '',
+            'T%d' % (numero % 10) if datos['terminal'] else '')))
+        celda = '<td style="padding:4px;border-top:1px solid #E4F1E8;">%s</td>'
+        return '<tr>%s</tr>' % ''.join(celda % texto for texto in (
+            '<b style="color:%s;">%02d</b>' % (TEXTO, numero),
+            '<b style="color:%s;">%.2f</b>' % (TEXTO, datos['puntaje']),
+            '%d (%s)' % (datos['veces'],
+                         ', '.join(str(p) for p in datos['premios'])),
+            '%d · +%.2f' % (datos['tombolas'], partes['tombola']),
+            '%d · +%.2f' % (datos['digitos'], partes['digitos']),
+            '%d en el mes · %d atrás · +%.2f' % (
+                datos['mes'], datos['atraso'],
+                partes['mes'] + partes['atraso']),
+            '%s · +%.2f' % (lt or '—', partes['linea_terminal']),
+            str(usos),
+        ))

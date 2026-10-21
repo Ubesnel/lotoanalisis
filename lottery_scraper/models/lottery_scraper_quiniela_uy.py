@@ -48,6 +48,14 @@ class LotteryScraperQuinielaUy(models.Model):
 
     # ── Entry points ──────────────────────────────────────────────
 
+    def _today_uy(self):
+        """Fecha de hoy en Uruguay. No usar date.today(): Odoo corre en UTC y
+        a partir de las 21:00 de Uruguay ya es el día siguiente, justo la
+        ventana de la Nocturna."""
+        scraper = self or self._get_singleton()
+        uy_tz = timezone(timedelta(hours=scraper.uy_offset))
+        return datetime.now(tz=uy_tz).date()
+
     @api.model
     def cron_import_results(self):
         """Solo hace la petición al sitio dentro de las ventanas horarias en
@@ -81,7 +89,7 @@ class LotteryScraperQuinielaUy(models.Model):
         self.ensure_one()
         log_lines = []
         try:
-            today = date.today()
+            today = self._today_uy()
             if self.date_from:
                 current = self.date_from
                 date_to = self.date_to or today
@@ -115,9 +123,10 @@ class LotteryScraperQuinielaUy(models.Model):
     def _get_next_query_date(self):
         last = self.env['lottery.output'].search(
             [('sorteo_id.source_code', '=', 'quiniela_uy')], order='date desc, turno_sequence desc, id desc', limit=1)
+        today = self._today_uy()
         if not last:
-            return date.today()
-        return min(last.date + timedelta(days=1), date.today())
+            return today
+        return min(last.date + timedelta(days=1), today)
 
     # ── Fetch + parseo (mismo criterio que el script de referencia) ────
 
@@ -256,7 +265,7 @@ class LotteryScraperQuinielaUy(models.Model):
         # desde lottery_output ordenando por fecha, así que rellenar huecos
         # viejos los deja bien igual.
         Output = self.env['lottery.output']
-        if draw_date != date.today():
+        if draw_date != self._today_uy():
             Output = Output.with_context(skip_prediction_validation=True)
         LottoNum = self.env['lottery.number']
         sorteo_by_premio = self._sorteo_by_premio()

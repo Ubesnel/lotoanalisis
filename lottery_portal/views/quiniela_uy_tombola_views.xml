@@ -10,7 +10,6 @@
                 <field name="date"/>
                 <field name="turno_id"/>
                 <field name="temperature"/>
-                <field name="algoritmo" optional="show"/>
                 <field name="combinaciones_window" optional="hide"/>
                 <field name="published" widget="boolean_toggle"/>
             </tree>
@@ -27,11 +26,11 @@
                     <button name="action_evaluar" type="object"
                             string="Evaluar los 20 premios" class="btn-primary"
                             confirm="Se van a puntear los 20 premios con la misma lógica que la predicción individual. La primera corrida tarda un rato porque arma las tablas LotoAnálisis que falten. ¿Seguimos?"
-                            help="Corre para cada uno de los 20 sorteos de la quiniela el mismo cálculo que el botón Completar números y se queda con los 5 mejores."/>
+                            help="Corre para cada uno de los 20 sorteos de la quiniela el mismo cálculo que el botón Completar números, con el algoritmo que le toca a cada premio según sus dos últimas salidas, y se queda con los 5 mejores."/>
                     <button name="action_generar_combinaciones" type="object"
                             string="Generar combinaciones Tómbola"
                             class="btn-secondary"
-                            help="Arma 10 combinaciones de 7 números al azar, dando más chance a los que se repiten en varios premios y a los que comparten decena o unidad con las últimas 6 salidas de su premio. Cada vez que se aprieta sale una tanda distinta."/>
+                            help="Arma 10 combinaciones fijas de 3 números con los candidatos de los 20 premios: manda en cuántos premios se repite cada número y si salió (igual o al revés) en las últimas 3 tómbolas; los dígitos de la última salida de cada premio, el mes, el atraso y las líneas y terminales atrasadas de la tómbola ordenan a los parejos. Un número entra en 3 combinaciones como mucho."/>
                 </header>
                 <sheet>
                     <group>
@@ -41,7 +40,6 @@
                         </group>
                         <group>
                             <field name="temperature"/>
-                            <field name="algoritmo"/>
                             <field name="combinaciones_window"/>
                             <field name="published"/>
                         </group>
@@ -50,16 +48,6 @@
                     <notebook>
                         <page string="Los 5 de cada premio" name="grupos">
                             <field name="groups_html" nolabel="1"
-                                   readonly="1"/>
-                        </page>
-                        <page string="5 probables · primeros 5"
-                              name="probables_primeros">
-                            <field name="probables_primeros_html" nolabel="1"
-                                   readonly="1"/>
-                        </page>
-                        <page string="2 probables · 20 premios"
-                              name="probables_veinte">
-                            <field name="probables_veinte_html" nolabel="1"
                                    readonly="1"/>
                         </page>
                         <page string="Combinaciones Tómbola" name="combos">
