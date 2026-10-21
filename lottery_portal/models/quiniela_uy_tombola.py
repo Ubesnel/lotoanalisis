@@ -152,23 +152,29 @@ class LotteryPredictionTombolaUy(models.Model):
          'Ya existe una tómbola para esa fecha y turno.'),
     ]
 
-    # ── Defaults: la última quiniela que haya entrado ─────────────────────
+    # ── Defaults: el próximo sorteo de la quiniela ────────────────────────
 
     @api.model
-    def _last_quiniela_output(self):
-        return self.env['lottery.output'].sudo().search(
+    def _next_quiniela_draw(self):
+        """(fecha, turno) del próximo sorteo, el que se predice: el mismo
+        `get_next_draw` que usan el ranking de calientes/restantes/fríos y
+        la predicción automática. Se toma del premio de la última salida
+        registrada (los 20 premios van juntos)."""
+        last = self.env['lottery.output'].sudo().search(
             [('sorteo_id.source_code', '=', SOURCE_CODE)],
             order='date desc, turno_sequence desc, id desc', limit=1)
+        if not last:
+            return fields.Date.context_today(self), self.env['lottery.turno']
+        fecha, turno = last.sorteo_id.get_next_draw()
+        return fields.Date.to_date(fecha), turno
 
     @api.model
     def _default_date(self):
-        last = self._last_quiniela_output()
-        return last.date if last else fields.Date.context_today(self)
+        return self._next_quiniela_draw()[0]
 
     @api.model
     def _default_turn(self):
-        last = self._last_quiniela_output()
-        return last.turno_id.id if last else False
+        return self._next_quiniela_draw()[1].id
 
     @api.depends('date', 'turno_id')
     def _compute_display_name(self):
