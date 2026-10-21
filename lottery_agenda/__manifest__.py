@@ -21,6 +21,11 @@ la salida, el evento se marca solo como hecho.
         "views/res_config_settings_views.xml",
         "data/ir_cron.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "lottery_agenda/static/src/js/agenda_notify_service.js",
+        ],
+    },
     "installable": True,
     "application": False,
 }

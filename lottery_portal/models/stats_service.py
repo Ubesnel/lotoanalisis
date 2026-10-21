@@ -1997,7 +1997,7 @@ class LotteryStatsService(models.Model):
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.number_id
             WHERE lo.sorteo_id = %s
-            ORDER BY lo.date DESC, lo.id DESC
+            ORDER BY lo.date DESC, lo.turno_sequence DESC, lo.id DESC
             LIMIT 3
         """, (sorteo_id,))
         digit_set = set()
@@ -2014,7 +2014,7 @@ class LotteryStatsService(models.Model):
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.number_id
             WHERE lo.sorteo_id = %s
-            ORDER BY lo.date DESC, lo.id DESC
+            ORDER BY lo.date DESC, lo.turno_sequence DESC, lo.id DESC
             LIMIT 5
         """, (sorteo_id,))
         recent_rows = self.env.cr.dictfetchall()
@@ -2033,7 +2033,7 @@ class LotteryStatsService(models.Model):
             WITH ordered AS (
                 SELECT
                     (ln.name::int / 10)                          AS linea,
-                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id)  AS rn
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id)  AS rn
                 FROM lottery_output lo
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE lo.sorteo_id = %s
@@ -2081,7 +2081,7 @@ class LotteryStatsService(models.Model):
             WITH ordered AS (
                 SELECT
                     (ln.name::int %% 10)                          AS terminal,
-                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id)  AS rn
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id)  AS rn
                 FROM lottery_output lo
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE lo.sorteo_id = %s
@@ -2134,7 +2134,7 @@ class LotteryStatsService(models.Model):
             WITH dow_draws AS (
                 SELECT
                     lo.number_id,
-                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS dow_rn
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS dow_rn
                 FROM lottery_output lo
                 WHERE EXTRACT(DOW FROM lo.date) = %s AND lo.sorteo_id = %s
             ),
@@ -2154,7 +2154,7 @@ class LotteryStatsService(models.Model):
             WITH seg_draws AS (
                 SELECT
                     lo.number_id,
-                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS seg_rn
+                    ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS seg_rn
                 FROM lottery_output lo
                 WHERE (CASE
                            WHEN EXTRACT(DAY FROM lo.date) <= 7  THEN 1
@@ -2188,7 +2188,7 @@ class LotteryStatsService(models.Model):
                 WITH wd AS (
                     SELECT
                         (ln.name::int / 10)                         AS linea,
-                        ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                        ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS rn
                     FROM lottery_output lo
                     JOIN lottery_number ln ON ln.id = lo.number_id
                     WHERE EXTRACT(DOW FROM lo.date) IN (0, 6) AND lo.sorteo_id = %s
@@ -2211,7 +2211,7 @@ class LotteryStatsService(models.Model):
                 WITH wd AS (
                     SELECT
                         (ln.name::int %% 10)                         AS terminal,
-                        ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                        ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS rn
                     FROM lottery_output lo
                     JOIN lottery_number ln ON ln.id = lo.number_id
                     WHERE EXTRACT(DOW FROM lo.date) IN (0, 6) AND lo.sorteo_id = %s
@@ -2239,7 +2239,7 @@ class LotteryStatsService(models.Model):
             SELECT lo.number_id
             FROM lottery_output lo
             WHERE lo.sorteo_id = %s
-            ORDER BY lo.date DESC, lo.id DESC
+            ORDER BY lo.date DESC, lo.turno_sequence DESC, lo.id DESC
             LIMIT 6
         """, (sorteo_id,))
         recent_6_ids = [r['number_id'] for r in self.env.cr.dictfetchall()]
@@ -2555,7 +2555,7 @@ class LotteryStatsService(models.Model):
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.number_id
             WHERE lo.sorteo_id = %s
-            ORDER BY lo.date DESC, lo.id DESC
+            ORDER BY lo.date DESC, lo.turno_sequence DESC, lo.id DESC
             LIMIT 3
         """, (sorteo_id,))
         digit_set = set()
@@ -2571,7 +2571,7 @@ class LotteryStatsService(models.Model):
             FROM lottery_output lo
             JOIN lottery_number ln ON ln.id = lo.number_id
             WHERE lo.sorteo_id = %s
-            ORDER BY lo.date DESC, lo.id DESC
+            ORDER BY lo.date DESC, lo.turno_sequence DESC, lo.id DESC
             LIMIT 5
         """, (sorteo_id,))
         recent_rows     = self.env.cr.dictfetchall()
@@ -2584,7 +2584,7 @@ class LotteryStatsService(models.Model):
         self.env.cr.execute("""
             WITH ordered AS (
                 SELECT (ln.name::int / 10)                         AS linea,
-                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS rn
                 FROM lottery_output lo
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE lo.sorteo_id = %s
@@ -2630,7 +2630,7 @@ class LotteryStatsService(models.Model):
         self.env.cr.execute("""
             WITH ordered AS (
                 SELECT (ln.name::int %% 10)                         AS terminal,
-                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS rn
                 FROM lottery_output lo
                 JOIN lottery_number ln ON ln.id = lo.number_id
                 WHERE lo.sorteo_id = %s
@@ -2676,7 +2676,7 @@ class LotteryStatsService(models.Model):
         self.env.cr.execute("""
             WITH dow_draws AS (
                 SELECT lo.number_id,
-                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS dow_rn
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS dow_rn
                 FROM lottery_output lo
                 WHERE EXTRACT(DOW FROM lo.date) = %s AND lo.sorteo_id = %s
             ),
@@ -2694,7 +2694,7 @@ class LotteryStatsService(models.Model):
         self.env.cr.execute("""
             WITH seg_draws AS (
                 SELECT lo.number_id,
-                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS seg_rn
+                       ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS seg_rn
                 FROM lottery_output lo
                 WHERE (CASE
                            WHEN EXTRACT(DAY FROM lo.date) <= 7  THEN 1
@@ -2725,7 +2725,7 @@ class LotteryStatsService(models.Model):
             self.env.cr.execute("""
                 WITH wd AS (
                     SELECT (ln.name::int / 10)                         AS linea,
-                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS rn
                     FROM lottery_output lo
                     JOIN lottery_number ln ON ln.id = lo.number_id
                     WHERE EXTRACT(DOW FROM lo.date) IN (0, 6) AND lo.sorteo_id = %s
@@ -2751,7 +2751,7 @@ class LotteryStatsService(models.Model):
             self.env.cr.execute("""
                 WITH wd AS (
                     SELECT (ln.name::int %% 10)                          AS terminal,
-                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.id) AS rn
+                           ROW_NUMBER() OVER (ORDER BY lo.date, lo.turno_sequence, lo.id) AS rn
                     FROM lottery_output lo
                     JOIN lottery_number ln ON ln.id = lo.number_id
                     WHERE EXTRACT(DOW FROM lo.date) IN (0, 6) AND lo.sorteo_id = %s
@@ -2782,7 +2782,7 @@ class LotteryStatsService(models.Model):
             SELECT lo.number_id
             FROM lottery_output lo
             WHERE lo.sorteo_id = %s
-            ORDER BY lo.date DESC, lo.id DESC
+            ORDER BY lo.date DESC, lo.turno_sequence DESC, lo.id DESC
             LIMIT 6
         """, (sorteo_id,))
         recent_6_ids   = [r['number_id'] for r in self.env.cr.dictfetchall()]
@@ -2957,10 +2957,12 @@ class LotteryStatsService(models.Model):
                 WHERE cur.val = (SELECT val FROM last_val)
                 GROUP BY nxt.val
             ),
+            -- Mes de TODOS los años, igual que cant_salidas_<mes> de los
+            -- números: solo el mes en curso deja el criterio casi en cero
+            -- los primeros días del mes.
             month_f AS (
                 SELECT val, COUNT(*) AS freq FROM all_draws
                 WHERE EXTRACT(MONTH FROM draw_date) = %s
-                  AND EXTRACT(YEAR  FROM draw_date) = %s
                 GROUP BY val
             ),
             dow_f AS (
@@ -2993,7 +2995,7 @@ class LotteryStatsService(models.Model):
             LEFT JOIN month_f       mf ON mf.val      = av.val
             LEFT JOIN dow_f         df ON df.val      = av.val
             LEFT JOIN week_f        wf ON wf.val      = av.val
-        """, (sorteo_id, turno_id, turno_id, month, year, pg_dow, week_seg_num))
+        """, (sorteo_id, turno_id, turno_id, month, pg_dow, week_seg_num))
         return self.env.cr.dictfetchall()
 
     def _get_calientes_cebs(self, turno_id, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None):
@@ -3035,7 +3037,8 @@ class LotteryStatsService(models.Model):
         rows.sort(key=lambda x: x['score'], reverse=True)
         return [{'name': str(r['val'])} for r in rows[:4]]
 
-    def _get_frios_cebs(self, turno_id, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None):
+    def _get_frios_cebs(self, turno_id, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None,
+                        exclude=()):
         """
         Centenas / bola extra frías.
         Mismos 6 criterios que calientes pero INVERTIDOS:
@@ -3045,7 +3048,9 @@ class LotteryStatsService(models.Model):
           10 % menos salidor mes
            7 % menos salidor DOW
            3 % menos salidor sem
-        Retorna los 4 más fríos. Acepta `rows` ya consultadas (ver _get_calientes_cebs).
+        Retorna los 4 más fríos sin contar los valores de `exclude` (los
+        calientes, igual que en los números: un valor no puede estar en las
+        dos listas). Acepta `rows` ya consultadas (ver _get_calientes_cebs).
         """
         if rows is None:
             rows = self._query_ceb_stats(turno_id, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=sorteo_id)
@@ -3072,7 +3077,8 @@ class LotteryStatsService(models.Model):
             )
 
         rows.sort(key=lambda x: x['score'], reverse=True)
-        return [{'name': str(r['val'])} for r in rows[:4]]
+        return [{'name': str(r['val'])} for r in rows
+                if str(r['val']) not in exclude][:4]
 
     def _get_all_cebs_scored(self, turno_id, pg_dow, week_seg_num, month, year, output_id_field, sorteo_id=False, rows=None):
         """Todos los valores (centenas o bola extra) con su score caliente, sin recortar.
@@ -3101,30 +3107,23 @@ class LotteryStatsService(models.Model):
         return [{'name': str(r['val'])} for r in rows]
 
     @api.model
-    @tools.ormcache('today_str', 'sorteo_id')
-    def get_calientes_all(self, today_str, sorteo_id=False):
-        """Números, centenas y bola extra calientes/fríos/restantes de cada
-        turno del sorteo: {código de turno: {...}, 'last_turn': código del
-        turno de la última salida}. Es lo que se guarda como ranking
-        snapshot del sorteo."""
-        from datetime import date as _date
-        today = _date.fromisoformat(today_str)
-        pg_dow       = (today.weekday() + 1) % 7
-        day          = today.day
-        month        = today.month
-        year         = today.year
-        week_seg_num = (1 if day <= 7  else 2 if day <= 14 else
-                        3 if day <= 21 else 4 if day <= 28 else 5)
+    @tools.ormcache('today_str', 'sorteo_id', 'turno_id')
+    def get_calientes_all(self, today_str, sorteo_id=False, turno_id=False):
+        """Números, centenas y bola extra calientes/fríos/restantes del
+        PRÓXIMO sorteo (fecha `today_str`, turno `turno_id`):
+        {código de ese turno: {...}, 'last_turn': código del turno de la
+        última salida}. Es lo que se guarda como ranking snapshot del sorteo.
 
-        # Fecha del próximo sorteo de cada turno = su última salida + 1 día
+        Solo se calcula el turno que se juega a continuación: el de los demás
+        turnos se descartaría igual, porque al registrar la próxima salida se
+        vuelve a calcular. Sin `turno_id`, el primer turno del sorteo."""
+        from datetime import date as _date
+        fecha = _date.fromisoformat(today_str)
+        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
+        turnos = self._turnos(sorteo_id)
+        turno = next((t for t in turnos if t[0] == turno_id), turnos[0] if turnos else None)
+
         DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-        self.env.cr.execute("""
-            SELECT turno_id, MAX(date) + INTERVAL '1 day' AS next_date
-            FROM lottery_output
-            WHERE sorteo_id = %s
-            GROUP BY turno_id
-        """, (sorteo_id,))
-        next_by_turno = {r['turno_id']: r['next_date'] for r in self.env.cr.dictfetchall()}
         self.env.cr.execute("""
             SELECT t.code FROM lottery_output o
             JOIN lottery_turno t ON t.id = o.turno_id
@@ -3133,7 +3132,6 @@ class LotteryStatsService(models.Model):
             LIMIT 1
         """, (sorteo_id,))
         last = self.env.cr.fetchone()
-        turnos = self._turnos(sorteo_id)
 
         def _fmt_date(d):
             if not d:
@@ -3147,15 +3145,17 @@ class LotteryStatsService(models.Model):
             boundary = scores_desc[n - 1]['score']
             return [s for s in scores_desc if s['score'] >= boundary]
 
-        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
         uses_fireball = bool(sorteo.uses_fireball)
         uses_hundreds = bool(sorteo.uses_hundreds)
         result = {}
-        for turno_id, code, _name in turnos:
-            result[code] = self._calientes_for_turn(
-                turno_id, pg_dow, week_seg_num, month, year, today_str,
-                sorteo_id, next_by_turno.get(turno_id), _cut_with_ties, _fmt_date,
-                uses_fireball, uses_hundreds)
+        if turno:
+            day = fecha.day
+            week_seg_num = (1 if day <= 7  else 2 if day <= 14 else
+                            3 if day <= 21 else 4 if day <= 28 else 5)
+            result[turno[1]] = self._calientes_for_turn(
+                turno[0], (fecha.weekday() + 1) % 7, week_seg_num, fecha.month,
+                fecha.year, today_str, sorteo_id, fecha, _cut_with_ties,
+                _fmt_date, uses_fireball, uses_hundreds)
         result['last_turn'] = last[0] if last else (turnos[0][1] if turnos else False)
         return result
 
@@ -3188,9 +3188,10 @@ class LotteryStatsService(models.Model):
         if uses_hundreds:
             cen_rows        = self._query_ceb_stats(turno_id, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id)
             centenas        = self._get_calientes_cebs(turno_id, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
-            centenas_cold   = self._get_frios_cebs(turno_id, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows)
+            hot_cen_names   = {c['name'] for c in centenas}
+            centenas_cold   = self._get_frios_cebs(turno_id, pg_dow, week_seg_num, month, year, 'hundreds_id', sorteo_id=sorteo_id, rows=cen_rows,
+                                                   exclude=hot_cen_names)
 
-            hot_cen_names  = {c['name'] for c in centenas}
             cold_cen_names = {c['name'] for c in centenas_cold}
 
             # Centenas restantes: no clasificadas como calientes ni frías
@@ -3205,8 +3206,9 @@ class LotteryStatsService(models.Model):
         if uses_fireball:
             be_rows         = self._query_ceb_stats(turno_id, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id)
             bola_extra      = self._get_calientes_cebs(turno_id, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows)
-            bola_extra_cold = self._get_frios_cebs(turno_id, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows)
             hot_be_names    = {c['name'] for c in bola_extra}
+            bola_extra_cold = self._get_frios_cebs(turno_id, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows,
+                                                   exclude=hot_be_names)
             cold_be_names   = {c['name'] for c in bola_extra_cold}
             all_bola_extra  = self._get_all_cebs_scored(turno_id, pg_dow, week_seg_num, month, year, 'fireball_id', sorteo_id=sorteo_id, rows=be_rows)
             bola_extra_remaining = [c for c in all_bola_extra if c['name'] not in hot_be_names and c['name'] not in cold_be_names]
