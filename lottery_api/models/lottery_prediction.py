@@ -11,6 +11,7 @@ import pytz
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.addons.lottery_portal.models.quiniela_uy_ternas import SOURCE_CODE as QUINIELA_UY
 
 from .lottery_output import _push_worker
 
@@ -186,6 +187,8 @@ class LotteryPrediction(models.Model):
                     sorteo.name, turno.name, len(pred.number_ids_20),
                     len(pred.number_ids_10), len(pred.number_ids_5),
                     'sí' if pred.super_magico_id else 'no'))
+        if sorteo.source_code == QUINIELA_UY:
+            pred.action_completar_ternas()
 
         if sorteo.auto_prediction_publish:
             pred.write({'published': True})
