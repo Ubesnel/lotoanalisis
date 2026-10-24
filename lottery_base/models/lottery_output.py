@@ -73,7 +73,34 @@ class LotteryOutput(models.Model):
             if sorteo:
                 res['sorteo_id'] = sorteo.id
 
+        sorteo = self.env['lottery.sorteo'].browse(res.get('sorteo_id'))
+        if sorteo:
+            res.update(self._next_draw_vals(sorteo, fields_list))
         return res
+
+    @api.model
+    def _next_draw_vals(self, sorteo, fields_list=('date', 'turno_id')):
+        """Fecha y turno del próximo sorteo pendiente de registrar, salvo los
+        que vengan explícitos en el contexto."""
+        ctx = self.env.context
+        has_draw = sorteo.next_draw_date or self.search_count(
+            [('sorteo_id', '=', sorteo.id)], limit=1)
+        if not has_draw:
+            return {}
+        draw_date, draw_turno = sorteo.get_next_draw()
+        vals = {}
+        if 'date' in fields_list and 'default_date' not in ctx:
+            vals['date'] = draw_date
+        if 'turno_id' in fields_list and 'default_turno_id' not in ctx and draw_turno:
+            vals['turno_id'] = draw_turno.id
+        return vals
+
+    @api.onchange('sorteo_id')
+    def _onchange_sorteo_next_draw(self):
+        if self._origin.id or not self.sorteo_id:
+            return
+        for name, value in self._next_draw_vals(self.sorteo_id).items():
+            self[name] = value
 
     @api.depends('date', 'turno_id.name', 'hundreds_id.name', 'number_id', 'sorteo_id.display_name')
     def _compute_display_name(self):
