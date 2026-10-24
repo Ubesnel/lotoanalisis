@@ -1398,6 +1398,7 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
             'turn': turno.code,
             'turn_label': turno.name or '',
+            'hora': _hora_turno(sorteo, turno, pred.date),
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
             'result_number': (
                 str(output.number_id.name).zfill(2)
