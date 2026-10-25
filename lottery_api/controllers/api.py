@@ -207,10 +207,30 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
+        return _json_response(self._latest_payload(sorteo))
 
+    @http.route('/api/lottery/v1/results/latest-multi', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def latest_results_multi(self, sorteo_ids=None, **kwargs):
+        """Lo mismo que /results/latest para varios sorteos en una llamada
+        (pantalla Inicio). `sorteo_ids` = '1,4,7'; los que no estén
+        publicados en la app se saltean."""
+        ids = []
+        for raw in (sorteo_ids or '').split(','):
+            raw = raw.strip()
+            if raw.isdigit() and int(raw) not in ids:
+                ids.append(int(raw))
+        payloads = []
+        for sid in ids[:30]:
+            sorteo = _get_public_sorteo(sid)
+            if sorteo:
+                payloads.append(self._latest_payload(sorteo))
+        return _json_response({'sorteos': payloads})
+
+    def _latest_payload(self, sorteo):
         Output = request.env['lottery.output'].sudo()
         next_date, next_turno = sorteo.get_next_draw()
-        return _json_response({
+        return {
             'sorteo': {'id': sorteo.id, 'name': sorteo.name, 'code': sorteo.code,
                        'uses_fireball': sorteo.uses_fireball,
                        'uses_hundreds': sorteo.uses_hundreds},
@@ -221,7 +241,7 @@ class LotteryAppApi(http.Controller):
                 for t in sorteo._ordered_turnos()],
             'next_draw': {'date': next_date, 'turn': next_turno.code or None,
                           'turn_label': next_turno.name or ''},
-        })
+        }
 
     @http.route('/api/lottery/v1/results/search', type='http', auth='public',
                 methods=['GET'], csrf=False, cors='*')
