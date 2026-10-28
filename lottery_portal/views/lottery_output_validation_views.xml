@@ -70,31 +70,34 @@
         <field name="model">lottery.output</field>
         <field name="inherit_id" ref="lottery_base.view_lottery_output_form"/>
         <field name="arch" type="xml">
-            <page name="numeros_corridos" position="after">
+            <notebook position="inside">
                 <page string="Predicción vs Resultado" name="validation">
                         <group>
-                            <group>
+                            <group string="Calientes">
                                 <field name="hot_numero_ok"/>
                                 <field name="hot_1_ok"/>
                                 <field name="hot_2_ok"/>
                                 <field name="hot_3_ok"/>
+                            </group>
+                            <group string="Restantes">
                                 <field name="restante_numero_ok"/>
                                 <field name="restante_1_ok"/>
                                 <field name="restante_2_ok"/>
                                 <field name="restante_3_ok"/>
                                 <field name="restante_4_ok"/>
+                            </group>
+                            <group string="Fríos">
                                 <field name="cold_numero_ok"/>
                                 <field name="cold_1_ok"/>
                                 <field name="cold_2_ok"/>
                                 <field name="cold_3_ok"/>
-
                             </group>
                         </group>
                         <group>
                             <field name="validation_date" string="Validado en"/>
                         </group>
                     </page>
-            </page>
+            </notebook>
         </field>
     </record>
 
