@@ -59,17 +59,11 @@
                                    required="sorteo_uses_hundreds"/>
                             <field name="number_id" options="{'no_open': True, 'no_create': True}"/>
                             <field name="complete_number"/>
+                            <field name="premio_2_id" invisible="not sorteo_id or not sorteo_id.is_pick3" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="premio_3_id" invisible="not sorteo_id or not sorteo_id.is_pick3" options="{'no_open': True, 'no_create': True}"/>
                         </group>
                     </group>
-                    <notebook>
-                        <page string="Números corridos" name="numeros_corridos"
-                              invisible="not sorteo_id or not sorteo_id.is_pick3">
-                            <group>
-                                <field name="premio_2_id" options="{'no_open': True, 'no_create': True}"/>
-                                <field name="premio_3_id" options="{'no_open': True, 'no_create': True}"/>
-                            </group>
-                        </page>
-                    </notebook>
+                    <notebook/>
                 </sheet>
             </form>
         </field>
