@@ -40,8 +40,8 @@ class LotteryScraperQuinielaUy(models.Model):
     # consulta, y esa fecha devuelve los 20 sorteos de ambos turnos juntos.
     page_load_timeout = fields.Integer('Timeout petición (seg)', default=30)
 
-    date_from = fields.Date('Fecha desde', help='Vacío = detecta automáticamente desde el último día registrado.')
-    date_to = fields.Date('Fecha hasta', help='Vacío = usa la fecha de hoy.')
+    date_from = fields.Date('Fecha desde', help='Vacío = detecta automáticamente desde el último día registrado.', default=fields.Date.today())
+    date_to = fields.Date('Fecha hasta', help='Vacío = usa la fecha de hoy.', default=fields.Date.today())
 
     last_run = fields.Datetime('Última ejecución', readonly=True)
     last_result = fields.Html('Último resultado', readonly=True, sanitize=False)
