@@ -67,6 +67,18 @@
               parent="lottery_base.menu_country_us_salidas"
               action="lottery_base.action_lottery_output_tennessee" sequence="70"
               groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_maryland_item" name="Maryland"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_maryland" sequence="80"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_south_carolina_item" name="South Carolina"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_south_carolina" sequence="90"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_illinois_item" name="Chicago / Illinois"
+              parent="lottery_base.menu_country_us_salidas"
+              action="lottery_base.action_lottery_output_illinois" sequence="100"
+              groups="lottery_base.group_lottery_user"/>
 
     <!-- República Dominicana -->
     <menuitem name="República Dominicana" id="menu_country_do" sequence="2"

@@ -87,6 +87,89 @@
             <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
         </record>
+        <!-- Pick 3 / Pick 4: Midday 12:27 y Evening 19:56 (hora del Este), como Florida: Tarde y Noche. El histórico se carga desde Excel (lottery.net, desde abril de 2010). -->
+        <record id="sorteo_maryland" model="lottery.sorteo">
+            <field name="name">Maryland</field>
+            <field name="code">maryland</field>
+            <field name="sequence">108</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 27, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_evening'), 'hora_h': '7', 'hora_min': 56, 'hora_ampm': 'pm'}),
+            ]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Pick 3 / Pick 4: Midday 12:59 de lunes a sábado y Evening 18:59 todos los días (hora del Este): Tarde y Noche. La Fireball no se registra. Continuidad en False: no hay Tarde los domingos. El histórico se carga desde Excel (lottery.net, desde 2003). -->
+        <record id="sorteo_south_carolina" model="lottery.sorteo">
+            <field name="name">South Carolina</field>
+            <field name="code">south_carolina</field>
+            <field name="sequence">109</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 59, 'hora_ampm': 'pm'}),
+            ]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Pick 3 / Pick 4 de la Illinois Lottery (sortea en Chicago): Midday 12:40 y Evening 21:22 (hora del Centro): Tarde y Noche. La Fireball no se registra. El histórico se carga desde Excel (lottery.net, desde abril de 2010). -->
+        <record id="sorteo_illinois" model="lottery.sorteo">
+            <field name="name">Chicago / Illinois</field>
+            <field name="code">illinois</field>
+            <field name="sequence">110</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_afternoon'), 'hora_h': '12', 'hora_min': 40, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_evening'), 'hora_h': '9', 'hora_min': 22, 'hora_ampm': 'pm'}),
+            ]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
         <!-- Quiniela de 3 números de 2 dígitos: premio 1 = fijo (number_id), premios 2 y 3 = corridos. Turnos 12:00 y 19:00 (hora RD). Continuidad en False: el histórico oficial arranca el 18/02/2023 y puede tener días incompletos. -->
         <record id="sorteo_la_primera" model="lottery.sorteo">
             <field name="name">La Primera</field>
