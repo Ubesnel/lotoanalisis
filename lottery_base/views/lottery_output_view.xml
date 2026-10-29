@@ -185,6 +185,36 @@
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
+    <record id="action_lottery_output_maryland" model="ir.actions.act_window">
+        <field name="name">Maryland</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'maryland')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'maryland'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_south_carolina" model="ir.actions.act_window">
+        <field name="name">South Carolina</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'south_carolina')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'south_carolina'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_illinois" model="ir.actions.act_window">
+        <field name="name">Chicago / Illinois</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'illinois')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'illinois'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
     <record id="action_lottery_output_la_primera" model="ir.actions.act_window">
         <field name="name">La Primera</field>
         <field name="type">ir.actions.act_window</field>
