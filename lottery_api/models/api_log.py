@@ -75,7 +75,7 @@ class LotteryApiLog(models.Model):
             pass
 
     @api.model
-    def _cleanup_old(self, days=90):
+    def _cleanup_old(self, days=3):
         """Elimina registros con más de `days` días. Lo llama el cron diario
         para que la tabla no crezca sin control."""
         limit = fields.Datetime.now() - timedelta(days=days)
