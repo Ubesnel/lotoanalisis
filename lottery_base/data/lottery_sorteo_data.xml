@@ -112,7 +112,7 @@
             ]"/>
             <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
-            <field name="is_pick3" eval="False"/>
+            <field name="is_pick3" eval="True"/>
             <field name="enforce_turn_continuity" eval="False"/>
         </record>
         <!-- Pick 3 / Pick 4: Midday 12:59 de lunes a sábado y Evening 18:59 todos los días (hora del Este): Tarde y Noche. La Fireball no se registra. Continuidad en False: no hay Tarde los domingos. El histórico se carga desde Excel (lottery.net, desde 2003). -->
@@ -139,7 +139,7 @@
             ]"/>
             <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
-            <field name="is_pick3" eval="False"/>
+            <field name="is_pick3" eval="True"/>
             <field name="enforce_turn_continuity" eval="False"/>
         </record>
         <!-- Pick 3 / Pick 4 de la Illinois Lottery (sortea en Chicago): Midday 12:40 y Evening 21:22 (hora del Centro): Tarde y Noche. La Fireball no se registra. El histórico se carga desde Excel (lottery.net, desde abril de 2010). -->
@@ -167,7 +167,7 @@
             ]"/>
             <field name="uses_hundreds" eval="True"/>
             <field name="uses_fireball" eval="False"/>
-            <field name="is_pick3" eval="False"/>
+            <field name="is_pick3" eval="True"/>
             <field name="enforce_turn_continuity" eval="False"/>
         </record>
         <!-- Quiniela de 3 números de 2 dígitos: premio 1 = fijo (number_id), premios 2 y 3 = corridos. Turnos 12:00 y 19:00 (hora RD). Continuidad en False: el histórico oficial arranca el 18/02/2023 y puede tener días incompletos. -->
