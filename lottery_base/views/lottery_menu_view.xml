@@ -249,6 +249,18 @@
               action="lottery_base.action_lottery_output_la_diaria_el_salvador" sequence="10"
               groups="lottery_base.group_lottery_user"/>
 
+    <!-- Costa Rica -->
+    <menuitem name="Costa Rica" id="menu_country_cr" sequence="8"
+              parent="lottery_base.home_lottery"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem name="Salidas" id="menu_country_cr_salidas" sequence="10"
+              parent="lottery_base.menu_country_cr"
+              groups="lottery_base.group_lottery_user"/>
+    <menuitem id="menu_lottery_output_nuevos_tiempos_item" name="Nuevos Tiempos"
+              parent="lottery_base.menu_country_cr_salidas"
+              action="lottery_base.action_lottery_output_nuevos_tiempos" sequence="10"
+              groups="lottery_base.group_lottery_user"/>
+
     <!-- 5) CONFIGURACIÓN -->
     <menuitem name="Configuración" id="menu_configuracion_root" sequence="100"
               parent="lottery_base.home_lottery"

@@ -523,5 +523,17 @@
             <field name="is_pick3" eval="False"/>
             <field name="enforce_turn_continuity" eval="False"/>
         </record>
+        <!-- Nuevos Tiempos (JPS Costa Rica): un número de 00 a 99, sin centena; la bolita reventada y el Mega Reventado no se guardan. Todos los días: Mediodía 12:55, Tarde 16:30 y Noche 19:30 (hora de Costa Rica); la Tarde existe desde el 04/04/2022. No sortea en Semana Santa (jue-dom), 25/12, 01/01 ni en elecciones. El histórico se carga desde Excel (desde el 20/11/2014, con huecos). -->
+        <record id="sorteo_nuevos_tiempos" model="lottery.sorteo">
+            <field name="name">Nuevos Tiempos</field>
+            <field name="code">nuevos_tiempos</field>
+            <field name="sequence">701</field>
+            <field name="country_id" ref="base.cr"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_midday'), ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="uses_hundreds" eval="False"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
     </data>
 </odoo>

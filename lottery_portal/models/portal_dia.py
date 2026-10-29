@@ -24,10 +24,11 @@ MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
          'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
 # Orden de los países en la portada; los que no estén van después.
-PAISES_ORDEN = ['US', 'DO', 'SX', 'NI', 'HN', 'SV', 'UY']
+PAISES_ORDEN = ['US', 'DO', 'SX', 'NI', 'HN', 'SV', 'CR', 'UY']
 PAISES_NOMBRE = {
     'US': 'Estados Unidos', 'DO': 'República Dominicana', 'SX': 'San Martín',
-    'NI': 'Nicaragua', 'HN': 'Honduras', 'SV': 'El Salvador', 'UY': 'Uruguay',
+    'NI': 'Nicaragua', 'HN': 'Honduras', 'SV': 'El Salvador', 'CR': 'Costa Rica',
+    'UY': 'Uruguay',
 }
 
 

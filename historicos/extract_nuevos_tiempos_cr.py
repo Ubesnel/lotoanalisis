@@ -34,8 +34,8 @@ REPEDIR_DIAS = 3
 DELAY = 3
 GUARDAR_CADA = 50
 
-TURNO = {'medio dia': 'h1255', 'tarde': 'h1630', 'noche': 'h1930'}
-NOMBRE = {'h1255': '12:55 PM', 'h1630': '4:30 PM', 'h1930': '7:30 PM'}
+TURNO = {'medio dia': 'midday', 'tarde': 'afternoon', 'noche': 'evening'}
+NOMBRE = {'midday': 'Mediodía', 'afternoon': 'Tarde', 'evening': 'Noche'}
 ORDEN = {t: i for i, t in enumerate(NOMBRE)}
 
 RE_FILA = re.compile(
