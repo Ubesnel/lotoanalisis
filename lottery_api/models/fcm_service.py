@@ -62,8 +62,9 @@ class LotteryFcmService(models.AbstractModel):
         return token
 
     @api.model
-    def _request_new_token(self, sa):
-        """Genera JWT con la service account y lo intercambia por access token."""
+    def _request_new_token(self, sa, scope=SCOPE):
+        """Genera JWT con la service account y lo intercambia por access token.
+        `scope` lo cambia lottery.premium.pass para la API de Google Play."""
         try:
             now = int(time.time())
             header = base64.urlsafe_b64encode(
@@ -72,7 +73,7 @@ class LotteryFcmService(models.AbstractModel):
             payload = base64.urlsafe_b64encode(
                 json.dumps({
                     'iss': sa['client_email'],
-                    'scope': SCOPE,
+                    'scope': scope,
                     'aud': OAUTH_URL,
                     'iat': now,
                     'exp': now + 3600,
@@ -100,7 +101,7 @@ class LotteryFcmService(models.AbstractModel):
             resp.raise_for_status()
             return resp.json().get('access_token')
         except Exception as e:
-            _logger.error('lottery_api: error obteniendo token FCM: %s', e)
+            _logger.error('lottery_api: error obteniendo token (%s): %s', scope, e)
             return None
 
     @api.model

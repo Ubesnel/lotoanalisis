@@ -215,6 +215,36 @@
         <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
     </record>
 
+    <record id="action_lottery_output_kentucky" model="ir.actions.act_window">
+        <field name="name">Kentucky</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'kentucky')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'kentucky'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_north_carolina" model="ir.actions.act_window">
+        <field name="name">North Carolina</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'north_carolina')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'north_carolina'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
+    <record id="action_lottery_output_california" model="ir.actions.act_window">
+        <field name="name">California</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">lottery.output</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[('sorteo_id.code', '=', 'california')]</field>
+        <field name="context">{'search_default_current_month': 1, 'codigo_sorteo': 'california'}</field>
+        <field name="view_id" ref="lottery_base.view_lottery_output_tree"/>
+    </record>
+
     <record id="action_lottery_output_la_primera" model="ir.actions.act_window">
         <field name="name">La Primera</field>
         <field name="type">ir.actions.act_window</field>

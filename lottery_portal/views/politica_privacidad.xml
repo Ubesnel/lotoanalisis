@@ -16,7 +16,7 @@
                             en el sitio web y en la aplicación móvil LotoAnálisis.
                         </p>
                         <div class="legal-date-badge">
-                            <i class="fa fa-calendar"/> Última actualización: 4 de agosto de 2026
+                            <i class="fa fa-calendar"/> Última actualización: 30 de octubre de 2026
                         </div>
                         <div class="legal-hero-line"/>
                     </div>
@@ -90,6 +90,19 @@
                                     usados exclusivamente para la operación y seguridad del servicio.
                                 </li>
                                 <li>
+                                    <strong>Compras en la app (Google Play)</strong>: la
+                                    suscripción LotoAnálisis Premium y los aportes voluntarios se
+                                    pagan a través de Google Play. <strong>No recibimos ni
+                                    guardamos datos de tarjetas ni de medios de pago</strong>, ni tu
+                                    correo o nombre. Para validar la suscripción, la aplicación envía
+                                    a nuestro servidor el comprobante de compra que entrega Google
+                                    Play, y el servidor lo consulta a Google. De cada suscripción
+                                    guardamos solo ese comprobante, el número de pedido, el plan, el
+                                    estado y la fecha de vencimiento, durante el tiempo que la
+                                    suscripción esté vigente y hasta 2 años después, para atender
+                                    consultas o reclamos.
+                                </li>
+                                <li>
                                     En el dispositivo solo se guardan preferencias locales de uso
                                     (por ejemplo, idioma, sorteo seleccionado o si ya se mostró la
                                     pantalla de bienvenida); esta información no sale del teléfono y
@@ -98,8 +111,9 @@
                             </ul>
                             <p>
                                 La aplicación muestra información estadística dirigida a personas
-                                mayores de 18 años y no permite realizar apuestas ni operaciones
-                                con dinero real.
+                                mayores de 18 años y no permite realizar apuestas. Los únicos
+                                pagos posibles son la suscripción Premium y los aportes
+                                voluntarios, siempre a través de Google Play.
                             </p>
                         </div>
                     </div>
@@ -124,6 +138,9 @@
                                 <li>Fecha y hora de acceso</li>
                                 <li>Páginas visitadas</li>
                             </ul>
+                            <p>
+                                Estos registros se borran automáticamente a los 15 días.
+                            </p>
                         </div>
                     </div>
 
@@ -142,6 +159,7 @@
                                 <li>Analizar el uso del sitio y de la aplicación de forma agregada y anónima</li>
                                 <li>Enviar notificaciones sobre nuevos resultados de sorteos</li>
                                 <li>Mostrar anuncios y medir su rendimiento en la aplicación</li>
+                                <li>Validar la suscripción Premium y mantenerla activa mientras esté pagada</li>
                             </ul>
                         </div>
                     </div>
@@ -209,7 +227,7 @@
                             <p>
                                 Parte de los datos técnicos y de uso descritos en esta política son
                                 procesados por <strong>Google</strong> (Firebase Analytics, Firebase
-                                Cloud Messaging y Google AdMob) en su carácter de proveedor de estos
+                                Cloud Messaging, Google AdMob y Google Play para los pagos) en su carácter de proveedor de estos
                                 servicios, conforme a la
                                 <a href="https://policies.google.com/privacy" target="_blank">Política de
                                 Privacidad de Google</a>.

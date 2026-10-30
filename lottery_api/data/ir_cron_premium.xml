@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Revisa en Google Play las suscripciones Premium que vencen pronto,
+         esperan un pago o no se pudieron confirmar. Reemplaza a Pub/Sub. -->
+    <record id="ir_cron_lottery_premium_refresh" model="ir.cron">
+        <field name="name">Lottery API: refrescar suscripciones Premium</field>
+        <field name="model_id" ref="model_lottery_premium_pass"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_refresh_subscriptions()</field>
+        <field name="interval_number">6</field>
+        <field name="interval_type">hours</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Borra los pases vencidos hace más de 2 años (política de privacidad). -->
+    <record id="ir_cron_lottery_premium_purge" model="ir.cron">
+        <field name="name">Lottery API: borrar pases Premium viejos</field>
+        <field name="model_id" ref="model_lottery_premium_pass"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_purge_old_passes()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

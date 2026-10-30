@@ -16,7 +16,7 @@
                             o la aplicación móvil LotoAnálisis.
                         </p>
                         <div class="legal-date-badge">
-                            <i class="fa fa-calendar"/> Última actualización: 9 de julio de 2026
+                            <i class="fa fa-calendar"/> Última actualización: 30 de octubre de 2026
                         </div>
                         <div class="legal-hero-line"/>
                     </div>
@@ -83,8 +83,10 @@
                         <div class="legal-card-body">
                             <p>
                                 LotoAnálisis es un servicio informativo independiente:
-                                <strong>no vende billetes de lotería, no acepta apuestas ni pagos,
-                                y no entrega premios.</strong> No está afiliado, asociado ni
+                                <strong>no vende billetes de lotería, no acepta apuestas y no
+                                entrega premios.</strong> Los únicos pagos posibles son la
+                                suscripción opcional LotoAnálisis Premium y los aportes voluntarios
+                                descritos en la sección 9. No está afiliado, asociado ni
                                 respaldado por ningún operador oficial de lotería.
                             </p>
                             <p>
@@ -156,15 +158,82 @@
                             <p>
                                 El sitio web puede mostrar publicidad de terceros, como Google AdSense.
                                 No tenemos control sobre el contenido específico de dichos anuncios.
-                                La aplicación móvil no muestra publicidad actualmente.
+                                La aplicación móvil muestra anuncios de Google AdMob, salvo a
+                                quienes tienen LotoAnálisis Premium.
                             </p>
                         </div>
                     </div>
 
-                    <!-- 9. Modificaciones -->
+                    <!-- 9. LotoAnálisis Premium y aportes -->
                     <div class="legal-card">
                         <div class="legal-card-header">
                             <span class="legal-card-num">9</span>
+                            <i class="fa fa-star legal-card-icon"/>
+                            <h2 class="legal-card-title">LotoAnálisis Premium y aportes voluntarios</h2>
+                        </div>
+                        <div class="legal-card-body">
+                            <p>
+                                <strong>LotoAnálisis Premium</strong> es una suscripción opcional
+                                dentro de la aplicación móvil. El uso básico del servicio sigue
+                                siendo gratuito.
+                            </p>
+                            <ul class="legal-list">
+                                <li>
+                                    <strong>Qué incluye:</strong> la aplicación sin anuncios, la
+                                    sección "LotoAnálisis informa" y las estadísticas exclusivas que
+                                    se vayan incorporando. El contenido Premium puede ampliarse o
+                                    modificarse con el tiempo.
+                                </li>
+                                <li>
+                                    <strong>Planes y precio:</strong> hay un plan mensual y uno
+                                    anual. El precio se muestra en la aplicación y en Google Play,
+                                    en tu moneda local, antes de confirmar la compra.
+                                </li>
+                                <li>
+                                    <strong>Cobro y renovación:</strong> el pago lo procesa Google
+                                    Play con el medio de pago de tu cuenta. La suscripción se
+                                    renueva automáticamente al final de cada período, por el mismo
+                                    plazo, hasta que la canceles.
+                                </li>
+                                <li>
+                                    <strong>Cancelación:</strong> podés cancelarla en cualquier
+                                    momento desde Google Play → Pagos y suscripciones. Seguís
+                                    teniendo Premium hasta el final del período ya pagado y no se
+                                    vuelve a cobrar.
+                                </li>
+                                <li>
+                                    <strong>Reembolsos:</strong> se rigen por las políticas de
+                                    reembolso de Google Play.
+                                </li>
+                                <li>
+                                    <strong>Cambios de precio:</strong> si el precio cambia, se
+                                    avisa con anticipación a través de Google Play, conforme a sus
+                                    políticas.
+                                </li>
+                                <li>
+                                    <strong>Cuenta:</strong> la suscripción queda asociada a tu
+                                    cuenta de Google Play. Al reinstalar la aplicación o cambiar de
+                                    teléfono con la misma cuenta, se recupera con "Restaurar
+                                    compra".
+                                </li>
+                            </ul>
+                            <p>
+                                Premium no garantiza resultados ni aumenta las probabilidades de
+                                ganar ningún sorteo: amplía la información estadística disponible
+                                y quita la publicidad (ver sección 6).
+                            </p>
+                            <p>
+                                Los <strong>aportes voluntarios</strong> de la sección "Apoyá
+                                LotoAnálisis" son donaciones para el mantenimiento del servicio, sin
+                                contraprestación, y también se procesan por Google Play.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 10. Modificaciones -->
+                    <div class="legal-card">
+                        <div class="legal-card-header">
+                            <span class="legal-card-num">10</span>
                             <i class="fa fa-pencil legal-card-icon"/>
                             <h2 class="legal-card-title">Modificaciones</h2>
                         </div>
@@ -177,10 +246,10 @@
                         </div>
                     </div>
 
-                    <!-- 10. Contacto -->
+                    <!-- 11. Contacto -->
                     <div class="legal-card legal-card--contact">
                         <div class="legal-card-header">
-                            <span class="legal-card-num">10</span>
+                            <span class="legal-card-num">11</span>
                             <i class="fa fa-envelope legal-card-icon"/>
                             <h2 class="legal-card-title">Contacto</h2>
                         </div>
