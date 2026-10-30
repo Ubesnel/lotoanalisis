@@ -13,4 +13,16 @@
             <field name="active" eval="True"/>
         </record>
     </data>
+
+    <!-- Borra las visitas al portal con más de 15 días (política de privacidad). -->
+    <record id="cron_lottery_page_visit_cleanup" model="ir.cron">
+        <field name="name">Portal: borrar visitas antiguas</field>
+        <field name="model_id" ref="model_lottery_page_visit"/>
+        <field name="state">code</field>
+        <field name="code">model._cleanup_old(15)</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="active" eval="True"/>
+    </record>
 </odoo>

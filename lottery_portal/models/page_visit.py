@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
+
 from odoo import models, fields, api
 
 
@@ -56,3 +58,9 @@ class LotteryPageVisit(models.Model):
             })
         except Exception:
             pass
+
+    @api.model
+    def _cleanup_old(self, days=15):
+        """Borra las visitas con más de `days` días. Lo llama el cron diario."""
+        limit = fields.Datetime.now() - timedelta(days=days)
+        self.sudo().search([('visit_date', '<', limit)]).unlink()

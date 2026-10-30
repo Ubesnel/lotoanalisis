@@ -170,6 +170,90 @@
             <field name="is_pick3" eval="True"/>
             <field name="enforce_turn_continuity" eval="False"/>
         </record>
+        <!-- Pick 3 / Pick 4: Midday 13:20 y Evening 23:00 (hora del Este), todos los días: Tarde y Noche. No tiene Fireball. Continuidad en False: el Midday arranca el 24/03/1999 y no tuvo domingos hasta el 28/02/2016. El histórico se carga desde Excel (lotterycorner + lottery.net, desde el 04/07/1998). -->
+        <record id="sorteo_kentucky" model="lottery.sorteo">
+            <field name="name">Kentucky</field>
+            <field name="code">kentucky</field>
+            <field name="sequence">111</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 20, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 0, 'hora_ampm': 'pm'}),
+            ]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Pick 3 / Pick 4: Day 15:00 y Evening 23:22 (hora del Este), todos los días: Tarde y Noche. La Fireball no se registra. Continuidad en False: el Day no tuvo domingos hasta el 27/02/2011. El histórico se carga desde Excel (CSV oficial de nclottery.com, desde 2009; 2006-2011 solo Pick 3 en hoja aparte). -->
+        <record id="sorteo_north_carolina" model="lottery.sorteo">
+            <field name="name">North Carolina</field>
+            <field name="code">north_carolina</field>
+            <field name="sequence">112</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_afternoon'), 'hora_h': '3', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_evening'), 'hora_h': '11', 'hora_min': 22, 'hora_ampm': 'pm'}),
+            ]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="True"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
+        <!-- Daily 3: Midday 13:00 y Evening 18:30 (hora del Pacífico), todos los días: Tarde y Noche. Solo centena y número, sin premios 2 y 3 (como Quiniela UY premio 1). El histórico se carga desde Excel (lotterycorner + lottery.net; Evening desde 1992, Midday desde 2002). -->
+        <record id="sorteo_california" model="lottery.sorteo">
+            <field name="name">California</field>
+            <field name="code">california</field>
+            <field name="sequence">113</field>
+            <field name="country_id" ref="base.us"/>
+            <field name="turno_ids" eval="[(6, 0, [ref('turno_afternoon'), ref('turno_evening')])]"/>
+            <field name="slot_ids" eval="[
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '0', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '1', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '2', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '3', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '4', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '5', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_afternoon'), 'hora_h': '1', 'hora_min': 0, 'hora_ampm': 'pm'}),
+                (0, 0, {'dow': '6', 'turno_id': ref('turno_evening'), 'hora_h': '6', 'hora_min': 30, 'hora_ampm': 'pm'}),
+            ]"/>
+            <field name="uses_hundreds" eval="True"/>
+            <field name="uses_fireball" eval="False"/>
+            <field name="is_pick3" eval="False"/>
+            <field name="enforce_turn_continuity" eval="False"/>
+        </record>
         <!-- Quiniela de 3 números de 2 dígitos: premio 1 = fijo (number_id), premios 2 y 3 = corridos. Turnos 12:00 y 19:00 (hora RD). Continuidad en False: el histórico oficial arranca el 18/02/2023 y puede tener días incompletos. -->
         <record id="sorteo_la_primera" model="lottery.sorteo">
             <field name="name">La Primera</field>

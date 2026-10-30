@@ -14,6 +14,8 @@ import pytz
 from odoo import http
 from odoo.http import request
 
+from ..models.premium_pass import PremiumError
+
 WEEKDAYS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
              'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -25,7 +27,7 @@ VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 TOMBOLA_VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa')
 
 
-def _json_response(payload, status=200):
+def _json_response(payload, status=200, headers=None):
     # Registro liviano de la consulta (IP, endpoint, sorteo, país, status).
     # Envuelto para que un fallo al loguear jamás afecte la respuesta.
     try:
@@ -34,9 +36,25 @@ def _json_response(payload, status=200):
         pass
     return request.make_response(
         json.dumps(payload, ensure_ascii=False, default=str),
-        headers=[('Content-Type', 'application/json; charset=utf-8')],
+        headers=[('Content-Type', 'application/json; charset=utf-8')] + (headers or []),
         status=status,
     )
+
+
+# Respuestas que dependen del pase Premium: el proxy_cache de nginx no debe
+# guardarlas, o le serviría a un usuario gratis lo que pidió uno Premium.
+NO_STORE = [('Cache-Control', 'no-store, private')]
+
+
+def _request_pass():
+    """Pase Premium vigente de la cabecera X-Premium-Pass, o vacío."""
+    token = request.httprequest.headers.get('X-Premium-Pass')
+    return request.env['lottery.premium.pass'].sudo()._from_token(token)
+
+
+def _informa_premium():
+    return request.env['ir.config_parameter'].sudo().get_param(
+        'lottery_api.informa_premium') == '1'
 
 
 def _serialize_output(record):
@@ -169,8 +187,8 @@ class LotteryAppApi(http.Controller):
     def sorteos(self, **kwargs):
         sorteos = request.env['lottery.sorteo'].sudo().search(
             [('show_in_app', '=', True)], order='sequence, id')
-        min_build = request.env['ir.config_parameter'].sudo().get_param(
-            'lottery_api.min_build_number')
+        Param = request.env['ir.config_parameter'].sudo()
+        min_build = Param.get_param('lottery_api.min_build_number')
         return _json_response({
             'sorteos': [{
                 'id': s.id,
@@ -199,6 +217,12 @@ class LotteryAppApi(http.Controller):
             # por debajo. Ajustable en Ajustes → Loterías → Actualización
             # obligatoria.
             'min_build_number': int(min_build or 0),
+            # Aviso periódico de Premium: se prende, apaga y espacia desde
+            # Ajustes → Loterías → LotoAnálisis Premium, sin publicar la app.
+            'premium_promo': {
+                'enabled': Param.get_param('lottery_api.premium_promo') == '1',
+                'days': int(Param.get_param('lottery_api.premium_promo_days') or 7),
+            },
         })
 
     @http.route('/api/lottery/v1/results/latest', type='http', auth='public',
@@ -755,8 +779,13 @@ class LotteryAppApi(http.Controller):
             ('published', '=', True),
         ], order='date desc, id desc', limit=limit)
 
+        # Con Informa Premium, sin pase van fecha y hora pero no el texto
+        # (vacío y no null: las versiones viejas de la app lo exigen).
+        premium = _informa_premium()
+        locked = premium and not _request_pass()
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'premium_required': locked,
             'items': [{
                 'id': c.id,
                 'date': c.date.strftime('%d/%m/%Y'),
@@ -764,11 +793,37 @@ class LotteryAppApi(http.Controller):
                 # Hora de publicación (hora local, Uruguay): la app la
                 # rotula "Hora de Uruguay" junto a la fecha de la noticia.
                 'hour': _fmt_hour(c.hour),
-                'text': c.text,
+                'text': '' if locked else c.text,
                 # Traducción opcional; si está vacía la app cae al español.
-                'text_en': c.text_en or None,
+                'text_en': None if locked else (c.text_en or None),
+                'locked': locked,
             } for c in curiosities],
-        })
+        }, headers=NO_STORE if premium else None)
+
+    @http.route('/api/lottery/v1/premium/verify', type='http',
+                auth='public', methods=['POST'], csrf=False, cors='*')
+    def premium_verify(self, **kwargs):
+        """La app manda el purchaseToken de la suscripción (al comprar y al
+        abrir, para restaurar y renovar) y recibe el pase firmado."""
+        try:
+            body = json.loads(request.httprequest.get_data() or b'{}')
+        except ValueError:
+            body = {}
+        try:
+            rec = request.env['lottery.premium.pass'].sudo().verify_subscription(
+                body.get('purchase_token'))
+        except PremiumError as e:
+            return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
+        return _json_response(rec._api_payload(), headers=NO_STORE)
+
+    @http.route('/api/lottery/v1/premium/status', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def premium_status(self, **kwargs):
+        """¿Sigue vigente el pase? Sin consultar a Google: lo que sabe Odoo."""
+        rec = _request_pass()
+        if not rec:
+            return _json_response({'premium': False}, headers=NO_STORE)
+        return _json_response(rec._api_payload(with_token=False), headers=NO_STORE)
 
     @http.route('/api/lottery/v1/stats/numeros-mes-atrasados', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

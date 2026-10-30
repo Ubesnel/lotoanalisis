@@ -16,6 +16,30 @@
                                style="font-family:monospace;font-size:11px;height:120px;width:100%;"/>
                     </setting>
                 </block>
+                <block title="LotoAnálisis Premium" id="lottery_api_premium_settings">
+                    <setting string="Cuenta de servicio Google Play (JSON)"
+                             help="JSON de la cuenta play-premium (Google Cloud → IAM → Cuentas de servicio → Claves). Valida las compras de Premium. No incluir en el repositorio.">
+                        <field name="play_service_account"
+                               widget="text"
+                               placeholder='{"type":"service_account","project_id":"...","private_key":"...",...}'
+                               style="font-family:monospace;font-size:11px;height:120px;width:100%;"/>
+                    </setting>
+                    <setting string="Paquete de la app"
+                             help="Nombre del paquete en Google Play.">
+                        <field name="play_package_name"/>
+                    </setting>
+                    <setting string='"LotoAnálisis informa" es Premium'
+                             help="El texto de las noticias solo llega a quien tiene Premium. Prenderlo cuando la mayoría tenga la versión con Premium: las anteriores verían las noticias vacías.">
+                        <field name="lottery_informa_premium"/>
+                    </setting>
+                    <setting string="Aviso de Premium en la app"
+                             help="Cada tantos días la app invita a pasarse a Premium. Nunca a quien ya es Premium ni a quien no puede pagar con Google Play. Si el usuario lo descarta, la app lo espacia más.">
+                        <field name="lottery_premium_promo"/>
+                        <div class="mt8" invisible="not lottery_premium_promo">
+                            Cada <field name="lottery_premium_promo_days" class="oe_inline"/> días
+                        </div>
+                    </setting>
+                </block>
                 <block title="Historial de Predicciones" id="lottery_api_historial_settings">
                     <setting string="Mostrar predicciones desde"
                              help="Solo se muestran en la app las predicciones publicadas a partir de esta fecha. Dejá en blanco para mostrar todas.">
