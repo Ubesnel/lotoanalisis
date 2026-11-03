@@ -42,9 +42,14 @@
                             help="Ordena los números a predecir por combinaciones, acompañantes de las tablas LotoAnálisis (general y del turno) y grupos y pintas más atrasados, y con ese orden llena las listas de 20, 10 y 5. La de 30 son esos 20 más diez de los candidatos que quedaron afuera, elegidos al revés: los que NO comparten dígito con las salidas recientes."/>
                     <button name="action_completar_ternas" type="object"
                             string="Completar ternas" class="btn-secondary"
-                            invisible="sorteo_source_code != 'quiniela_uy' or not number_ids_5"
-                            confirm="Se van a reemplazar las ternas cargadas con las 7 que salen del cálculo. ¿Seguimos?"
-                            help="Cruza los 5 Números a predecir con las centenas del mismo bloque de temperatura: dos ternas para el Súper Mágico y dos para el 2º (con las dos centenas más importantes), y una para cada uno de los otros tres (con la más importante)."/>
+                            invisible="not sorteo_uses_hundreds or not number_ids_5"
+                            confirm="Se van a reemplazar las ternas cargadas con las 10 que salen del cálculo. ¿Seguimos?"
+                            help="Cruza los 5 Números a predecir con las dos centenas más importantes del mismo bloque de temperatura: dos ternas por número, 10 en total."/>
+                    <button name="action_completar_parles" type="object"
+                            string="Completar parlés" class="btn-secondary"
+                            invisible="not sorteo_generates_parles or not number_ids_5"
+                            confirm="Se van a reemplazar los parlés cargados con los 20 que salen del cálculo. ¿Seguimos?"
+                            help="Cruza los 5 Números con los otros 5 de la tabla de 10 y deja los 20 mejores: primero los que coinciden con los dos números contra los premios 1, 2 y 3 de la salida anterior, después los cruzados, y luego los que más combinan por línea y terminal."/>
                 </header>
                 <sheet>
                     <group>
@@ -55,8 +60,10 @@
                             <field name="sorteo_turno_ids" invisible="1"/>
                             <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
                             <field name="hour" widget="float_time"/>
-                            <!-- Sólo para el invisible del botón de ternas. -->
+                            <!-- Sólo para los invisible de ternas y Tómbola. -->
                             <field name="sorteo_source_code" invisible="1"/>
+                            <field name="sorteo_uses_hundreds" invisible="1"/>
+                            <field name="sorteo_generates_parles" invisible="1"/>
                             <field name="combinaciones_window"/>
                             <field name="algoritmo"/>
                         </group>
@@ -137,15 +144,17 @@
                               invisible="not score_html">
                             <field name="score_html" nolabel="1" colspan="2"/>
                         </page>
-                        <page string="Ternas y Tómbola" name="ternas_tombola">
-                            <group string="Ternas a predecir">
+                        <page string="Ternas y Tómbola" name="ternas_tombola"
+                              invisible="not sorteo_uses_hundreds and sorteo_source_code != 'quiniela_uy'">
+                            <group string="Ternas a predecir" invisible="not sorteo_uses_hundreds">
                                 <field name="terna_ids" nolabel="1" colspan="2">
                                     <tree editable="bottom">
                                         <field name="terna"/>
                                     </tree>
                                 </field>
                             </group>
-                            <group string="Líneas de Tómbola a predecir">
+                            <group string="Líneas de Tómbola a predecir"
+                                   invisible="sorteo_source_code != 'quiniela_uy'">
                                 <field name="tombola_linea_ids" nolabel="1" colspan="2">
                                     <tree editable="bottom">
                                         <field name="numero_1" options="{'no_open': True, 'no_create': True}"/>
@@ -158,6 +167,16 @@
                                     </tree>
                                 </field>
                             </group>
+                        </page>
+                        <page string="Parlés" name="parles"
+                              invisible="not sorteo_generates_parles">
+                            <field name="parle_ids" nolabel="1" colspan="2">
+                                <tree editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="numero_1" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="numero_2" options="{'no_open': True, 'no_create': True}"/>
+                                </tree>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>

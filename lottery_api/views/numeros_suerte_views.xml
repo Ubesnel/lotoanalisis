@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_numeros_suerte_tree_api" model="ir.ui.view">
+        <field name="name">lottery.numeros.suerte.tree.api</field>
+        <field name="model">lottery.numeros.suerte</field>
+        <field name="inherit_id" ref="lottery_portal.view_lottery_numeros_suerte_tree"/>
+        <field name="arch" type="xml">
+            <field name="super_magico_id" position="after">
+                <field name="published" widget="boolean_toggle"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_lottery_numeros_suerte_form_api" model="ir.ui.view">
+        <field name="name">lottery.numeros.suerte.form.api</field>
+        <field name="model">lottery.numeros.suerte</field>
+        <field name="inherit_id" ref="lottery_portal.view_lottery_numeros_suerte_form"/>
+        <field name="arch" type="xml">
+            <field name="super_magico_id" position="after">
+                <field name="published"/>
+                <field name="published_date"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Números de la Suerte queda solo en LotoAnálisis Premium. -->
+    <record id="lottery_portal.menu_lottery_numeros_suerte_item" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
+
+    <menuitem id="menu_premium_numeros_suerte"
+              name="Números de la Suerte"
+              parent="menu_premium_root"
+              action="lottery_portal.action_lottery_numeros_suerte"
+              groups="lottery_base.group_lottery_manager"
+              sequence="7"/>
+</odoo>

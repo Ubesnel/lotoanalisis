@@ -55,6 +55,27 @@ class ResConfigSettings(models.TransientModel):
         help='Días mínimos entre un aviso y el siguiente. Si el usuario lo '
              'descarta, la app lo espacia más por su cuenta.',
     )
+    lottery_suerte_hora = fields.Float(
+        string='Hora de los Números de la Suerte',
+        config_parameter='lottery_api.suerte_hora', default=6.0,
+        help='Hora de Uruguay en que empieza el día de los Números de la '
+             'Suerte: a esa hora se generan y la app pasa a mostrar los '
+             'nuevos. Antes, sigue con los del día anterior.')
+    lottery_suerte_sorteo_id = fields.Many2one(
+        'lottery.sorteo', string='Sorteo de referencia',
+        config_parameter='lottery_api.suerte_sorteo_id',
+        default=lambda self: self.env.ref('lottery_base.sorteo_florida', raise_if_not_found=False),
+        help='Sorteo del que se calculan. En la app valen para todos.')
+    lottery_suerte_temperature = fields.Selection([
+        ('hot', 'Calientes'),
+        ('remaining', 'Restantes'),
+        ('cold', 'Fríos'),
+    ], string='Temperatura', config_parameter='lottery_api.suerte_temperature',
+        default='remaining')
+    lottery_suerte_publicar = fields.Boolean(
+        string='Publicar al generarlos',
+        config_parameter='lottery_api.suerte_publicar',
+        help='Apagado: quedan generados sin publicar para revisarlos.')
 
     @api.model
     def get_values(self):

@@ -8,7 +8,7 @@ import threading
 from odoo import fields, models
 from odoo.exceptions import UserError
 
-from .lottery_output import _push_worker
+from .lottery_output import _mensajes, _push_worker
 
 
 class LotteryCuriosity(models.Model):
@@ -26,14 +26,13 @@ class LotteryCuriosity(models.Model):
         if not self.published:
             raise UserError('Esta curiosidad todavía no está publicada.')
 
-        title, body = self._build_push_message(self)
-        sorteo_id = self.sorteo_id.id
+        messages = _mensajes(self, self.sorteo_id.id)
 
         dbname = self.env.cr.dbname
         self.env.cr.postcommit.add(
             lambda: threading.Thread(
                 target=_push_worker,
-                args=(dbname, [(sorteo_id, title, body)]),
+                args=(dbname, messages),
                 daemon=True,
             ).start()
         )
@@ -42,7 +41,11 @@ class LotteryCuriosity(models.Model):
             'push_sent_date': fields.Datetime.now(),
         })
 
-    def _build_push_message(self, cur):
+    def _build_push_message(self, cur, lang='es'):
+        if lang == 'en':
+            return '📰 LotoAnálisis Reports', (
+                f'There is a new follow-up report in the app, in the '
+                f'"LotoAnálisis Reports" section, for {cur.sorteo_id.name}.')
         title = '📰 LotoAnálisis informa'
         body = (
             f'Se ha registrado una información de seguimiento en la APK, '

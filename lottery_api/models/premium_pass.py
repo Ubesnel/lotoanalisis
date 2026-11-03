@@ -55,6 +55,9 @@ ACCESS_STATES = ('active', 'grace', 'canceled')
 FINAL_STATES = ('expired', 'replaced', 'revoked')
 # Retención declarada en /politica-privacidad: vigencia + 2 años.
 RETENTION_DAYS = 730
+# Google renueva justo al vencer y el cron confirma cada 6 h: una suscripción
+# activa con renovación automática sigue dando Premium este tiempo de más.
+RENEWAL_GRACE = timedelta(days=1)
 
 
 class PremiumError(Exception):
@@ -122,12 +125,22 @@ class LotteryPremiumPass(models.Model):
          'Ya existe un pase para ese purchase token.'),
     ]
 
-    @api.depends('state', 'expiry_date')
+    @api.depends('state', 'expiry_date', 'auto_renewing')
     def _compute_is_premium(self):
         now = fields.Datetime.now()
         for rec in self:
-            rec.is_premium = bool(
-                rec.state in ACCESS_STATES and rec.expiry_date and rec.expiry_date > now)
+            hasta = rec._access_until()
+            rec.is_premium = bool(rec.state in ACCESS_STATES and hasta and hasta > now)
+
+    def _access_until(self):
+        """Hasta cuándo da Premium: el vencimiento, más el margen de
+        renovación si sigue activa y se renueva sola."""
+        self.ensure_one()
+        if not self.expiry_date:
+            return False
+        if self.state == 'active' and self.auto_renewing:
+            return self.expiry_date + RENEWAL_GRACE
+        return self.expiry_date
 
     @api.depends('base_plan_id', 'order_id', 'origin')
     def _compute_display_name(self):
@@ -150,9 +163,10 @@ class LotteryPremiumPass(models.Model):
     def _issue_token(self):
         """Pase 'v1.<payload>.<firma>' con el id y el vencimiento."""
         self.ensure_one()
+        hasta = self._access_until()
         payload = _b64(json.dumps({
             'p': self.id,
-            'e': int(self.expiry_date.replace(tzinfo=timezone.utc).timestamp()) if self.expiry_date else 0,
+            'e': int(hasta.replace(tzinfo=timezone.utc).timestamp()) if hasta else 0,
         }, separators=(',', ':')).encode())
         sig = _b64(hmac.new(self._secret(), payload.encode(), hashlib.sha256).digest())
         return 'v1.%s.%s' % (payload, sig)
@@ -188,6 +202,9 @@ class LotteryPremiumPass(models.Model):
             'state': self.state,
             'plan': self.base_plan_id or self.origin,
             'expires_at': self.expiry_date.isoformat() + 'Z' if self.expiry_date else None,
+            # Hasta cuándo vale el pase (vencimiento + margen de renovación).
+            'access_until': (self._access_until().isoformat() + 'Z'
+                             if self.expiry_date else None),
             'auto_renewing': self.auto_renewing,
         }
         if with_token:

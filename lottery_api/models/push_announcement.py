@@ -21,36 +21,40 @@ import threading
 from odoo import SUPERUSER_ID, api, fields, models, registry
 from odoo.exceptions import UserError
 
+from .fcm_service import lang_topic
+
 _logger = logging.getLogger(__name__)
 
 ANNOUNCEMENTS_TOPIC = 'anuncios'
 MAX_TOPICS_POR_CONDICION = 5
 
 
-def _destinos(sorteo_ids):
-    """[(tipo, destino)] para FCM: el topic general si no hay sorteos, un
-    topic si hay uno solo, y condiciones de hasta 5 topics si hay varios."""
+def _destinos(sorteo_ids, lang='es'):
+    """[(tipo, destino)] para FCM en ese idioma: el topic general si no hay
+    sorteos, un topic si hay uno solo, y condiciones de hasta 5 topics si
+    hay varios."""
     if not sorteo_ids:
-        return [('topic', ANNOUNCEMENTS_TOPIC)]
+        return [('topic', lang_topic(ANNOUNCEMENTS_TOPIC, lang))]
     destinos = []
     for i in range(0, len(sorteo_ids), MAX_TOPICS_POR_CONDICION):
-        tanda = sorteo_ids[i:i + MAX_TOPICS_POR_CONDICION]
+        tanda = [lang_topic(f'sorteo_{sid}', lang)
+                 for sid in sorteo_ids[i:i + MAX_TOPICS_POR_CONDICION]]
         if len(tanda) == 1:
-            destinos.append(('topic', f'sorteo_{tanda[0]}'))
+            destinos.append(('topic', tanda[0]))
         else:
             destinos.append(('condition', ' || '.join(
-                f"'sorteo_{sid}' in topics" for sid in tanda)))
+                f"'{t}' in topics" for t in tanda)))
     return destinos
 
 
-def _push_announcement_worker(dbname, destinos, title, body):
+def _push_announcement_worker(dbname, envios):
     """Envía el push en un hilo aparte, con su propio cursor — mismo patrón
     que _push_worker de lottery_output.py."""
     try:
         with registry(dbname).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, {})
             fcm = env['lottery.fcm.service']
-            for tipo, destino in destinos:
+            for tipo, destino, title, body in envios:
                 try:
                     if tipo == 'condition':
                         fcm.send_push_to_condition(destino, title, body)
@@ -81,6 +85,12 @@ class LotteryPushAnnouncement(models.Model):
              '04:00 la app va a estar en mantenimiento por tareas '
              'programadas." o "Hay una nueva versión disponible en Play '
              'Store, con mejoras y corrección de errores."')
+    title_en = fields.Char(
+        string='Título (inglés)',
+        help='Opcional. Vacío = a quien tiene la app en inglés le llega el título en español.')
+    body_en = fields.Text(
+        string='Mensaje (inglés)',
+        help='Opcional. Vacío = a quien tiene la app en inglés le llega el mensaje en español.')
     sorteo_ids = fields.Many2many(
         'lottery.sorteo', 'lottery_push_announcement_sorteo_rel',
         'announcement_id', 'sorteo_id', string='Sorteos',
@@ -104,13 +114,18 @@ class LotteryPushAnnouncement(models.Model):
         if self.sent:
             raise UserError('Ya se envió este aviso.')
 
-        title, body = self.title, self.body
-        destinos = _destinos(self.sorteo_ids.ids)
+        textos = {
+            'es': (self.title, self.body),
+            'en': (self.title_en or self.title, self.body_en or self.body),
+        }
+        envios = [(tipo, destino, *textos[lang])
+                  for lang in textos
+                  for tipo, destino in _destinos(self.sorteo_ids.ids, lang)]
         dbname = self.env.cr.dbname
         self.env.cr.postcommit.add(
             lambda: threading.Thread(
                 target=_push_announcement_worker,
-                args=(dbname, destinos, title, body),
+                args=(dbname, envios),
                 daemon=True,
             ).start()
         )

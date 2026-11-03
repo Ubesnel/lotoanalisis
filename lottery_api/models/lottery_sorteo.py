@@ -55,3 +55,12 @@ class LotterySorteo(models.Model):
              "(la sección 'Próximo Sorteo' se retiró); queda como dato de "
              "referencia en la ficha.",
     )
+
+    def _sorteo_ternas(self):
+        """Sorteo cuya predicción lleva las ternas: en Quiniela UY se cargan
+        en el premio 1 (el dato es del sorteo completo); en el resto, él mismo."""
+        self.ensure_one()
+        if self.source_code == 'quiniela_uy' and self.code != 'quiniela_uy_1':
+            return self.search([('source_code', '=', 'quiniela_uy'),
+                                ('code', '=', 'quiniela_uy_1')], limit=1) or self
+        return self

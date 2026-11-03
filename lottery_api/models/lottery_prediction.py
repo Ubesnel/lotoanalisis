@@ -13,7 +13,7 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.addons.lottery_portal.models.quiniela_uy_ternas import SOURCE_CODE as QUINIELA_UY
 
-from .lottery_output import _push_worker
+from .lottery_output import _mensajes, _push_worker, _turno_label
 
 _logger = logging.getLogger(__name__)
 
@@ -41,14 +41,13 @@ class LotteryPrediction(models.Model):
         if not self.published:
             raise UserError('Esta predicción todavía no está publicada.')
 
-        title, body = self._build_push_message(self)
-        sorteo_id = self.sorteo_id.id
+        messages = _mensajes(self, self.sorteo_id.id)
 
         dbname = self.env.cr.dbname
         self.env.cr.postcommit.add(
             lambda: threading.Thread(
                 target=_push_worker,
-                args=(dbname, [(sorteo_id, title, body)]),
+                args=(dbname, messages),
                 daemon=True,
             ).start()
         )
@@ -64,9 +63,14 @@ class LotteryPrediction(models.Model):
             'hour': ahora.hour + ahora.minute / 60.0,
         })
 
-    def _build_push_message(self, pred):
-        turn_label = pred.sorteo_id._turno_con_hora(pred.turno_id, pred.date)
+    def _build_push_message(self, pred, lang='es'):
+        turn_label = _turno_label(pred.sorteo_id, pred.turno_id, pred.date, lang)
         fecha = pred.date.strftime('%d/%m/%Y') if pred.date else ''
+
+        if lang == 'en':
+            return '🔮 Magic Numbers available', (
+                f'The Magic Numbers for the {pred.sorteo_id.name} draw of '
+                f'{fecha} ({turn_label}) are now in the app.')
 
         title = '🔮 Números Mágicos disponibles'
         body = (
@@ -189,6 +193,19 @@ class LotteryPrediction(models.Model):
                     'sí' if pred.super_magico_id else 'no'))
         if sorteo.source_code == QUINIELA_UY:
             pred.action_completar_ternas()
+        elif sorteo.uses_hundreds:
+            # Sin centenas en el snapshot no hay ternas, pero la predicción sigue.
+            try:
+                with self.env.cr.savepoint():
+                    pred.action_completar_ternas()
+            except UserError as exc:
+                _logger.warning('lottery_api: ternas automáticas de %s: %s', sorteo.name, exc)
+        if sorteo.generates_parles:
+            try:
+                with self.env.cr.savepoint():
+                    pred.action_completar_parles()
+            except UserError as exc:
+                _logger.warning('lottery_api: parlés automáticos de %s: %s', sorteo.name, exc)
 
         if sorteo.auto_prediction_publish:
             pred.write({'published': True})

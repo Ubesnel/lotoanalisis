@@ -39,6 +39,13 @@
                             Cada <field name="lottery_premium_promo_days" class="oe_inline"/> días
                         </div>
                     </setting>
+                    <setting string="Números de la Suerte"
+                             help="Se generan solos a esta hora de Uruguay, y desde esa hora la app muestra los del día nuevo. Antes sigue con los del día anterior.">
+                        <div>Hora <field name="lottery_suerte_hora" widget="float_time" class="oe_inline"/></div>
+                        <div>Sorteo de referencia <field name="lottery_suerte_sorteo_id" class="oe_inline" options="{'no_create': True}"/></div>
+                        <div>Temperatura <field name="lottery_suerte_temperature" class="oe_inline"/></div>
+                        <div>Publicar al generarlos <field name="lottery_suerte_publicar" class="oe_inline"/></div>
+                    </setting>
                 </block>
                 <block title="Historial de Predicciones" id="lottery_api_historial_settings">
                     <setting string="Mostrar predicciones desde"

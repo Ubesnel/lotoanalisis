@@ -50,6 +50,11 @@
                         <field name="body" nolabel="1" colspan="2"
                                placeholder="Escribí el mensaje del aviso…"/>
                     </group>
+                    <group string="Inglés (opcional)">
+                        <field name="title_en" placeholder="Vacío = se manda el título en español"/>
+                        <field name="body_en"
+                               placeholder="Vacío = se manda el mensaje en español"/>
+                    </group>
                 </sheet>
             </form>
         </field>

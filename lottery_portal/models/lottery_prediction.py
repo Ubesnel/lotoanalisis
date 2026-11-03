@@ -6,7 +6,7 @@ import re
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 from odoo.addons.lottery_base.models.utils import default_today_local
-from .patron_atraso import _hit_cruce
+from .patron_atraso import _hit_cruce, _hit_repeticion
 
 WEEKDAY_CODES = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 
@@ -27,11 +27,15 @@ CENTENA_TEMPERATURE_KEY = {
     'remaining': 'centenas_remaining',
 }
 
-# Cómo se reparten las 7 ternas entre los 5 números, por orden de
-# importancia: los dos primeros se llevan dos ternas cada uno (con las dos
-# centenas más importantes) y los otros tres una sola (con la más
-# importante). 2+2+1+1+1 = 7.
-TERNAS_POR_PUESTO = (2, 2, 1, 1, 1)
+# Cómo se reparten las ternas entre los 5 números, por orden de
+# importancia: cada uno con las dos centenas más importantes. 5 × 2 = 10.
+TERNAS_POR_PUESTO = (2, 2, 2, 2, 2)
+
+# Parlés: los 5 Números cruzados con los otros 5 de la tabla de 10 (25
+# candidatos), de los que quedan los 20 mejores.
+PARLES_A_PREDECIR = 20
+# Top de líneas y terminales que más combinan que suma puntos al parlé.
+PARLES_TOP_COMBINAN = 5
 
 # ── Completar números (07/09/2026) ─────────────────────────────────────────
 # La lista de 20 ya no sale de sumar puntajes: sale de "tandas" de recencia.
@@ -297,8 +301,16 @@ class LotteryPrediction(models.Model):
 
     sorteo_source_code = fields.Char(
         related='sorteo_id.source_code', string='Código de origen del sorteo',
-        help='Sólo para condicionar la vista: las ternas existen únicamente '
+        help='Sólo para condicionar la vista: la Tómbola existe únicamente '
              'en los sorteos de Quiniela Uruguay.')
+    sorteo_uses_hundreds = fields.Boolean(
+        related='sorteo_id.uses_hundreds', string='Usa centena',
+        help='Sólo para condicionar la vista: las ternas existen en los '
+             'sorteos con centena.')
+    sorteo_generates_parles = fields.Boolean(
+        related='sorteo_id.generates_parles', string='Genera parlés',
+        help='Sólo para condicionar la vista: los parlés existen en los '
+             'sorteos que los generan.')
 
     algoritmo = fields.Selection([
         ('1', 'Algoritmo 1'),
@@ -339,6 +351,12 @@ class LotteryPrediction(models.Model):
              'completa a jugar en la Tómbola de este mismo sorteo (fecha y '
              'turno): un juego aparte de la Quiniela, ver '
              'lottery.tombola.output.')
+    parle_ids = fields.One2many(
+        'lottery.prediction.parle', 'prediction_id',
+        string='Parlés a predecir',
+        help='Pares de números (00-99) que se predicen para este sorteo, '
+             'en orden de importancia. Sale si los dos están entre los '
+             'premios 1, 2 y 3, en cualquier posición.')
 
     # ── Números a predecir (listas independientes) ─────────────────────────
     number_ids = fields.Many2many(
@@ -1363,14 +1381,13 @@ class LotteryPrediction(models.Model):
         return [super_magico] + resto
 
     def action_completar_ternas(self):
-        """Completa las 7 ternas a predecir cruzando los 5 Números con las
+        """Completa las 10 ternas a predecir cruzando los 5 Números con las
         centenas del mismo bloque de temperatura.
 
-        Reparto (ver TERNAS_POR_PUESTO): el Súper Mágico y el 2º llevan dos
-        ternas cada uno, con las dos centenas más importantes; el 3º, 4º y
-        5º una sola, con la más importante. Siempre dan 7 ternas distintas:
-        los cinco números son distintos entre sí y las dos ternas de un
-        mismo número usan centenas distintas.
+        Reparto (ver TERNAS_POR_PUESTO): cada uno de los 5 lleva dos ternas,
+        con las dos centenas más importantes. Siempre dan 10 ternas
+        distintas: los cinco números son distintos entre sí y las dos ternas
+        de un mismo número usan centenas distintas.
 
         Las centenas salen del bloque que marca la Temperatura de la
         predicción — restantes con restantes, calientes con calientes,
@@ -1379,13 +1396,18 @@ class LotteryPrediction(models.Model):
         Como el de números, el botón sólo precarga: las ternas quedan
         editables."""
         self.ensure_one()
-        # Import local para no adelantar la carga de quiniela_uy_ternas, que
-        # en models/__init__.py va después de este archivo.
-        from .quiniela_uy_ternas import SOURCE_CODE as QUINIELA_UY
+        ternas = self._armar_ternas(TERNAS_POR_PUESTO)
+        self.terna_ids = [(5, 0, 0)] + [(0, 0, {'terna': t}) for t in ternas]
+        return True
 
-        if self.sorteo_id.source_code != QUINIELA_UY:
+    def _armar_ternas(self, reparto):
+        """Ternas de los 5 Números (en orden de importancia) con las
+        centenas del bloque de temperatura; `reparto` dice cuántas centenas
+        lleva cada puesto. También la usa la Predicción Premium."""
+        self.ensure_one()
+        if not self.sorteo_id.uses_hundreds:
             raise UserError(
-                'Las ternas son sólo para los sorteos de Quiniela Uruguay.')
+                'Las ternas son sólo para los sorteos con centena.')
         if not self.temperature:
             raise UserError(
                 'Elegí primero la Temperatura: las centenas de la terna salen '
@@ -1406,12 +1428,113 @@ class LotteryPrediction(models.Model):
                 % dict(self._fields['temperature'].selection)[self.temperature])
 
         ternas = []
-        for puesto, numero in enumerate(self._orden_de_los_cinco()):
-            for centena in centenas[:TERNAS_POR_PUESTO[puesto]]:
+        for puesto, numero in enumerate(self._orden_de_los_cinco()[:len(reparto)]):
+            for centena in centenas[:reparto[puesto]]:
                 ternas.append('%s%02d' % (centena, numero))
+        return ternas
 
-        self.terna_ids = [(5, 0, 0)] + [(0, 0, {'terna': t}) for t in ternas]
+    # ── Completar parlés ────────────────────────────────────────────────
+
+    def action_completar_parles(self):
+        """Completa los 20 parlés cruzando los 5 Números con los otros 5 de
+        la tabla de 10. Primero los que coinciden con los dos números contra
+        los premios 1, 2 y 3 de la salida anterior, después los cruzados, y
+        a igualdad los que más combinan por línea y terminal en el histórico.
+        Como las ternas, el botón sólo precarga: quedan editables."""
+        for rec in self:
+            pares = rec._armar_parles()
+            rec.parle_ids = [(5, 0, 0)] + [
+                (0, 0, {'sequence': i, 'numero_1': a.id, 'numero_2': b.id})
+                for i, (a, b) in enumerate(pares)]
         return True
+
+    def _premios_anteriores(self):
+        """Premios 1, 2 y 3 (enteros) de la última salida antes de esta
+        predicción."""
+        self.ensure_one()
+        out = self.env['lottery.output'].sudo().search([
+            ('sorteo_id', '=', self.sorteo_id.id),
+            '|', ('date', '<', self.date),
+            '&', ('date', '=', self.date),
+            ('turno_sequence', '<', self.turno_id.sequence),
+        ], order='date desc, turno_sequence desc, id desc', limit=1)
+        return [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
+
+    @staticmethod
+    def _coincidencia(num, premios):
+        """(coincide, cruza) de un número contra los premios: cruza si la
+        línea de uno es el terminal del otro; coincide también si repite
+        línea o terminal. Repetir el número o darlo vuelta no suma aparte."""
+        cruza = any(_hit_cruce(p, num) for p in premios)
+        return cruza or any(_hit_repeticion(p, num) for p in premios), cruza
+
+    def _armar_parles(self, otros=None, limite=PARLES_A_PREDECIR):
+        """Los parlés ordenados, como pares de lottery.number. Sin `otros`
+        cruza con los de la tabla de 10 que no están en los 5."""
+        self.ensure_one()
+        if not self.sorteo_id.generates_parles:
+            raise UserError('El sorteo no genera parlés.')
+        if len(self.number_ids_5) < 5 or not self.super_magico_id:
+            raise UserError(
+                'Completá primero los 5 Números a predecir y el Súper Mágico '
+                'con el botón "Completar números".')
+        if otros is None:
+            otros = self.number_ids_10 - self.number_ids_5
+        otros = otros.sorted('name')
+        if not otros:
+            raise UserError(
+                'La tabla de 10 no tiene números fuera de los 5: completá '
+                'primero los números.')
+        premios = self._premios_anteriores()
+        if not premios:
+            raise UserError('El sorteo no tiene una salida anterior para comparar.')
+
+        stats = self.env['lottery.stats.service'].sudo()
+        top = {}
+
+        def _combina(tipo, digito):
+            if (tipo, digito) not in top:
+                data = stats.get_parles_combinacion(
+                    self.sorteo_id.id, tipo, digito, limit=PARLES_TOP_COMBINAN)
+                lista = data['lineas'] if tipo == 'linea' else data['terminales']
+                top[(tipo, digito)] = [x['digito'] for x in lista]
+            return top[(tipo, digito)]
+
+        def _puntos(lista, digito):
+            return PARLES_TOP_COMBINAN - lista.index(digito) if digito in lista else 0
+
+        def _combinacion(a, b):
+            puntos = 0
+            for x, y in ((a, b), (b, a)):
+                puntos += _puntos(_combina('linea', x // 10), y // 10)
+                puntos += _puntos(_combina('terminal', x % 10), y % 10)
+            return puntos
+
+        Number = self.env['lottery.number']
+        por_valor = {n.name: n for n in self.number_ids_5 | otros}
+        candidatos, vistos = [], set()
+        for i, a in enumerate(self._orden_de_los_cinco()):
+            for j, b in enumerate(otros.mapped('name')):
+                if a == b or frozenset((a, b)) in vistos:
+                    continue
+                vistos.add(frozenset((a, b)))
+                ca, xa = self._coincidencia(a, premios)
+                cb, xb = self._coincidencia(b, premios)
+                clave = (-(ca + cb), -(xa + xb), -_combinacion(a, b), i, j)
+                candidatos.append((clave, a, b))
+        candidatos.sort()
+        return [(por_valor.get(a, Number), por_valor.get(b, Number))
+                for _clave, a, b in candidatos[:limite]]
+
+    def _parles_premium(self, suerte, limite):
+        """Los parlés para la Premium: los 5 Números con los 5 de la Suerte,
+        primero los cruzados con la salida anterior y después los demás."""
+        self.ensure_one()
+        premios = self._premios_anteriores()
+        pares = self._armar_parles(otros=suerte, limite=len(suerte) * 5)
+        cruzados = [p for p in pares if any(
+            self._coincidencia(n.name, premios)[1] for n in p)]
+        return (cruzados + [p for p in pares if p not in cruzados])[:limite]
 
     # ── Render del desglose ────────────────────────────────────────────────
 
@@ -1784,6 +1907,66 @@ class LotteryPredictionTerna(models.Model):
     def _compute_display_name(self):
         for rec in self:
             rec.display_name = rec.terna or ''
+
+
+class LotteryParleMixin(models.AbstractModel):
+    """Parlé (par de números sin orden). Se guarda con el menor primero para
+    que 34-66 y 66-34 sean el mismo; los dobles (66-66) valen. Lo usan la
+    predicción y la Predicción Premium."""
+    _name = 'lottery.parle.mixin'
+    _description = 'Parlé'
+    _order = 'sequence, id'
+
+    sequence = fields.Integer(string='Orden', default=10)
+    numero_1 = fields.Many2one('lottery.number', string='Número 1', required=True)
+    numero_2 = fields.Many2one('lottery.number', string='Número 2', required=True)
+
+    @api.model
+    def _ordenar(self, vals):
+        """El menor queda en numero_1."""
+        n1, n2 = vals.get('numero_1'), vals.get('numero_2')
+        if n1 and n2:
+            Number = self.env['lottery.number']
+            if Number.browse(n1).name > Number.browse(n2).name:
+                vals.update(numero_1=n2, numero_2=n1)
+        return vals
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        return super().create([self._ordenar(dict(v)) for v in vals_list])
+
+    def write(self, vals):
+        if 'numero_1' not in vals and 'numero_2' not in vals:
+            return super().write(vals)
+        for rec in self:
+            v = dict(vals)
+            v.setdefault('numero_1', rec.numero_1.id)
+            v.setdefault('numero_2', rec.numero_2.id)
+            super(LotteryParleMixin, rec).write(self._ordenar(v))
+        return True
+
+    @api.depends('numero_1.name', 'numero_2.name')
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = '-'.join(
+                '%02d' % n.name for n in (rec.numero_1, rec.numero_2) if n)
+
+
+class LotteryPredictionParle(models.Model):
+    """Parlé a predecir, colgado de lottery.prediction."""
+    _name = 'lottery.prediction.parle'
+    _inherit = 'lottery.parle.mixin'
+    _description = 'Parlé a predecir'
+    _order = 'sequence, id'
+
+    prediction_id = fields.Many2one(
+        'lottery.prediction', string='Predicción',
+        required=True, ondelete='cascade', index=True)
+
+    _sql_constraints = [
+        ('parle_unique_por_prediccion', 'unique(prediction_id, numero_1, numero_2)',
+         'Ese parlé ya está cargado en esta predicción.'),
+    ]
 
 
 class LotteryPredictionTombolaLinea(models.Model):
