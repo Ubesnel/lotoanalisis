@@ -103,6 +103,16 @@
                                     consultas o reclamos.
                                 </li>
                                 <li>
+                                    <strong>Códigos de regalo de Premium</strong>: de cada código
+                                    guardamos el comprobante y el número de pedido de Google Play
+                                    de quien lo compró y, al canjearlo, un identificador de
+                                    instalación que genera la aplicación al azar (no es el número
+                                    del teléfono ni identifica a la persona). Sirve para que el
+                                    código funcione en un solo teléfono a la vez. Se conserva
+                                    mientras el código no se canjee o su Premium esté vigente, y
+                                    hasta 2 años después.
+                                </li>
+                                <li>
                                     En el dispositivo solo se guardan preferencias locales de uso
                                     (por ejemplo, idioma, sorteo seleccionado o si ya se mostró la
                                     pantalla de bienvenida); esta información no sale del teléfono y

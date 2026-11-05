@@ -8,5 +8,6 @@ from . import lottery_sorteo
 from . import numeros_suerte
 from . import prediction_premium
 from . import premium_pass
+from . import premium_gift
 from . import push_announcement
 from . import res_config_settings

@@ -49,8 +49,17 @@ NO_STORE = [('Cache-Control', 'no-store, private')]
 
 def _request_pass():
     """Pase Premium vigente de la cabecera X-Premium-Pass, o vacío."""
-    token = request.httprequest.headers.get('X-Premium-Pass')
-    return request.env['lottery.premium.pass'].sudo()._from_token(token)
+    headers = request.httprequest.headers
+    return request.env['lottery.premium.pass'].sudo()._from_token(
+        headers.get('X-Premium-Pass'), headers.get('X-Premium-Device'))
+
+
+def _json_body():
+    try:
+        body = json.loads(request.httprequest.get_data() or b'{}')
+    except ValueError:
+        return {}
+    return body if isinstance(body, dict) else {}
 
 
 def _informa_premium():
@@ -943,6 +952,30 @@ class LotteryAppApi(http.Controller):
         if not rec:
             return _json_response({'premium': False}, headers=NO_STORE)
         return _json_response(rec._api_payload(with_token=False), headers=NO_STORE)
+
+    @http.route('/api/lottery/v1/premium/gift/verify', type='http',
+                auth='public', methods=['POST'], csrf=False, cors='*')
+    def premium_gift_verify(self, **kwargs):
+        """El que regala manda la compra de Play y recibe el código."""
+        body = _json_body()
+        try:
+            gift = request.env['lottery.premium.gift'].sudo().verify_purchase(
+                body.get('purchase_token'), body.get('product_id'))
+        except PremiumError as e:
+            return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
+        return _json_response(gift._api_payload(), headers=NO_STORE)
+
+    @http.route('/api/lottery/v1/premium/gift/redeem', type='http',
+                auth='public', methods=['POST'], csrf=False, cors='*')
+    def premium_gift_redeem(self, **kwargs):
+        """Canjea un código en este teléfono y devuelve el pase."""
+        body = _json_body()
+        try:
+            rec = request.env['lottery.premium.gift'].sudo().redeem(
+                body.get('code'), body.get('device_id'))
+        except PremiumError as e:
+            return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
+        return _json_response(rec._api_payload(), headers=NO_STORE)
 
     @http.route('/api/lottery/v1/stats/numeros-mes-atrasados', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

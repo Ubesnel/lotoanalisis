@@ -24,6 +24,7 @@
         "views/res_config_settings_views.xml",
         "views/api_log_views.xml",
         "views/premium_pass_views.xml",
+        "views/premium_gift_views.xml",
         "views/prediction_premium_views.xml",
         "views/numeros_suerte_views.xml",
     ],

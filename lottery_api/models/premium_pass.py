@@ -119,6 +119,9 @@ class LotteryPremiumPass(models.Model):
     is_test = fields.Boolean(string='Compra de prueba')
     last_check = fields.Datetime(string='Última consulta a Google')
     google_response = fields.Text(string='Última respuesta de Google')
+    gift_code = fields.Char(string='Código de regalo', index=True, copy=False)
+    device_id = fields.Char(string='ID de instalación',
+                            help='Los pases de regalo valen solo en este teléfono.')
 
     _sql_constraints = [
         ('purchase_token_uniq', 'unique(purchase_token)',
@@ -172,9 +175,10 @@ class LotteryPremiumPass(models.Model):
         return 'v1.%s.%s' % (payload, sig)
 
     @api.model
-    def _from_token(self, token):
+    def _from_token(self, token, device_id=None):
         """Pase vigente que corresponde al token, o un recordset vacío. Además de
-        la firma mira el registro, así un reembolso corta el acceso enseguida."""
+        la firma mira el registro, así un reembolso corta el acceso enseguida.
+        Un pase de regalo vale solo en el teléfono donde está canjeado."""
         empty = self.browse()
         try:
             version, payload, sig = (token or '').split('.')
@@ -192,6 +196,8 @@ class LotteryPremiumPass(models.Model):
         if int(data.get('e') or 0) < time.time():
             return empty
         rec = self.sudo().browse(int(data.get('p') or 0)).exists()
+        if rec.origin == 'gift' and rec.device_id != device_id:
+            return empty
         return rec if rec and rec.is_premium else empty
 
     def _api_payload(self, with_token=True):
@@ -325,6 +331,7 @@ class LotteryPremiumPass(models.Model):
         """Consulta a Google los pases que vencen pronto, los que esperan un pago
         y los que no se pudieron confirmar. Reemplaza a las notificaciones de
         Pub/Sub: una cancelación se ve al día siguiente."""
+        self.env['lottery.premium.gift']._cron_confirm_pending()
         soon = fields.Datetime.now() + timedelta(days=1)
         passes = self.sudo().search([
             ('origin', '=', 'subscription'),
@@ -350,6 +357,7 @@ class LotteryPremiumPass(models.Model):
     @api.model
     def _cron_purge_old_passes(self):
         """Borra los pases vencidos hace más de 2 años, como dice la política de privacidad."""
+        self.env['lottery.premium.gift']._cron_purge_old_gifts()
         cutoff = fields.Datetime.now() - timedelta(days=RETENTION_DAYS)
         old = self.sudo().search([
             '|',

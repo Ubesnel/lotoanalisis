@@ -42,6 +42,8 @@
                             <field name="expiry_date" readonly="1"/>
                             <field name="auto_renewing" readonly="1"/>
                             <field name="is_test" readonly="1"/>
+                            <field name="gift_code" readonly="1" invisible="origin != 'gift'"/>
+                            <field name="device_id" readonly="1" invisible="origin != 'gift'"/>
                         </group>
                         <group string="Google Play">
                             <field name="product_id" readonly="1"/>
@@ -76,6 +78,7 @@
             <search string="Buscar pases">
                 <field name="order_id"/>
                 <field name="purchase_token"/>
+                <field name="gift_code"/>
                 <separator/>
                 <filter name="vigentes" string="Con acceso"
                         domain="[('state', 'in', ('active', 'grace', 'canceled'))]"/>
