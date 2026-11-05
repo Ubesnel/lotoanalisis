@@ -141,6 +141,8 @@ DESCRIPCION_ALGORITMO = {
         "los últimos 10 sorteos, 7) al azar.\n\n"
         "10 números: de los 20, primero los que están en las 3 líneas o los 3 "
         "terminales recomendados (el cruce vale doble); la cascada desempata.\n\n"
+        "En los 10 y los 5 quedan al final las repetidas, viradas y pegadas "
+        "de las últimas 3 salidas (con 61: 61, 16, 60 y 62).\n\n"
         "5 números: de los 10, primero los que coinciden con los 2 grupos, 2 "
         "líneas y 2 terminales más atrasados del día de la semana; la cascada "
         "desempata.\n\n"
@@ -171,6 +173,10 @@ DESCRIPCION_ALGORITMO = {
         "5 números: de los 10, los cruzados con la última salida (con 34: "
         "línea 40-49 o terminal 3). Si sobran o faltan: tabla → pintas → "
         "grupos → azar.\n\n"
+        "En los 10 y los 5 van primero las combinaciones de los dígitos que "
+        "salieron una vez con los repetidos en las últimas 3 salidas (con "
+        "56 60 95: 96 69 05 50) y al final las repetidas, viradas y pegadas "
+        "de esas salidas.\n\n"
         "Súper Mágico: de los 5, el que tiene la línea en las 3 recomendadas; "
         "si empatan, el terminal en los 3 recomendados; si sigue el empate, "
         "el que pertenece a la mejor línea o mejor terminal recomendado."
@@ -191,6 +197,12 @@ DIGITOS_CERCANOS_ALG2 = 3
 # que faltan (22 → {2}, después 34 → 3 y 4 pero falta uno) elige con
 # recomendadas → tabla general → tabla del turno.
 DIGITOS_10_ALG2 = 2
+
+# Salidas que miran la racha del algoritmo, las combinaciones del Algoritmo 2
+# y el castigo a repetida/virada/pegada en los 10 y 5.
+SALIDAS_PATRON = 3
+# Pares seguidos compartiendo dígito a partir de los cuales va el Algoritmo 1.
+RACHA_ALG1 = 2
 
 # ── Atraso del mes ─────────────────────────────────────────────────────────
 # Ya NO se usa para elegir los 10 y los 5 de "Completar números" (eso ahora
@@ -435,10 +447,20 @@ class LotteryPrediction(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        Sorteo = self.env['lottery.sorteo']
         for vals in vals_list:
             if vals.get('published'):
                 vals.setdefault('published_date', fields.Datetime.now())
+            if 'algoritmo' not in vals and vals.get('sorteo_id'):
+                fijo = Sorteo.browse(vals['sorteo_id']).prediction_algorithm
+                if fijo in ('1', '2'):
+                    vals['algoritmo'] = fijo
         return super().create(vals_list)
+
+    @api.onchange('sorteo_id', 'date', 'turno_id')
+    def _onchange_algoritmo_sorteo(self):
+        if self.sorteo_id and self.date and self.turno_id and not self._origin.id:
+            self.algoritmo = self._algoritmo_por_ultimas_salidas()
 
     def write(self, vals):
         recien_publicadas = self.browse()
@@ -644,16 +666,51 @@ class LotteryPrediction(models.Model):
     def _algoritmo_por_ultimas_salidas(self):
         """Algoritmo con el que se generan solas las predicciones ('1' o '2').
 
-        Mira las dos últimas salidas del sorteo, con los turnos mezclados:
-        si comparten algún dígito (en cualquier posición: 98 y 85, 98 y 39,
-        98 y 91) va el Algoritmo 1; si no comparten ninguno (98 y 56) va el 2.
-        Con menos de dos salidas, el 1."""
+        Cuenta cuántas salidas seguidas, desde la última hacia atrás y con los
+        turnos mezclados, compartieron dígito con la anterior: con 56 60 80
+        (la última primero) son dos, el 6 y el 0, y va el Algoritmo 1; con
+        56 60 95 es una sola y va el 2. Con menos de dos salidas, el 1. Si
+        el sorteo tiene un algoritmo fijo, ese."""
         self.ensure_one()
-        ultimas = self._last_output(limit=2)
-        if len(ultimas) < 2:
+        fijo = self.sorteo_id.prediction_algorithm
+        if fijo in ('1', '2'):
+            return fijo
+        nums = self._last_output(limit=RACHA_ALG1 + 1).mapped('number_id.name')
+        if len(nums) < 2:
             return '1'
-        a, b = (set(_digitos(o.number_id.name)) for o in ultimas)
-        return '1' if a & b else '2'
+        racha = 0
+        for a, b in zip(nums, nums[1:]):
+            if not _comparte_digito(a, b):
+                break
+            racha += 1
+        return '1' if racha >= RACHA_ALG1 else '2'
+
+    def _numeros_a_evitar(self):
+        """Repetidas, viradas y pegadas de las últimas SALIDAS_PATRON
+        salidas (con 61: 61, 16, 60 y 62). Van al final de los 10 y los 5."""
+        self.ensure_one()
+        evitar = set()
+        for n in self._last_output(limit=SALIDAS_PATRON).mapped('number_id.name'):
+            linea, terminal = _digitos(n)
+            evitar |= {n, terminal * 10 + linea}
+            evitar |= {m for m in (n - 1, n + 1) if 0 <= m <= 99}
+        return evitar
+
+    def _combinaciones_alg2(self):
+        """Cruces de los dígitos que salieron una sola vez con los que se
+        repitieron en las últimas SALIDAS_PATRON salidas, sin las que ya
+        salieron ni sus viradas. Con 56 60 95: 96 69 05 50."""
+        self.ensure_one()
+        nums = self._last_output(limit=SALIDAS_PATRON).mapped('number_id.name')
+        cuenta = {}
+        for n in nums:
+            for d in _digitos(n):
+                cuenta[d] = cuenta.get(d, 0) + 1
+        sueltos = [d for d, c in cuenta.items() if c == 1]
+        repetidos = [d for d, c in cuenta.items() if c > 1]
+        salidas = set(nums) | {(n % 10) * 10 + n // 10 for n in nums}
+        return {x for a in sueltos for b in repetidos
+                for x in (a * 10 + b, b * 10 + a)} - salidas
 
     def _acompanantes(self, turno, numero):
         """{número: distancia en casillas} de los que comparten fila, columna
@@ -1063,22 +1120,17 @@ class LotteryPrediction(models.Model):
     # ── Algoritmo 2 ─────────────────────────────────────────────
 
     @staticmethod
-    def _recortar_alg2(base, entra, clave, cantidad):
+    def _recortar_alg2(base, entra, clave, cantidad, previo=None):
         """Recorte común a los 20, 10 y 5 del Algoritmo 2.
 
         De `base` entran primero los que cumplen `entra(n)`, ordenados por
         `clave`; si son más de `cantidad` se cortan, y si son menos se
         completa con el resto de `base`, también por `clave`. Devuelve la
         lista en ese orden: los que cumplen primero y los de relleno
-        después."""
-        cumplen = sorted((n for n in base if entra(n)), key=clave,
-                         reverse=True)[:cantidad]
-        if len(cumplen) < cantidad:
-            ya_estan = set(cumplen)
-            relleno = sorted((n for n in base if n not in ya_estan),
-                             key=clave, reverse=True)
-            cumplen += relleno[:cantidad - len(cumplen)]
-        return cumplen
+        después. `previo(n)` (tupla) manda antes que `entra`."""
+        previo = previo or (lambda n: ())
+        return sorted(base, key=lambda n: previo(n) + (bool(entra(n)),)
+                      + tuple(clave(n)), reverse=True)[:cantidad]
 
     def _recomendadas_alg2(self):
         """(líneas, terminales) recomendados para esta fecha y turno, cada
@@ -1207,17 +1259,24 @@ class LotteryPrediction(models.Model):
             v = valores[n]
             return (v['tabla'], v['pintas'], v['grupos'], v['azar'])
 
+        combos = self._combinaciones_alg2()
+        evitar = self._numeros_a_evitar() - combos
+
+        def previo(n):
+            return (n not in evitar, n in combos)
+
         treinta, origen = self._seleccionar_veinte(
             candidatos, valores, cantidad=20 + EXTRA_PARA_30)
         veinte = self._recortar_alg2(treinta, comparte(dig_20), clave_20, 20)
-        diez = self._recortar_alg2(veinte, comparte(dig_10), clave_10_5, 10)
+        diez = self._recortar_alg2(veinte, comparte(dig_10), clave_10_5, 10,
+                                   previo)
         # `cruce` de la cascada ya es contra la última salida general.
         cinco = self._recortar_alg2(
-            diez, lambda n: valores[n]['cruce'], clave_10_5, 5)
+            diez, lambda n: valores[n]['cruce'], clave_10_5, 5, previo)
         # sorted es estable: a igualdad de recomendadas queda el orden de
         # los 5 (tabla → pintas → grupos → azar).
         cinco = sorted(
-            cinco, key=lambda n: self._clave_super_magico_alg2(
+            cinco, key=lambda n: (n not in evitar,) + self._clave_super_magico_alg2(
                 n, lineas_reco, term_reco), reverse=True)
         super_magico = cinco[0] if cinco else False
 
@@ -1225,6 +1284,8 @@ class LotteryPrediction(models.Model):
             'dig_20': sorted(dig_20),
             'dig_cercanos': sorted(dig_cercanos),
             'dig_10': dig_10,
+            'combos': sorted(combos),
+            'evitar': sorted(evitar),
             'lineas_reco': lineas_reco,
             'term_reco': term_reco,
         })
@@ -1280,10 +1341,13 @@ class LotteryPrediction(models.Model):
         ctx.update(ctx_sen)
         ctx['senales'] = senales
 
+        evitar = self._numeros_a_evitar()
+        ctx['evitar'] = sorted(evitar)
+
         def por_senal(senal):
-            """Orden: primero la señal del recorte, y la cascada desempata
-            dentro de cada nivel."""
-            return lambda n: ((senal.get(n, 0),)
+            """Orden: repetida/virada/pegada al final, después la señal del
+            recorte, y la cascada desempata dentro de cada nivel."""
+            return lambda n: ((n not in evitar, senal.get(n, 0))
                               + self._clave_cascada(valores, n))
 
         orden_10 = sorted(
@@ -1342,7 +1406,8 @@ class LotteryPrediction(models.Model):
             'number_ids_10': [(6, 0, ids(listas[10]))],
             'number_ids_5': [(6, 0, ids(listas[5]))],
             'score_html': render(res['candidatos'], res['valores'],
-                                 res['ctx'], listas, res['origen']),
+                                 res['ctx'], listas, res['origen'])
+                          + self._html_patrones(res['ctx']),
         }
         if res['super_magico'] is not False:
             vals['super_magico_id'] = ids([res['super_magico']])[0]
@@ -1732,6 +1797,20 @@ class LotteryPrediction(models.Model):
                rango_txt,
                ''.join(detalle(t, d) for t, d in ctx['detalles']),
                recortes_txt, cabeza, ''.join(cuerpo))
+
+    @staticmethod
+    def _html_patrones(ctx):
+        """Línea con las combinaciones y los números al final de 10 y 5."""
+        def txt(nums):
+            return ' · '.join('%02d' % n for n in nums) or '—'
+        partes = []
+        if 'combos' in ctx:
+            partes.append('<span class="text-muted">Combinaciones primero en '
+                          '10 y 5:</span> %s' % txt(ctx['combos']))
+        partes.append('<span class="text-muted">Al final de 10 y 5 (repetida, '
+                      'virada o pegada de las últimas %d):</span> %s'
+                      % (SALIDAS_PATRON, txt(ctx.get('evitar') or [])))
+        return '<p class="small mb-2">%s</p>' % ' · '.join(partes)
 
     def _render_scores_html_alg2(self, candidatos, valores, ctx, listas,
                                  origen):

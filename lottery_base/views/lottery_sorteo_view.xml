@@ -32,21 +32,26 @@
                         <h1><field name="name" class="oe_inline"/></h1>
                     </div>
                     <group>
-                        <group>
+                        <group string="General" name="grp_general">
                             <field name="code"/>
                             <field name="turno_ids" widget="many2many_tags" required="1"
                                    options="{'no_create': True}"/>
                             <field name="country_id" options="{'no_create': True}"/>
+                            <field name="source_code"/>
                             <field name="sequence"/>
                             <field name="active"/>
                         </group>
-                        <group>
+                        <group string="Formato y reglas" name="grp_formato">
                             <field name="uses_hundreds"/>
                             <field name="uses_fireball"/>
+                            <field name="is_pick3"/>
                             <field name="generates_parles"/>
                             <field name="enforce_turn_continuity"/>
-                            <field name="is_pick3"/>
-                            <field name="source_code"/>
+                        </group>
+                    </group>
+                    <group name="grp_opciones">
+                        <group string="Visibilidad" name="grp_visibilidad">
+                            <field name="show_in_public"/>
                         </group>
                     </group>
                     <group string="Próximo sorteo (lo que muestra el portal)">

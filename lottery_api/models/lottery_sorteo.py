@@ -18,8 +18,8 @@ class LotterySorteo(models.Model):
         help="Un cron revisa cada pocos minutos: cuando se registró una salida "
              "hace más de los minutos de espera y todavía no existe la "
              "predicción del próximo sorteo, la crea sola con la temperatura "
-             "Restantes, completa los números y elige el algoritmo según las "
-             "dos últimas salidas (comparten dígito → Algoritmo 1; no → 2). "
+             "Restantes y completa los números con el Algoritmo de predicción "
+             "del sorteo. "
              "Si ya hay una predicción cargada a mano, no la toca.",
     )
     auto_prediction_publish = fields.Boolean(

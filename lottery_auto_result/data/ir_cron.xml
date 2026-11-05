@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cron_registrar_resultados" model="ir.cron">
+        <field name="name">Lotería: registrar resultados automáticos</field>
+        <field name="model_id" ref="model_lottery_result_source"/>
+        <field name="state">code</field>
+        <field name="code">model.cron_registrar_resultados()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="active">True</field>
+    </record>
+</odoo>

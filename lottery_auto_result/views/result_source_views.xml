@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_result_source_tree" model="ir.ui.view">
+        <field name="name">lottery.result.source.tree</field>
+        <field name="model">lottery.result.source</field>
+        <field name="arch" type="xml">
+            <tree string="Fuentes de resultados"
+                  decoration-danger="issue_count > 0 or last_error">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="parser"/>
+                <field name="tz" optional="hide"/>
+                <field name="auto_count"/>
+                <field name="issue_count"/>
+                <field name="last_run"/>
+                <field name="last_error" optional="show"/>
+                <field name="active" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_result_source_form" model="ir.ui.view">
+        <field name="name">lottery.result.source.form</field>
+        <field name="model">lottery.result.source</field>
+        <field name="arch" type="xml">
+            <form string="Fuente de resultados">
+                <header>
+                    <button name="action_run_now" type="object" string="Consultar ahora"
+                            class="btn-primary" icon="fa-refresh"
+                            help="Registra lo que falte sin esperar la hora del sorteo."/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archivada" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parser"/>
+                            <field name="tz"/>
+                            <field name="timeout"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="last_run"/>
+                            <field name="last_error" invisible="not last_error"/>
+                        </group>
+                    </group>
+                    <group string="URLs">
+                        <field name="urls" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook>
+                        <page string="Mapeo">
+                            <field name="line_ids">
+                                <tree editable="bottom"
+                                      decoration-success="status_type == 'ok'"
+                                      decoration-muted="status_type == 'wait'"
+                                      decoration-warning="status_type == 'warn'"
+                                      decoration-danger="status_type == 'error'">
+                                    <field name="sorteo_id" options="{'no_create': True}"/>
+                                    <field name="sorteo_turno_ids" column_invisible="1"/>
+                                    <field name="turno_id" options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="key"/>
+                                    <field name="key_extra" optional="show"/>
+                                    <field name="tz" optional="hide"/>
+                                    <field name="auto_result" string="Automático"/>
+                                    <field name="status_type" string="Situación" widget="badge"
+                                           decoration-success="status_type == 'ok'"
+                                           decoration-muted="status_type == 'wait'"
+                                           decoration-warning="status_type == 'warn'"
+                                           decoration-danger="status_type == 'error'"/>
+                                    <field name="status"/>
+                                    <field name="status_date" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lottery_result_source" model="ir.actions.act_window">
+        <field name="name">Fuentes de resultados</field>
+        <field name="res_model">lottery.result.source</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <menuitem id="menu_lottery_result_source"
+              name="Fuentes de resultados"
+              parent="lottery_base.menu_configuracion_root"
+              action="action_lottery_result_source"
+              sequence="11"
+              groups="lottery_base.group_lottery_manager"/>
+</odoo>

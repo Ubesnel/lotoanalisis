@@ -22,6 +22,16 @@ class LotterySorteo(models.Model):
         string='Excluir de predicciones', default=False,
         help="Si está activo, el sorteo no se puede elegir al cargar una "
              "predicción. Las predicciones que ya tiene no se tocan.")
+    prediction_algorithm = fields.Selection([
+        ('auto', 'Automático (últimas salidas)'),
+        ('1', 'Algoritmo 1'),
+        ('2', 'Algoritmo 2'),
+    ], string='Algoritmo de predicción', default='auto', required=True,
+        help="Con qué algoritmo se completan las predicciones de este sorteo: las "
+             "automáticas, las cargadas a mano y la Tómbola.\n"
+             "· Automático: el 1 si las dos últimas salidas compartieron dígito "
+             "con su anterior (56 60 80), el 2 si no.\n"
+             "· Algoritmo 1 / 2: siempre ese.")
 
     def _compute_ranking_display(self):
         for rec in self:
