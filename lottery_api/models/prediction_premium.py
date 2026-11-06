@@ -134,6 +134,7 @@ class LotteryPredictionPremium(models.Model):
         """Línea y terminal top de Recomendados, números fuertes desde la
         predicción del día y ternas top. Precarga: todo queda editable."""
         stats = self.env['lottery.stats.service'].sudo()
+        avisos = []
         for rec in self:
             data = stats.get_lineas_terminales_probables(
                 rec.turno_id.id, str(rec.date), sorteo_id=rec.sorteo_id.id)
@@ -145,8 +146,22 @@ class LotteryPredictionPremium(models.Model):
             })
             rec.write({'number_ids': [(6, 0, rec._numeros_fuertes().ids)]})
             rec._completar_ternas()
-            rec._completar_parles()
+            aviso = rec._completar_parles()
+            if aviso:
+                avisos.append(aviso)
             rec._completar_tombolas()
+        if avisos:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Parlés sin completar',
+                    'message': ' '.join(avisos),
+                    'type': 'warning',
+                    'sticky': True,
+                    'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+                },
+            }
         return True
 
     def _numeros_fuertes(self):
@@ -221,18 +236,25 @@ class LotteryPredictionPremium(models.Model):
     def _completar_parles(self):
         """Parlés top: los 5 Números de la predicción del día con los 5 de
         la Suerte, primero los cruzados. Van primero y destacados los del
-        Súper Mágico, después los del 2º número, y así hasta juntar 5."""
+        Súper Mágico, después los del 2º número, y así hasta juntar 5.
+        Devuelve el motivo si quedaron vacíos en un sorteo con parlés."""
         self.ensure_one()
         pred = self.prediction_id
         suerte = self._numeros_suerte()
-        if not (pred and self.sorteo_generates_parles and suerte):
+        if not self.sorteo_generates_parles:
             self.write({'parle_ids': [(5, 0, 0)]})
-            return
+            return None
+        if not (pred and suerte):
+            self.write({'parle_ids': [(5, 0, 0)]})
+            return ('No hay predicción del día.' if not pred else
+                    'No hay Números de la Suerte publicados con fecha hasta el %s.'
+                    % self.date.strftime('%d/%m/%Y'))
         try:
             parles = pred._parles_premium(suerte, PARLES_TOP)
         except UserError as exc:
             _logger.info('lottery_api: sin parlés top para %s: %s', self.display_name, exc)
-            parles = []
+            self.write({'parle_ids': [(5, 0, 0)]})
+            return str(exc)
         destacados = []
         for numero in pred._orden_de_los_cinco() if parles else []:
             destacados += [p for p in parles if p not in destacados and numero in (
@@ -245,6 +267,7 @@ class LotteryPredictionPremium(models.Model):
             (0, 0, {'sequence': i, 'numero_1': a.id, 'numero_2': b.id,
                     'destacado': (a, b) in destacados})
             for i, (a, b) in enumerate(orden)]})
+        return None
 
     def _completar_tombolas(self):
         """La primera tómbola de cada tamaño de la predicción del día."""

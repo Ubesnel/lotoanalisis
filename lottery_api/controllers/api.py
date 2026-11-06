@@ -1590,6 +1590,8 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
             'turn': turno.code or None,
             'turn_label': turno.name or '',
+            'turn_hora': _hora_turno(
+                sorteo, turno, datetime.strptime(date_str, '%Y-%m-%d').date()),
             'uses_hundreds': bool(sorteo.uses_hundreds),
             'generates_parles': bool(sorteo.generates_parles),
         }
