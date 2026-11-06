@@ -186,6 +186,7 @@ class LotteryResultSource(models.Model):
     def _run(self, force=False, commit=False):
         """Lista de {'sorteo', 'tipo', 'texto'}: qué pasó con cada sorteo."""
         self.ensure_one()
+        self._lineas_activas()._marcar_manuales()
         if not self._lineas_activas():
             return [{'sorteo': 'Sin sorteos', 'tipo': 'none',
                      'texto': 'ningún sorteo de esta fuente tiene marcado '
@@ -366,6 +367,18 @@ class LotteryResultSourceLine(models.Model):
         if self.status != status or self.status_type != tipo:
             self.write({'status': status, 'status_type': tipo,
                         'status_date': fields.Datetime.now()})
+
+    def _marcar_manuales(self):
+        """Líneas sin registrar cuya salida se cargó a mano después del estado."""
+        Output = self.env['lottery.output'].sudo()
+        for line in self.filtered(lambda l: l.status_type != 'ok' and l.status_date):
+            out = Output.search([('sorteo_id', '=', line.sorteo_id.id),
+                                 ('turno_id', '=', line.turno_id.id),
+                                 ('create_date', '>=', line.status_date)],
+                                order='date desc, id desc', limit=1)
+            if out:
+                line._set_status('Registrada manualmente el %s: %s' % (
+                    out.date.strftime('%d/%m/%Y'), out.complete_number), 'ok')
 
     def _draw_time(self, fecha):
         """Hora UTC del sorteo según el calendario: la del slot o, si no
