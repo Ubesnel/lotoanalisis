@@ -8,12 +8,11 @@ antes de notificar.
 """
 
 import logging
-import threading
 
 from odoo import SUPERUSER_ID, api, fields, models, registry
 from odoo.exceptions import UserError
 
-from .fcm_service import PUSH_LANGS
+from .fcm_service import PUSH_LANGS, lanzar_push
 
 _logger = logging.getLogger(__name__)
 
@@ -80,16 +79,8 @@ class LotteryOutput(models.Model):
 
         messages = _mensajes(self, self.sorteo_id.id)
 
-        # El envío HTTP se difiere: al hacer commit, se lanza un hilo que hace
-        # la llamada a FCM, para no bloquear la UI esperando la red.
-        dbname = self.env.cr.dbname
-        self.env.cr.postcommit.add(
-            lambda: threading.Thread(
-                target=_push_worker,
-                args=(dbname, messages),
-                daemon=True,
-            ).start()
-        )
+        # El envío HTTP se difiere al commit, para no bloquear la UI esperando la red.
+        lanzar_push(self.env.cr, _push_worker, (self.env.cr.dbname, messages))
         self.write({
             'push_sent': True,
             'push_sent_date': fields.Datetime.now(),

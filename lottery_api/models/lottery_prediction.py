@@ -4,7 +4,6 @@ desde el formulario. Mismo patrón que lottery_output.py: botón manual,
 hilo post-commit, protegido contra doble envío."""
 
 import logging
-import threading
 from datetime import timedelta
 
 import pytz
@@ -13,6 +12,7 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.addons.lottery_portal.models.quiniela_uy_ternas import SOURCE_CODE as QUINIELA_UY
 
+from .fcm_service import lanzar_push
 from .lottery_output import _mensajes, _push_worker, _turno_label
 
 _logger = logging.getLogger(__name__)
@@ -43,14 +43,7 @@ class LotteryPrediction(models.Model):
 
         messages = _mensajes(self, self.sorteo_id.id)
 
-        dbname = self.env.cr.dbname
-        self.env.cr.postcommit.add(
-            lambda: threading.Thread(
-                target=_push_worker,
-                args=(dbname, messages),
-                daemon=True,
-            ).start()
-        )
+        lanzar_push(self.env.cr, _push_worker, (self.env.cr.dbname, messages))
         # 'hour' se pisa con la hora real de envío: es lo que la app muestra
         # como "Hora de Uruguay" en Números Mágicos, y hasta ahora se quedaba
         # con la hora en que se había creado/editado el registro, no con la
