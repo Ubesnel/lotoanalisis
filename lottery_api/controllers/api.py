@@ -1538,6 +1538,36 @@ class LotteryAppApi(http.Controller):
             'ternas': ternas,
         })
 
+    @http.route('/api/lottery/v1/stats/parles-prediccion', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parles_prediccion(self, sorteo_id=None, **kwargs):
+        """Los 20 parlés de la predicción publicada del próximo sorteo."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+
+        date_str, turno = sorteo.get_next_draw()
+        prediction = request.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date_str),
+            ('turno_id', '=', turno.id),
+            ('published', '=', True),
+        ], limit=1)
+        # Ordenados por número: el orden de importancia queda para Premium.
+        parles = [{'n1': '%02d' % p.numero_1.name, 'n2': '%02d' % p.numero_2.name}
+                  for p in prediction.parle_ids.sorted(
+                      lambda p: (p.numero_1.name, p.numero_2.name))]
+        return _json_response({
+            'date': date_str,
+            'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
+            'turn': turno.code or None,
+            'turn_label': turno.name or '',
+            'found': bool(parles),
+            'parles': parles,
+        })
+
     @http.route('/api/lottery/v1/premium/prediccion', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def premium_prediccion(self, sorteo_id=None, **kwargs):
@@ -1793,7 +1823,8 @@ class LotteryAppApi(http.Controller):
                 'n1': '%02d' % p.numero_1.name,
                 'n2': '%02d' % p.numero_2.name,
                 'acierto': (p.numero_1.name, p.numero_2.name) in pares,
-            } for p in pred.parle_ids],
+            } for p in pred.parle_ids.sorted(
+                lambda p: (p.numero_1.name, p.numero_2.name))],
             'result_premios': [
                 '%02d' % n.name for n in (
                     output.number_id, output.premio_2_id, output.premio_3_id) if n
