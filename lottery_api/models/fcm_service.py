@@ -9,6 +9,7 @@ ir.config_parameter para no pedir uno nuevo en cada salida.
 import base64
 import json
 import logging
+import threading
 import time
 
 import requests
@@ -16,6 +17,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
 from odoo import api, models
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
@@ -27,6 +29,20 @@ OAUTH_URL = 'https://oauth2.googleapis.com/token'
 SCOPE = 'https://www.googleapis.com/auth/firebase.messaging'
 # Cada aviso sale una vez por idioma; la app sigue los topics del suyo.
 PUSH_LANGS = ('es', 'en')
+
+
+def lanzar_push(cr, target, args):
+    """Corre target(*args) al hacer commit: en un hilo desde la web, directo
+    desde un cron (el cron cierra las conexiones y el hilo moría con
+    'cursor already closed')."""
+    en_web = bool(request)
+
+    def run():
+        if en_web:
+            threading.Thread(target=target, args=args, daemon=True).start()
+        else:
+            target(*args)
+    cr.postcommit.add(run)
 
 
 def lang_topic(topic, lang):

@@ -3,11 +3,10 @@
 informa) desde el formulario. Mismo patrón que lottery_output.py: botón
 manual, hilo post-commit, protegido contra doble envío."""
 
-import threading
-
 from odoo import fields, models
 from odoo.exceptions import UserError
 
+from .fcm_service import lanzar_push
 from .lottery_output import _mensajes, _push_worker
 
 
@@ -28,14 +27,7 @@ class LotteryCuriosity(models.Model):
 
         messages = _mensajes(self, self.sorteo_id.id)
 
-        dbname = self.env.cr.dbname
-        self.env.cr.postcommit.add(
-            lambda: threading.Thread(
-                target=_push_worker,
-                args=(dbname, messages),
-                daemon=True,
-            ).start()
-        )
+        lanzar_push(self.env.cr, _push_worker, (self.env.cr.dbname, messages))
         self.write({
             'push_sent': True,
             'push_sent_date': fields.Datetime.now(),

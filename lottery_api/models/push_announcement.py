@@ -16,12 +16,11 @@ notification_service.dart, lado Flutter): las instalaciones con una versión
 de la app anterior a esa suscripción no reciben estos avisos."""
 
 import logging
-import threading
 
 from odoo import SUPERUSER_ID, api, fields, models, registry
 from odoo.exceptions import UserError
 
-from .fcm_service import lang_topic
+from .fcm_service import lang_topic, lanzar_push
 
 _logger = logging.getLogger(__name__)
 
@@ -121,14 +120,7 @@ class LotteryPushAnnouncement(models.Model):
         envios = [(tipo, destino, *textos[lang])
                   for lang in textos
                   for tipo, destino in _destinos(self.sorteo_ids.ids, lang)]
-        dbname = self.env.cr.dbname
-        self.env.cr.postcommit.add(
-            lambda: threading.Thread(
-                target=_push_announcement_worker,
-                args=(dbname, envios),
-                daemon=True,
-            ).start()
-        )
+        lanzar_push(self.env.cr, _push_announcement_worker, (self.env.cr.dbname, envios))
         self.write({
             'sent': True,
             'sent_date': fields.Datetime.now(),
