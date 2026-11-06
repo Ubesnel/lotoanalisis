@@ -35,6 +35,13 @@ class LotterySorteo(models.Model):
         help="Minutos que deben pasar desde que se registró la última "
              "salida antes de generar la predicción.",
     )
+    auto_premium_publish = fields.Boolean(
+        string='Publicar Premium sola',
+        default=False,
+        help="Activo: el cron publica la Predicción Premium apenas la completa "
+             "(la crea cuando la predicción del día está publicada). "
+             "Apagado: queda sin publicar para revisarla y publicarla a mano.",
+    )
     auto_prediction_error = fields.Text(
         string='Último error automático',
         readonly=True,

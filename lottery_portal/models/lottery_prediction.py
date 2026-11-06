@@ -10,6 +10,10 @@ from .patron_atraso import _hit_cruce, _hit_repeticion
 
 WEEKDAY_CODES = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 
+# Tómbolas: se cuelgan de la predicción del premio 1 y usan el último de Pick 3 Florida.
+QUINIELA_UY_PREMIO_1 = 'quiniela_uy_1'
+FLORIDA_PICK3 = 'florida'
+
 # Qué lista del ranking_snapshot del sorteo mira cada temperatura.
 TEMPERATURE_KEY = {
     'hot': 'numbers',
@@ -238,6 +242,11 @@ def _digitos(numero):
     return divmod(numero, 10)
 
 
+def _reves(numero):
+    """Viraje: 21 → 12, 7 → 70."""
+    return numero % 10 * 10 + numero // 10
+
+
 def _comparte_digito(candidato, salida):
     """True si `candidato` tiene, en línea o en terminal, algún dígito que
     también aparece en `salida` (en cualquiera de sus dos posiciones).
@@ -323,6 +332,7 @@ class LotteryPrediction(models.Model):
         related='sorteo_id.generates_parles', string='Genera parlés',
         help='Sólo para condicionar la vista: los parlés existen en los '
              'sorteos que los generan.')
+    sorteo_code = fields.Char(related='sorteo_id.code', string='Código del sorteo')
 
     algoritmo = fields.Selection([
         ('1', 'Algoritmo 1'),
@@ -359,7 +369,7 @@ class LotteryPrediction(models.Model):
     tombola_linea_ids = fields.One2many(
         'lottery.prediction.tombola.linea', 'prediction_id',
         string='Líneas de Tómbola a predecir',
-        help='Cada línea son los 7 números (00-99) de una combinación '
+        help='Cada línea son de 3 a 7 números (00-99) de una combinación '
              'completa a jugar en la Tómbola de este mismo sorteo (fecha y '
              'turno): un juego aparte de la Quiniela, ver '
              'lottery.tombola.output.')
@@ -1601,6 +1611,138 @@ class LotteryPrediction(models.Model):
             self._coincidencia(n.name, premios)[1] for n in p)]
         return (cruzados + [p for p in pares if p not in cruzados])[:limite]
 
+    # ── Completar tómbolas ──────────────────────────────────────────────
+
+    def action_completar_tombola(self):
+        """Completa las 12 líneas de Tómbola: 4 de 3, 2 de 4, 2 de 5, 2 de 6
+        y 2 de 7. Ver _armar_tombolas. Como las ternas, el botón sólo
+        precarga: quedan editables."""
+        Linea = self.env['lottery.prediction.tombola.linea']
+        for rec in self:
+            rec.tombola_linea_ids = [(5, 0, 0)] + [
+                (0, 0, Linea.vals_numeros(linea)) for linea in rec._armar_tombolas()]
+        return True
+
+    def _armar_tombolas(self):
+        """Las 12 líneas (listas de enteros) en orden: las 4 de 3 y después
+        la 1ª y la 2ª de cada tamaño, que crece sumando un número de su
+        pareja."""
+        self.ensure_one()
+        if self.sorteo_id.code != QUINIELA_UY_PREMIO_1:
+            raise UserError('Las tómbolas se completan en la predicción del premio 1 '
+                            'de la Quiniela Uruguay.')
+        if len(self.number_ids_5) < 5 or not self.super_magico_id:
+            raise UserError('Completá primero los 5 Números a predecir y el Súper '
+                            'Mágico con el botón "Completar números".')
+        ultimo = self._last_output().number_id
+        florida = self._ultima_florida()
+        if not ultimo:
+            raise UserError('El premio 1 no tiene una salida anterior a esta predicción.')
+        if not florida:
+            raise UserError('Pick 3 Florida no tiene salidas registradas hasta esta fecha.')
+
+        ultimo, sm = ultimo.name, self.super_magico_id.name
+        cinco = self._orden_de_los_cinco()
+        diez = set(self.number_ids_10.mapped('name'))
+        recencia = self._recencia_tombola()
+        mes = self.env['lottery.stats.service'].sudo().get_tombola_numbers_month_all(
+            self.date.month, self.date.year)
+
+        def rec(n):
+            return recencia.get(n, 0)
+
+        def clave_mes(fila):
+            n = int(fila['name'])
+            return (fila['salidas_mes_anio'], -rec(n), n not in diez,
+                    n not in cinco, -rec(_reves(n)), n)
+
+        def del_mes(tabla, base, cantidad):
+            """`cantidad` números de la tabla del mes que no estén en `base`:
+            los que menos salieron este mes y, a igualdad, el más reciente,
+            el de la tabla de 10, el de la de 5 y el de viraje más reciente."""
+            filas = sorted(mes.get(tabla) or [], key=clave_mes)
+            elegidos = [int(f['name']) for f in filas if int(f['name']) not in base]
+            return elegidos[:cantidad]
+
+        relleno = cinco + sorted(diez - set(cinco)) + sorted(
+            set(self.number_ids_20.mapped('name')) - diez)
+
+        def sin_repetir(numeros, cantidad=3):
+            """Los números en orden sin repetidos; si falta alguno, el
+            siguiente de los 5 (y después de los 10 y los 20)."""
+            linea = list(dict.fromkeys(numeros))
+            for n in relleno:
+                if len(linea) >= cantidad:
+                    break
+                if n not in linea:
+                    linea.append(n)
+            return linea
+
+        lineas = []
+
+        def extender(base, fuente):
+            """`base` más un número de `fuente` que no tenga: primero el que
+            (él o su viraje) salió más reciente en la Tómbola. Si no queda
+            ninguno o la línea ya existe, sigue con los de relleno."""
+            def prio(n):
+                return (-max(rec(n), rec(_reves(n))), n)
+            candidatos = sorted({n for n in fuente if n not in base}, key=prio)
+            candidatos += [n for n in relleno if n not in base and n not in candidatos]
+            hechas = [set(l) for l in lineas]
+            for n in candidatos:
+                if set(base) | {n} not in hechas:
+                    return base + [n]
+            raise UserError('No alcanzan los números para armar las tómbolas de %d.'
+                            % (len(base) + 1))
+
+        primera = [ultimo] + del_mes('top', {ultimo}, 2)
+        segunda = sin_repetir([sm, ultimo, florida[0]])
+        tercera = [sm] + del_mes('intermedios', {sm}, 2)
+        cuarta = sin_repetir(florida[:3])
+        if any(len(l) < 3 for l in (primera, tercera, cuarta)):
+            raise UserError('Faltan datos para las tómbolas de 3 (tabla del mes de la '
+                            'Tómbola o premios de Pick 3 Florida).')
+        lineas += [primera, segunda, tercera, cuarta]
+
+        # De 4: la 1ª y la 2ª de 3 con un número de la 3ª o la 4ª. De 5 en
+        # adelante, cada una con un número de la otra de su tamaño.
+        a = extender(primera, tercera + cuarta)
+        lineas.append(a)
+        b = extender(segunda, tercera + cuarta)
+        lineas.append(b)
+        for _tamano in range(5, 8):
+            nueva_a = extender(a, b)
+            lineas.append(nueva_a)
+            nueva_b = extender(b, a)
+            lineas.append(nueva_b)
+            a, b = nueva_a, nueva_b
+        return lineas
+
+    def _ultima_florida(self):
+        """Premios 1, 2 y 3 (enteros) de la última salida registrada de Pick 3
+        Florida hasta la fecha de la predicción, del turno que sea."""
+        self.ensure_one()
+        out = self.env['lottery.output'].sudo().search([
+            ('sorteo_id.code', '=', FLORIDA_PICK3),
+            ('date', '<=', self.date),
+        ], order='date desc, turno_sequence desc, id desc', limit=1)
+        return [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
+
+    def _recencia_tombola(self):
+        """{número: marca de tiempo de su última salida en la Tómbola} antes
+        del sorteo que se predice. Más grande = más reciente."""
+        self.ensure_one()
+        self.env.cr.execute("""
+            SELECT ln.name, MAX(EXTRACT(EPOCH FROM o.date::timestamp)
+                                + o.turno_sequence)
+            FROM lottery_tombola_output o
+            JOIN lottery_number ln ON ln.id = o.number_id
+            WHERE o.date < %(fecha)s
+               OR (o.date = %(fecha)s AND o.turno_sequence < %(seq)s)
+            GROUP BY ln.name
+        """, {'fecha': self.date, 'seq': self.turno_id.sequence})
+        return {int(n): float(t) for n, t in self.env.cr.fetchall()}
+
     # ── Render del desglose ────────────────────────────────────────────────
 
     @staticmethod
@@ -2048,29 +2190,56 @@ class LotteryPredictionParle(models.Model):
     ]
 
 
+TOMBOLA_COLUMNAS = tuple('numero_%d' % i for i in range(1, 8))
+
+
+class LotteryTombolaLineaMixin(models.AbstractModel):
+    """Línea de Tómbola de 3 a 7 números. La usan la predicción y la
+    Predicción Premium."""
+    _name = 'lottery.tombola.linea.mixin'
+    _description = 'Línea de Tómbola'
+
+    numero_1 = fields.Many2one('lottery.number', string='Número 1', required=True)
+    numero_2 = fields.Many2one('lottery.number', string='Número 2', required=True)
+    numero_3 = fields.Many2one('lottery.number', string='Número 3', required=True)
+    numero_4 = fields.Many2one('lottery.number', string='Número 4')
+    numero_5 = fields.Many2one('lottery.number', string='Número 5')
+    numero_6 = fields.Many2one('lottery.number', string='Número 6')
+    numero_7 = fields.Many2one('lottery.number', string='Número 7')
+
+    def numeros(self):
+        """Los números cargados (enteros), en el orden de las columnas."""
+        self.ensure_one()
+        return [self[c].name for c in TOMBOLA_COLUMNAS if self[c]]
+
+    @api.model
+    def vals_numeros(self, numeros):
+        """Valores de create para una línea con esos números (enteros)."""
+        por_nombre = {n.name: n.id for n in self.env['lottery.number'].search(
+            [('name', 'in', list(numeros))])}
+        return {c: por_nombre[n] for c, n in zip(TOMBOLA_COLUMNAS, numeros)}
+
+    @api.constrains(*TOMBOLA_COLUMNAS)
+    def _check_sin_repetidos(self):
+        for rec in self:
+            numeros = rec.numeros()
+            if len(numeros) != len(set(numeros)):
+                raise ValidationError('Una línea de Tómbola no puede repetir un número.')
+
+    @api.depends(*('%s.name' % c for c in TOMBOLA_COLUMNAS))
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = ' - '.join('%02d' % n for n in rec.numeros())
+
+
 class LotteryPredictionTombolaLinea(models.Model):
-    """Línea de 7 números de Tómbola a predecir, colgada de
-    lottery.prediction. Ver el comentario junto a tombola_linea_ids: cada
-    línea es una combinación completa a jugar, no una lista suelta de
-    números sueltos como sería con un many2many."""
+    """Línea de Tómbola a predecir, colgada de lottery.prediction. Ver el
+    comentario junto a tombola_linea_ids: cada línea es una combinación
+    completa a jugar, no una lista suelta como sería con un many2many."""
     _name = 'lottery.prediction.tombola.linea'
+    _inherit = 'lottery.tombola.linea.mixin'
     _description = 'Línea de Tómbola a predecir'
 
     prediction_id = fields.Many2one(
         'lottery.prediction', string='Predicción',
         required=True, ondelete='cascade', index=True)
-    numero_1 = fields.Many2one('lottery.number', string='Número 1', required=True)
-    numero_2 = fields.Many2one('lottery.number', string='Número 2', required=True)
-    numero_3 = fields.Many2one('lottery.number', string='Número 3', required=True)
-    numero_4 = fields.Many2one('lottery.number', string='Número 4', required=True)
-    numero_5 = fields.Many2one('lottery.number', string='Número 5', required=True)
-    numero_6 = fields.Many2one('lottery.number', string='Número 6', required=True)
-    numero_7 = fields.Many2one('lottery.number', string='Número 7', required=True)
-
-    @api.depends('numero_1.name', 'numero_2.name', 'numero_3.name',
-                'numero_4.name', 'numero_5.name', 'numero_6.name', 'numero_7.name')
-    def _compute_display_name(self):
-        for rec in self:
-            numeros = (rec.numero_1, rec.numero_2, rec.numero_3, rec.numero_4,
-                      rec.numero_5, rec.numero_6, rec.numero_7)
-            rec.display_name = ' - '.join('%02d' % n.name for n in numeros if n)

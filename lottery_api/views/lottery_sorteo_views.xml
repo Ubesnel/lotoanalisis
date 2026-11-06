@@ -14,6 +14,7 @@
                 <field name="auto_prediction_publish" invisible="not auto_prediction"/>
                 <field name="auto_prediction_delay" invisible="not auto_prediction"/>
                 <field name="auto_prediction_error" invisible="not auto_prediction_error"/>
+                <field name="auto_premium_publish" invisible="not show_in_app"/>
             </xpath>
         </field>
     </record>

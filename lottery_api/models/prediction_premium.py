@@ -42,6 +42,7 @@ class LotteryPredictionPremium(models.Model):
         related='sorteo_id.uses_hundreds', string='Usa centena')
     sorteo_generates_parles = fields.Boolean(
         related='sorteo_id.generates_parles', string='Genera parlés')
+    sorteo_code = fields.Char(related='sorteo_id.code', string='Código del sorteo')
 
     published = fields.Boolean(
         string='Publicado', default=False, index=True,
@@ -69,6 +70,10 @@ class LotteryPredictionPremium(models.Model):
         'lottery.prediction.premium.terna', 'premium_id', string='Ternas top')
     parle_ids = fields.One2many(
         'lottery.prediction.premium.parle', 'premium_id', string='Parlés top')
+    tombola_linea_ids = fields.One2many(
+        'lottery.prediction.premium.tombola', 'premium_id', string='Tómbolas',
+        help='Solo Quiniela UY: la primera de cada tamaño (3 a 7) de las '
+             'tómbolas de la predicción del día.')
 
     _sql_constraints = [
         ('unique_date_turn_sorteo', 'unique(date, turno_id, sorteo_id)',
@@ -141,6 +146,7 @@ class LotteryPredictionPremium(models.Model):
             rec.write({'number_ids': [(6, 0, rec._numeros_fuertes().ids)]})
             rec._completar_ternas()
             rec._completar_parles()
+            rec._completar_tombolas()
         return True
 
     def _numeros_fuertes(self):
@@ -240,6 +246,19 @@ class LotteryPredictionPremium(models.Model):
                     'destacado': (a, b) in destacados})
             for i, (a, b) in enumerate(orden)]})
 
+    def _completar_tombolas(self):
+        """La primera tómbola de cada tamaño de la predicción del día."""
+        self.ensure_one()
+        Linea = self.env['lottery.prediction.premium.tombola']
+        lineas, tamanos = [], set()
+        for linea in self.prediction_id.tombola_linea_ids.sorted('id'):
+            numeros = linea.numeros()
+            if len(numeros) not in tamanos:
+                tamanos.add(len(numeros))
+                lineas.append(numeros)
+        self.write({'tombola_linea_ids': [(5, 0, 0)] + [
+            (0, 0, Linea.vals_numeros(n)) for n in sorted(lineas, key=len)]})
+
     def _numeros_suerte(self):
         """Los 5 Números de la Suerte publicados más recientes a la fecha."""
         self.ensure_one()
@@ -292,6 +311,8 @@ class LotteryPredictionPremium(models.Model):
                             'sorteo_id': sorteo.id, 'date': date_str, 'turno_id': turno.id})
                     if not rec.published:
                         rec.action_completar()
+                        if sorteo.auto_premium_publish:
+                            rec.published = True
             except Exception:  # noqa: BLE001 - un sorteo no frena a los demás
                 _logger.exception('lottery_api: predicción Premium falló (sorteo %s)', sorteo.name)
             self.env.cr.commit()
@@ -336,3 +357,14 @@ class LotteryPredictionPremiumParle(models.Model):
         ('parle_unique_por_premium', 'unique(premium_id, numero_1, numero_2)',
          'Ese parlé ya está cargado.'),
     ]
+
+
+class LotteryPredictionPremiumTombola(models.Model):
+    _name = 'lottery.prediction.premium.tombola'
+    _inherit = 'lottery.tombola.linea.mixin'
+    _description = 'Tómbola Premium'
+    _order = 'id'
+
+    premium_id = fields.Many2one(
+        'lottery.prediction.premium', string='Predicción Premium',
+        required=True, ondelete='cascade', index=True)

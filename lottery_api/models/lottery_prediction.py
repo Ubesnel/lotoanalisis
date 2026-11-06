@@ -200,6 +200,12 @@ class LotteryPrediction(models.Model):
                     pred.action_completar_ternas()
             except UserError as exc:
                 _logger.warning('lottery_api: ternas automáticas de %s: %s', sorteo.name, exc)
+        if sorteo.code == 'quiniela_uy_1':
+            try:
+                with self.env.cr.savepoint():
+                    pred.action_completar_tombola()
+            except UserError as exc:
+                _logger.warning('lottery_api: tómbolas automáticas: %s', exc)
         if sorteo.generates_parles:
             try:
                 with self.env.cr.savepoint():

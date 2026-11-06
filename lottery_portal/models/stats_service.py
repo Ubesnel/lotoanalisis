@@ -1172,7 +1172,8 @@ class LotteryStatsService(models.Model):
         sin sorteo en el calendario no se listan."""
         n1, n2 = min(a, b), max(a, b)
         self.env.cr.execute("""
-            SELECT o.turno_id, o.week_day, MAX(o.date) AS ultima, COUNT(*) AS veces
+            SELECT o.turno_id, o.week_day, COUNT(*) AS veces,
+                   MAX(o.date::timestamp + o.turno_sequence * INTERVAL '1 second') AS ultima
             FROM lottery_output o
             JOIN lottery_number p1 ON p1.id = o.number_id
             JOIN lottery_number p2 ON p2.id = o.premio_2_id
@@ -1191,18 +1192,22 @@ class LotteryStatsService(models.Model):
         for r in rows:
             por_turno[r['turno_id']] += r['veces']
             por_dia[r['week_day']] += r['veces']
-        ultima = max((r['ultima'] for r in rows), default=None)
+        ultima = max(rows, key=lambda r: r['ultima'], default=None)
 
         dias = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
         sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
         con_sorteo = {dias[int(d)] for d in sorteo.slot_ids.mapped('dow')} or set(dias)
+        turnos = self._turnos(sorteo_id)
+        ultimo_turno = next((name for tid, code, name in turnos
+                             if ultima and tid == ultima['turno_id']), None)
         return {
             'n1': f'{n1:02d}',
             'n2': f'{n2:02d}',
             'veces': sum(por_turno.values()),
-            'ultima_fecha': ultima.strftime('%d/%m/%Y') if ultima else None,
+            'ultima_fecha': ultima['ultima'].strftime('%d/%m/%Y') if ultima else None,
+            'ultimo_turno': ultimo_turno,
             'turnos': [{'code': code, 'name': name, 'veces': por_turno[tid]}
-                       for tid, code, name in self._turnos(sorteo_id)],
+                       for tid, code, name in turnos],
             'dias': [{'code': d, 'veces': por_dia[d]} for d in dias
                      if d in con_sorteo or por_dia[d]],
         }

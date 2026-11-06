@@ -50,6 +50,11 @@
                             invisible="not sorteo_generates_parles or not number_ids_5"
                             confirm="Se van a reemplazar los parlés cargados con los 20 que salen del cálculo. ¿Seguimos?"
                             help="Cruza los 5 Números con los otros 5 de la tabla de 10 y deja los 20 mejores: primero los que coinciden con los dos números contra los premios 1, 2 y 3 de la salida anterior, después los cruzados, y luego los que más combinan por línea y terminal."/>
+                    <button name="action_completar_tombola" type="object"
+                            string="Completar tómbolas" class="btn-secondary"
+                            invisible="sorteo_code != 'quiniela_uy_1' or not number_ids_5"
+                            confirm="Se van a reemplazar las líneas de Tómbola con las 12 que salen del cálculo. ¿Seguimos?"
+                            help="4 de 3 (último premio 1 con dos de los que más salen en el mes; Súper Mágico, último premio 1 y último de Pick 3 Florida; Súper Mágico con dos intermedios del mes; premios 1, 2 y 3 de Pick 3 Florida), y de 4 a 7 dos de cada tamaño que crecen con los que salieron más reciente en la Tómbola."/>
                 </header>
                 <sheet>
                     <group>
@@ -62,6 +67,7 @@
                             <field name="hour" widget="float_time"/>
                             <!-- Sólo para los invisible de ternas y Tómbola. -->
                             <field name="sorteo_source_code" invisible="1"/>
+                            <field name="sorteo_code" invisible="1"/>
                             <field name="sorteo_uses_hundreds" invisible="1"/>
                             <field name="sorteo_generates_parles" invisible="1"/>
                             <field name="combinaciones_window"/>

@@ -62,6 +62,14 @@ def _json_body():
     return body if isinstance(body, dict) else {}
 
 
+def _tombola_lineas(lineas):
+    """Líneas de Tómbola con sus números ordenados, de la más corta a la más
+    larga y, dentro de cada tamaño, por sus números: así la que pasa a
+    Premium (la primera que se arma) no queda siempre arriba."""
+    return sorted((sorted('%02d' % n for n in l.numeros()) for l in lineas),
+                  key=lambda l: (len(l), l))
+
+
 def _informa_premium():
     return request.env['ir.config_parameter'].sudo().get_param(
         'lottery_api.informa_premium') == '1'
@@ -1488,15 +1496,10 @@ class LotteryAppApi(http.Controller):
         if not prediction or not (prediction.terna_ids or prediction.tombola_linea_ids):
             return _json_response(dict(base, found=False, ternas=[], tombola_lineas=[]))
 
-        def _linea_numeros(linea):
-            campos = (linea.numero_1, linea.numero_2, linea.numero_3, linea.numero_4,
-                      linea.numero_5, linea.numero_6, linea.numero_7)
-            return sorted(str(n.name).zfill(2) for n in campos if n)
-
         return _json_response(dict(
             base, found=True,
             ternas=sorted(prediction.terna_ids.mapped('terna')),
-            tombola_lineas=[_linea_numeros(l) for l in prediction.tombola_linea_ids],
+            tombola_lineas=_tombola_lineas(prediction.tombola_linea_ids),
         ))
 
     @http.route('/api/lottery/v1/stats/ternas', type='http',
@@ -1576,6 +1579,7 @@ class LotteryAppApi(http.Controller):
             parles=[{'n1': '%02d' % p.numero_1.name, 'n2': '%02d' % p.numero_2.name,
                      'destacado': p.destacado}
                     for p in rec.parle_ids] if sorteo.generates_parles else [],
+            tombolas=[sorted('%02d' % n for n in t.numeros()) for t in rec.tombola_linea_ids],
         ), headers=NO_STORE)
 
     @http.route('/api/lottery/v1/premium/numeros-suerte', type='http',
@@ -1770,11 +1774,7 @@ class LotteryAppApi(http.Controller):
             # números que salieron en la Tómbola de esa fecha y turno, para
             # marcar en amarillo los que coincidieron. Vacío si todavía no
             # salió. Tampoco se contabilizan en los aciertos.
-            'tombola_lineas': [
-                sorted(str(n.name).zfill(2) for n in (
-                    linea.numero_1, linea.numero_2, linea.numero_3, linea.numero_4,
-                    linea.numero_5, linea.numero_6, linea.numero_7) if n)
-                for linea in pred.tombola_linea_ids],
+            'tombola_lineas': _tombola_lineas(pred.tombola_linea_ids),
             'tombola_salidos': sorted(
                 str(o.number_id.name).zfill(2)
                 for o in request.env['lottery.tombola.output'].sudo().search([
