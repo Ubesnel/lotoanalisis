@@ -1491,6 +1491,8 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
             'turn': turno.code or None,
             'turn_label': turno.name or '',
+            'turn_hora': _hora_turno(
+                sorteo, turno, datetime.strptime(date_str, '%Y-%m-%d').date()),
         }
 
         prediction = request.env['lottery.prediction'].sudo().search([
@@ -1534,6 +1536,8 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
             'turn': turno.code or None,
             'turn_label': turno.name or '',
+            'turn_hora': _hora_turno(
+                sorteo, turno, datetime.strptime(date_str, '%Y-%m-%d').date()),
             'found': bool(ternas),
             'ternas': ternas,
         })
@@ -1564,6 +1568,8 @@ class LotteryAppApi(http.Controller):
             'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
             'turn': turno.code or None,
             'turn_label': turno.name or '',
+            'turn_hora': _hora_turno(
+                sorteo, turno, datetime.strptime(date_str, '%Y-%m-%d').date()),
             'found': bool(parles),
             'parles': parles,
         })
