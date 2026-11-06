@@ -252,6 +252,7 @@ https://enloteria.com/resultados-el-quinielon-noche</field>
             <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
             <field name="turno_id" ref="lottery_base.turno_morning"/>
             <field name="key">texas/pick-3/morning</field>
+            <field name="key_extra">texas/pick-4/morning</field>
             <field name="tz">America/Chicago</field>
         </record>
         <record id="line_texas_midday_lotteryteller" model="lottery.result.source.line">
@@ -259,6 +260,7 @@ https://enloteria.com/resultados-el-quinielon-noche</field>
             <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
             <field name="turno_id" ref="lottery_base.turno_midday"/>
             <field name="key">texas/pick-3/midday</field>
+            <field name="key_extra">texas/pick-4/midday</field>
             <field name="tz">America/Chicago</field>
         </record>
         <record id="line_texas_afternoon_lotteryteller" model="lottery.result.source.line">
@@ -266,6 +268,7 @@ https://enloteria.com/resultados-el-quinielon-noche</field>
             <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
             <field name="turno_id" ref="lottery_base.turno_afternoon"/>
             <field name="key">texas/pick-3/evening</field>
+            <field name="key_extra">texas/pick-4/evening</field>
             <field name="tz">America/Chicago</field>
         </record>
         <record id="line_texas_evening_lotteryteller" model="lottery.result.source.line">
@@ -273,6 +276,7 @@ https://enloteria.com/resultados-el-quinielon-noche</field>
             <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
             <field name="turno_id" ref="lottery_base.turno_evening"/>
             <field name="key">texas/pick-3/night</field>
+            <field name="key_extra">texas/pick-4/night</field>
             <field name="tz">America/Chicago</field>
         </record>
         <record id="line_new_jersey_afternoon_lotteryteller" model="lottery.result.source.line">
