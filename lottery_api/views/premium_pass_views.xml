@@ -31,6 +31,10 @@
         <field name="arch" type="xml">
             <form string="Pase Premium" create="false">
                 <header>
+                    <button name="action_consultar_google" type="object"
+                            string="Consultar a Google" class="btn-primary"
+                            invisible="origin != 'subscription' or not purchase_token"
+                            help="Vuelve a pedirle a Google el estado y el vencimiento de esta suscripción, y la confirma si faltaba. Es lo mismo que Restaurar compra en la app."/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="pending,active,canceled,expired"/>
                 </header>

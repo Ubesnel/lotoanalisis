@@ -24,6 +24,7 @@ from datetime import datetime, timedelta, timezone
 import requests
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -325,6 +326,20 @@ class LotteryPremiumPass(models.Model):
             self.acknowledged = True
         except PremiumError as e:
             _logger.warning('lottery_api: acknowledge pendiente del pase %s: %s', self.id, e.code)
+
+    def action_consultar_google(self):
+        """Vuelve a consultar el pase a Google ahora, igual que "Restaurar
+        compra" en la app: estado, vencimiento y confirmación si faltaba."""
+        for rec in self.filtered(lambda r: r.origin == 'subscription' and r.purchase_token):
+            try:
+                self.verify_subscription(rec.purchase_token)
+            except PremiumError as e:
+                if e.code == 'invalid_purchase':
+                    rec.state = 'expired'
+                else:
+                    raise UserError('Google no respondió bien (%s). Revisá la cuenta '
+                                    'de servicio de Play en Ajustes.' % e.code) from e
+        return True
 
     @api.model
     def _cron_refresh_subscriptions(self):

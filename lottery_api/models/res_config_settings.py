@@ -45,6 +45,12 @@ class ResConfigSettings(models.TransientModel):
              'un pase Premium vigente. Prenderlo cuando la mayoría tenga la '
              'versión con Premium: las anteriores verían las noticias vacías.',
     )
+    lottery_magicos_premium = fields.Boolean(
+        string='Mágicos 10/5/Súper son Premium',
+        config_parameter='lottery_api.magicos_premium',
+        help='Apagado, todos ven las tablas de 10 y 5, el Súper Mágico y los '
+             'parlés del próximo sorteo. Prenderlo cuando la mayoría tenga '
+             'la versión con Premium.')
     lottery_premium_promo = fields.Boolean(
         string='Aviso de Premium en la app',
         help='Cada tantos días la app invita a pasarse a Premium. Nunca a '

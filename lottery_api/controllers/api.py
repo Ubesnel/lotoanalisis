@@ -70,6 +70,12 @@ def _tombola_lineas(lineas):
                   key=lambda l: (len(l), l))
 
 
+def _magicos_premium():
+    """10, 5 y Súper Mágico son Premium (Ajustes). Apagado, los ven todos."""
+    return request.env['ir.config_parameter'].sudo().get_param(
+        'lottery_api.magicos_premium') in ('True', '1')
+
+
 def _informa_premium():
     return request.env['ir.config_parameter'].sudo().get_param(
         'lottery_api.informa_premium') == '1'
@@ -550,7 +556,8 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
-        return _json_response(self._numeros_magicos_payload(sorteo, premium=False))
+        return _json_response(self._numeros_magicos_payload(
+            sorteo, premium=not _magicos_premium()))
 
     @http.route('/api/lottery/v1/premium/magicos', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -560,7 +567,7 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404, headers=NO_STORE)
-        premium = bool(_request_pass())
+        premium = not _magicos_premium() or bool(_request_pass())
         return _json_response(
             dict(self._numeros_magicos_payload(sorteo, premium=premium), locked=not premium),
             headers=NO_STORE)
@@ -1734,7 +1741,7 @@ class LotteryAppApi(http.Controller):
         # Antes de jugarse, 10, 5 y Súper Mágico son Premium como en
         # /numeros-magicos; después quedan a la vista de todos.
         jugada = bool(pred.verification_date or output)
-        oculto = not jugada and not _request_pass()
+        oculto = not jugada and _magicos_premium() and not _request_pass()
         pares = _pares_salida(output) if output else set()
 
         return _json_response({

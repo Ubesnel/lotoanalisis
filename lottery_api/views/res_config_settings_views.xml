@@ -32,6 +32,10 @@
                              help="El texto de las noticias solo llega a quien tiene Premium. Prenderlo cuando la mayoría tenga la versión con Premium: las anteriores verían las noticias vacías.">
                         <field name="lottery_informa_premium"/>
                     </setting>
+                    <setting string="Mágicos 10/5/Súper son Premium"
+                             help="Apagado, todos ven las tablas de 10 y 5, el Súper Mágico y los parlés del próximo sorteo, como antes de Premium. Prenderlo cuando la 42 esté al 100% y el build mínimo en 42.">
+                        <field name="lottery_magicos_premium"/>
+                    </setting>
                     <setting string="Aviso de Premium en la app"
                              help="Cada tantos días la app invita a pasarse a Premium. Nunca a quien ya es Premium ni a quien no puede pagar con Google Play. Si el usuario lo descarta, la app lo espacia más.">
                         <field name="lottery_premium_promo"/>
