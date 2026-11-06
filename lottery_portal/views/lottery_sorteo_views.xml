@@ -16,9 +16,11 @@
         <field name="model">lottery.sorteo</field>
         <field name="inherit_id" ref="lottery_base.view_lottery_sorteo_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='source_code']" position="after">
-                <field name="show_in_public"/>
-                <field name="exclude_from_predictions"/>
+            <xpath expr="//group[@name='grp_opciones']" position="inside">
+                <group string="Predicciones y automatización" name="grp_automatizacion">
+                    <field name="exclude_from_predictions"/>
+                    <field name="prediction_algorithm" invisible="exclude_from_predictions"/>
+                </group>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Ranking calientes / fríos">

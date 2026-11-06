@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_lottery_sorteo_form_auto_result" model="ir.ui.view">
+        <field name="name">lottery.sorteo.form.auto.result</field>
+        <field name="model">lottery.sorteo</field>
+        <field name="inherit_id" ref="lottery_api.view_lottery_sorteo_form_api"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='grp_automatizacion']" position="inside">
+                <field name="auto_result"/>
+                <field name="auto_result_push" invisible="not auto_result"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Fuentes de resultados">
+                    <field name="auto_result_line_ids" readonly="1">
+                        <tree decoration-success="status_type == 'ok'"
+                              decoration-muted="status_type == 'wait'"
+                              decoration-warning="status_type == 'warn'"
+                              decoration-danger="status_type == 'error'">
+                            <field name="source_id"/>
+                            <field name="turno_id"/>
+                            <field name="key"/>
+                            <field name="key_extra" optional="hide"/>
+                            <field name="status_type" string="Situación" widget="badge"
+                                   decoration-success="status_type == 'ok'"
+                                   decoration-muted="status_type == 'wait'"
+                                   decoration-warning="status_type == 'warn'"
+                                   decoration-danger="status_type == 'error'"/>
+                            <field name="status"/>
+                            <field name="status_date"/>
+                        </tree>
+                    </field>
+                    <div class="text-muted">
+                        De dónde toma el cron cada turno. Se configura en Configuración › Fuentes de resultados.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

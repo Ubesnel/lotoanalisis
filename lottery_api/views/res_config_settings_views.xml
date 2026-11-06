@@ -32,12 +32,23 @@
                              help="El texto de las noticias solo llega a quien tiene Premium. Prenderlo cuando la mayoría tenga la versión con Premium: las anteriores verían las noticias vacías.">
                         <field name="lottery_informa_premium"/>
                     </setting>
+                    <setting string="Mágicos 10/5/Súper son Premium"
+                             help="Apagado, todos ven las tablas de 10 y 5, el Súper Mágico y los parlés del próximo sorteo, como antes de Premium. Prenderlo cuando la 42 esté al 100% y el build mínimo en 42.">
+                        <field name="lottery_magicos_premium"/>
+                    </setting>
                     <setting string="Aviso de Premium en la app"
                              help="Cada tantos días la app invita a pasarse a Premium. Nunca a quien ya es Premium ni a quien no puede pagar con Google Play. Si el usuario lo descarta, la app lo espacia más.">
                         <field name="lottery_premium_promo"/>
                         <div class="mt8" invisible="not lottery_premium_promo">
                             Cada <field name="lottery_premium_promo_days" class="oe_inline"/> días
                         </div>
+                    </setting>
+                    <setting string="Números de la Suerte"
+                             help="Se generan solos a esta hora de Uruguay, y desde esa hora la app muestra los del día nuevo. Antes sigue con los del día anterior.">
+                        <div>Hora <field name="lottery_suerte_hora" widget="float_time" class="oe_inline"/></div>
+                        <div>Sorteo de referencia <field name="lottery_suerte_sorteo_id" class="oe_inline" options="{'no_create': True}"/></div>
+                        <div>Temperatura <field name="lottery_suerte_temperature" class="oe_inline"/></div>
+                        <div>Publicar al generarlos <field name="lottery_suerte_publicar" class="oe_inline"/></div>
                     </setting>
                 </block>
                 <block title="Historial de Predicciones" id="lottery_api_historial_settings">

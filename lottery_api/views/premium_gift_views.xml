@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lottery_premium_gift_list" model="ir.ui.view">
+        <field name="name">lottery.premium.gift.tree</field>
+        <field name="model">lottery.premium.gift</field>
+        <field name="arch" type="xml">
+            <tree string="Códigos de regalo"
+                  decoration-success="state == 'redeemed'"
+                  decoration-info="state == 'available'"
+                  decoration-muted="state in ('expired', 'revoked')">
+                <field name="create_date" string="Alta"/>
+                <field name="name"/>
+                <field name="origin"/>
+                <field name="months"/>
+                <field name="state"/>
+                <field name="redeemed_date" optional="show"/>
+                <field name="pass_expiry" optional="show"/>
+                <field name="order_id" optional="show"/>
+                <field name="note" optional="show"/>
+                <field name="is_test" optional="hide"/>
+                <field name="consumed" optional="hide"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_lottery_premium_gift_form" model="ir.ui.view">
+        <field name="name">lottery.premium.gift.form</field>
+        <field name="model">lottery.premium.gift</field>
+        <field name="arch" type="xml">
+            <form string="Código de regalo">
+                <header>
+                    <button name="action_revoke" type="object" string="Anular"
+                            invisible="state == 'revoked'"
+                            confirm="El código deja de servir y, si ya se canjeó, se corta su Premium. ¿Seguro?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="available,redeemed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Regalo">
+                            <field name="origin"/>
+                            <field name="months" readonly="id"/>
+                            <field name="valid_until" readonly="state != 'available'"/>
+                            <field name="note"/>
+                        </group>
+                        <group string="Canje">
+                            <field name="redeemed_date"/>
+                            <field name="pass_id"/>
+                            <field name="pass_expiry"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Teléfonos" name="activations">
+                            <field name="activation_ids">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="device_id"/>
+                                    <field name="is_move"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Google Play" name="google" invisible="origin != 'purchase'">
+                            <group>
+                                <field name="product_id"/>
+                                <field name="order_id"/>
+                                <field name="is_test"/>
+                                <field name="acknowledged"/>
+                                <field name="consumed"/>
+                                <field name="purchase_token"/>
+                            </group>
+                            <field name="google_response" style="font-family:monospace;font-size:11px;"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_lottery_premium_gift_search" model="ir.ui.view">
+        <field name="name">lottery.premium.gift.search</field>
+        <field name="model">lottery.premium.gift</field>
+        <field name="arch" type="xml">
+            <search string="Buscar códigos">
+                <field name="name"/>
+                <field name="order_id"/>
+                <field name="note"/>
+                <separator/>
+                <filter name="sin_canjear" string="Sin canjear" domain="[('state', '=', 'available')]"/>
+                <filter name="canjeados" string="Canjeados" domain="[('state', '=', 'redeemed')]"/>
+                <filter name="reales" string="Sin compras de prueba" domain="[('is_test', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="group_origin" string="Origen" context="{'group_by': 'origin'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_lottery_premium_gift" model="ir.actions.act_window">
+        <field name="name">Códigos de regalo</field>
+        <field name="res_model">lottery.premium.gift</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Todavía no hay códigos de regalo</p>
+            <p>Se crean solos cuando alguien compra un regalo en la app. Con
+               Nuevo se arma un código de cortesía para regalar a mano.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_lottery_premium_gift"
+              name="Códigos de regalo"
+              parent="menu_premium_root"
+              action="action_lottery_premium_gift"
+              groups="lottery_base.group_lottery_manager"
+              sequence="15"/>
+
+</odoo>

@@ -31,6 +31,10 @@
         <field name="arch" type="xml">
             <form string="Pase Premium" create="false">
                 <header>
+                    <button name="action_consultar_google" type="object"
+                            string="Consultar a Google" class="btn-primary"
+                            invisible="origin != 'subscription' or not purchase_token"
+                            help="Vuelve a pedirle a Google el estado y el vencimiento de esta suscripción, y la confirma si faltaba. Es lo mismo que Restaurar compra en la app."/>
                     <field name="state" widget="statusbar"
                            statusbar_visible="pending,active,canceled,expired"/>
                 </header>
@@ -42,6 +46,8 @@
                             <field name="expiry_date" readonly="1"/>
                             <field name="auto_renewing" readonly="1"/>
                             <field name="is_test" readonly="1"/>
+                            <field name="gift_code" readonly="1" invisible="origin != 'gift'"/>
+                            <field name="device_id" readonly="1" invisible="origin != 'gift'"/>
                         </group>
                         <group string="Google Play">
                             <field name="product_id" readonly="1"/>
@@ -76,6 +82,7 @@
             <search string="Buscar pases">
                 <field name="order_id"/>
                 <field name="purchase_token"/>
+                <field name="gift_code"/>
                 <separator/>
                 <filter name="vigentes" string="Con acceso"
                         domain="[('state', 'in', ('active', 'grace', 'canceled'))]"/>
@@ -119,5 +126,10 @@
               action="lottery_portal.action_lottery_curiosity"
               groups="lottery_base.group_lottery_manager"
               sequence="20"/>
+
+    <!-- Curiosidades queda solo en LotoAnálisis Premium. -->
+    <record id="lottery_portal.menu_lottery_curiosity" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
 
 </odoo>

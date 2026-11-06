@@ -13,6 +13,8 @@ import threading
 from odoo import SUPERUSER_ID, api, fields, models, registry
 from odoo.exceptions import UserError
 
+from .fcm_service import PUSH_LANGS
+
 _logger = logging.getLogger(__name__)
 
 
@@ -27,9 +29,9 @@ def _push_worker(dbname, messages):
         with registry(dbname).cursor() as cr:
             env = api.Environment(cr, SUPERUSER_ID, {})
             FcmService = env['lottery.fcm.service']
-            for sorteo_id, title, body in messages:
+            for sorteo_id, title, body, lang in messages:
                 try:
-                    FcmService.send_push(sorteo_id, title, body)
+                    FcmService.send_push(sorteo_id, title, body, lang)
                 except Exception as e:
                     _logger.error(
                         'lottery_api: error enviando push (hilo) sorteo %s: %s',
@@ -39,6 +41,28 @@ def _push_worker(dbname, messages):
             cr.commit()
     except Exception as e:
         _logger.error('lottery_api: error en el hilo de push FCM: %s', e)
+
+
+def _mensajes(rec, sorteo_id):
+    """[(sorteo_id, title, body, lang)] del push de `rec`, uno por idioma."""
+    return [(sorteo_id, *rec._build_push_message(rec, lang), lang) for lang in PUSH_LANGS]
+
+
+def _turno_label(sorteo, turno, fecha, lang):
+    """Turno con su hora ('Tarde 12:00 PM'); en inglés con su name_en."""
+    label = sorteo._turno_con_hora(turno, fecha)
+    nombre = turno.name or ''
+    if lang == 'en' and turno.name_en and label.startswith(nombre):
+        label = turno.name_en + label[len(nombre):]
+    return label
+
+
+def _pais(sorteo, lang):
+    """País del sorteo; en_US es el idioma base de res.country."""
+    country = sorteo.country_id
+    if lang == 'en':
+        country = country.with_context(lang='en_US')
+    return country.name or ''
 
 
 class LotteryOutput(models.Model):
@@ -54,8 +78,7 @@ class LotteryOutput(models.Model):
         if not self.sorteo_id.show_in_app:
             raise UserError('Este sorteo no está habilitado para mostrarse en la app.')
 
-        title, body = self._build_push_message(self)
-        sorteo_id = self.sorteo_id.id
+        messages = _mensajes(self, self.sorteo_id.id)
 
         # El envío HTTP se difiere: al hacer commit, se lanza un hilo que hace
         # la llamada a FCM, para no bloquear la UI esperando la red.
@@ -63,7 +86,7 @@ class LotteryOutput(models.Model):
         self.env.cr.postcommit.add(
             lambda: threading.Thread(
                 target=_push_worker,
-                args=(dbname, [(sorteo_id, title, body)]),
+                args=(dbname, messages),
                 daemon=True,
             ).start()
         )
@@ -72,24 +95,25 @@ class LotteryOutput(models.Model):
             'push_sent_date': fields.Datetime.now(),
         })
 
-    def _build_push_message(self, out):
-        turn_label = out.sorteo_id._turno_con_hora(out.turno_id, out.date)
+    def _build_push_message(self, out, lang='es'):
+        en = lang == 'en'
+        turn_label = _turno_label(out.sorteo_id, out.turno_id, out.date, lang)
         centena = out.hundreds_id.name if out.hundreds_id else ''
         numero = str(out.number_id.name).zfill(2) if out.number_id else ''
         numero_completo = f'{centena}{numero}'
 
         partes = [
-            f'Turno: {turn_label}',
-            f'Número: {numero_completo}',
+            f'{"Draw" if en else "Turno"}: {turn_label}',
+            f'{"Number" if en else "Número"}: {numero_completo}',
         ]
 
         if out.premio_2_id and out.premio_3_id:
             p2 = str(out.premio_2_id.name).zfill(2)
             p3 = str(out.premio_3_id.name).zfill(2)
-            partes.append(f'Corridos: {p2} y {p3}')
+            partes.append(f'Runners: {p2} and {p3}' if en else f'Corridos: {p2} y {p3}')
 
         if out.fireball_id:
-            partes.append(f'Bola extra: {out.fireball_id.name}')
+            partes.append(f'{"Extra ball" if en else "Bola extra"}: {out.fireball_id.name}')
 
         # Los aciertos fuertes (Súper Mágico, tabla de 5 y de 10) se
         # festejan; el 20, el 30 y el total se informan sin celebración.
@@ -97,25 +121,36 @@ class LotteryOutput(models.Model):
         tabla_magicos = self._tabla_numeros_magicos(out)
         if tabla_magicos == 'super':
             partes.append(
+                '🎉 Congratulations! The 1st prize was the Super Magic' if en else
                 '🎉 ¡Felicitaciones! El Premio 1 fue el Súper Mágico')
         elif tabla_magicos in ('5', '10'):
             partes.append(
+                f'🎉 Congratulations! The 1st prize was in the {tabla_magicos} '
+                f'Magic Numbers table' if en else
                 f'🎉 ¡Felicitaciones! El Premio 1 estuvo en la tabla de '
                 f'{tabla_magicos} Números Mágicos')
         elif tabla_magicos == 'general':
             partes.append(
+                '🔮 The 1st prize was in the general Magic Numbers table' if en else
                 '🔮 El Premio 1 estuvo en la tabla general de Números Mágicos')
         elif tabla_magicos:
-            partes.append(f'🔮 El Premio 1 estuvo en la tabla de {tabla_magicos} Números Mágicos')
+            partes.append(
+                f'🔮 The 1st prize was in the {tabla_magicos} Magic Numbers table' if en else
+                f'🔮 El Premio 1 estuvo en la tabla de {tabla_magicos} Números Mágicos')
 
         # El país va en el título: hay loterías que se llaman igual en
         # distintos países (La Diaria de Honduras y la de Nicaragua).
         sorteo = out.sorteo_id.name
-        pais = out.sorteo_id.country_id.name
+        pais = _pais(out.sorteo_id, lang)
         if pais:
             sorteo = f'{sorteo} ({pais})'
-        title = f'🎯 Resultado {sorteo} disponible'
-        body = ' · '.join(partes) + '\n📈 Consulta el análisis actualizado para el próximo sorteo'
+        if en:
+            title = f'🎯 {sorteo} result available'
+            cierre = '📈 Check the updated analysis for the next draw'
+        else:
+            title = f'🎯 Resultado {sorteo} disponible'
+            cierre = '📈 Consulta el análisis actualizado para el próximo sorteo'
+        body = ' · '.join(partes) + '\n' + cierre
         return title, body
 
     def _tabla_numeros_magicos(self, out):

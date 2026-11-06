@@ -8,9 +8,9 @@ premios y cada uno es su propio `lottery.sorteo` (`quiniela_uy_1` …
 "Completar números" de la predicción individual, y de cada premio se toman
 sus 5 Números a predecir con su Súper Mágico: 20 grupos de 5.
 
-El algoritmo (1 o 2) no se elige: cada premio usa el que le tocaría en las
-predicciones automáticas (`_algoritmo_por_ultimas_salidas`: el 1 si sus dos
-últimas salidas comparten algún dígito, el 2 si no).
+El algoritmo (1 o 2) no se elige acá: cada premio usa el de su sorteo
+(`_algoritmo_por_ultimas_salidas`: el fijo si lo tiene; si no, el 1 si sus
+dos últimas salidas compartieron dígito con su anterior y el 2 si no).
 
 Con esos 100 números (muchos repetidos entre premios) se puntúa cada
 candidato distinto con cinco señales:

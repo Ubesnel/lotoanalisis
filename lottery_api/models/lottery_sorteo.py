@@ -18,8 +18,8 @@ class LotterySorteo(models.Model):
         help="Un cron revisa cada pocos minutos: cuando se registró una salida "
              "hace más de los minutos de espera y todavía no existe la "
              "predicción del próximo sorteo, la crea sola con la temperatura "
-             "Restantes, completa los números y elige el algoritmo según las "
-             "dos últimas salidas (comparten dígito → Algoritmo 1; no → 2). "
+             "Restantes y completa los números con el Algoritmo de predicción "
+             "del sorteo. "
              "Si ya hay una predicción cargada a mano, no la toca.",
     )
     auto_prediction_publish = fields.Boolean(
@@ -34,6 +34,13 @@ class LotterySorteo(models.Model):
         default=30,
         help="Minutos que deben pasar desde que se registró la última "
              "salida antes de generar la predicción.",
+    )
+    auto_premium_publish = fields.Boolean(
+        string='Publicar Premium sola',
+        default=False,
+        help="Activo: el cron publica la Predicción Premium apenas la completa "
+             "(la crea cuando la predicción del día está publicada). "
+             "Apagado: queda sin publicar para revisarla y publicarla a mano.",
     )
     auto_prediction_error = fields.Text(
         string='Último error automático',
@@ -55,3 +62,12 @@ class LotterySorteo(models.Model):
              "(la sección 'Próximo Sorteo' se retiró); queda como dato de "
              "referencia en la ficha.",
     )
+
+    def _sorteo_ternas(self):
+        """Sorteo cuya predicción lleva las ternas: en Quiniela UY se cargan
+        en el premio 1 (el dato es del sorteo completo); en el resto, él mismo."""
+        self.ensure_one()
+        if self.source_code == 'quiniela_uy' and self.code != 'quiniela_uy_1':
+            return self.search([('source_code', '=', 'quiniela_uy'),
+                                ('code', '=', 'quiniela_uy_1')], limit=1) or self
+        return self

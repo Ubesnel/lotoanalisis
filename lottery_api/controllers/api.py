@@ -7,6 +7,7 @@ consumirlas desde la app (y desde Chrome durante el desarrollo Flutter web).
 """
 
 import json
+import random
 from datetime import datetime
 
 import pytz
@@ -48,8 +49,31 @@ NO_STORE = [('Cache-Control', 'no-store, private')]
 
 def _request_pass():
     """Pase Premium vigente de la cabecera X-Premium-Pass, o vacío."""
-    token = request.httprequest.headers.get('X-Premium-Pass')
-    return request.env['lottery.premium.pass'].sudo()._from_token(token)
+    headers = request.httprequest.headers
+    return request.env['lottery.premium.pass'].sudo()._from_token(
+        headers.get('X-Premium-Pass'), headers.get('X-Premium-Device'))
+
+
+def _json_body():
+    try:
+        body = json.loads(request.httprequest.get_data() or b'{}')
+    except ValueError:
+        return {}
+    return body if isinstance(body, dict) else {}
+
+
+def _tombola_lineas(lineas):
+    """Líneas de Tómbola con sus números ordenados, de la más corta a la más
+    larga y, dentro de cada tamaño, por sus números: así la que pasa a
+    Premium (la primera que se arma) no queda siempre arriba."""
+    return sorted((sorted('%02d' % n for n in l.numeros()) for l in lineas),
+                  key=lambda l: (len(l), l))
+
+
+def _magicos_premium():
+    """10, 5 y Súper Mágico son Premium (Ajustes). Apagado, los ven todos."""
+    return request.env['ir.config_parameter'].sudo().get_param(
+        'lottery_api.magicos_premium') in ('True', '1')
 
 
 def _informa_premium():
@@ -93,6 +117,23 @@ def _hora_slot(slot):
     if not slot or not slot.hora_h:
         return None
     return '%s:%02d %s' % (slot.hora_h, slot.hora_min or 0, (slot.hora_ampm or 'pm').upper())
+
+
+def _pares_salida(out):
+    """Los parlés de una salida: pares sin orden de los premios 1, 2 y 3."""
+    premios = [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
+    return {(min(a, b), max(a, b))
+            for i, a in enumerate(premios) for b in premios[i + 1:]}
+
+
+def _aciertos_extra(pred, out):
+    """(terna acertada, parlé acertado) de una predicción contra su salida."""
+    if not out:
+        return False, False
+    terna = bool(out.complete_number and out.complete_number in pred.terna_ids.mapped('terna'))
+    pares = _pares_salida(out)
+    parle = any((p.numero_1.name, p.numero_2.name) in pares for p in pred.parle_ids)
+    return terna, parle
 
 
 def _hora_turno(sorteo, turno, fecha):
@@ -196,6 +237,7 @@ class LotteryAppApi(http.Controller):
                 'code': s.code,
                 'uses_fireball': s.uses_fireball,
                 'uses_hundreds': s.uses_hundreds,
+                'generates_parles': s.generates_parles,
                 # Solo el ISO: el nombre del país y la bandera los resuelve la
                 # app, que ya es bilingüe y arma el emoji desde el código.
                 'country_code': s.country_id.code or None,
@@ -390,6 +432,79 @@ class LotteryAppApi(http.Controller):
         return _json_response(
             self._stats().get_all_atrasos_parejas(sorteo_id=sorteo.id))
 
+    @http.route('/api/lottery/v1/stats/parles-mas-salen', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parles_mas_salen(self, sorteo_id=None, **kwargs):
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+        return _json_response(self._stats().get_parles_mas_salen(sorteo.id))
+
+    @http.route('/api/lottery/v1/stats/parles-por-dia', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parles_por_dia(self, sorteo_id=None, day=None, **kwargs):
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+        return _json_response(self._stats().get_parles_mas_salen(
+            sorteo.id, day=self._resolve_day(day)))
+
+    @http.route('/api/lottery/v1/stats/parles-nunca', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parles_nunca(self, sorteo_id=None, **kwargs):
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+        return _json_response(self._stats().get_parles_nunca(sorteo.id))
+
+    @http.route('/api/lottery/v1/stats/parles-combinacion', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parles_combinacion(self, sorteo_id=None, tipo=None, digito=None, **kwargs):
+        digito = str(digito or '').strip()
+        if tipo not in ('linea', 'terminal') or not digito.isdigit() or int(digito) > 9:
+            return _json_response({'error': 'invalid_params'}, status=400)
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+        return _json_response(self._stats().get_parles_combinacion(
+            sorteo.id, tipo, int(digito)))
+
+    @http.route('/api/lottery/v1/stats/parles-acompanantes', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parles_acompanantes(self, sorteo_id=None, numero=None, **kwargs):
+        numero = str(numero or '').strip()
+        if not numero.isdigit() or int(numero) > 99:
+            return _json_response({'error': 'invalid_number'}, status=400)
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+        return _json_response(
+            self._stats().get_parles_acompanantes(sorteo.id, int(numero)))
+
+    @http.route('/api/lottery/v1/stats/parle-consulta', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def parle_consulta(self, sorteo_id=None, n1=None, n2=None, **kwargs):
+        nums = [str(n or '').strip() for n in (n1, n2)]
+        if not all(n.isdigit() and int(n) <= 99 for n in nums):
+            return _json_response({'error': 'invalid_number'}, status=400)
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.generates_parles:
+            return _json_response({'error': 'sorteo_sin_parles'}, status=400)
+        return _json_response(self._stats().get_parle_consulta(
+            sorteo.id, int(nums[0]), int(nums[1])))
+
     @http.route('/api/lottery/v1/stats/atrasos-centenas', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def atrasos_centenas(self, sorteo_id=None, **kwargs):
@@ -432,7 +547,8 @@ class LotteryAppApi(http.Controller):
     @http.route('/api/lottery/v1/stats/numeros-magicos', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def numeros_magicos(self, sorteo_id=None, **kwargs):
-        """Predicción de números (lottery.prediction) para el próximo sorteo.
+        """Predicción de números (lottery.prediction) para el próximo sorteo,
+        sin lo Premium (10, 5 y Súper Mágico): de esos solo van las cantidades.
 
         Si no hay predicción cargada para esa fecha/turno, found = false y la
         app muestra el aviso de "todavía no se han definido".
@@ -440,7 +556,23 @@ class LotteryAppApi(http.Controller):
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
+        return _json_response(self._numeros_magicos_payload(
+            sorteo, premium=not _magicos_premium()))
 
+    @http.route('/api/lottery/v1/premium/magicos', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def premium_magicos(self, sorteo_id=None, **kwargs):
+        """Números Mágicos completos, con 10, 5 y Súper Mágico. Sin pase,
+        lo mismo que /stats/numeros-magicos y locked = true."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404, headers=NO_STORE)
+        premium = not _magicos_premium() or bool(_request_pass())
+        return _json_response(
+            dict(self._numeros_magicos_payload(sorteo, premium=premium), locked=not premium),
+            headers=NO_STORE)
+
+    def _numeros_magicos_payload(self, sorteo, premium):
         date_str, turno = sorteo.get_next_draw()
         base = {
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
@@ -468,23 +600,30 @@ class LotteryAppApi(http.Controller):
             or prediction.number_ids_20
             or prediction.number_ids_10 or prediction.number_ids_5
         ):
-            return _json_response(dict(
+            return dict(
                 base, found=False,
                 numbers=[], numbers_30=[], numbers_20=[], numbers_10=[],
                 numbers_5=[],
                 super_magico=None, hour=None,
-            ))
+                premium_counts={'n10': 0, 'n5': 0, 'super_magico': False},
+            )
 
-        return _json_response(dict(
+        return dict(
             base, found=True,
             numbers=_nums(prediction.number_ids),
             numbers_30=_nums(prediction.number_ids_30),
             numbers_20=_nums(prediction.number_ids_20),
-            numbers_10=_nums(prediction.number_ids_10),
-            numbers_5=_nums(prediction.number_ids_5),
+            numbers_10=_nums(prediction.number_ids_10) if premium else [],
+            numbers_5=_nums(prediction.number_ids_5) if premium else [],
             super_magico=(
                 str(prediction.super_magico_id.name).zfill(2)
-                if prediction.super_magico_id else None),
+                if premium and prediction.super_magico_id else None),
+            # Para mostrar los chips con candado sin mandar los números.
+            premium_counts={
+                'n10': len(prediction.number_ids_10),
+                'n5': len(prediction.number_ids_5),
+                'super_magico': bool(prediction.super_magico_id),
+            },
             # La app arma "Publicado {hour} (hora de Uruguay)" con este
             # valor. Se manda fecha + hora reales de publicación
             # (published_date) para no confundir con la fecha del sorteo
@@ -493,7 +632,7 @@ class LotteryAppApi(http.Controller):
             # campo), se cae a la hora sola como antes.
             hour=(_fmt_published(prediction.published_date)
                   or _fmt_hour(prediction.hour)),
-        ))
+        )
 
     @http.route('/api/lottery/v1/stats/grupos-dia', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -519,10 +658,14 @@ class LotteryAppApi(http.Controller):
         date_str, turno = sorteo.get_next_draw()
         data = self._stats().get_lineas_terminales_probables(
             turno.id, date_str, sorteo_id=sorteo.id)
-        # El desglose de puntajes es interno; la app no lo necesita.
+        # Sin puntaje ni orden: cuál es la mejor queda para Premium. Copia,
+        # porque `data` es el dict del ormcache.
+        data = dict(data)
         for side in ('lineas', 'terminales'):
-            for item in data.get(side) or []:
-                item.pop('breakdown', None)
+            items = [{k: v for k, v in item.items() if k not in ('breakdown', 'score')}
+                     for item in data.get(side) or []]
+            random.shuffle(items)
+            data[side] = items
         return _json_response(data)
 
     def _grupos_atrasados_payload(self, sorteo, top_fn, analysis_limit):
@@ -825,6 +968,30 @@ class LotteryAppApi(http.Controller):
             return _json_response({'premium': False}, headers=NO_STORE)
         return _json_response(rec._api_payload(with_token=False), headers=NO_STORE)
 
+    @http.route('/api/lottery/v1/premium/gift/verify', type='http',
+                auth='public', methods=['POST'], csrf=False, cors='*')
+    def premium_gift_verify(self, **kwargs):
+        """El que regala manda la compra de Play y recibe el código."""
+        body = _json_body()
+        try:
+            gift = request.env['lottery.premium.gift'].sudo().verify_purchase(
+                body.get('purchase_token'), body.get('product_id'))
+        except PremiumError as e:
+            return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
+        return _json_response(gift._api_payload(), headers=NO_STORE)
+
+    @http.route('/api/lottery/v1/premium/gift/redeem', type='http',
+                auth='public', methods=['POST'], csrf=False, cors='*')
+    def premium_gift_redeem(self, **kwargs):
+        """Canjea un código en este teléfono y devuelve el pase."""
+        body = _json_body()
+        try:
+            rec = request.env['lottery.premium.gift'].sudo().redeem(
+                body.get('code'), body.get('device_id'))
+        except PremiumError as e:
+            return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
+        return _json_response(rec._api_payload(), headers=NO_STORE)
+
     @http.route('/api/lottery/v1/stats/numeros-mes-atrasados', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def numeros_mes_atrasados(self, sorteo_id=None, years_top=2,
@@ -1059,6 +1226,7 @@ class LotteryAppApi(http.Controller):
         # "evaluada" una predicción cargada después de registrada la salida
         # (en ese caso verification_date queda vacío).
         results = {}
+        salidas = {}
         if preds:
             dates = preds.mapped('date')
             outputs = request.env['lottery.output'].sudo().search([
@@ -1069,6 +1237,7 @@ class LotteryAppApi(http.Controller):
             for out in outputs:
                 results[(out.date, out.turno_id.id)] = (
                     str(out.number_id.name).zfill(2) if out.number_id else None)
+                salidas[(out.date, out.turno_id.id)] = out
 
         levels = (
             ('total', 'number_ids',    'cumplida'),
@@ -1121,7 +1290,9 @@ class LotteryAppApi(http.Controller):
                 'sequence': pred.turno_id.sequence,
                 'hora': _hora_turno(sorteo, pred.turno_id, pred.date),
             })
-            hit = any(pred[flag] for _n, _f, flag in levels)
+            # Terna y parlé no entran en los porcentajes: solo se marcan.
+            terna_ok, parle_ok = _aciertos_extra(pred, salidas.get(key))
+            hit = any(pred[flag] for _n, _f, flag in levels) or terna_ok or parle_ok
             if only_hits and not hit:
                 continue
 
@@ -1132,6 +1303,8 @@ class LotteryAppApi(http.Controller):
                 'hora': _hora_turno(sorteo, pred.turno_id, pred.date),
                 'result_number': results.get(key),
                 'evaluada': evaluada,
+                'cumplida_terna': terna_ok,
+                'cumplida_parle': parle_ok,
                 'cumplida':    pred.cumplida,
                 'cumplida_30': pred.cumplida_30,
                 'cumplida_20': pred.cumplida_20,
@@ -1330,16 +1503,113 @@ class LotteryAppApi(http.Controller):
         if not prediction or not (prediction.terna_ids or prediction.tombola_linea_ids):
             return _json_response(dict(base, found=False, ternas=[], tombola_lineas=[]))
 
-        def _linea_numeros(linea):
-            campos = (linea.numero_1, linea.numero_2, linea.numero_3, linea.numero_4,
-                      linea.numero_5, linea.numero_6, linea.numero_7)
-            return sorted(str(n.name).zfill(2) for n in campos if n)
-
         return _json_response(dict(
             base, found=True,
             ternas=sorted(prediction.terna_ids.mapped('terna')),
-            tombola_lineas=[_linea_numeros(l) for l in prediction.tombola_linea_ids],
+            tombola_lineas=_tombola_lineas(prediction.tombola_linea_ids),
         ))
+
+    @http.route('/api/lottery/v1/stats/ternas', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def ternas(self, sorteo_id=None, **kwargs):
+        """Ternas de la predicción publicada del próximo sorteo, para los
+        sorteos con centena. En Quiniela UY salen del premio 1."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        if not sorteo.uses_hundreds:
+            return _json_response({'error': 'sorteo_sin_centena'}, status=400)
+
+        sorteo = sorteo._sorteo_ternas()
+        date_str, turno = sorteo.get_next_draw()
+        prediction = request.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date_str),
+            ('turno_id', '=', turno.id),
+            ('published', '=', True),
+        ], limit=1)
+        ternas = sorted(prediction.terna_ids.mapped('terna'))
+        return _json_response({
+            'date': date_str,
+            'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
+            'turn': turno.code or None,
+            'turn_label': turno.name or '',
+            'found': bool(ternas),
+            'ternas': ternas,
+        })
+
+    @http.route('/api/lottery/v1/premium/prediccion', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def premium_prediccion(self, sorteo_id=None, **kwargs):
+        """Predicción Premium publicada del próximo sorteo: línea y terminal
+        top, sus números fuertes, las ternas top y los parlés top. Sin pase,
+        solo la fecha."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404, headers=NO_STORE)
+
+        date_str, turno = sorteo.get_next_draw()
+        base = {
+            'date': date_str,
+            'weekday': WEEKDAYS_ES[datetime.strptime(date_str, '%Y-%m-%d').weekday()],
+            'turn': turno.code or None,
+            'turn_label': turno.name or '',
+            'uses_hundreds': bool(sorteo.uses_hundreds),
+            'generates_parles': bool(sorteo.generates_parles),
+        }
+        if not _request_pass():
+            return _json_response(dict(base, locked=True, found=False), headers=NO_STORE)
+
+        rec = request.env['lottery.prediction.premium'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date_str),
+            ('turno_id', '=', turno.id),
+            ('published', '=', True),
+        ], limit=1)
+        if not rec:
+            return _json_response(dict(base, locked=False, found=False), headers=NO_STORE)
+
+        def _lado(digito, numeros):
+            if not digito:
+                return None
+            return {'digit': int(digito),
+                    'numbers': sorted('%02d' % int(n.name) for n in numeros)}
+
+        linea = rec.number_ids.filtered(lambda n: rec._lado(int(n.name)) == 'linea')
+        return _json_response(dict(
+            base, locked=False, found=True,
+            linea=_lado(rec.linea_top, linea),
+            terminal=_lado(rec.terminal_top, rec.number_ids - linea),
+            ternas=sorted(rec.terna_ids.mapped('terna')) if sorteo.uses_hundreds else [],
+            centenas=[c for c in (rec.centena_top_1, rec.centena_top_2) if c]
+            if sorteo.uses_hundreds else [],
+            parles=[{'n1': '%02d' % p.numero_1.name, 'n2': '%02d' % p.numero_2.name,
+                     'destacado': p.destacado}
+                    for p in rec.parle_ids] if sorteo.generates_parles else [],
+            tombolas=[sorted('%02d' % n for n in t.numeros()) for t in rec.tombola_linea_ids],
+        ), headers=NO_STORE)
+
+    @http.route('/api/lottery/v1/premium/numeros-suerte', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def premium_numeros_suerte(self, **kwargs):
+        """Números de la Suerte publicados del día vigente (cambia a la hora
+        de Ajustes, no a medianoche), iguales para todos los sorteos. Sin
+        pase, solo la fecha."""
+        hoy = request.env['lottery.numeros.suerte'].sudo()._fecha_vigente()
+        base = {'date': hoy.isoformat(), 'weekday': WEEKDAYS_ES[hoy.weekday()]}
+        if not _request_pass():
+            return _json_response(dict(base, locked=True, found=False, numbers=[]),
+                                  headers=NO_STORE)
+
+        rec = request.env['lottery.numeros.suerte'].sudo().search([
+            ('date', '=', hoy), ('published', '=', True),
+        ], limit=1)
+        numbers = sorted('%02d' % n.name for n in rec.number_ids_5)
+        sm = rec.super_magico_id
+        return _json_response(dict(
+            base, locked=False, found=bool(numbers), numbers=numbers,
+            super_magico='%02d' % sm.name if sm and numbers else None,
+        ), headers=NO_STORE)
 
     @http.route('/api/lottery/v1/stats/tombola-uy-historico', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
@@ -1468,6 +1738,12 @@ class LotteryAppApi(http.Controller):
         def _nums(field):
             return [str(n).zfill(2) for n in sorted(field.mapped('name'))]
 
+        # Antes de jugarse, 10, 5 y Súper Mágico son Premium como en
+        # /numeros-magicos; después quedan a la vista de todos.
+        jugada = bool(pred.verification_date or output)
+        oculto = not jugada and _magicos_premium() and not _request_pass()
+        pares = _pares_salida(output) if output else set()
+
         return _json_response({
             'date': date,
             'weekday': WEEKDAYS_ES[date_obj.weekday()],
@@ -1487,15 +1763,15 @@ class LotteryAppApi(http.Controller):
             'numbers':    _nums(pred.number_ids),
             'numbers_30': _nums(pred.number_ids_30),
             'numbers_20': _nums(pred.number_ids_20),
-            'numbers_10': _nums(pred.number_ids_10),
-            'numbers_5':  _nums(pred.number_ids_5),
+            'numbers_10': [] if oculto else _nums(pred.number_ids_10),
+            'numbers_5':  [] if oculto else _nums(pred.number_ids_5),
             # Para resaltar en el tab "5" cuál de esos 5 números era la
             # apuesta fuerte (aro de estrellitas en la app); no agrega un
             # nivel nuevo al historial, sólo decora la lista de 5 que ya
             # existe.
             'super_magico': (
                 str(pred.super_magico_id.name).zfill(2)
-                if pred.super_magico_id else None),
+                if pred.super_magico_id and not oculto else None),
             # Ternas pronosticadas (solo Quiniela UY, en la predicción del
             # premio 1) y la terna que salió en ese premio, para marcar en
             # amarillo la que coincidió. No se contabilizan en los aciertos.
@@ -1505,14 +1781,22 @@ class LotteryAppApi(http.Controller):
             # números que salieron en la Tómbola de esa fecha y turno, para
             # marcar en amarillo los que coincidieron. Vacío si todavía no
             # salió. Tampoco se contabilizan en los aciertos.
-            'tombola_lineas': [
-                sorted(str(n.name).zfill(2) for n in (
-                    linea.numero_1, linea.numero_2, linea.numero_3, linea.numero_4,
-                    linea.numero_5, linea.numero_6, linea.numero_7) if n)
-                for linea in pred.tombola_linea_ids],
+            'tombola_lineas': _tombola_lineas(pred.tombola_linea_ids),
             'tombola_salidos': sorted(
                 str(o.number_id.name).zfill(2)
                 for o in request.env['lottery.tombola.output'].sudo().search([
                     ('date', '=', date), ('turno_id', '=', turno.id)])
             ) if pred.tombola_linea_ids else [],
-        })
+            # Parlés pronosticados y los premios 1, 2 y 3 que salieron, para
+            # marcar el que acertó. Antes del sorteo son Premium.
+            'parles': [] if oculto else [{
+                'n1': '%02d' % p.numero_1.name,
+                'n2': '%02d' % p.numero_2.name,
+                'acierto': (p.numero_1.name, p.numero_2.name) in pares,
+            } for p in pred.parle_ids],
+            'result_premios': [
+                '%02d' % n.name for n in (
+                    output.number_id, output.premio_2_id, output.premio_3_id) if n
+            ] if output else [],
+            'premium_locked': oculto,
+        }, headers=None if jugada else NO_STORE)

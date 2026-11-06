@@ -25,6 +25,13 @@ _SA_PARAM = 'lottery_api.fcm_service_account'
 FCM_URL = 'https://fcm.googleapis.com/v1/projects/{project_id}/messages:send'
 OAUTH_URL = 'https://oauth2.googleapis.com/token'
 SCOPE = 'https://www.googleapis.com/auth/firebase.messaging'
+# Cada aviso sale una vez por idioma; la app sigue los topics del suyo.
+PUSH_LANGS = ('es', 'en')
+
+
+def lang_topic(topic, lang):
+    """Topic del idioma: el español es el de siempre, el inglés lleva _en."""
+    return f'{topic}_en' if lang == 'en' else topic
 
 
 class LotteryFcmService(models.AbstractModel):
@@ -105,9 +112,9 @@ class LotteryFcmService(models.AbstractModel):
             return None
 
     @api.model
-    def send_push(self, sorteo_id, title, body):
-        """Envía una notificación push al topic del sorteo."""
-        return self.send_push_to_topic(f'sorteo_{sorteo_id}', title, body)
+    def send_push(self, sorteo_id, title, body, lang='es'):
+        """Envía una notificación push al topic del sorteo en ese idioma."""
+        return self.send_push_to_topic(lang_topic(f'sorteo_{sorteo_id}', lang), title, body)
 
     @api.model
     def send_push_to_topic(self, topic, title, body):

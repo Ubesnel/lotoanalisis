@@ -24,6 +24,7 @@ from datetime import datetime, timedelta, timezone
 import requests
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -55,6 +56,9 @@ ACCESS_STATES = ('active', 'grace', 'canceled')
 FINAL_STATES = ('expired', 'replaced', 'revoked')
 # Retención declarada en /politica-privacidad: vigencia + 2 años.
 RETENTION_DAYS = 730
+# Google renueva justo al vencer y el cron confirma cada 6 h: una suscripción
+# activa con renovación automática sigue dando Premium este tiempo de más.
+RENEWAL_GRACE = timedelta(days=1)
 
 
 class PremiumError(Exception):
@@ -116,18 +120,31 @@ class LotteryPremiumPass(models.Model):
     is_test = fields.Boolean(string='Compra de prueba')
     last_check = fields.Datetime(string='Última consulta a Google')
     google_response = fields.Text(string='Última respuesta de Google')
+    gift_code = fields.Char(string='Código de regalo', index=True, copy=False)
+    device_id = fields.Char(string='ID de instalación',
+                            help='Los pases de regalo valen solo en este teléfono.')
 
     _sql_constraints = [
         ('purchase_token_uniq', 'unique(purchase_token)',
          'Ya existe un pase para ese purchase token.'),
     ]
 
-    @api.depends('state', 'expiry_date')
+    @api.depends('state', 'expiry_date', 'auto_renewing')
     def _compute_is_premium(self):
         now = fields.Datetime.now()
         for rec in self:
-            rec.is_premium = bool(
-                rec.state in ACCESS_STATES and rec.expiry_date and rec.expiry_date > now)
+            hasta = rec._access_until()
+            rec.is_premium = bool(rec.state in ACCESS_STATES and hasta and hasta > now)
+
+    def _access_until(self):
+        """Hasta cuándo da Premium: el vencimiento, más el margen de
+        renovación si sigue activa y se renueva sola."""
+        self.ensure_one()
+        if not self.expiry_date:
+            return False
+        if self.state == 'active' and self.auto_renewing:
+            return self.expiry_date + RENEWAL_GRACE
+        return self.expiry_date
 
     @api.depends('base_plan_id', 'order_id', 'origin')
     def _compute_display_name(self):
@@ -150,17 +167,19 @@ class LotteryPremiumPass(models.Model):
     def _issue_token(self):
         """Pase 'v1.<payload>.<firma>' con el id y el vencimiento."""
         self.ensure_one()
+        hasta = self._access_until()
         payload = _b64(json.dumps({
             'p': self.id,
-            'e': int(self.expiry_date.replace(tzinfo=timezone.utc).timestamp()) if self.expiry_date else 0,
+            'e': int(hasta.replace(tzinfo=timezone.utc).timestamp()) if hasta else 0,
         }, separators=(',', ':')).encode())
         sig = _b64(hmac.new(self._secret(), payload.encode(), hashlib.sha256).digest())
         return 'v1.%s.%s' % (payload, sig)
 
     @api.model
-    def _from_token(self, token):
+    def _from_token(self, token, device_id=None):
         """Pase vigente que corresponde al token, o un recordset vacío. Además de
-        la firma mira el registro, así un reembolso corta el acceso enseguida."""
+        la firma mira el registro, así un reembolso corta el acceso enseguida.
+        Un pase de regalo vale solo en el teléfono donde está canjeado."""
         empty = self.browse()
         try:
             version, payload, sig = (token or '').split('.')
@@ -178,6 +197,8 @@ class LotteryPremiumPass(models.Model):
         if int(data.get('e') or 0) < time.time():
             return empty
         rec = self.sudo().browse(int(data.get('p') or 0)).exists()
+        if rec.origin == 'gift' and rec.device_id != device_id:
+            return empty
         return rec if rec and rec.is_premium else empty
 
     def _api_payload(self, with_token=True):
@@ -188,6 +209,9 @@ class LotteryPremiumPass(models.Model):
             'state': self.state,
             'plan': self.base_plan_id or self.origin,
             'expires_at': self.expiry_date.isoformat() + 'Z' if self.expiry_date else None,
+            # Hasta cuándo vale el pase (vencimiento + margen de renovación).
+            'access_until': (self._access_until().isoformat() + 'Z'
+                             if self.expiry_date else None),
             'auto_renewing': self.auto_renewing,
         }
         if with_token:
@@ -303,11 +327,26 @@ class LotteryPremiumPass(models.Model):
         except PremiumError as e:
             _logger.warning('lottery_api: acknowledge pendiente del pase %s: %s', self.id, e.code)
 
+    def action_consultar_google(self):
+        """Vuelve a consultar el pase a Google ahora, igual que "Restaurar
+        compra" en la app: estado, vencimiento y confirmación si faltaba."""
+        for rec in self.filtered(lambda r: r.origin == 'subscription' and r.purchase_token):
+            try:
+                self.verify_subscription(rec.purchase_token)
+            except PremiumError as e:
+                if e.code == 'invalid_purchase':
+                    rec.state = 'expired'
+                else:
+                    raise UserError('Google no respondió bien (%s). Revisá la cuenta '
+                                    'de servicio de Play en Ajustes.' % e.code) from e
+        return True
+
     @api.model
     def _cron_refresh_subscriptions(self):
         """Consulta a Google los pases que vencen pronto, los que esperan un pago
         y los que no se pudieron confirmar. Reemplaza a las notificaciones de
         Pub/Sub: una cancelación se ve al día siguiente."""
+        self.env['lottery.premium.gift']._cron_confirm_pending()
         soon = fields.Datetime.now() + timedelta(days=1)
         passes = self.sudo().search([
             ('origin', '=', 'subscription'),
@@ -333,6 +372,7 @@ class LotteryPremiumPass(models.Model):
     @api.model
     def _cron_purge_old_passes(self):
         """Borra los pases vencidos hace más de 2 años, como dice la política de privacidad."""
+        self.env['lottery.premium.gift']._cron_purge_old_gifts()
         cutoff = fields.Datetime.now() - timedelta(days=RETENTION_DAYS)
         old = self.sudo().search([
             '|',

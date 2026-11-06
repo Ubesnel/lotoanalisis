@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_lottery_result_source_manager,lottery.result.source manager,model_lottery_result_source,lottery_base.group_lottery_manager,1,1,1,1
+access_lottery_result_source_user,lottery.result.source user,model_lottery_result_source,base.group_user,1,0,0,0
+access_lottery_result_source_line_manager,lottery.result.source.line manager,model_lottery_result_source_line,lottery_base.group_lottery_manager,1,1,1,1
+access_lottery_result_source_line_user,lottery.result.source.line user,model_lottery_result_source_line,base.group_user,1,0,0,0

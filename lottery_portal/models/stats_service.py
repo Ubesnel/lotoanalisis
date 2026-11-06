@@ -968,6 +968,250 @@ class LotteryStatsService(models.Model):
         return [{'code': code, 'name': name, 'items': build(tid)}
                 for tid, code, name in self._turnos(sorteo_id)]
 
+    # ── Parlés ────────────────────────────────────────────────────
+
+    def get_parles_mas_salen(self, sorteo_id, day=None, limit=20, max_empates=10):
+        """Parlés (pares sin orden entre premios 1, 2 y 3 de una salida) que
+        más salieron en todo el histórico, o solo los días [day] ('lu'..'do'):
+        general y por turno. Cada parlé cuenta una vez por salida; a igual
+        cantidad va primero el más reciente. 'empates' son los que quedan
+        afuera con las mismas veces que el último del top."""
+        self.env.cr.execute("""
+            WITH o AS (
+                SELECT o.id, o.turno_id,
+                       o.date::timestamp + o.turno_sequence * INTERVAL '1 second' AS cuando,
+                       n1.name AS a, n2.name AS b, n3.name AS c
+                FROM lottery_output o
+                JOIN lottery_number n1 ON n1.id = o.number_id
+                JOIN lottery_number n2 ON n2.id = o.premio_2_id
+                JOIN lottery_number n3 ON n3.id = o.premio_3_id
+                WHERE o.sorteo_id = %(sorteo)s
+                  AND (%(day)s IS NULL OR o.week_day = %(day)s)
+            ), p AS (
+                SELECT DISTINCT o.id, o.turno_id, o.cuando,
+                       LEAST(v.x, v.y) AS n1, GREATEST(v.x, v.y) AS n2
+                FROM o, LATERAL (VALUES (o.a, o.b), (o.a, o.c), (o.b, o.c)) v(x, y)
+            ), agg AS (
+                SELECT COALESCE(turno_id, 0) AS turno_id, n1, n2,
+                       COUNT(*) AS veces, MAX(cuando) AS ultima
+                FROM p
+                GROUP BY GROUPING SETS ((n1, n2), (turno_id, n1, n2))
+            ), r AS (
+                SELECT *, ROW_NUMBER() OVER (
+                    PARTITION BY turno_id ORDER BY veces DESC, ultima DESC, n1, n2) AS rn
+                FROM agg
+            ), corte AS (
+                SELECT turno_id, veces AS veces_corte FROM r WHERE rn = %(limit)s
+            )
+            SELECT r.turno_id, r.rn, LPAD(r.n1::text, 2, '0') AS n1,
+                   LPAD(r.n2::text, 2, '0') AS n2, r.veces,
+                   TO_CHAR(r.ultima, 'DD/MM/YYYY') AS ultima_fecha
+            FROM r LEFT JOIN corte c ON c.turno_id = r.turno_id
+            WHERE r.rn <= %(limit)s OR r.veces >= c.veces_corte
+            ORDER BY r.turno_id, r.rn
+        """, {'sorteo': sorteo_id, 'limit': limit, 'day': day})
+        filas = {}
+        for row in self.env.cr.dictfetchall():
+            filas.setdefault(row['turno_id'], []).append(row)
+
+        self.env.cr.execute("""
+            SELECT COALESCE(turno_id, 0) AS turno_id, COUNT(*) AS sorteos
+            FROM lottery_output
+            WHERE sorteo_id = %(sorteo)s AND premio_2_id IS NOT NULL AND premio_3_id IS NOT NULL
+              AND (%(day)s IS NULL OR week_day = %(day)s)
+            GROUP BY GROUPING SETS ((), (turno_id))
+        """, {'sorteo': sorteo_id, 'day': day})
+        sorteos = {r['turno_id']: r['sorteos'] for r in self.env.cr.dictfetchall()}
+
+        def seccion(turno_id):
+            rows = [{k: r[k] for k in ('n1', 'n2', 'veces', 'ultima_fecha')}
+                    for r in filas.get(turno_id, [])]
+            # Empatados en 1 vez son casi todos los que salieron: no dicen nada.
+            empates = rows[limit:] if rows and rows[-1]['veces'] > 1 else []
+            return {
+                'sorteos': sorteos.get(turno_id, 0),
+                'items': rows[:limit],
+                'empates': empates[:max_empates],
+                'empates_total': len(empates),
+            }
+
+        res = seccion(0)
+        res['turnos'] = [dict(seccion(tid), code=code, name=name)
+                         for tid, code, name in self._turnos(sorteo_id)]
+        if day:
+            res['day'] = day
+            res['dias'] = self._dias_con_sorteo(sorteo_id)
+        return res
+
+    def _dias_con_sorteo(self, sorteo_id):
+        """Días ('lu'..'do') en que el sorteo tiene sorteo según su
+        calendario; sin calendario, todos."""
+        dias = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
+        dows = self.env['lottery.sorteo'].browse(sorteo_id).slot_ids.mapped('dow')
+        return [d for i, d in enumerate(dias) if not dows or str(i) in dows]
+
+    def get_parles_nunca(self, sorteo_id):
+        """Parlés que nunca salieron en el histórico del sorteo, de los 5.050
+        posibles (4.950 de dos números distintos y 100 dobles)."""
+        self.env.cr.execute("""
+            WITH o AS (
+                SELECT n1.name AS a, n2.name AS b, n3.name AS c
+                FROM lottery_output o
+                JOIN lottery_number n1 ON n1.id = o.number_id
+                JOIN lottery_number n2 ON n2.id = o.premio_2_id
+                JOIN lottery_number n3 ON n3.id = o.premio_3_id
+                WHERE o.sorteo_id = %s
+            ), salieron AS (
+                SELECT DISTINCT LEAST(v.x, v.y) AS n1, GREATEST(v.x, v.y) AS n2
+                FROM o, LATERAL (VALUES (o.a, o.b), (o.a, o.c), (o.b, o.c)) v(x, y)
+            )
+            SELECT LPAD(x::text, 2, '0') AS n1, LPAD(y::text, 2, '0') AS n2
+            FROM generate_series(0, 99) x, generate_series(0, 99) y
+            WHERE x <= y AND NOT EXISTS (
+                SELECT 1 FROM salieron s WHERE s.n1 = x AND s.n2 = y)
+            ORDER BY x, y
+        """, (sorteo_id,))
+        items = self.env.cr.dictfetchall()
+        return {'posibles': 5050, 'total': len(items), 'items': items}
+
+    def get_parles_combinacion(self, sorteo_id, tipo, digito, limit=5):
+        """Con qué líneas y terminales combina la línea (tipo 'linea') o el
+        terminal (tipo 'terminal') [digito] en los parlés del histórico. Se
+        miran los parlés con un número de esa línea o terminal y se cuentan
+        la línea y el terminal del otro. Si los dos números califican, cada
+        línea o terminal distinto cuenta una vez por parlé."""
+        clave = 'v.x / 10' if tipo == 'linea' else 'v.x %% 10'
+        self.env.cr.execute("""
+            WITH o AS (
+                SELECT o.id, n1.name AS a, n2.name AS b, n3.name AS c
+                FROM lottery_output o
+                JOIN lottery_number n1 ON n1.id = o.number_id
+                JOIN lottery_number n2 ON n2.id = o.premio_2_id
+                JOIN lottery_number n3 ON n3.id = o.premio_3_id
+                WHERE o.sorteo_id = %(sorteo)s
+            ), p AS (
+                SELECT DISTINCT o.id, LEAST(v.x, v.y) AS n1, GREATEST(v.x, v.y) AS n2
+                FROM o, LATERAL (VALUES (o.a, o.b), (o.a, o.c), (o.b, o.c)) v(x, y)
+            ), c AS (
+                SELECT p.id, p.n1, p.n2, v.y AS otro
+                FROM p, LATERAL (VALUES (p.n1, p.n2), (p.n2, p.n1)) v(x, y)
+                WHERE """ + clave + """ = %(d)s
+            )
+            SELECT 'linea' AS que, otro / 10 AS d, COUNT(DISTINCT (id, n1, n2)) AS veces
+            FROM c GROUP BY otro / 10
+            UNION ALL
+            SELECT 'terminal', otro %% 10, COUNT(DISTINCT (id, n1, n2))
+            FROM c GROUP BY otro %% 10
+            UNION ALL
+            SELECT 'total', NULL, COUNT(DISTINCT (id, n1, n2)) FROM c
+        """, {'sorteo': sorteo_id, 'd': digito})
+        rows = self.env.cr.dictfetchall()
+
+        def top(que):
+            sel = sorted((r for r in rows if r['que'] == que),
+                         key=lambda r: (-r['veces'], r['d']))[:limit]
+            return [{'digito': r['d'], 'veces': r['veces']} for r in sel]
+
+        return {
+            'tipo': tipo,
+            'digito': digito,
+            'parles': next((r['veces'] for r in rows if r['que'] == 'total'), 0),
+            'lineas': top('linea'),
+            'terminales': top('terminal'),
+        }
+
+    def get_parles_acompanantes(self, sorteo_id, numero, limit=20):
+        """Con qué números formó parlé [numero] (0-99) en todo el histórico:
+        'mas' y 'menos' (top [limit] cada uno, sin repetir) y 'ninguno', los
+        que nunca salieron con él. Un doble (66 y 66 en la misma salida)
+        cuenta al 66 como su propio compañero."""
+        self.env.cr.execute("""
+            WITH o AS (
+                SELECT o.id,
+                       o.date::timestamp + o.turno_sequence * INTERVAL '1 second' AS cuando,
+                       n1.name AS a, n2.name AS b, n3.name AS c
+                FROM lottery_output o
+                JOIN lottery_number n1 ON n1.id = o.number_id
+                JOIN lottery_number n2 ON n2.id = o.premio_2_id
+                JOIN lottery_number n3 ON n3.id = o.premio_3_id
+                WHERE o.sorteo_id = %(sorteo)s
+                  AND %(n)s IN (n1.name, n2.name, n3.name)
+            ), p AS (
+                SELECT DISTINCT o.id, o.cuando,
+                       CASE WHEN v.x = %(n)s THEN v.y ELSE v.x END AS otro
+                FROM o, LATERAL (VALUES (o.a, o.b), (o.a, o.c), (o.b, o.c)) v(x, y)
+                WHERE %(n)s IN (v.x, v.y)
+            )
+            SELECT otro, COUNT(*) AS veces, MAX(cuando) AS ultima,
+                   (SELECT COUNT(*) FROM o) AS salidas
+            FROM p
+            GROUP BY otro
+        """, {'sorteo': sorteo_id, 'n': numero})
+        rows = self.env.cr.dictfetchall()
+
+        def item(r):
+            return {'numero': f"{r['otro']:02d}", 'veces': r['veces'],
+                    'ultima_fecha': r['ultima'].strftime('%d/%m/%Y')}
+
+        mas = sorted(rows, key=lambda r: (-r['veces'], -r['ultima'].timestamp()))[:limit]
+        vistos = {r['otro'] for r in mas}
+        menos = sorted((r for r in rows if r['otro'] not in vistos),
+                       key=lambda r: (r['veces'], r['ultima']))[:limit]
+        con = {r['otro'] for r in rows}
+        return {
+            'numero': f'{numero:02d}',
+            'salidas': rows[0]['salidas'] if rows else 0,
+            'mas': [item(r) for r in mas],
+            'menos': [item(r) for r in menos],
+            'ninguno': [f'{n:02d}' for n in range(100) if n not in con],
+        }
+
+    def get_parle_consulta(self, sorteo_id, a, b):
+        """Veces que salió el parlé a-b (sin orden; a = b es un doble) en
+        todo el histórico: total, por turno y por día de la semana. Los días
+        sin sorteo en el calendario no se listan."""
+        n1, n2 = min(a, b), max(a, b)
+        self.env.cr.execute("""
+            SELECT o.turno_id, o.week_day, COUNT(*) AS veces,
+                   MAX(o.date::timestamp + o.turno_sequence * INTERVAL '1 second') AS ultima
+            FROM lottery_output o
+            JOIN lottery_number p1 ON p1.id = o.number_id
+            JOIN lottery_number p2 ON p2.id = o.premio_2_id
+            JOIN lottery_number p3 ON p3.id = o.premio_3_id
+            WHERE o.sorteo_id = %(sorteo)s
+              AND EXISTS (
+                  SELECT 1 FROM (VALUES (p1.name, p2.name), (p1.name, p3.name),
+                                        (p2.name, p3.name)) v(x, y)
+                  WHERE LEAST(v.x, v.y) = %(n1)s AND GREATEST(v.x, v.y) = %(n2)s)
+            GROUP BY o.turno_id, o.week_day
+        """, {'sorteo': sorteo_id, 'n1': n1, 'n2': n2})
+        rows = self.env.cr.dictfetchall()
+
+        por_turno = Counter()
+        por_dia = Counter()
+        for r in rows:
+            por_turno[r['turno_id']] += r['veces']
+            por_dia[r['week_day']] += r['veces']
+        ultima = max(rows, key=lambda r: r['ultima'], default=None)
+
+        dias = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
+        sorteo = self.env['lottery.sorteo'].browse(sorteo_id)
+        con_sorteo = {dias[int(d)] for d in sorteo.slot_ids.mapped('dow')} or set(dias)
+        turnos = self._turnos(sorteo_id)
+        ultimo_turno = next((name for tid, code, name in turnos
+                             if ultima and tid == ultima['turno_id']), None)
+        return {
+            'n1': f'{n1:02d}',
+            'n2': f'{n2:02d}',
+            'veces': sum(por_turno.values()),
+            'ultima_fecha': ultima['ultima'].strftime('%d/%m/%Y') if ultima else None,
+            'ultimo_turno': ultimo_turno,
+            'turnos': [{'code': code, 'name': name, 'veces': por_turno[tid]}
+                       for tid, code, name in turnos],
+            'dias': [{'code': d, 'veces': por_dia[d]} for d in dias
+                     if d in con_sorteo or por_dia[d]],
+        }
+
     def _grupo_turnos(self, group_ids, sorteo_id):
         """{group_id: [{'code', 'name', 'atraso'}]}: atraso de cada grupo en
         cada turno del sorteo, en orden del día."""

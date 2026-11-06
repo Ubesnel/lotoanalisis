@@ -29,7 +29,7 @@ Los recortes van con las tablas primero y los grupos después:
       5 → SM  en cuántos niveles de grupos de turno aparece
 y la cascada de `lottery.prediction` desempata dentro de cada nivel.
 
-Es un modelo INTERNO: no se publica en la app ni dispara notificaciones.
+La publicación en la app (Premium) la agrega lottery_api.
 """
 import json
 import random

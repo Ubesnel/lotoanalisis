@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="source_dataloto_hn" model="lottery.result.source">
+            <field name="name">DataLoto Honduras (La Diaria)</field>
+            <field name="sequence">10</field>
+            <field name="parser">dataloto</field>
+            <field name="tz">America/Tegucigalpa</field>
+            <field name="urls">https://datalotohn.com/master-static.json</field>
+        </record>
+        <record id="line_la_diaria_h1100_dataloto_hn" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_hn"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria"/>
+            <field name="turno_id" ref="lottery_base.turno_h1100"/>
+            <field name="key">n11am</field>
+        </record>
+        <record id="line_la_diaria_h1500_dataloto_hn" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_hn"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria"/>
+            <field name="turno_id" ref="lottery_base.turno_h1500"/>
+            <field name="key">n3pm</field>
+        </record>
+        <record id="line_la_diaria_h2100_dataloto_hn" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_hn"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria"/>
+            <field name="turno_id" ref="lottery_base.turno_h2100"/>
+            <field name="key">n9pm</field>
+        </record>
+
+        <record id="source_dataloto_sv" model="lottery.result.source">
+            <field name="name">DataLoto El Salvador (La Diaria)</field>
+            <field name="sequence">20</field>
+            <field name="parser">dataloto</field>
+            <field name="tz">America/El_Salvador</field>
+            <field name="urls">https://datalotosv.com/sv-static.json</field>
+        </record>
+        <record id="line_la_diaria_el_salvador_h1100_dataloto_sv" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_sv"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_el_salvador"/>
+            <field name="turno_id" ref="lottery_base.turno_h1100"/>
+            <field name="key">n11am</field>
+        </record>
+        <record id="line_la_diaria_el_salvador_h1800_dataloto_sv" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_sv"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_el_salvador"/>
+            <field name="turno_id" ref="lottery_base.turno_h1800"/>
+            <field name="key">n6pm</field>
+        </record>
+        <record id="line_la_diaria_el_salvador_h2100_dataloto_sv" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_sv"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_el_salvador"/>
+            <field name="turno_id" ref="lottery_base.turno_h2100"/>
+            <field name="key">n9pm</field>
+        </record>
+
+        <record id="source_dataloto_cr" model="lottery.result.source">
+            <field name="name">DataLoto Costa Rica (Nuevos Tiempos)</field>
+            <field name="sequence">30</field>
+            <field name="parser">dataloto</field>
+            <field name="tz">America/Costa_Rica</field>
+            <field name="urls">https://datalotocr.com/cr-static.json</field>
+        </record>
+        <record id="line_nuevos_tiempos_midday_dataloto_cr" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_cr"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_nuevos_tiempos"/>
+            <field name="turno_id" ref="lottery_base.turno_midday"/>
+            <field name="key">mediodia</field>
+        </record>
+        <record id="line_nuevos_tiempos_afternoon_dataloto_cr" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_cr"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_nuevos_tiempos"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">tarde</field>
+        </record>
+        <record id="line_nuevos_tiempos_evening_dataloto_cr" model="lottery.result.source.line">
+            <field name="source_id" ref="source_dataloto_cr"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_nuevos_tiempos"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">noche</field>
+        </record>
+
+        <record id="source_enloteria" model="lottery.result.source">
+            <field name="name">EnLoteria (RD y King Lottery)</field>
+            <field name="sequence">40</field>
+            <field name="parser">enloteria</field>
+            <field name="tz">America/Santo_Domingo</field>
+            <field name="urls">https://enloteria.com/resultados-loterias-hoy
+https://enloteria.com/resultados-loterias-ayer
+https://enloteria.com/resultados-loterias-antes-de-ayer
+https://enloteria.com/resultados-el-quinielon-dia
+https://enloteria.com/resultados-el-quinielon-noche</field>
+        </record>
+        <record id="line_la_primera_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_primera"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">La Primera</field>
+        </record>
+        <record id="line_la_primera_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_primera"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">La Primera Noche</field>
+        </record>
+        <record id="line_quinielon_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_quinielon"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">El Quinielón Día</field>
+        </record>
+        <record id="line_quinielon_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_quinielon"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">El Quinielón Noche</field>
+        </record>
+        <record id="line_la_suerte_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_suerte"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">La Suerte</field>
+        </record>
+        <record id="line_la_suerte_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_suerte"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">La Suerte 6PM</field>
+        </record>
+        <record id="line_lotedom_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_lotedom"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">LoteDom</field>
+        </record>
+        <record id="line_lotedom_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_lotedom"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">LoteDom Noche</field>
+        </record>
+        <record id="line_loteria_real_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_loteria_real"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">Real</field>
+        </record>
+        <record id="line_loteria_real_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_loteria_real"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">Real Noche</field>
+        </record>
+        <record id="line_loteka_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_loteka"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">Loteka Tarde</field>
+        </record>
+        <record id="line_loteka_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_loteka"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">Loteka</field>
+        </record>
+        <record id="line_loteria_nacional_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_loteria_nacional"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">Nacional Gana Más</field>
+        </record>
+        <record id="line_loteria_nacional_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_loteria_nacional"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">Nacional Noche</field>
+        </record>
+        <record id="line_quiniela_pale_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_quiniela_pale"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">Leidsa</field>
+        </record>
+        <record id="line_king_lottery_afternoon_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_king_lottery"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">King Lottery Día</field>
+        </record>
+        <record id="line_king_lottery_evening_enloteria" model="lottery.result.source.line">
+            <field name="source_id" ref="source_enloteria"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_king_lottery"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">King Lottery Noche</field>
+        </record>
+
+        <record id="source_lotteryteller" model="lottery.result.source">
+            <field name="name">LotteryTeller (Estados Unidos)</field>
+            <field name="sequence">50</field>
+            <field name="parser">lotteryteller</field>
+            <field name="tz">America/New_York</field>
+            <field name="urls">https://lotteryteller.com/es/resultados/us/{key}</field>
+        </record>
+        <record id="line_florida_pick2_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_florida_pick2"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">florida/pick-2/midday</field>
+        </record>
+        <record id="line_florida_pick2_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_florida_pick2"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">florida/pick-2/evening</field>
+        </record>
+        <record id="line_new_york_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_new_york"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">new-york/pick-3/midday</field>
+            <field name="key_extra">new-york/pick-4/midday</field>
+        </record>
+        <record id="line_new_york_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_new_york"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">new-york/pick-3/evening</field>
+            <field name="key_extra">new-york/pick-4/evening</field>
+        </record>
+        <record id="line_georgia_midday_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_georgia"/>
+            <field name="turno_id" ref="lottery_base.turno_midday"/>
+            <field name="key">georgia/cash-3/midday</field>
+            <field name="key_extra">georgia/pick-4/midday</field>
+        </record>
+        <record id="line_georgia_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_georgia"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">georgia/cash-3/evening</field>
+            <field name="key_extra">georgia/pick-4/evening</field>
+        </record>
+        <record id="line_georgia_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_georgia"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">georgia/cash-3/night</field>
+            <field name="key_extra">georgia/pick-4/night</field>
+        </record>
+        <record id="line_texas_morning_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
+            <field name="turno_id" ref="lottery_base.turno_morning"/>
+            <field name="key">texas/pick-3/morning</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_texas_midday_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
+            <field name="turno_id" ref="lottery_base.turno_midday"/>
+            <field name="key">texas/pick-3/midday</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_texas_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">texas/pick-3/evening</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_texas_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_texas"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">texas/pick-3/night</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_new_jersey_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_new_jersey"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">new-jersey/pick-3/midday</field>
+            <field name="key_extra">new-jersey/pick-4/midday</field>
+        </record>
+        <record id="line_new_jersey_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_new_jersey"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">new-jersey/pick-3/evening</field>
+            <field name="key_extra">new-jersey/pick-4/evening</field>
+        </record>
+        <record id="line_tennessee_morning_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_tennessee"/>
+            <field name="turno_id" ref="lottery_base.turno_morning"/>
+            <field name="key">tennessee/pick-3/morning</field>
+            <field name="key_extra">tennessee/pick-4/morning</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_tennessee_midday_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_tennessee"/>
+            <field name="turno_id" ref="lottery_base.turno_midday"/>
+            <field name="key">tennessee/pick-3/midday</field>
+            <field name="key_extra">tennessee/pick-4/midday</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_tennessee_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_tennessee"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">tennessee/pick-3/evening</field>
+            <field name="key_extra">tennessee/pick-4/evening</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_south_carolina_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_south_carolina"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">south-carolina/pick-3/midday</field>
+            <field name="key_extra">south-carolina/pick-4/midday</field>
+        </record>
+        <record id="line_south_carolina_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_south_carolina"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">south-carolina/pick-3/evening</field>
+            <field name="key_extra">south-carolina/pick-4/evening</field>
+        </record>
+        <record id="line_illinois_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_illinois"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">illinois/pick-3/midday</field>
+            <field name="key_extra">illinois/pick-4/midday</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_illinois_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_illinois"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">illinois/pick-3/evening</field>
+            <field name="key_extra">illinois/pick-4/evening</field>
+            <field name="tz">America/Chicago</field>
+        </record>
+        <record id="line_kentucky_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_kentucky"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">kentucky/pick-3/midday</field>
+            <field name="key_extra">kentucky/pick-4/midday</field>
+        </record>
+        <record id="line_kentucky_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_kentucky"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">kentucky/pick-3/evening</field>
+            <field name="key_extra">kentucky/pick-4/evening</field>
+        </record>
+        <record id="line_north_carolina_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_north_carolina"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">north-carolina/pick-3/day</field>
+            <field name="key_extra">north-carolina/pick-4/day</field>
+        </record>
+        <record id="line_north_carolina_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_north_carolina"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">north-carolina/pick-3/evening</field>
+            <field name="key_extra">north-carolina/pick-4/evening</field>
+        </record>
+        <record id="line_california_afternoon_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_california"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">california/daily-3/midday</field>
+            <field name="tz">America/Los_Angeles</field>
+        </record>
+        <record id="line_california_evening_lotteryteller" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotteryteller"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_california"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">california/daily-3/evening</field>
+            <field name="tz">America/Los_Angeles</field>
+        </record>
+
+        <record id="source_florida_api" model="lottery.result.source">
+            <field name="name">API oficial Florida Lottery (Pick 3 con Fireball)</field>
+            <field name="sequence">60</field>
+            <field name="parser">florida_api</field>
+            <field name="tz">America/New_York</field>
+            <field name="urls">https://apim-website-prod-eastus.azure-api.net/drawgamesapp/searchgames</field>
+        </record>
+        <record id="line_florida_afternoon_florida_api" model="lottery.result.source.line">
+            <field name="source_id" ref="source_florida_api"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_florida"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">pick3/MIDDAY</field>
+            <field name="key_extra">pick4/MIDDAY</field>
+        </record>
+        <record id="line_florida_evening_florida_api" model="lottery.result.source.line">
+            <field name="source_id" ref="source_florida_api"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_florida"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">pick3/EVENING</field>
+            <field name="key_extra">pick4/EVENING</field>
+        </record>
+    </data>
+</odoo>

@@ -3,9 +3,9 @@
     <record id="view_lottery_sorteo_form_agenda" model="ir.ui.view">
         <field name="name">lottery.sorteo.form.agenda</field>
         <field name="model">lottery.sorteo</field>
-        <field name="inherit_id" ref="lottery_base.view_lottery_sorteo_form"/>
+        <field name="inherit_id" ref="lottery_portal.view_lottery_sorteo_form_ranking"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='is_pick3']" position="after">
+            <xpath expr="//group[@name='grp_automatizacion']" position="inside">
                 <field name="agenda_enabled"/>
             </xpath>
             <xpath expr="//field[@name='hora_ampm']" position="after">

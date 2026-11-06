@@ -84,6 +84,9 @@ class LotterySorteo(models.Model):
                                         "La Primera, La Suerte o los Pick 2. Con el campo desactivado la "
                                         "centena no se pide al registrar la salida ni se muestra en el "
                                         "portal ni en la app.")
+    generates_parles = fields.Boolean(string='Genera parlés', default=False,
+                                      help="Muestra en la app las estadísticas de Parlés: los pares "
+                                           "que forman los premios 1, 2 y 3 de cada salida.")
     enforce_turn_continuity = fields.Boolean(string='Exigir continuidad entre turnos', default=False,
                                              help="Si está activo, no se puede registrar el turno Noche sin "
                                                   "Tarde el mismo día, ni Tarde sin Noche del día anterior. "
