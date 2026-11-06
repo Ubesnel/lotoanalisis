@@ -145,7 +145,7 @@
               groups="lottery_base.group_lottery_user"/>
 
     <!-- Uruguay -->
-    <menuitem name="Uruguay" id="menu_country_uy" sequence="4"
+    <menuitem name="Uruguay" id="menu_country_uy" sequence="8"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
     <menuitem name="Salidas" id="menu_country_uy_salidas" sequence="10"
@@ -238,7 +238,7 @@
     <!-- La sección Tómbola (atrasos) se agrega dentro de Uruguay desde lottery_tombola_delays -->
 
     <!-- Honduras -->
-    <menuitem name="Honduras" id="menu_country_hn" sequence="5"
+    <menuitem name="Honduras" id="menu_country_hn" sequence="4"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
     <menuitem name="Salidas" id="menu_country_hn_salidas" sequence="10"
@@ -250,7 +250,7 @@
               groups="lottery_base.group_lottery_user"/>
 
     <!-- Nicaragua -->
-    <menuitem name="Nicaragua" id="menu_country_ni" sequence="6"
+    <menuitem name="Nicaragua" id="menu_country_ni" sequence="5"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
     <menuitem name="Salidas" id="menu_country_ni_salidas" sequence="10"
@@ -262,7 +262,7 @@
               groups="lottery_base.group_lottery_user"/>
 
     <!-- El Salvador -->
-    <menuitem name="El Salvador" id="menu_country_sv" sequence="7"
+    <menuitem name="El Salvador" id="menu_country_sv" sequence="6"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
     <menuitem name="Salidas" id="menu_country_sv_salidas" sequence="10"
@@ -274,7 +274,7 @@
               groups="lottery_base.group_lottery_user"/>
 
     <!-- Costa Rica -->
-    <menuitem name="Costa Rica" id="menu_country_cr" sequence="8"
+    <menuitem name="Costa Rica" id="menu_country_cr" sequence="7"
               parent="lottery_base.home_lottery"
               groups="lottery_base.group_lottery_user"/>
     <menuitem name="Salidas" id="menu_country_cr_salidas" sequence="10"
