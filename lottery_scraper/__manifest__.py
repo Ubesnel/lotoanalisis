@@ -1,6 +1,6 @@
 {
     "name": "Lottery Scraper",
-    "version": '2.1',
+    "version": '2.2',
     "author": "SeuS IT",
     "category": "Tools",
     "summary": "Importación de resultados de Quiniela UY y Tómbola",

@@ -1594,8 +1594,11 @@ class LotteryAppApi(http.Controller):
             ('date', '=', hoy), ('published', '=', True),
         ], limit=1)
         numbers = sorted('%02d' % n.name for n in rec.number_ids_5)
-        return _json_response(dict(base, locked=False, found=bool(numbers), numbers=numbers),
-                              headers=NO_STORE)
+        sm = rec.super_magico_id
+        return _json_response(dict(
+            base, locked=False, found=bool(numbers), numbers=numbers,
+            super_magico='%02d' % sm.name if sm and numbers else None,
+        ), headers=NO_STORE)
 
     @http.route('/api/lottery/v1/stats/tombola-uy-historico', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
