@@ -242,6 +242,11 @@ class LotteryOutput(models.Model):
                     f'🔄 El Premio 1 coincide con el virado del {num}, {cual}. ¡El que vira gana!'
                     if virado else f'🍀 El Premio 1 coincide directo con el {num}, {cual}')
 
+        normal = self._aciertos_normal(out, en)
+        if normal:
+            partes.append(('✅ Prediction hit! ' if en else '✅ ¡La predicción acertó! ')
+                          + ' · '.join(normal))
+
         premium = self._aciertos_premium(out, en)
         if premium:
             partes.append(('⭐ Premium hit! ' if en else '⭐ ¡Premium acertó! ')
@@ -261,6 +266,31 @@ class LotteryOutput(models.Model):
             cierre = '📈 Consulta el análisis actualizado para el próximo sorteo'
         body = ' · '.join(partes) + '\n' + cierre
         return title, body
+
+    def _aciertos_normal(self, out, en):
+        """Ternas y parlés acertados de la predicción normal publicada (la
+        tabla de Números Mágicos va aparte; la tómbola, en su propio aviso)."""
+        pred = self.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', out.sorteo_id.id),
+            ('date', '=', out.date),
+            ('turno_id', '=', out.turno_id.id),
+            ('published', '=', True),
+        ], limit=1)
+        if not pred:
+            return []
+        partes = []
+        if out.complete_number and out.complete_number in pred.terna_ids.mapped('terna'):
+            partes.append(f'{"Triple" if en else "Terna"} {out.complete_number}')
+        premios = _premios(out)
+        pares = {(min(a, b), max(a, b))
+                 for i, a in enumerate(premios) for b in premios[i + 1:]}
+        for p in pred.parle_ids:
+            if p.numero_1 and p.numero_2 and (
+                    min(p.numero_1.name, p.numero_2.name),
+                    max(p.numero_1.name, p.numero_2.name)) in pares:
+                partes.append(f'{"Parlay" if en else "Parlé"} '
+                              f'{p.numero_1.name:02d}-{p.numero_2.name:02d}')
+        return partes
 
     def _aciertos_premium(self, out, en):
         """Lo que acertó la Predicción Premium publicada de esta salida, en
