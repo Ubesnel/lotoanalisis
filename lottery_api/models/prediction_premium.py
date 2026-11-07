@@ -24,7 +24,7 @@ PARLES_TOP = 10
 # De esos 10, los que van primero y resaltados en la app.
 PARLES_DESTACADOS = 5
 # Tómbola: cuántos números de la línea tienen que salir para contar como acierto.
-MINIMO_TOMBOLA = {3: 3, 4: 3, 5: 4, 6: 4, 7: 5}
+MINIMO_TOMBOLA = {3: 3, 4: 3, 5: 3, 6: 3, 7: 3}
 # Si cambian, la evaluación se rehace.
 ACIERTOS = ('acierto_linea', 'acierto_terminal', 'acierto_fuerte', 'acierto_centena',
             'acierto_terna', 'acierto_parle', 'acierto_tombola')
@@ -62,6 +62,9 @@ class LotteryPredictionPremium(models.Model):
     published_date = fields.Datetime(string='Publicada el', readonly=True, copy=False)
     push_sent = fields.Boolean(string='Notificación enviada', readonly=True, copy=False)
     push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
+    tombola_push_sent = fields.Boolean(
+        string='Aviso de tómbola enviado', readonly=True, copy=False,
+        help='Se avisó la tómbola acertada al completarse los 20 números.')
 
     prediction_id = fields.Many2one(
         'lottery.prediction', string='Predicción del día',
@@ -109,7 +112,7 @@ class LotteryPredictionPremium(models.Model):
     acierto_tombola = fields.Boolean(
         string='Acertó tómbola', copy=False,
         help='Alguna línea llegó al mínimo de números salidos para su tamaño '
-             '(3 de 3, 3 de 4, 4 de 5, 4 de 6, 5 de 7).')
+             '(3 aciertos en cualquier tamaño: con 3 ya hay premio).')
     acierto_alguno = fields.Boolean(
         string='Algún acierto', compute='_compute_acierto_alguno', store=True, index=True)
 
@@ -605,7 +608,7 @@ class LotteryPredictionPremiumTombola(models.Model):
     aciertos = fields.Integer(string='Salieron', readonly=True, copy=False,
                               help='Cuántos de sus números salieron en la Tómbola.')
     acertada = fields.Boolean(string='Acertada', readonly=True, copy=False,
-                              help='Llegó al mínimo de su tamaño (3 de 3, 3 de 4, 4 de 5, 4 de 6, 5 de 7).')
+                              help='Llegó a 3 aciertos o más: con 3 ya hay premio.')
     completa = fields.Boolean(string='Completa', readonly=True, copy=False,
                               help='Salieron todos sus números.')
 

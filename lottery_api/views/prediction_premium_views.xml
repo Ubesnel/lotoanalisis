@@ -52,6 +52,10 @@
                     <div class="alert alert-success" role="alert" invisible="not push_sent">
                         Notificación enviada el <field name="push_sent_date" readonly="1" nolabel="1"/>.
                     </div>
+                    <div class="alert alert-success" role="alert" invisible="not tombola_push_sent">
+                        Aviso de tómbola acertada enviado.
+                        <field name="tombola_push_sent" invisible="1"/>
+                    </div>
                     <widget name="web_ribbon" title="Con acierto" bg_color="text-bg-success"
                             invisible="not acierto_alguno"/>
                     <widget name="web_ribbon" title="Sin acierto" bg_color="text-bg-danger"
