@@ -20,6 +20,11 @@ TERNAS_TOP_POR_PUESTO = (2, 2, 1)
 PARLES_TOP = 10
 # De esos 10, los que van primero y resaltados en la app.
 PARLES_DESTACADOS = 5
+# Si cambian, la evaluación se rehace.
+ACIERTOS = ('acierto_linea', 'acierto_terminal', 'acierto_fuerte', 'acierto_centena',
+            'acierto_terna', 'acierto_parle')
+CAMPOS_EVALUADOS = {'sorteo_id', 'date', 'turno_id', 'linea_top', 'terminal_top', 'number_ids',
+                    'centena_top_1', 'centena_top_2', 'terna_ids', 'parle_ids'}
 
 
 class LotteryPredictionPremium(models.Model):
@@ -75,6 +80,27 @@ class LotteryPredictionPremium(models.Model):
         help='Solo Quiniela UY: la primera de cada tamaño (3 a 7) de las '
              'tómbolas de la predicción del día.')
 
+    # Evaluación contra la salida: se marca sola al registrarse la salida.
+    # Los aciertos se pueden corregir a mano; eso la deja como manual.
+    evaluada = fields.Boolean(string='Evaluada', copy=False, index=True)
+    evaluacion_manual = fields.Boolean(
+        string='Marcada a mano', copy=False,
+        help='Algún acierto se marcó a mano: la evaluación automática ya no '
+             'la pisa. El botón Evaluar la vuelve a calcular desde la salida.')
+    evaluation_date = fields.Datetime(string='Evaluada el', readonly=True, copy=False)
+    output_id = fields.Many2one(
+        'lottery.output', string='Salida', readonly=True, copy=False,
+        ondelete='set null', index=True)
+    resultado = fields.Char(related='output_id.complete_number', string='Resultado')
+    acierto_linea = fields.Boolean(string='Acertó línea top', copy=False)
+    acierto_terminal = fields.Boolean(string='Acertó terminal top', copy=False)
+    acierto_fuerte = fields.Boolean(string='Acertó número fuerte', copy=False)
+    acierto_centena = fields.Boolean(string='Acertó centena', copy=False)
+    acierto_terna = fields.Boolean(string='Acertó terna', copy=False)
+    acierto_parle = fields.Boolean(string='Acertó parlé', copy=False)
+    acierto_alguno = fields.Boolean(
+        string='Algún acierto', compute='_compute_acierto_alguno', store=True, index=True)
+
     _sql_constraints = [
         ('unique_date_turn_sorteo', 'unique(date, turno_id, sorteo_id)',
          'Ya existe una predicción Premium para esa fecha, turno y sorteo.'),
@@ -92,6 +118,11 @@ class LotteryPredictionPremium(models.Model):
                 ('date', '=', rec.date),
                 ('turno_id', '=', rec.turno_id.id),
             ], limit=1)
+
+    @api.depends(*ACIERTOS)
+    def _compute_acierto_alguno(self):
+        for rec in self:
+            rec.acierto_alguno = any(rec[f] for f in ACIERTOS)
 
     @api.depends('date', 'turno_id.name', 'sorteo_id.name')
     def _compute_display_name(self):
@@ -112,12 +143,18 @@ class LotteryPredictionPremium(models.Model):
                         'El %02d no es de la línea top ni del terminal top.' % int(n.name))
 
     def write(self, vals):
+        if not self.env.context.get('evaluacion_auto') and set(ACIERTOS).intersection(vals):
+            vals = dict(vals, evaluacion_manual=True, evaluada=True)
+            if not self.filtered('evaluation_date'):
+                vals.setdefault('evaluation_date', fields.Datetime.now())
         recien_publicadas = self.browse()
         if vals.get('published'):
             recien_publicadas = self.filtered(lambda r: not r.published)
         res = super().write(vals)
         if recien_publicadas:
             recien_publicadas.write({'published_date': fields.Datetime.now()})
+        if CAMPOS_EVALUADOS.intersection(vals):
+            self.filtered(lambda r: not r.evaluacion_manual)._evaluar()
         return res
 
     def _lado(self, num):
@@ -127,6 +164,68 @@ class LotteryPredictionPremium(models.Model):
         if self.terminal_top and num % 10 == int(self.terminal_top):
             return 'terminal'
         return ''
+
+    # ── Evaluación ──────────────────────────────────────────────────────
+
+    def _vals_evaluacion(self, out):
+        """Aciertos de esta predicción contra la salida `out`."""
+        self.ensure_one()
+        num = out.number_id.name if out.number_id else None
+        premios = [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
+        pares = {(min(a, b), max(a, b)) for i, a in enumerate(premios) for b in premios[i + 1:]}
+        centena = str(out.hundreds_id.name) if out.hundreds_id else ''
+        vals = {
+            'evaluada': True,
+            'evaluation_date': fields.Datetime.now(),
+            'output_id': out.id,
+            'acierto_linea': bool(num is not None and self.linea_top
+                                  and num // 10 == int(self.linea_top)),
+            'acierto_terminal': bool(num is not None and self.terminal_top
+                                     and num % 10 == int(self.terminal_top)),
+            'acierto_fuerte': bool(out.number_id and out.number_id in self.number_ids),
+            'acierto_centena': bool(centena and centena in (self.centena_top_1, self.centena_top_2)),
+            'acierto_terna': bool(out.complete_number
+                                  and out.complete_number in self.terna_ids.mapped('terna')),
+            'acierto_parle': any(
+                (min(p.numero_1.name, p.numero_2.name), max(p.numero_1.name, p.numero_2.name)) in pares
+                for p in self.parle_ids if p.numero_1 and p.numero_2),
+        }
+        vals['evaluacion_manual'] = False
+        return vals
+
+    def _vals_sin_evaluar(self):
+        return dict.fromkeys(
+            ('evaluada', 'evaluacion_manual', 'evaluation_date', 'output_id') + ACIERTOS, False)
+
+    def action_evaluar(self):
+        """Botón: rehace la evaluación desde la salida, aunque esté marcada a mano."""
+        self._evaluar()
+        return True
+
+    def _evaluar(self):
+        """Evalúa contra la salida del mismo sorteo, fecha y turno; sin salida
+        queda sin evaluar."""
+        Output = self.env['lottery.output'].sudo()
+        for rec in self.sudo().with_context(evaluacion_auto=True):
+            out = Output.search([
+                ('sorteo_id', '=', rec.sorteo_id.id),
+                ('date', '=', rec.date),
+                ('turno_id', '=', rec.turno_id.id),
+            ], limit=1)
+            rec.write(rec._vals_evaluacion(out) if out and out.number_id
+                      else rec._vals_sin_evaluar())
+
+    @api.model
+    def _evaluar_salidas(self, outputs):
+        """Evalúa las predicciones Premium de esas salidas; las marcadas a
+        mano no se tocan."""
+        for out in outputs:
+            self.sudo().search([
+                ('sorteo_id', '=', out.sorteo_id.id),
+                ('date', '=', out.date),
+                ('turno_id', '=', out.turno_id.id),
+                ('evaluacion_manual', '=', False),
+            ])._evaluar()
 
     # ── Completar ───────────────────────────────────────────────────────
 
