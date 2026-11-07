@@ -656,8 +656,42 @@ class LotteryAppApi(http.Controller):
             return _json_response({'error': 'sorteo_not_found'}, status=404)
 
         date_str, turno = sorteo.get_next_draw()
-        data = self._stats().get_lineas_terminales_probables(
-            turno.id, date_str, sorteo_id=sorteo.id)
+        pred = request.env['lottery.prediction'].sudo().search([
+            ('sorteo_id', '=', sorteo.id),
+            ('date', '=', date_str),
+            ('turno_id', '=', turno.id),
+            ('published', '=', True),
+        ], limit=1)
+        lineas, terminales = pred.reco_lineas_terminales() if pred else ([], [])
+        if not pred:
+            # Sin predicción publicada del próximo sorteo, todavía no hay recomendados.
+            data = {
+                'next_date': datetime.strptime(date_str, '%Y-%m-%d').strftime('%d/%m/%Y'),
+                'next_turn': turno.code or False,
+                'next_turn_label': turno.name or '',
+                'lineas': [], 'terminales': [], 'cross': [],
+            }
+        elif lineas and terminales:
+            # Los guardados en la predicción publicada.
+            data = {
+                'next_date': datetime.strptime(date_str, '%Y-%m-%d').strftime('%d/%m/%Y'),
+                'next_turn': turno.code or False,
+                'next_turn_label': turno.name or '',
+                'lineas': [{
+                    'idx': d, 'name': 'Línea %d' % d,
+                    'range': '%02d al %02d' % (d * 10, d * 10 + 9),
+                    'numbers': ['%02d' % (d * 10 + u) for u in range(10)],
+                } for d in lineas],
+                'terminales': [{
+                    'idx': d, 'name': 'Terminal %d' % d,
+                    'range': '%02d al %02d' % (d, 90 + d),
+                    'numbers': ['%02d' % (x * 10 + d) for x in range(10)],
+                } for d in terminales],
+                'cross': sorted('%02d' % (l * 10 + t) for l in lineas for t in terminales),
+            }
+        else:
+            data = self._stats().get_lineas_terminales_probables(
+                turno.id, date_str, sorteo_id=sorteo.id)
         # Sin puntaje ni orden: cuál es la mejor queda para Premium. Copia,
         # porque `data` es el dict del ormcache.
         data = dict(data)
@@ -1742,6 +1776,7 @@ class LotteryAppApi(http.Controller):
                         'numbers': ['%02d' % n for n in t.numeros()],
                         'aciertos': t.aciertos,
                         'hit': t.acertada,
+                        'completa': t.completa,
                     } for t in rec.tombola_linea_ids],
                     tombola_hit=rec.acierto_tombola,
                     tombola_result=sorted('%02d' % n for n in rec._tombola_salidos()),

@@ -9,11 +9,11 @@ from datetime import timedelta
 import pytz
 
 from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.addons.lottery_portal.models.quiniela_uy_ternas import SOURCE_CODE as QUINIELA_UY
 
 from .fcm_service import lanzar_push
-from .lottery_output import _mensajes, _push_worker, _turno_label
+from .lottery_output import _lista, _mensajes, _push_worker, _sorteo_con_pais, _turno_label
 
 _logger = logging.getLogger(__name__)
 
@@ -31,6 +31,59 @@ class LotteryPrediction(models.Model):
 
     push_sent = fields.Boolean(string='Notificación enviada', default=False, readonly=True, copy=False)
     push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
+
+    # Recomendados del sorteo, fijados al generar la predicción: la app los
+    # muestra de acá; vacíos, los calcula en vivo como antes.
+    reco_lineas = fields.Char(
+        string='Líneas recomendadas', copy=False,
+        help='Dígitos separados por coma, de la mejor a la peor (ej. 9, 3, 5). '
+             'Se completan solos con los números.')
+    reco_terminales = fields.Char(
+        string='Terminales recomendados', copy=False,
+        help='Dígitos separados por coma, del mejor al peor (ej. 7, 1, 4). '
+             'Se completan solos con los números.')
+
+    @staticmethod
+    def _digitos(texto):
+        """'9, 3, 5' → [9, 3, 5]."""
+        return [int(p) for p in (texto or '').replace(' ', '').split(',') if p]
+
+    @api.constrains('reco_lineas', 'reco_terminales')
+    def _check_reco(self):
+        for rec in self:
+            for campo in ('reco_lineas', 'reco_terminales'):
+                texto = (rec[campo] or '').replace(' ', '')
+                partes = [p for p in texto.split(',') if p]
+                if texto and (any(not (p.isdigit() and len(p) == 1) for p in partes)
+                              or len(set(partes)) != len(partes)):
+                    raise ValidationError(
+                        '%s: dígitos del 0 al 9 separados por coma, sin repetir.'
+                        % rec._fields[campo].string)
+
+    def reco_lineas_terminales(self):
+        """([líneas], [terminales]) guardados, o ([], [])."""
+        self.ensure_one()
+        return self._digitos(self.reco_lineas), self._digitos(self.reco_terminales)
+
+    def action_completar_recomendados(self):
+        """Líneas y terminales recomendados para la fecha y turno de la predicción."""
+        for rec in self:
+            lineas, terminales = rec._recomendadas_alg2()
+            rec.write({
+                'reco_lineas': ', '.join(str(d) for d in lineas) or False,
+                'reco_terminales': ', '.join(str(d) for d in terminales) or False,
+            })
+        return True
+
+    def action_completar_numeros(self):
+        res = super().action_completar_numeros()
+        for rec in self.filtered(lambda r: not (r.reco_lineas and r.reco_terminales)):
+            try:
+                with self.env.cr.savepoint():
+                    rec.action_completar_recomendados()
+            except Exception:  # noqa: BLE001 - sin recomendados la app los calcula en vivo
+                _logger.exception('lottery_api: recomendados de la predicción %s', rec.id)
+        return res
 
     def action_send_push_notification(self):
         self.ensure_one()
@@ -57,20 +110,36 @@ class LotteryPrediction(models.Model):
         })
 
     def _build_push_message(self, pred, lang='es'):
+        """Aviso genérico: predicciones actualizadas, con lo que trae esta."""
+        en = lang == 'en'
         turn_label = _turno_label(pred.sorteo_id, pred.turno_id, pred.date, lang)
         fecha = pred.date.strftime('%d/%m/%Y') if pred.date else ''
+        sorteo = _sorteo_con_pais(pred.sorteo_id, lang)
+        contenido = _lista(pred._contenido_push(en), en)
+        if en:
+            return f'🔮 Predictions updated · {sorteo}', (
+                f'The predictions for the {fecha} draw ({turn_label}) are now in '
+                f'the App: {contenido}.')
+        return f'🔮 Predicciones actualizadas · {sorteo}', (
+            f'Ya están en la App las predicciones del sorteo del {fecha} '
+            f'({turn_label}): {contenido}.')
 
-        if lang == 'en':
-            return '🔮 Magic Numbers available', (
-                f'The Magic Numbers for the {pred.sorteo_id.name} draw of '
-                f'{fecha} ({turn_label}) are now in the app.')
-
-        title = '🔮 Números Mágicos disponibles'
-        body = (
-            f'Ya fueron registrados en la Aplicación los Números Mágicos '
-            f'para el sorteo {pred.sorteo_id.name} del {fecha} ({turn_label}).'
-        )
-        return title, body
+    def _contenido_push(self, en):
+        """Qué trae la predicción, en el orden de la app."""
+        self.ensure_one()
+        sorteo = self.sorteo_id
+        partes = [
+            'Best Numbers by line (Magic Numbers)' if en
+            else 'Mejores Números por línea (Números Mágicos)',
+            'Recommended' if en else 'Recomendados',
+        ]
+        if sorteo.generates_parles and self.parle_ids:
+            partes.append('Parlays' if en else 'Parlés')
+        if sorteo.uses_hundreds and self.terna_ids:
+            partes.append('Triples' if en else 'Ternas')
+        if self.tombola_linea_ids:
+            partes.append('Tómbola')
+        return partes
 
     # ── Predicciones automáticas ────────────────────────────────────────
 

@@ -8,6 +8,7 @@ antes de notificar.
 """
 
 import logging
+from datetime import timedelta
 
 from odoo import SUPERUSER_ID, api, fields, models, registry
 from odoo.exceptions import UserError
@@ -60,12 +61,51 @@ def _turno_label(sorteo, turno, fecha, lang):
     return label
 
 
+# Nombres fijos: el push no depende del idioma del usuario que lo dispara
+# (los crons corren como OdooBot) ni de las traducciones de res.country.
+PAISES = {
+    'US': ('Estados Unidos', 'United States'),
+    'DO': ('República Dominicana', 'Dominican Republic'),
+    'SX': ('San Martín', 'Sint Maarten'),
+    'NI': ('Nicaragua', 'Nicaragua'),
+    'HN': ('Honduras', 'Honduras'),
+    'SV': ('El Salvador', 'El Salvador'),
+    'CR': ('Costa Rica', 'Costa Rica'),
+    'UY': ('Uruguay', 'Uruguay'),
+}
+
+
 def _pais(sorteo, lang):
-    """País del sorteo; en_US es el idioma base de res.country."""
+    """País del sorteo en el idioma del push."""
     country = sorteo.country_id
-    if lang == 'en':
-        country = country.with_context(lang='en_US')
-    return country.name or ''
+    if not country:
+        return ''
+    nombres = PAISES.get(country.code or '')
+    if nombres:
+        return nombres[1] if lang == 'en' else nombres[0]
+    lang_odoo = 'en_US' if lang == 'en' else (
+        sorteo.env['res.lang'].sudo().search([('code', '=like', 'es%')], limit=1).code
+        or sorteo.env.lang)
+    return country.with_context(lang=lang_odoo).name or ''
+
+
+def _premios(out):
+    """Números (enteros) de los premios 1, 2 y 3 de la salida."""
+    return [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
+
+
+def _sorteo_con_pais(sorteo, lang):
+    """'Tennessee (Estados Unidos)': hay loterías que se llaman igual en
+    distintos países."""
+    pais = _pais(sorteo, lang)
+    return f'{sorteo.name} ({pais})' if pais else sorteo.name
+
+
+def _lista(partes, en):
+    """['A', 'B', 'C'] → 'A, B y C' / 'A, B and C'."""
+    if len(partes) < 2:
+        return ''.join(partes)
+    return '%s %s %s' % (', '.join(partes[:-1]), 'and' if en else 'y', partes[-1])
 
 
 class LotteryOutput(models.Model):
@@ -82,21 +122,49 @@ class LotteryOutput(models.Model):
         return records
 
     def write(self, vals):
+        cambia = CAMPOS_SALIDA_PREMIUM.intersection(vals)
+        antes = self._claves_prediccion() if cambia else set()
         res = super().write(vals)
-        if CAMPOS_SALIDA_PREMIUM.intersection(vals):
+        if cambia:
             Premium = self.env['lottery.prediction.premium'].sudo()
             # Al mover la salida de fecha/turno, la predicción vieja queda sin salida.
             Premium.search([('output_id', 'in', self.ids),
                             ('evaluacion_manual', '=', False)])._evaluar_seguro()
             Premium._evaluar_salidas(self)
+            self._reevaluar_predicciones(antes | self._claves_prediccion())
         return res
 
     def unlink(self):
         premiums = self.env['lottery.prediction.premium'].sudo().search(
             [('output_id', 'in', self.ids), ('evaluacion_manual', '=', False)])
+        claves = self._claves_prediccion()
         res = super().unlink()
         premiums.exists()._evaluar_seguro()
+        self._reevaluar_predicciones(claves)
         return res
+
+    def _claves_prediccion(self):
+        return {(r.sorteo_id.id, r.date, r.turno_id.id) for r in self}
+
+    def _reevaluar_predicciones(self, claves):
+        """Vuelve a evaluar la predicción normal de esas (sorteo, fecha, turno)
+        tras corregir o borrar una salida; sin salida, queda sin evaluar."""
+        Prediction = self.env['lottery.prediction'].sudo()
+        Output = self.sudo()
+        for sorteo_id, date, turno_id in claves:
+            dominio = [('sorteo_id', '=', sorteo_id), ('date', '=', date),
+                       ('turno_id', '=', turno_id)]
+            try:
+                with self.env.cr.savepoint():
+                    out = Output.search(dominio, limit=1)
+                    if out.number_id:
+                        out._check_predictions()
+                    else:
+                        Prediction.search(dominio).write(dict.fromkeys((
+                            'cumplida', 'cumplida_30', 'cumplida_20', 'cumplida_10',
+                            'cumplida_5', 'cumplida_super_magico', 'verification_date'), False))
+            except Exception:  # noqa: BLE001 - no frena la corrección de la salida
+                _logger.exception('lottery_api: no se pudo reevaluar la predicción %s', dominio)
 
     def action_send_push_notification(self):
         self.ensure_one()
@@ -157,6 +225,28 @@ class LotteryOutput(models.Model):
                 f'🔮 The 1st prize was in the {tabla_magicos} Magic Numbers table' if en else
                 f'🔮 El Premio 1 estuvo en la tabla de {tabla_magicos} Números Mágicos')
 
+        suerte = self._en_numeros_suerte(out)
+        if suerte:
+            num, fuerte, virado, fecha_suerte = suerte
+            dia = fecha_suerte.strftime('%d/%m/%Y')
+            if en:
+                cual = (f'the strongest of the Lucky Numbers of {dia}' if fuerte
+                        else f'one of the Lucky Numbers of {dia}')
+                partes.append(
+                    f'🔄 The 1st prize matches {num} reversed, {cual}. Flip it and win!'
+                    if virado else f'🍀 The 1st prize matches {num} straight, {cual}')
+            else:
+                cual = (f'el más fuerte de los Números de la Suerte del {dia}' if fuerte
+                        else f'uno de los Números de la Suerte del {dia}')
+                partes.append(
+                    f'🔄 El Premio 1 coincide con el virado del {num}, {cual}. ¡El que vira gana!'
+                    if virado else f'🍀 El Premio 1 coincide directo con el {num}, {cual}')
+
+        premium = self._aciertos_premium(out, en)
+        if premium:
+            partes.append(('⭐ Premium hit! ' if en else '⭐ ¡Premium acertó! ')
+                          + ' · '.join(premium))
+
         # El país va en el título: hay loterías que se llaman igual en
         # distintos países (La Diaria de Honduras y la de Nicaragua).
         sorteo = out.sorteo_id.name
@@ -171,6 +261,88 @@ class LotteryOutput(models.Model):
             cierre = '📈 Consulta el análisis actualizado para el próximo sorteo'
         body = ' · '.join(partes) + '\n' + cierre
         return title, body
+
+    def _aciertos_premium(self, out, en):
+        """Lo que acertó la Predicción Premium publicada de esta salida, en
+        texto (sin centenas). Lee la evaluación ya guardada."""
+        rec = self.env['lottery.prediction.premium'].sudo().search([
+            ('sorteo_id', '=', out.sorteo_id.id),
+            ('date', '=', out.date),
+            ('turno_id', '=', out.turno_id.id),
+            ('published', '=', True),
+            ('evaluada', '=', True),
+        ], limit=1)
+        if not rec:
+            return []
+        num = out.number_id.name if out.number_id else None
+        partes = []
+        if rec.acierto_linea:
+            partes.append(f'{"Top line" if en else "Línea top"} {rec.linea_top}')
+        if rec.acierto_terminal:
+            partes.append(f'{"Top ending" if en else "Terminal top"} {rec.terminal_top}')
+        if rec.acierto_fuerte:
+            lado = rec._lado(num) if num is not None else ''
+            de = {'linea': ' (top line)' if en else ' de la línea top',
+                  'terminal': ' (top ending)' if en else ' del terminal top'}.get(lado, '')
+            partes.append(f'{"Strong number" if en else "Número fuerte"} '
+                          f'{"%02d" % num if num is not None else ""}{de}'.replace('  ', ' '))
+        if rec.acierto_terna:
+            partes.append(f'{"Triple" if en else "Terna"} {out.complete_number or ""}'.strip())
+        if rec.acierto_parle:
+            premios = _premios(out)
+            pares = {(min(a, b), max(a, b))
+                     for i, a in enumerate(premios) for b in premios[i + 1:]}
+            acertados = [p for p in rec.parle_ids if p.numero_1 and p.numero_2 and (
+                min(p.numero_1.name, p.numero_2.name),
+                max(p.numero_1.name, p.numero_2.name)) in pares]
+            acertados.sort(key=lambda p: not p.destacado)
+            for p in acertados:
+                fuerte = (' strong' if en else ' fuerte') if p.destacado else ''
+                partes.append(f'{"Parlay" if en else "Parlé"}{fuerte} '
+                              f'{p.numero_1.name:02d}-{p.numero_2.name:02d}')
+            if not acertados:
+                partes.append('Parlay' if en else 'Parlé')
+        if rec.acierto_tombola:
+            lineas = rec.tombola_linea_ids.filtered('acertada').ordenadas()
+            for t in lineas:
+                n = len(t.numeros())
+                cuantos = (f'{t.aciertos} of {n}' if en else f'{t.aciertos} de {n}')
+                partes.append(f'Tómbola {"of" if en else "de"} {n}: '
+                              + (f'{cuantos}!' if en and t.completa else
+                                 f'¡{cuantos}!' if t.completa else cuantos))
+            if not lineas:
+                partes.append('Tómbola')
+        return partes
+
+    def _en_numeros_suerte(self, out):
+        """(número de la suerte 'NN', es el más fuerte, virado, fecha) si el
+        Premio 1 coincide directo o virado (29 ↔ 92) con uno de los Números de
+        la Suerte publicados de ese día; None si no. Directo gana sobre
+        virado. Un sorteo antes de la hora de corte de Ajustes es del día
+        anterior."""
+        if not out.number_id or not out.date:
+            return None
+        params = self.env['ir.config_parameter'].sudo()
+        corte = float(params.get_param('lottery_api.suerte_hora') or 6.0)
+        dow = str(out.date.weekday())
+        slot = out.sorteo_id.slot_ids.filtered(
+            lambda sl: sl.dow == dow and sl.turno_id == out.turno_id)[:1]
+        fecha = out.date
+        if slot and 0 < slot.hora_sorteo < corte:
+            fecha -= timedelta(days=1)
+        suerte = self.env['lottery.numeros.suerte'].sudo().search([
+            ('date', '=', fecha), ('published', '=', True),
+        ], limit=1)
+        if not suerte:
+            return None
+        n = out.number_id.name
+        virado = (n % 10) * 10 + n // 10
+        numeros = {s.name: s for s in suerte.number_ids_5}
+        for valor, es_virado in ((n, False), (virado, True)):
+            if valor in numeros and not (es_virado and valor == n):
+                fuerte = numeros[valor] == suerte.super_magico_id
+                return '%02d' % valor, fuerte, es_virado, fecha
+        return None
 
     def _tabla_numeros_magicos(self, out):
         """En qué lista de Números Mágicos estaba el número salido — siempre
