@@ -87,7 +87,7 @@ class LotteryOutput(models.Model):
             Premium = self.env['lottery.prediction.premium'].sudo()
             # Al mover la salida de fecha/turno, la predicción vieja queda sin salida.
             Premium.search([('output_id', 'in', self.ids),
-                            ('evaluacion_manual', '=', False)])._evaluar()
+                            ('evaluacion_manual', '=', False)])._evaluar_seguro()
             Premium._evaluar_salidas(self)
         return res
 
@@ -95,7 +95,7 @@ class LotteryOutput(models.Model):
         premiums = self.env['lottery.prediction.premium'].sudo().search(
             [('output_id', 'in', self.ids), ('evaluacion_manual', '=', False)])
         res = super().unlink()
-        premiums.exists()._evaluar()
+        premiums.exists()._evaluar_seguro()
         return res
 
     def action_send_push_notification(self):
@@ -210,3 +210,30 @@ class LotteryOutput(models.Model):
         if prediction.cumplida:
             return 'general'
         return None
+
+
+class LotteryTombolaOutput(models.Model):
+    _inherit = 'lottery.tombola.output'
+
+    def _claves(self):
+        return {(r.date, r.turno_id.id) for r in self}
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        if not self.env.context.get('skip_prediction_validation'):
+            self.env['lottery.prediction.premium']._evaluar_tombola(records._claves())
+        return records
+
+    def write(self, vals):
+        claves = self._claves()
+        res = super().write(vals)
+        if {'date', 'turno_id', 'number_id'}.intersection(vals):
+            self.env['lottery.prediction.premium']._evaluar_tombola(claves | self._claves())
+        return res
+
+    def unlink(self):
+        claves = self._claves()
+        res = super().unlink()
+        self.env['lottery.prediction.premium']._evaluar_tombola(claves)
+        return res

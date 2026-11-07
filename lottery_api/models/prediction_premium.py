@@ -22,9 +22,10 @@ PARLES_TOP = 10
 PARLES_DESTACADOS = 5
 # Si cambian, la evaluación se rehace.
 ACIERTOS = ('acierto_linea', 'acierto_terminal', 'acierto_fuerte', 'acierto_centena',
-            'acierto_terna', 'acierto_parle')
+            'acierto_terna', 'acierto_parle', 'acierto_tombola')
 CAMPOS_EVALUADOS = {'sorteo_id', 'date', 'turno_id', 'linea_top', 'terminal_top', 'number_ids',
-                    'centena_top_1', 'centena_top_2', 'terna_ids', 'parle_ids'}
+                    'centena_top_1', 'centena_top_2', 'terna_ids', 'parle_ids',
+                    'tombola_linea_ids'}
 
 
 class LotteryPredictionPremium(models.Model):
@@ -98,6 +99,9 @@ class LotteryPredictionPremium(models.Model):
     acierto_centena = fields.Boolean(string='Acertó centena', copy=False)
     acierto_terna = fields.Boolean(string='Acertó terna', copy=False)
     acierto_parle = fields.Boolean(string='Acertó parlé', copy=False)
+    acierto_tombola = fields.Boolean(
+        string='Acertó tómbola', copy=False,
+        help='Alguna línea tuvo todos sus números entre los 20 de la Tómbola.')
     acierto_alguno = fields.Boolean(
         string='Algún acierto', compute='_compute_acierto_alguno', store=True, index=True)
 
@@ -153,7 +157,7 @@ class LotteryPredictionPremium(models.Model):
         res = super().write(vals)
         if recien_publicadas:
             recien_publicadas.write({'published_date': fields.Datetime.now()})
-        if CAMPOS_EVALUADOS.intersection(vals):
+        if CAMPOS_EVALUADOS.intersection(vals) and not self.env.context.get('evaluacion_auto'):
             self.filtered(lambda r: not r.evaluacion_manual)._evaluar()
         return res
 
@@ -189,13 +193,43 @@ class LotteryPredictionPremium(models.Model):
             'acierto_parle': any(
                 (min(p.numero_1.name, p.numero_2.name), max(p.numero_1.name, p.numero_2.name)) in pares
                 for p in self.parle_ids if p.numero_1 and p.numero_2),
+            'evaluacion_manual': False,
         }
-        vals['evaluacion_manual'] = False
+        vals.update(self._vals_tombola())
         return vals
 
+    def _vals_tombola(self):
+        """Una línea acierta si todos sus números están entre los de la
+        Tómbola de esa fecha y turno."""
+        self.ensure_one()
+        if not self.tombola_linea_ids:
+            return {'acierto_tombola': False}
+        lineas = []
+        salidos = self._tombola_salidos()
+        for linea in self.tombola_linea_ids:
+            numeros = linea.numeros()
+            aciertos = sum(1 for n in numeros if n in salidos)
+            lineas.append((1, linea.id, {'aciertos': aciertos,
+                                         'acertada': bool(numeros) and aciertos == len(numeros)}))
+        return {'acierto_tombola': any(l[2]['acertada'] for l in lineas),
+                'tombola_linea_ids': lineas}
+
+    def _tombola_salidos(self):
+        """Números (enteros) de la Tómbola de la misma fecha y turno."""
+        self.ensure_one()
+        self.env.cr.execute("""
+            SELECT n.name FROM lottery_tombola_output t
+            JOIN lottery_number n ON n.id = t.number_id
+            WHERE t.date = %s AND t.turno_id = %s
+        """, (self.date, self.turno_id.id))
+        return {r[0] for r in self.env.cr.fetchall()}
+
     def _vals_sin_evaluar(self):
-        return dict.fromkeys(
+        vals = dict.fromkeys(
             ('evaluada', 'evaluacion_manual', 'evaluation_date', 'output_id') + ACIERTOS, False)
+        vals['tombola_linea_ids'] = [(1, l.id, {'aciertos': 0, 'acertada': False})
+                                     for l in self.tombola_linea_ids]
+        return vals
 
     def action_evaluar(self):
         """Botón: rehace la evaluación desde la salida, aunque esté marcada a mano."""
@@ -215,6 +249,16 @@ class LotteryPredictionPremium(models.Model):
             rec.write(rec._vals_evaluacion(out) if out and out.number_id
                       else rec._vals_sin_evaluar())
 
+    def _evaluar_seguro(self):
+        """Para los hooks de salidas: un error al evaluar no frena la carga."""
+        if not self:
+            return
+        try:
+            with self.env.cr.savepoint():
+                self._evaluar()
+        except Exception:  # noqa: BLE001
+            _logger.exception('lottery_api: no se pudo evaluar la Premium %s', self.ids)
+
     @api.model
     def _evaluar_salidas(self, outputs):
         """Evalúa las predicciones Premium de esas salidas; las marcadas a
@@ -225,7 +269,18 @@ class LotteryPredictionPremium(models.Model):
                 ('date', '=', out.date),
                 ('turno_id', '=', out.turno_id.id),
                 ('evaluacion_manual', '=', False),
-            ])._evaluar()
+            ])._evaluar_seguro()
+
+    @api.model
+    def _evaluar_tombola(self, claves):
+        """Reevalúa las Premium con tómbola de esas (fecha, turno)."""
+        for date, turno_id in claves:
+            self.sudo().search([
+                ('date', '=', date),
+                ('turno_id', '=', turno_id),
+                ('tombola_linea_ids', '!=', False),
+                ('evaluacion_manual', '=', False),
+            ])._evaluar_seguro()
 
     # ── Completar ───────────────────────────────────────────────────────
 
@@ -490,3 +545,6 @@ class LotteryPredictionPremiumTombola(models.Model):
     premium_id = fields.Many2one(
         'lottery.prediction.premium', string='Predicción Premium',
         required=True, ondelete='cascade', index=True)
+    aciertos = fields.Integer(string='Salieron', readonly=True, copy=False,
+                              help='Cuántos de sus números salieron en la Tómbola.')
+    acertada = fields.Boolean(string='Acertada', readonly=True, copy=False)
