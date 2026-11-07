@@ -36,6 +36,11 @@
                             string="Completar" class="btn-primary"
                             invisible="published"
                             help="Línea y terminal top de Recomendados, números fuertes desde la predicción del día, ternas top, parlés top y una tómbola de cada tamaño (Quiniela UY)."/>
+                    <button name="action_send_push_notification" type="object"
+                            string="Enviar notificación push" class="btn-primary"
+                            icon="fa-bell" invisible="not id or push_sent or not published"
+                            confirm="Se enviará una notificación push a los usuarios de la app avisando que ya está la Predicción Premium de este sorteo. ¿Confirma el envío?"/>
+                    <field name="push_sent" invisible="1"/>
                     <button name="action_evaluar" type="object" string="Evaluar"
                             confirm="Se recalculan los aciertos desde la salida y se pierden los marcados a mano. ¿Seguir?"
                             invisible="not evaluacion_manual"/>
@@ -44,6 +49,9 @@
                             help="Vuelve a comparar contra la salida del mismo sorteo, fecha y turno. Se hace solo al registrar la salida."/>
                 </header>
                 <sheet>
+                    <div class="alert alert-success" role="alert" invisible="not push_sent">
+                        Notificación enviada el <field name="push_sent_date" readonly="1" nolabel="1"/>.
+                    </div>
                     <widget name="web_ribbon" title="Con acierto" bg_color="text-bg-success"
                             invisible="not acierto_alguno"/>
                     <widget name="web_ribbon" title="Sin acierto" bg_color="text-bg-danger"
@@ -52,9 +60,9 @@
                             invisible="evaluada"/>
                     <group>
                         <group>
-                            <field name="sorteo_id" options="{'no_create': True}"/>
-                            <field name="date"/>
-                            <field name="turno_id" options="{'no_create': True}"/>
+                            <field name="sorteo_id" readonly="evaluada" options="{'no_create': True}"/>
+                            <field name="date" readonly="evaluada"/>
+                            <field name="turno_id" readonly="evaluada" options="{'no_create': True}"/>
                             <field name="sorteo_turno_ids" invisible="1"/>
                             <field name="sorteo_uses_hundreds" invisible="1"/>
                             <field name="sorteo_generates_parles" invisible="1"/>
@@ -91,11 +99,11 @@
                         <page string="Línea, terminal y números fuertes" name="linea_terminal">
                             <group>
                                 <group>
-                                    <field name="linea_top"/>
-                                    <field name="terminal_top"/>
+                                    <field name="linea_top" readonly="evaluada"/>
+                                    <field name="terminal_top" readonly="evaluada"/>
                                 </group>
                                 <group>
-                                    <field name="number_ids" widget="many2many_tags"
+                                    <field name="number_ids" readonly="evaluada" widget="many2many_tags"
                                            options="{'no_create': True}"/>
                                 </group>
                             </group>
@@ -104,11 +112,11 @@
                               invisible="not sorteo_uses_hundreds">
                             <group>
                                 <group string="Centenas">
-                                    <field name="centena_top_1"/>
-                                    <field name="centena_top_2"/>
+                                    <field name="centena_top_1" readonly="evaluada"/>
+                                    <field name="centena_top_2" readonly="evaluada"/>
                                 </group>
                                 <group string="Ternas top">
-                                    <field name="terna_ids" nolabel="1" colspan="2">
+                                    <field name="terna_ids" readonly="evaluada" nolabel="1" colspan="2">
                                         <tree editable="bottom">
                                             <field name="terna"/>
                                         </tree>
@@ -118,7 +126,7 @@
                         </page>
                         <page string="Parlés top" name="parles"
                               invisible="not sorteo_generates_parles">
-                            <field name="parle_ids" nolabel="1" colspan="2">
+                            <field name="parle_ids" readonly="evaluada" nolabel="1" colspan="2">
                                 <tree editable="bottom" decoration-bf="destacado">
                                     <field name="sequence" widget="handle"/>
                                     <field name="numero_1" options="{'no_open': True, 'no_create': True}"/>
@@ -129,7 +137,7 @@
                         </page>
                         <page string="Tómbolas" name="tombolas"
                               invisible="sorteo_code != 'quiniela_uy_1'">
-                            <field name="tombola_linea_ids" nolabel="1" colspan="2">
+                            <field name="tombola_linea_ids" readonly="evaluada" nolabel="1" colspan="2">
                                 <tree editable="bottom" decoration-success="acertada">
                                     <field name="numero_1" options="{'no_open': True, 'no_create': True}"/>
                                     <field name="numero_2" options="{'no_open': True, 'no_create': True}"/>
@@ -140,6 +148,7 @@
                                     <field name="numero_7" options="{'no_open': True, 'no_create': True}"/>
                                     <field name="aciertos"/>
                                     <field name="acertada"/>
+                                    <field name="completa"/>
                                 </tree>
                             </field>
                         </page>

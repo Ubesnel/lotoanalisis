@@ -9,6 +9,9 @@ import logging
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
+from .fcm_service import lanzar_push
+from .lottery_output import _lista, _mensajes, _push_worker, _sorteo_con_pais, _turno_label
+
 _logger = logging.getLogger(__name__)
 
 DIGITOS = [(str(d), str(d)) for d in range(10)]
@@ -20,6 +23,8 @@ TERNAS_TOP_POR_PUESTO = (2, 2, 1)
 PARLES_TOP = 10
 # De esos 10, los que van primero y resaltados en la app.
 PARLES_DESTACADOS = 5
+# Tómbola: cuántos números de la línea tienen que salir para contar como acierto.
+MINIMO_TOMBOLA = {3: 3, 4: 3, 5: 4, 6: 4, 7: 5}
 # Si cambian, la evaluación se rehace.
 ACIERTOS = ('acierto_linea', 'acierto_terminal', 'acierto_fuerte', 'acierto_centena',
             'acierto_terna', 'acierto_parle', 'acierto_tombola')
@@ -55,6 +60,8 @@ class LotteryPredictionPremium(models.Model):
         help='La app solo muestra las publicadas. Mientras no esté publicada '
              'el cron la recalcula; publicada ya no se toca sola.')
     published_date = fields.Datetime(string='Publicada el', readonly=True, copy=False)
+    push_sent = fields.Boolean(string='Notificación enviada', readonly=True, copy=False)
+    push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
 
     prediction_id = fields.Many2one(
         'lottery.prediction', string='Predicción del día',
@@ -101,7 +108,8 @@ class LotteryPredictionPremium(models.Model):
     acierto_parle = fields.Boolean(string='Acertó parlé', copy=False)
     acierto_tombola = fields.Boolean(
         string='Acertó tómbola', copy=False,
-        help='Alguna línea tuvo todos sus números entre los 20 de la Tómbola.')
+        help='Alguna línea llegó al mínimo de números salidos para su tamaño '
+             '(3 de 3, 3 de 4, 4 de 5, 4 de 6, 5 de 7).')
     acierto_alguno = fields.Boolean(
         string='Algún acierto', compute='_compute_acierto_alguno', store=True, index=True)
 
@@ -169,6 +177,44 @@ class LotteryPredictionPremium(models.Model):
             return 'terminal'
         return ''
 
+    # ── Notificación ────────────────────────────────────────────────────
+
+    def action_send_push_notification(self):
+        """Avisa a los suscriptos del sorteo que ya está la Premium."""
+        self.ensure_one()
+        if self.push_sent:
+            raise UserError('Ya se envió la notificación push para esta predicción Premium.')
+        if not self.sorteo_id.show_in_app:
+            raise UserError('Este sorteo no está habilitado para mostrarse en la app.')
+        if not self.published:
+            raise UserError('Esta predicción Premium todavía no está publicada.')
+        messages = _mensajes(self, self.sorteo_id.id)
+        lanzar_push(self.env.cr, _push_worker, (self.env.cr.dbname, messages))
+        self.write({'push_sent': True, 'push_sent_date': fields.Datetime.now()})
+
+    def _build_push_message(self, rec, lang='es'):
+        en = lang == 'en'
+        turn_label = _turno_label(rec.sorteo_id, rec.turno_id, rec.date, lang)
+        fecha = rec.date.strftime('%d/%m/%Y') if rec.date else ''
+        sorteo = _sorteo_con_pais(rec.sorteo_id, lang)
+        partes = []
+        if rec.linea_top or rec.terminal_top:
+            partes.append('Most Likely Line & Ending' if en else 'Línea y terminal más probable')
+        if rec.parle_ids:
+            partes.append('Most Likely Parlays' if en else 'Parlés más probables')
+        if rec.terna_ids:
+            partes.append('Likely Triples' if en else 'Ternas probables')
+        if rec.tombola_linea_ids:
+            partes.append('Most Likely Tómbolas' if en else 'Tómbolas más probables')
+        contenido = _lista(partes, en)
+        if en:
+            return f'⭐ Premium prediction available · {sorteo}', (
+                f'The Premium prediction for the {fecha} draw ({turn_label}) is now '
+                f'in the App' + (f': {contenido}.' if contenido else '.'))
+        return f'⭐ Predicción Premium disponible · {sorteo}', (
+            f'Ya está en la App la Predicción Premium del sorteo del {fecha} '
+            f'({turn_label})' + (f': {contenido}.' if contenido else '.'))
+
     # ── Evaluación ──────────────────────────────────────────────────────
 
     def _vals_evaluacion(self, out):
@@ -199,8 +245,8 @@ class LotteryPredictionPremium(models.Model):
         return vals
 
     def _vals_tombola(self):
-        """Una línea acierta si todos sus números están entre los de la
-        Tómbola de esa fecha y turno."""
+        """Cuántos números de cada línea salieron en la Tómbola de esa fecha
+        y turno; acierta si llega al mínimo de su tamaño."""
         self.ensure_one()
         if not self.tombola_linea_ids:
             return {'acierto_tombola': False}
@@ -209,8 +255,12 @@ class LotteryPredictionPremium(models.Model):
         for linea in self.tombola_linea_ids:
             numeros = linea.numeros()
             aciertos = sum(1 for n in numeros if n in salidos)
-            lineas.append((1, linea.id, {'aciertos': aciertos,
-                                         'acertada': bool(numeros) and aciertos == len(numeros)}))
+            minimo = MINIMO_TOMBOLA.get(len(numeros), len(numeros))
+            lineas.append((1, linea.id, {
+                'aciertos': aciertos,
+                'acertada': bool(numeros) and aciertos >= minimo,
+                'completa': bool(numeros) and aciertos == len(numeros),
+            }))
         return {'acierto_tombola': any(l[2]['acertada'] for l in lineas),
                 'tombola_linea_ids': lineas}
 
@@ -227,7 +277,7 @@ class LotteryPredictionPremium(models.Model):
     def _vals_sin_evaluar(self):
         vals = dict.fromkeys(
             ('evaluada', 'evaluacion_manual', 'evaluation_date', 'output_id') + ACIERTOS, False)
-        vals['tombola_linea_ids'] = [(1, l.id, {'aciertos': 0, 'acertada': False})
+        vals['tombola_linea_ids'] = [(1, l.id, {'aciertos': 0, 'acertada': False, 'completa': False})
                                      for l in self.tombola_linea_ids]
         return vals
 
@@ -290,13 +340,18 @@ class LotteryPredictionPremium(models.Model):
         stats = self.env['lottery.stats.service'].sudo()
         avisos = []
         for rec in self:
-            data = stats.get_lineas_terminales_probables(
-                rec.turno_id.id, str(rec.date), sorteo_id=rec.sorteo_id.id)
-            lineas = data.get('lineas') or []
-            terminales = data.get('terminales') or []
+            # Los recomendados guardados en la predicción del día, así coinciden
+            # con los que ve todo el mundo; sin ellos, el cálculo en vivo.
+            lineas, terminales = (rec.prediction_id.reco_lineas_terminales()
+                                  if rec.prediction_id else ([], []))
+            if not (lineas and terminales):
+                data = stats.get_lineas_terminales_probables(
+                    rec.turno_id.id, str(rec.date), sorteo_id=rec.sorteo_id.id)
+                lineas = [l['idx'] for l in data.get('lineas') or []]
+                terminales = [t['idx'] for t in data.get('terminales') or []]
             rec.write({
-                'linea_top': str(lineas[0]['numbers'][0])[0] if lineas else False,
-                'terminal_top': str(terminales[0]['numbers'][0])[-1] if terminales else False,
+                'linea_top': str(lineas[0]) if lineas else False,
+                'terminal_top': str(terminales[0]) if terminales else False,
             })
             rec.write({'number_ids': [(6, 0, rec._numeros_fuertes().ids)]})
             rec._completar_ternas()
@@ -490,6 +545,8 @@ class LotteryPredictionPremium(models.Model):
                         rec.action_completar()
                         if sorteo.auto_premium_publish:
                             rec.published = True
+                            if sorteo.show_in_app:
+                                rec.action_send_push_notification()
             except Exception:  # noqa: BLE001 - un sorteo no frena a los demás
                 _logger.exception('lottery_api: predicción Premium falló (sorteo %s)', sorteo.name)
             self.env.cr.commit()
@@ -547,4 +604,12 @@ class LotteryPredictionPremiumTombola(models.Model):
         required=True, ondelete='cascade', index=True)
     aciertos = fields.Integer(string='Salieron', readonly=True, copy=False,
                               help='Cuántos de sus números salieron en la Tómbola.')
-    acertada = fields.Boolean(string='Acertada', readonly=True, copy=False)
+    acertada = fields.Boolean(string='Acertada', readonly=True, copy=False,
+                              help='Llegó al mínimo de su tamaño (3 de 3, 3 de 4, 4 de 5, 4 de 6, 5 de 7).')
+    completa = fields.Boolean(string='Completa', readonly=True, copy=False,
+                              help='Salieron todos sus números.')
+
+    def ordenadas(self):
+        """Las acertadas, de la más significativa a la menos: completas
+        primero, después las de más números salidos y las más grandes."""
+        return self.sorted(lambda t: (not t.completa, -t.aciertos, -len(t.numeros())))

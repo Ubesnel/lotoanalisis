@@ -9,8 +9,15 @@
                 <button name="action_send_push_notification" type="object"
                         string="Enviar notificación push" class="btn-primary"
                         icon="fa-bell" invisible="not id or push_sent or not published"
-                        confirm="Se enviará una notificación push a los usuarios de la app avisando que ya están disponibles los Números Mágicos de esta predicción. ¿Confirma el envío?"/>
+                        confirm="Se enviará una notificación push a los usuarios de la app avisando que ya están actualizadas las predicciones de este sorteo. ¿Confirma el envío?"/>
                 <field name="push_sent" invisible="1"/>
+                <button name="action_completar_recomendados" type="object"
+                        string="Completar recomendados"
+                        help="Líneas y terminales recomendados para la fecha y turno de esta predicción. Se completan solos con los números; la app los muestra en Recomendados."/>
+            </xpath>
+            <xpath expr="//field[@name='algoritmo']" position="after">
+                <field name="reco_lineas" placeholder="ej. 9, 3, 5"/>
+                <field name="reco_terminales" placeholder="ej. 7, 1, 4"/>
             </xpath>
             <xpath expr="//sheet/group[1]" position="before">
                 <div class="alert alert-success" role="alert" invisible="not push_sent">
