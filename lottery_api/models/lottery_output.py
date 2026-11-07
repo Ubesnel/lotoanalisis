@@ -384,6 +384,40 @@ class LotteryOutput(models.Model):
         return None
 
 
+# Números que saca la Tómbola de Uruguay por turno.
+TOMBOLA_TOTAL = 20
+# Solo avisa tómbolas recientes: el importador también carga históricos.
+TOMBOLA_PUSH_DIAS = 2
+
+
+def _mejor_tombola(lineas, salidos):
+    """(tamaño, aciertos, cuántas líneas) de la mejor tómbola acertada:
+    la más grande y, dentro de ese tamaño, la de más aciertos; o None."""
+    from .prediction_premium import MINIMO_TOMBOLA
+    acertadas = []
+    for linea in lineas:
+        numeros = linea.numeros()
+        aciertos = sum(1 for n in numeros if n in salidos)
+        if numeros and aciertos >= MINIMO_TOMBOLA.get(len(numeros), len(numeros)):
+            acertadas.append((len(numeros), aciertos))
+    if not acertadas:
+        return None
+    mejor = max(acertadas)
+    return mejor[0], mejor[1], acertadas.count(mejor)
+
+
+def _texto_tombola(mejor, en):
+    """'la de 5: 4 de 5' / '2 tómbolas de 3: 3 de 3 cada una'."""
+    tamano, aciertos, cuantas = mejor
+    if en:
+        if cuantas > 1:
+            return f'{cuantas} tómbolas of {tamano}: {aciertos} of {tamano} each'
+        return f'the one of {tamano}: {aciertos} of {tamano}'
+    if cuantas > 1:
+        return f'{cuantas} tómbolas de {tamano}: {aciertos} de {tamano} cada una'
+    return f'la de {tamano}: {aciertos} de {tamano}'
+
+
 class LotteryTombolaOutput(models.Model):
     _inherit = 'lottery.tombola.output'
 
@@ -395,6 +429,7 @@ class LotteryTombolaOutput(models.Model):
         records = super().create(vals_list)
         if not self.env.context.get('skip_prediction_validation'):
             self.env['lottery.prediction.premium']._evaluar_tombola(records._claves())
+            records._push_tombola(records._claves())
         return records
 
     def write(self, vals):
@@ -402,7 +437,60 @@ class LotteryTombolaOutput(models.Model):
         res = super().write(vals)
         if {'date', 'turno_id', 'number_id'}.intersection(vals):
             self.env['lottery.prediction.premium']._evaluar_tombola(claves | self._claves())
+            self._push_tombola(self._claves())
         return res
+
+    def _push_tombola(self, claves):
+        """Avisa la mejor tómbola acertada (normal y Premium) cuando el turno
+        ya tiene los 20 números; una sola vez por predicción."""
+        desde = fields.Date.context_today(self) - timedelta(days=TOMBOLA_PUSH_DIAS)
+        for date, turno_id in claves:
+            if date < desde:
+                continue
+            try:
+                with self.env.cr.savepoint():
+                    self._push_tombola_turno(date, turno_id)
+            except Exception:  # noqa: BLE001 - no frena la carga de la tómbola
+                _logger.exception('lottery_api: no se pudo avisar la tómbola %s %s', date, turno_id)
+
+    def _push_tombola_turno(self, date, turno_id):
+        salidas = self.sudo().search([('date', '=', date), ('turno_id', '=', turno_id)])
+        salidos = set(salidas.mapped('number_id.name'))
+        if len(salidos) < TOMBOLA_TOTAL:
+            return
+        dominio = [('date', '=', date), ('turno_id', '=', turno_id),
+                   ('published', '=', True), ('tombola_linea_ids', '!=', False),
+                   ('tombola_push_sent', '=', False), ('sorteo_id.show_in_app', '=', True)]
+        normal = self.env['lottery.prediction'].sudo().search(dominio, limit=1)
+        premium = self.env['lottery.prediction.premium'].sudo().search(dominio, limit=1)
+        mejor_normal = normal and _mejor_tombola(normal.tombola_linea_ids, salidos)
+        mejor_premium = premium and _mejor_tombola(premium.tombola_linea_ids, salidos)
+        if not (mejor_normal or mejor_premium):
+            return
+        sorteo = (normal or premium).sorteo_id
+        turno = self.env['lottery.turno'].browse(turno_id)
+        messages = []
+        for lang in PUSH_LANGS:
+            en = lang == 'en'
+            partes = []
+            if mejor_normal:
+                partes.append(('🎱 Prediction hit ' if en else '🎱 La predicción acertó ')
+                              + _texto_tombola(mejor_normal, en))
+            if mejor_premium:
+                partes.append(('⭐ Premium hit ' if en else '⭐ Premium acertó ')
+                              + _texto_tombola(mejor_premium, en))
+            titulo = (f'🎱 Tómbola hit · {_sorteo_con_pais(sorteo, lang)}' if en
+                      else f'🎱 ¡Tómbola acertada! · {_sorteo_con_pais(sorteo, lang)}')
+            cierre = ('📈 Check the details in the prediction history' if en
+                      else '📈 Consulta el detalle en el historial de predicciones')
+            body = (_turno_label(sorteo, turno, date, lang) + ' · '
+                    + ' · '.join(partes) + '\n' + cierre)
+            messages.append((sorteo.id, titulo, body, lang))
+        lanzar_push(self.env.cr, _push_worker, (self.env.cr.dbname, messages))
+        if normal:
+            normal.write({'tombola_push_sent': True})
+        if premium:
+            premium.write({'tombola_push_sent': True})
 
     def unlink(self):
         claves = self._claves()

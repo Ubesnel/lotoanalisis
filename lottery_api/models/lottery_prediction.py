@@ -31,6 +31,9 @@ class LotteryPrediction(models.Model):
 
     push_sent = fields.Boolean(string='Notificación enviada', default=False, readonly=True, copy=False)
     push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
+    tombola_push_sent = fields.Boolean(
+        string='Aviso de tómbola enviado', readonly=True, copy=False,
+        help='Se avisó la tómbola acertada al completarse los 20 números.')
 
     # Recomendados del sorteo, fijados al generar la predicción: la app los
     # muestra de acá; vacíos, los calcula en vivo como antes.
