@@ -4,7 +4,8 @@
         <field name="name">lottery.prediction.premium.tree</field>
         <field name="model">lottery.prediction.premium</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree decoration-success="acierto_alguno" decoration-muted="evaluada and not acierto_alguno">
+                <field name="acierto_alguno" column_invisible="1"/>
                 <field name="date"/>
                 <field name="turno_id"/>
                 <field name="sorteo_id"/>
@@ -12,6 +13,14 @@
                 <field name="terminal_top"/>
                 <field name="number_ids" widget="many2many_tags"/>
                 <field name="published" widget="boolean_toggle"/>
+                <field name="evaluada" optional="show"/>
+                <field name="resultado" optional="show"/>
+                <field name="acierto_linea" optional="show"/>
+                <field name="acierto_terminal" optional="show"/>
+                <field name="acierto_fuerte" optional="show"/>
+                <field name="acierto_centena" optional="hide"/>
+                <field name="acierto_terna" optional="show"/>
+                <field name="acierto_parle" optional="show"/>
             </tree>
         </field>
     </record>
@@ -26,8 +35,20 @@
                             string="Completar" class="btn-primary"
                             invisible="published"
                             help="Línea y terminal top de Recomendados, números fuertes desde la predicción del día, ternas top, parlés top y una tómbola de cada tamaño (Quiniela UY)."/>
+                    <button name="action_evaluar" type="object" string="Evaluar"
+                            confirm="Se recalculan los aciertos desde la salida y se pierden los marcados a mano. ¿Seguir?"
+                            invisible="not evaluacion_manual"/>
+                    <button name="action_evaluar" type="object" string="Evaluar"
+                            invisible="evaluacion_manual"
+                            help="Vuelve a comparar contra la salida del mismo sorteo, fecha y turno. Se hace solo al registrar la salida."/>
                 </header>
                 <sheet>
+                    <widget name="web_ribbon" title="Con acierto" bg_color="text-bg-success"
+                            invisible="not acierto_alguno"/>
+                    <widget name="web_ribbon" title="Sin acierto" bg_color="text-bg-danger"
+                            invisible="not evaluada or acierto_alguno"/>
+                    <widget name="web_ribbon" title="Sin evaluar" bg_color="text-bg-secondary"
+                            invisible="evaluada"/>
                     <group>
                         <group>
                             <field name="sorteo_id" options="{'no_create': True}"/>
@@ -45,6 +66,26 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Evaluación" name="evaluacion">
+                            <group>
+                                <group>
+                                    <field name="evaluada"/>
+                                    <field name="evaluacion_manual" invisible="not evaluada" readonly="1"/>
+                                    <field name="evaluation_date" invisible="not evaluada"/>
+                                    <field name="output_id" invisible="not evaluada"/>
+                                    <field name="resultado" invisible="not evaluada"/>
+                                    <field name="acierto_alguno" invisible="1"/>
+                                </group>
+                                <group invisible="not evaluada">
+                                    <field name="acierto_linea"/>
+                                    <field name="acierto_terminal"/>
+                                    <field name="acierto_fuerte"/>
+                                    <field name="acierto_centena" invisible="not sorteo_uses_hundreds"/>
+                                    <field name="acierto_terna" invisible="not sorteo_uses_hundreds"/>
+                                    <field name="acierto_parle" invisible="not sorteo_generates_parles"/>
+                                </group>
+                            </group>
+                        </page>
                         <page string="Línea, terminal y números fuertes" name="linea_terminal">
                             <group>
                                 <group>
@@ -113,6 +154,19 @@
                 <field name="date"/>
                 <filter name="sin_publicar" string="Sin publicar" domain="[('published', '=', False)]"/>
                 <filter name="publicadas" string="Publicadas" domain="[('published', '=', True)]"/>
+                <separator/>
+                <filter name="evaluadas" string="Evaluadas" domain="[('evaluada', '=', True)]"/>
+                <filter name="sin_evaluar" string="Sin evaluar" domain="[('evaluada', '=', False)]"/>
+                <filter name="manual" string="Marcadas a mano" domain="[('evaluacion_manual', '=', True)]"/>
+                <separator/>
+                <filter name="con_acierto" string="Con acierto" domain="[('acierto_alguno', '=', True)]"/>
+                <filter name="sin_acierto" string="Sin acierto" domain="[('evaluada', '=', True), ('acierto_alguno', '=', False)]"/>
+                <separator/>
+                <filter name="f_linea" string="Acertó línea" domain="[('acierto_linea', '=', True)]"/>
+                <filter name="f_terminal" string="Acertó terminal" domain="[('acierto_terminal', '=', True)]"/>
+                <filter name="f_fuerte" string="Acertó número fuerte" domain="[('acierto_fuerte', '=', True)]"/>
+                <filter name="f_terna" string="Acertó terna" domain="[('acierto_terna', '=', True)]"/>
+                <filter name="f_parle" string="Acertó parlé" domain="[('acierto_parle', '=', True)]"/>
                 <group expand="0" string="Agrupar por">
                     <filter name="group_sorteo" string="Sorteo" context="{'group_by': 'sorteo_id'}"/>
                 </group>

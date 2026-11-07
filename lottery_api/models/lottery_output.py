@@ -16,6 +16,10 @@ from .fcm_service import PUSH_LANGS, lanzar_push
 
 _logger = logging.getLogger(__name__)
 
+# Campos de la salida que cambian los aciertos de la predicción Premium.
+CAMPOS_SALIDA_PREMIUM = {'sorteo_id', 'date', 'turno_id', 'number_id', 'hundreds_id',
+                         'premio_2_id', 'premio_3_id'}
+
 
 
 def _push_worker(dbname, messages):
@@ -69,6 +73,30 @@ class LotteryOutput(models.Model):
 
     push_sent = fields.Boolean(string='Notificación enviada', default=False, readonly=True, copy=False)
     push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        if not self.env.context.get('skip_prediction_validation'):
+            self.env['lottery.prediction.premium']._evaluar_salidas(records)
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if CAMPOS_SALIDA_PREMIUM.intersection(vals):
+            Premium = self.env['lottery.prediction.premium'].sudo()
+            # Al mover la salida de fecha/turno, la predicción vieja queda sin salida.
+            Premium.search([('output_id', 'in', self.ids),
+                            ('evaluacion_manual', '=', False)])._evaluar()
+            Premium._evaluar_salidas(self)
+        return res
+
+    def unlink(self):
+        premiums = self.env['lottery.prediction.premium'].sudo().search(
+            [('output_id', 'in', self.ids), ('evaluacion_manual', '=', False)])
+        res = super().unlink()
+        premiums.exists()._evaluar()
+        return res
 
     def action_send_push_notification(self):
         self.ensure_one()

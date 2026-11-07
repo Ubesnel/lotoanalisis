@@ -1627,6 +1627,107 @@ class LotteryAppApi(http.Controller):
             tombolas=[sorted('%02d' % n for n in t.numeros()) for t in rec.tombola_linea_ids],
         ), headers=NO_STORE)
 
+    PREMIUM_HISTORIAL_MAX = 60
+
+    @http.route('/api/lottery/v1/premium/historial', type='http',
+                auth='public', methods=['GET'], csrf=False, cors='*')
+    def premium_historial(self, sorteo_id=None, solo_aciertos='0', limit=None,
+                          offset=None, **kwargs):
+        """Historial de la Predicción Premium: resumen de aciertos y las ya
+        jugadas, de la más nueva a la más vieja, de a páginas. Jugada queda a
+        la vista de todos, como los Números Mágicos."""
+        sorteo = _get_public_sorteo(sorteo_id)
+        if not sorteo:
+            return _json_response({'error': 'sorteo_not_found'}, status=404)
+        try:
+            limit = max(1, min(int(limit or 20), self.PREMIUM_HISTORIAL_MAX))
+            offset = max(0, int(offset or 0))
+        except (TypeError, ValueError):
+            return _json_response({'error': 'invalid_page'}, status=400)
+        only_hits = str(solo_aciertos).lower() in ('1', 'true', 'si', 'yes')
+
+        Premium = request.env['lottery.prediction.premium'].sudo()
+        base = [('sorteo_id', '=', sorteo.id), ('published', '=', True),
+                ('evaluada', '=', True)]
+
+        def _nivel(flag, extra=()):
+            jugadas = Premium.search_count(base + list(extra))
+            aciertos = Premium.search_count(base + list(extra) + [(flag, '=', True)])
+            return {'jugadas': jugadas, 'aciertos': aciertos,
+                    'pct': round(100.0 * aciertos / jugadas, 1) if jugadas else 0.0}
+
+        resumen = {
+            'alguno': _nivel('acierto_alguno'),
+            'linea': _nivel('acierto_linea', [('linea_top', '!=', False)]),
+            'terminal': _nivel('acierto_terminal', [('terminal_top', '!=', False)]),
+            'fuerte': _nivel('acierto_fuerte', [('number_ids', '!=', False)]),
+        }
+        if sorteo.uses_hundreds:
+            resumen['centena'] = _nivel('acierto_centena', [('centena_top_1', '!=', False)])
+            resumen['terna'] = _nivel('acierto_terna', [('terna_ids', '!=', False)])
+        if sorteo.generates_parles:
+            resumen['parle'] = _nivel('acierto_parle', [('parle_ids', '!=', False)])
+
+        domain = base + ([('acierto_alguno', '=', True)] if only_hits else [])
+        total = Premium.search_count(domain)
+        recs = Premium.search(domain, limit=limit, offset=offset)
+
+        def _item(rec):
+            out = rec.output_id
+            ganador = out.number_id.name if out.number_id else None
+            pares = _pares_salida(out) if out else set()
+            linea = rec.number_ids.filtered(lambda n: rec._lado(int(n.name)) == 'linea')
+
+            def _lado(digito, numeros, hit):
+                if not digito:
+                    return None
+                return {'digit': int(digito), 'hit': hit,
+                        'numbers': sorted('%02d' % int(n.name) for n in numeros)}
+
+            item = {
+                'date': rec.date.isoformat(),
+                'weekday': WEEKDAYS_ES[rec.date.weekday()],
+                'turn': rec.turno_id.code or None,
+                'turn_label': rec.turno_id.name or '',
+                'turn_hora': _hora_turno(sorteo, rec.turno_id, rec.date),
+                'result': out.complete_number or None,
+                'result_number': '%02d' % ganador if ganador is not None else None,
+                'any_hit': rec.acierto_alguno,
+                'linea': _lado(rec.linea_top, linea, rec.acierto_linea),
+                'terminal': _lado(rec.terminal_top, rec.number_ids - linea, rec.acierto_terminal),
+                'fuerte_hit': rec.acierto_fuerte,
+            }
+            if sorteo.uses_hundreds:
+                item.update(
+                    ternas=sorted(rec.terna_ids.mapped('terna')),
+                    terna_hit=rec.acierto_terna,
+                    centenas=[c for c in (rec.centena_top_1, rec.centena_top_2) if c],
+                    centena_hit=rec.acierto_centena,
+                )
+            if sorteo.generates_parles:
+                item.update(
+                    parles=[{
+                        'n1': '%02d' % p.numero_1.name, 'n2': '%02d' % p.numero_2.name,
+                        'destacado': p.destacado,
+                        'hit': (min(p.numero_1.name, p.numero_2.name),
+                                max(p.numero_1.name, p.numero_2.name)) in pares,
+                    } for p in rec.parle_ids],
+                    parle_hit=rec.acierto_parle,
+                )
+            return item
+
+        return _json_response({
+            'sorteo': {'id': sorteo.id, 'name': sorteo.name},
+            'uses_hundreds': bool(sorteo.uses_hundreds),
+            'generates_parles': bool(sorteo.generates_parles),
+            'resumen': resumen,
+            'filtro': {'solo_aciertos': only_hits},
+            'total': total,
+            'offset': offset,
+            'limit': limit,
+            'items': [_item(r) for r in recs],
+        })
+
     @http.route('/api/lottery/v1/premium/numeros-suerte', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
     def premium_numeros_suerte(self, **kwargs):
