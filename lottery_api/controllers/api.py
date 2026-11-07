@@ -1631,44 +1631,66 @@ class LotteryAppApi(http.Controller):
 
     @http.route('/api/lottery/v1/premium/historial', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
-    def premium_historial(self, sorteo_id=None, solo_aciertos='0', limit=None,
-                          offset=None, **kwargs):
-        """Historial de la Predicción Premium: resumen de aciertos y las ya
-        jugadas, de la más nueva a la más vieja, de a páginas. Jugada queda a
-        la vista de todos, como los Números Mágicos."""
+    def premium_historial(self, sorteo_id=None, year=None, month=None,
+                          solo_aciertos='0', limit=None, offset=None, **kwargs):
+        """Historial de la Predicción Premium: cuántos aciertos hubo de cada
+        tipo en el período (año/mes o todo) y las jugadas, de la más nueva a
+        la más vieja, de a páginas. Lo jugado queda a la vista de todos."""
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
         try:
+            year = int(year) if year else None
+            month = int(month) if month and year else None
             limit = max(1, min(int(limit or 20), self.PREMIUM_HISTORIAL_MAX))
             offset = max(0, int(offset or 0))
+            if month and not 1 <= month <= 12:
+                raise ValueError
         except (TypeError, ValueError):
-            return _json_response({'error': 'invalid_page'}, status=400)
+            return _json_response({'error': 'invalid_params'}, status=400)
         only_hits = str(solo_aciertos).lower() in ('1', 'true', 'si', 'yes')
+        con_tombola = sorteo.code == 'quiniela_uy_1'
 
         Premium = request.env['lottery.prediction.premium'].sudo()
         base = [('sorteo_id', '=', sorteo.id), ('published', '=', True),
                 ('evaluada', '=', True)]
 
-        def _nivel(flag, extra=()):
-            jugadas = Premium.search_count(base + list(extra))
-            aciertos = Premium.search_count(base + list(extra) + [(flag, '=', True)])
-            return {'jugadas': jugadas, 'aciertos': aciertos,
-                    'pct': round(100.0 * aciertos / jugadas, 1) if jugadas else 0.0}
+        # Años y meses con jugadas, para los selectores.
+        request.env.cr.execute("""
+            SELECT DISTINCT EXTRACT(YEAR FROM date)::int, EXTRACT(MONTH FROM date)::int
+            FROM lottery_prediction_premium
+            WHERE sorteo_id = %s AND published AND evaluada
+            ORDER BY 1 DESC, 2 DESC
+        """, (sorteo.id,))
+        periodos = {}
+        for y, m in request.env.cr.fetchall():
+            periodos.setdefault(y, []).append({'month': m, 'month_label': MONTHS_ES[m - 1]})
 
-        resumen = {
-            'alguno': _nivel('acierto_alguno'),
-            'linea': _nivel('acierto_linea', [('linea_top', '!=', False)]),
-            'terminal': _nivel('acierto_terminal', [('terminal_top', '!=', False)]),
-            'fuerte': _nivel('acierto_fuerte', [('number_ids', '!=', False)]),
-        }
+        periodo = list(base)
+        if year:
+            if month:
+                desde = '%04d-%02d-01' % (year, month)
+                hasta = ('%04d-01-01' % (year + 1) if month == 12
+                         else '%04d-%02d-01' % (year, month + 1))
+            else:
+                desde, hasta = '%04d-01-01' % year, '%04d-01-01' % (year + 1)
+            periodo += [('date', '>=', desde), ('date', '<', hasta)]
+
+        criterios = ['linea', 'terminal', 'fuerte']
         if sorteo.uses_hundreds:
-            resumen['centena'] = _nivel('acierto_centena', [('centena_top_1', '!=', False)])
-            resumen['terna'] = _nivel('acierto_terna', [('terna_ids', '!=', False)])
+            criterios += ['centena', 'terna']
         if sorteo.generates_parles:
-            resumen['parle'] = _nivel('acierto_parle', [('parle_ids', '!=', False)])
+            criterios.append('parle')
+        if con_tombola:
+            criterios.append('tombola')
+        resumen = {
+            'jugadas': Premium.search_count(periodo),
+            'con_acierto': Premium.search_count(periodo + [('acierto_alguno', '=', True)]),
+        }
+        for c in criterios:
+            resumen[c] = Premium.search_count(periodo + [('acierto_%s' % c, '=', True)])
 
-        domain = base + ([('acierto_alguno', '=', True)] if only_hits else [])
+        domain = periodo + ([('acierto_alguno', '=', True)] if only_hits else [])
         total = Premium.search_count(domain)
         recs = Premium.search(domain, limit=limit, offset=offset)
 
@@ -1714,14 +1736,27 @@ class LotteryAppApi(http.Controller):
                     } for p in rec.parle_ids],
                     parle_hit=rec.acierto_parle,
                 )
+            if con_tombola:
+                item.update(
+                    tombolas=[{
+                        'numbers': ['%02d' % n for n in t.numeros()],
+                        'aciertos': t.aciertos,
+                        'hit': t.acertada,
+                    } for t in rec.tombola_linea_ids],
+                    tombola_hit=rec.acierto_tombola,
+                    tombola_result=sorted('%02d' % n for n in rec._tombola_salidos()),
+                )
             return item
 
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
             'uses_hundreds': bool(sorteo.uses_hundreds),
             'generates_parles': bool(sorteo.generates_parles),
+            'tombola': con_tombola,
+            'criterios': criterios,
+            'periodos': [{'year': y, 'months': ms} for y, ms in periodos.items()],
+            'filtro': {'year': year, 'month': month, 'solo_aciertos': only_hits},
             'resumen': resumen,
-            'filtro': {'solo_aciertos': only_hits},
             'total': total,
             'offset': offset,
             'limit': limit,

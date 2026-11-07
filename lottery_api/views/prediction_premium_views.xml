@@ -21,6 +21,7 @@
                 <field name="acierto_centena" optional="hide"/>
                 <field name="acierto_terna" optional="show"/>
                 <field name="acierto_parle" optional="show"/>
+                <field name="acierto_tombola" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -83,6 +84,7 @@
                                     <field name="acierto_centena" invisible="not sorteo_uses_hundreds"/>
                                     <field name="acierto_terna" invisible="not sorteo_uses_hundreds"/>
                                     <field name="acierto_parle" invisible="not sorteo_generates_parles"/>
+                                    <field name="acierto_tombola" invisible="sorteo_code != 'quiniela_uy_1'"/>
                                 </group>
                             </group>
                         </page>
@@ -128,7 +130,7 @@
                         <page string="Tómbolas" name="tombolas"
                               invisible="sorteo_code != 'quiniela_uy_1'">
                             <field name="tombola_linea_ids" nolabel="1" colspan="2">
-                                <tree editable="bottom">
+                                <tree editable="bottom" decoration-success="acertada">
                                     <field name="numero_1" options="{'no_open': True, 'no_create': True}"/>
                                     <field name="numero_2" options="{'no_open': True, 'no_create': True}"/>
                                     <field name="numero_3" options="{'no_open': True, 'no_create': True}"/>
@@ -136,6 +138,8 @@
                                     <field name="numero_5" options="{'no_open': True, 'no_create': True}"/>
                                     <field name="numero_6" options="{'no_open': True, 'no_create': True}"/>
                                     <field name="numero_7" options="{'no_open': True, 'no_create': True}"/>
+                                    <field name="aciertos"/>
+                                    <field name="acertada"/>
                                 </tree>
                             </field>
                         </page>
@@ -167,6 +171,8 @@
                 <filter name="f_fuerte" string="Acertó número fuerte" domain="[('acierto_fuerte', '=', True)]"/>
                 <filter name="f_terna" string="Acertó terna" domain="[('acierto_terna', '=', True)]"/>
                 <filter name="f_parle" string="Acertó parlé" domain="[('acierto_parle', '=', True)]"/>
+                <filter name="f_centena" string="Acertó centena" domain="[('acierto_centena', '=', True)]"/>
+                <filter name="f_tombola" string="Acertó tómbola" domain="[('acierto_tombola', '=', True)]"/>
                 <group expand="0" string="Agrupar por">
                     <filter name="group_sorteo" string="Sorteo" context="{'group_by': 'sorteo_id'}"/>
                 </group>
