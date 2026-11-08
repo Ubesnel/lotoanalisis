@@ -200,16 +200,18 @@ class LotteryFcmService(models.AbstractModel):
             }
         }
 
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'Content-Type': 'application/json',
+        }
         try:
-            resp = requests.post(
-                url,
-                json=payload,
-                headers={
-                    'Authorization': f'Bearer {token}',
-                    'Content-Type': 'application/json',
-                },
-                timeout=10,
-            )
+            resp = requests.post(url, json=payload, headers=headers, timeout=10)
+            if resp.status_code == 400:
+                # Si FCM rechaza la clave de colapso, el aviso sale igual sin ella.
+                _logger.warning('lottery_api: FCM rechazó el push al topic %s, '
+                                'reintento sin collapse_key: %s', topic, resp.text[:300])
+                payload['message']['android'].pop('collapse_key', None)
+                resp = requests.post(url, json=payload, headers=headers, timeout=10)
             resp.raise_for_status()
             _logger.info(
                 'lottery_api: push enviado al topic %s — %s',
