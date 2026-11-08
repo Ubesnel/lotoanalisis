@@ -76,6 +76,36 @@ class _Resultados:
                     self._add(parsers.parse_lotteryteller(text, key))
                     return
             return
+        if parser == 'lotterynet':
+            if key in self._claves:
+                return
+            self._claves.add(key)
+            hoy = datetime.now(pytz.timezone(self.source.tz)).date()
+            # A principios de enero el archivo del año nuevo todavía está casi vacío.
+            anios = [hoy.year] + ([hoy.year - 1] if hoy.timetuple().tm_yday <= 7 else [])
+            for url in self.urls:
+                for anio in anios:
+                    text = self._get(url.replace('{key}', key).replace('{year}', str(anio)))
+                    if text:
+                        self._add(parsers.parse_lotterynet(text, key))
+            return
+        if parser == 'kiskoo':
+            if key in self._claves:
+                return
+            self._claves.add(key)
+            manana = datetime.now(pytz.timezone(self.source.tz)).date() + timedelta(days=1)
+            for url in self.urls:
+                url = url.replace('{key}', key)
+                web = re.sub(r'^(https?://)api\.([^/]+).*$', r'\1\2', url)
+                text = self._get(url, params={'date': manana.isoformat() + 'T06:00:00.000Z'},
+                                 headers={'Origin': web, 'Referer': web + '/'})
+                if text:
+                    try:
+                        self._add(parsers.parse_kiskoo(text, key))
+                    except Exception as exc:  # noqa: BLE001
+                        self.errores.append('%s: no se pudo leer (%s)' % (url, exc))
+                    return
+            return
         if self._cargado:
             return
         self._cargado = True
@@ -119,13 +149,15 @@ class LotteryResultSource(models.Model):
         ('enloteria', 'EnLoteria (HTML)'),
         ('lotteryteller', 'LotteryTeller (HTML por juego y turno)'),
         ('florida_api', 'API oficial Florida Lottery'),
+        ('kiskoo', 'API Loterías de Nicaragua (por juego)'),
+        ('lotterynet', 'lottery.net (HTML por juego, archivo del año)'),
     ], string='Formato', required=True,
         help="Cómo se lee la página. Cambiar la URL no requiere tocar código "
              "mientras el sitio nuevo publique en el mismo formato.")
     urls = fields.Text(
         string='URLs', required=True,
-        help="Una por línea. En LotteryTeller, {key} se reemplaza por la clave del "
-             "mapeo (florida/pick-3/midday). En EnLoteria y DataLoto se leen todas y se juntan.")
+        help="Una por línea. En LotteryTeller, lottery.net y la API de Nicaragua, {key} se "
+             "reemplaza por la clave del mapeo; en lottery.net, {year} por el año. En EnLoteria y DataLoto se leen todas y se juntan.")
     tz = fields.Selection(
         _tz_get, string='Zona horaria', required=True, default='America/New_York',
         help="Zona de las horas del calendario de los sorteos de esta fuente. Solo "

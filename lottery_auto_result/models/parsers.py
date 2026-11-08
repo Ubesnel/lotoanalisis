@@ -120,6 +120,56 @@ def parse_enloteria(text):
     return rows
 
 
+# ── API de loteriasdenicaragua.com (misma plataforma que conectate) ──
+
+def parse_kiskoo(text, key):
+    """site-games/<gameId>: los últimos sorteos de UN juego y turno. Clave =
+    gameId. Toma el campo 'Signo' ('86 Reloj' → '86')."""
+    game = json.loads(text).get('game') or {}
+    layout = (game.get('score_layout') or [[]])[0]
+    labels = [s.get('label') for s in layout]
+    options = {o['id']: o['text'] for s in layout for o in (s.get('options') or [])}
+    rows = []
+    for session in game.get('sessions') or []:
+        try:
+            day = datetime.strptime(str(session.get('date', ''))[:10], '%Y-%m-%d').date()
+        except ValueError:
+            continue
+        score = (session.get('score') or [[]])[0]
+        values = dict(zip(labels, (options.get(v, v) for v in score)))
+        m = re.match(r'\s*(\d{2})\b', str(values.get('Signo') or ''))
+        if m:
+            rows.append({'key': key, 'date': day, 'digits': m.group(1)})
+    return rows
+
+
+# ── lottery.net (EEUU, archivo por año) ───────────────────────────────
+
+_LN_ROW_RE = re.compile(
+    r'<tr>\s*<td class="colour noBefore pickArchive">\s*([^<]+?)\s*</td>(.*?)</tr>', re.S)
+_LN_BALL_RE = re.compile(r'class="ball [a-z]+-pick-[34] number-part-0([1-4])">(\d)<')
+_EN_MONTHS = {m: i for i, m in enumerate(
+    ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august',
+     'september', 'october', 'november', 'december'], 1)}
+
+
+def parse_lotterynet(text, key):
+    """Archivo anual de lottery.net (/maryland/pick-3-midday/numbers/2026).
+    Clave = 'maryland/pick-3-midday'. Solo las bolas principales (sin Fireball)."""
+    rows = []
+    for raw_date, body in _LN_ROW_RE.findall(text):
+        parts = raw_date.replace(',', '').split()
+        try:
+            day = date(int(parts[3]), _EN_MONTHS[parts[1].lower()], int(parts[2]))
+        except (ValueError, IndexError, KeyError):
+            continue
+        balls = dict(_LN_BALL_RE.findall(body))
+        if balls and len(balls) == max(int(i) for i in balls):
+            rows.append({'key': key, 'date': day,
+                         'digits': ''.join(balls[str(i)] for i in range(1, len(balls) + 1))})
+    return rows
+
+
 # ── LotteryTeller (EEUU) ──────────────────────────────────────────────
 
 _LT_ROW_RE = re.compile(r'<time dateTime="(\d{4}-\d\d-\d\d)">(?:(?!<time ).)*?data-digits="(\d+)"', re.S)

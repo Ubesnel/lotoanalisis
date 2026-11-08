@@ -411,5 +411,61 @@ https://enloteria.com/resultados-el-quinielon-noche</field>
             <field name="key">pick3/EVENING</field>
             <field name="key_extra">pick4/EVENING</field>
         </record>
+
+        <!-- Loto Nicaragua: un gameId por turno. El de 18:00 solo trae los sábados: el del domingo va a mano. -->
+        <record id="source_loterias_ni" model="lottery.result.source">
+            <field name="name">Loterías de Nicaragua (La Diaria)</field>
+            <field name="sequence">35</field>
+            <field name="parser">kiskoo</field>
+            <field name="tz">America/Managua</field>
+            <field name="urls">https://api.loteriasdenicaragua.com/nicaragua/site-games/{key}</field>
+        </record>
+        <record id="line_la_diaria_ni_h1100" model="lottery.result.source.line">
+            <field name="source_id" ref="source_loterias_ni"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_nicaragua"/>
+            <field name="turno_id" ref="lottery_base.turno_h1100"/>
+            <field name="key">6938bae65aada821ed601e99</field>
+        </record>
+        <record id="line_la_diaria_ni_h1500" model="lottery.result.source.line">
+            <field name="source_id" ref="source_loterias_ni"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_nicaragua"/>
+            <field name="turno_id" ref="lottery_base.turno_h1500"/>
+            <field name="key">6938bae65aada821ed601ebd</field>
+        </record>
+        <record id="line_la_diaria_ni_h1800" model="lottery.result.source.line">
+            <field name="source_id" ref="source_loterias_ni"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_nicaragua"/>
+            <field name="turno_id" ref="lottery_base.turno_h1800"/>
+            <field name="key">6938bae65aada821ed601f00</field>
+        </record>
+        <record id="line_la_diaria_ni_h2100" model="lottery.result.source.line">
+            <field name="source_id" ref="source_loterias_ni"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_la_diaria_nicaragua"/>
+            <field name="turno_id" ref="lottery_base.turno_h2100"/>
+            <field name="key">6938bae65aada821ed601ed6</field>
+        </record>
+
+        <!-- lottery.net: Maryland no está en LotteryTeller y mdlottery.com bloquea (403). -->
+        <record id="source_lotterynet" model="lottery.result.source">
+            <field name="name">lottery.net (Maryland)</field>
+            <field name="sequence">55</field>
+            <field name="parser">lotterynet</field>
+            <field name="tz">America/New_York</field>
+            <field name="urls">https://www.lottery.net/{key}/numbers/{year}</field>
+        </record>
+        <record id="line_maryland_afternoon_lotterynet" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotterynet"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_maryland"/>
+            <field name="turno_id" ref="lottery_base.turno_afternoon"/>
+            <field name="key">maryland/pick-3-midday</field>
+            <field name="key_extra">maryland/pick-4-midday</field>
+        </record>
+        <record id="line_maryland_evening_lotterynet" model="lottery.result.source.line">
+            <field name="source_id" ref="source_lotterynet"/>
+            <field name="sorteo_id" ref="lottery_base.sorteo_maryland"/>
+            <field name="turno_id" ref="lottery_base.turno_evening"/>
+            <field name="key">maryland/pick-3-evening</field>
+            <field name="key_extra">maryland/pick-4-evening</field>
+        </record>
     </data>
 </odoo>
