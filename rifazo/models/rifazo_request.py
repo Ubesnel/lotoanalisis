@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import secrets
+from datetime import timedelta
 from urllib.parse import quote
 
 from odoo import _, api, fields, models
@@ -19,6 +20,13 @@ REQUEST_STATES = [
     ('rejected', 'Rechazada'),
     ('expired', 'Vencida'),
     ('cancelled', 'Cancelada'),
+]
+
+
+PAYMENT_METHODS = [
+    ('transfer', 'Transferencia'),
+    ('cash', 'Efectivo'),
+    ('free', 'Sin pago'),
 ]
 
 
@@ -60,8 +68,13 @@ class RifazoRequest(models.Model):
     numbers_count = fields.Integer('Cantidad', readonly=True)
     amount = fields.Monetary('Importe', readonly=True)
 
+    payment_method = fields.Selection(PAYMENT_METHODS, string='Forma de pago', readonly=True,
+                                      tracking=True, copy=False)
     reserved_until = fields.Datetime('Reservado hasta', readonly=True)
-    submitted_date = fields.Datetime('Comprobante subido', readonly=True)
+    submitted_date = fields.Datetime('Enviada el', readonly=True)
+    verify_until = fields.Datetime(
+        'Confirmar pago antes de', readonly=True, copy=False,
+        help='Efectivo: si no se confirma antes de esta fecha, la solicitud vence y los números se liberan.')
     verified_date = fields.Datetime('Verificado el', readonly=True, copy=False)
     verified_by_id = fields.Many2one('res.users', string='Verificado por', readonly=True, copy=False)
     proof_image = fields.Image('Comprobante', max_width=1920, max_height=1920,
@@ -129,8 +142,12 @@ class RifazoRequest(models.Model):
         }
 
     def _reject(self, reason):
-        if self.filtered(lambda r: r.state not in ('reserved', 'submitted')):
-            raise UserError(_('Solo se rechazan solicitudes reservadas o por verificar.'))
+        # Una gratis ya confirmada también se rechaza: es la forma de descalificar.
+        if self.filtered(lambda r: r.state not in ('reserved', 'submitted')
+                         and not (r.state == 'confirmed' and r.payment_method == 'free')):
+            raise UserError(_('Solo se rechazan solicitudes reservadas, por verificar o de rifas sin pago.'))
+        if self.filtered(lambda r: r.raffle_id.state == 'drawn'):
+            raise UserError(_('La rifa ya se sorteó.'))
         self._release('rejected')
         self.write({
             'rejection_reason': reason,
@@ -150,8 +167,12 @@ class RifazoRequest(models.Model):
                 raise UserError(_('Solo se puede volver a verificar una solicitud confirmada.'))
             if rec.raffle_id.state == 'drawn':
                 raise UserError(_('La rifa ya se sorteó.'))
+        if self.filtered(lambda r: r.payment_method == 'free'):
+            raise UserError(_('Las solicitudes de rifas sin pago no se verifican.'))
         self.ticket_ids.write({'state': 'pending'})
-        self.write({'state': 'submitted', 'verified_date': False, 'verified_by_id': False})
+        # Sin plazo: se volvió a verificar a mano, no tiene que vencer sola.
+        self.write({'state': 'submitted', 'verified_date': False, 'verified_by_id': False,
+                    'verify_until': False})
 
     def action_open_whatsapp(self):
         self.ensure_one()
@@ -170,12 +191,23 @@ class RifazoRequest(models.Model):
 
     @api.model
     def _cron_expire_reservations(self):
+        now = fields.Datetime.now()
         expired = self.search([
             ('state', '=', 'reserved'),
-            ('reserved_until', '<', fields.Datetime.now()),
+            ('reserved_until', '<', now),
         ])
         if expired:
             expired._release('expired')
+        overdue_cash = self.search([
+            ('state', '=', 'submitted'),
+            ('payment_method', '=', 'cash'),
+            ('verify_until', '!=', False),
+            ('verify_until', '<', now),
+        ])
+        for rec in overdue_cash:
+            rec._release('expired')
+            rec.message_post(body=_('Vencida: el pago en efectivo no se confirmó a tiempo y '
+                                    'los números volvieron a la venta.'))
 
     # ------------------------------------------------------------------
     # API (siempre llamadas con sudo desde el controlador)
@@ -212,21 +244,60 @@ class RifazoRequest(models.Model):
         normalized = normalize_phone(phone)
         if not normalized:
             raise RifazoApiError('bad_phone', _('El teléfono no es válido.'))
+        raffle = self.raffle_id
+        is_free = raffle.raffle_type == 'free'
+        if is_free:
+            raffle._lock_for_free()
+            raffle._check_free_unique(device_id=self.device_id, phone=normalized, exclude=self)
         vals = {'partner_name': name, 'phone': normalized}
         if fcm_token:
             vals['fcm_token'] = str(fcm_token)[:512]
         self.write(vals)
+        if is_free:
+            self._confirm_free()
 
-    def _api_submit_proof(self, image_b64):
-        self._check_alive_for_api()
-        if not self.partner_name or not self.phone:
-            raise RifazoApiError('missing_contact', _('Faltan tu nombre y teléfono.'))
+    def _confirm_free(self):
+        """Rifa sin pago: con los datos cargados el número ya queda a su nombre."""
+        now = fields.Datetime.now()
+        self.ticket_ids.write({'state': 'sold'})
         self.write({
-            'proof_image': image_b64,
-            'state': 'submitted',
-            'submitted_date': fields.Datetime.now(),
+            'state': 'confirmed',
+            'payment_method': 'free',
+            'submitted_date': now,
+            'verified_date': now,
             'reserved_until': False,
         })
+
+    def _default_payment_method(self):
+        methods = self.raffle_id._payment_methods()
+        return 'transfer' if 'transfer' in methods else (methods[0] if methods else False)
+
+    def _api_submit(self, payment_method=None, image_b64=None):
+        """Cierra la reserva: transferencia con comprobante obligatorio,
+        efectivo con foto opcional y plazo para confirmarlo."""
+        self._check_alive_for_api()
+        raffle = self.raffle_id
+        if raffle.raffle_type == 'free':
+            raise RifazoApiError('free_raffle', _('Esta rifa no lleva pago.'))
+        if not self.partner_name or not self.phone:
+            raise RifazoApiError('missing_contact', _('Faltan tu nombre y teléfono.'))
+        payment_method = payment_method or self._default_payment_method()
+        if payment_method not in raffle._payment_methods():
+            raise RifazoApiError('bad_payment_method', _('Esa forma de pago no está disponible en esta rifa.'))
+        if payment_method == 'transfer' and not image_b64:
+            raise RifazoApiError('missing_image', _('Falta la imagen del comprobante.'))
+        now = fields.Datetime.now()
+        vals = {
+            'payment_method': payment_method,
+            'state': 'submitted',
+            'submitted_date': now,
+            'reserved_until': False,
+            'verify_until': now + timedelta(hours=raffle.cash_verify_hours)
+            if payment_method == 'cash' else False,
+        }
+        if image_b64:
+            vals['proof_image'] = image_b64
+        self.write(vals)
         self.ticket_ids.write({'state': 'pending'})
 
     def _api_cancel(self):

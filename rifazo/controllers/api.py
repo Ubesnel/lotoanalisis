@@ -108,6 +108,8 @@ def _serialize_raffle(raffle, detail=False):
         'short_description': raffle.short_description or '',
         'state': _public_state(raffle),
         'price': raffle.price,
+        'is_free': raffle.raffle_type == 'free',
+        'payment_methods': raffle._payment_methods(),
         'currency': raffle.currency_id.name,
         'currency_symbol': raffle.currency_id.symbol,
         'draw_date': _dt(raffle.draw_date),
@@ -132,7 +134,9 @@ def _serialize_raffle(raffle, detail=False):
             'images': [_raffle_image_url(raffle, 1024)] if raffle.image_128 else [],
             'payment_instructions': raffle.payment_instructions or '',
             'whatsapp_url': raffle.whatsapp_url or '',
-            'max_numbers_per_request': raffle.max_numbers_per_request,
+            'cash_instructions': raffle.cash_instructions or '',
+            'cash_verify_hours': raffle.cash_verify_hours,
+            'max_numbers_per_request': raffle._max_numbers(),
             'reservation_minutes': raffle.reservation_minutes,
         })
         data['images'] += [_gallery_image_url(img) for img in raffle.image_ids if img.image_128]
@@ -141,6 +145,8 @@ def _serialize_raffle(raffle, detail=False):
 
 def _serialize_request(rifazo_request, with_token=True):
     raffle = rifazo_request.raffle_id
+    method = rifazo_request.payment_method
+    waiting_cash = rifazo_request.state == 'submitted' and method == 'cash'
     data = {
         'code': rifazo_request.code,
         'state': rifazo_request.state,
@@ -151,6 +157,10 @@ def _serialize_request(rifazo_request, with_token=True):
         'name': rifazo_request.partner_name or '',
         'phone': rifazo_request.phone or '',
         'has_proof': bool(rifazo_request.submitted_date),
+        'is_free': raffle.raffle_type == 'free',
+        'payment_method': method or '',
+        'payment_method_label': dict(rifazo_request._fields['payment_method'].selection).get(method, ''),
+        'verify_seconds_left': _seconds_left(rifazo_request.verify_until) if waiting_cash else None,
         'created_at': _dt(rifazo_request.create_date),
         'expires_at': _dt(rifazo_request.reserved_until) if rifazo_request.state == 'reserved' else None,
         'seconds_left': _seconds_left(rifazo_request.reserved_until) if rifazo_request.state == 'reserved' else None,
@@ -160,6 +170,8 @@ def _serialize_request(rifazo_request, with_token=True):
             'id': raffle.id,
             'name': raffle.name,
             'state': raffle.state,
+            'is_free': raffle.raffle_type == 'free',
+            'payment_methods': raffle._payment_methods(),
             'draw_date': _dt(raffle.draw_date),
             'image_url': _raffle_image_url(raffle),
             'winning_number': raffle.winning_number if raffle.state == 'drawn' else None,
@@ -318,8 +330,9 @@ class RifazoApi(http.Controller):
     @http.route(PREFIX + '/requests/<string:token>/proof', type='http', auth='public',
                 methods=['POST'], csrf=False, cors='*')
     @_api
-    def proof(self, token, image=None, **kwargs):
-        """multipart/form-data con el archivo en el campo "image"."""
+    def proof(self, token, image=None, payment_method=None, **kwargs):
+        """multipart/form-data con el archivo en "image" y la forma de pago en
+        "payment_method" (transfer/cash; sin él, transferencia)."""
         rifazo_request = _get_request(token)
         if not hasattr(image, 'read'):
             raise RifazoApiError('missing_image', 'Falta la imagen del comprobante.')
@@ -335,7 +348,17 @@ class RifazoApi(http.Controller):
             valid = False
         if not valid:
             raise RifazoApiError('bad_image', 'El archivo no es una imagen JPG, PNG o WEBP.')
-        rifazo_request._api_submit_proof(base64.b64encode(content))
+        rifazo_request._api_submit(payment_method, base64.b64encode(content))
+        return _json(_serialize_request(rifazo_request))
+
+    @http.route(PREFIX + '/requests/<string:token>/submit', type='http', auth='public',
+                methods=['POST'], csrf=False, cors='*')
+    @_api
+    def submit(self, token, **kwargs):
+        """{"payment_method": "cash"}: envía la solicitud sin foto (efectivo)."""
+        data = _body()
+        rifazo_request = _get_request(token)
+        rifazo_request._api_submit(data.get('payment_method'))
         return _json(_serialize_request(rifazo_request))
 
     @http.route(PREFIX + '/requests/<string:token>/cancel', type='http', auth='public',
