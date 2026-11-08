@@ -31,7 +31,7 @@ class RifazoWeb(http.Controller):
             return request.redirect('/rifazo')
         # Contador por SQL: no toca write_date ni compite con otras descargas.
         request.env.cr.execute(
-            'UPDATE rifazo_app_release SET download_count = download_count + 1 WHERE id = %s',
+            'UPDATE rifazo_app_release SET download_count = COALESCE(download_count, 0) + 1 WHERE id = %s',
             (release.id,))
         stream = request.env['ir.binary']._get_stream_from(
             release, 'apk_file', filename=release._download_filename(), mimetype=APK_MIMETYPE)

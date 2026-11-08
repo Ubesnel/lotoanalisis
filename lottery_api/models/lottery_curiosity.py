@@ -7,7 +7,7 @@ from odoo import fields, models
 from odoo.exceptions import UserError
 
 from .fcm_service import lanzar_push
-from .lottery_output import _mensajes, _push_worker
+from .lottery_output import _mensajes, _push_worker, _sorteo_con_pais
 
 
 class LotteryCuriosity(models.Model):
@@ -34,13 +34,22 @@ class LotteryCuriosity(models.Model):
         })
 
     def _build_push_message(self, cur, lang='es'):
-        if lang == 'en':
+        en = lang == 'en'
+        sorteo = _sorteo_con_pais(cur.sorteo_id, lang)
+        premium = self.env['ir.config_parameter'].sudo().get_param(
+            'lottery_api.informa_premium') == '1'
+        if premium:
+            if en:
+                return '⭐ LotoAnálisis Reports · Premium', (
+                    f'Important information for Premium users about {sorteo} has been '
+                    f'posted. Check it in the "LotoAnálisis Reports" section.')
+            return '⭐ LotoAnálisis informa · Premium', (
+                f'Se registró información importante para los usuarios Premium sobre '
+                f'{sorteo}. Consúltala en la sección "LotoAnálisis informa".')
+        if en:
             return '📰 LotoAnálisis Reports', (
-                f'There is a new follow-up report in the app, in the '
-                f'"LotoAnálisis Reports" section, for {cur.sorteo_id.name}.')
-        title = '📰 LotoAnálisis informa'
-        body = (
-            f'Se ha registrado una información de seguimiento en la APK, '
-            f'en la sección "LotoAnálisis informa", para {cur.sorteo_id.name}.'
-        )
-        return title, body
+                f'There is a new follow-up report about {sorteo}. Check it in the '
+                f'"LotoAnálisis Reports" section.')
+        return '📰 LotoAnálisis informa', (
+            f'Se registró una información de seguimiento sobre {sorteo}. '
+            f'Consúltala en la sección "LotoAnálisis informa".')
