@@ -202,28 +202,26 @@ class LotteryOutput(models.Model):
         if out.fireball_id:
             partes.append(f'{"Extra ball" if en else "Bola extra"}: {out.fireball_id.name}')
 
-        # Los aciertos fuertes (Súper Mágico, tabla de 5 y de 10) se
-        # festejan; el 20, el 30 y el total se informan sin celebración.
-        # La rama genérica de abajo ya arma el texto del 20 y del 30.
-        tabla_magicos = self._tabla_numeros_magicos(out)
-        if tabla_magicos == 'super':
+        # El aviso llega a todos: la tabla gratis se informa y solo se festeja la Premium.
+        gratis, premium_magicos = self._tabla_numeros_magicos(out)
+        if gratis == 'general':
             partes.append(
-                '🎉 Congratulations! The 1st prize was the Super Magic' if en else
-                '🎉 ¡Felicitaciones! El Premio 1 fue el Súper Mágico')
-        elif tabla_magicos in ('5', '10'):
+                f'🔮 {numero} was in the general Magic Numbers table' if en else
+                f'🔮 El {numero} estuvo en la tabla general de Números Mágicos')
+        elif gratis:
             partes.append(
-                f'🎉 Congratulations! The 1st prize was in the {tabla_magicos} '
+                f'🔮 {numero} was in the {gratis} Magic Numbers table' if en else
+                f'🔮 El {numero} estuvo en la tabla de {gratis} Números Mágicos')
+        if premium_magicos == 'super':
+            partes.append(
+                '🎉 Congratulations Premium! It was the Super Magic' if en else
+                '🎉 ¡Felicitaciones Premium! Fue el Súper Mágico')
+        elif premium_magicos:
+            partes.append(
+                f'🎉 Congratulations Premium! It was in the {premium_magicos} '
                 f'Magic Numbers table' if en else
-                f'🎉 ¡Felicitaciones! El Premio 1 estuvo en la tabla de '
-                f'{tabla_magicos} Números Mágicos')
-        elif tabla_magicos == 'general':
-            partes.append(
-                '🔮 The 1st prize was in the general Magic Numbers table' if en else
-                '🔮 El Premio 1 estuvo en la tabla general de Números Mágicos')
-        elif tabla_magicos:
-            partes.append(
-                f'🔮 The 1st prize was in the {tabla_magicos} Magic Numbers table' if en else
-                f'🔮 El Premio 1 estuvo en la tabla de {tabla_magicos} Números Mágicos')
+                f'🎉 ¡Felicitaciones Premium! Estuvo en la tabla de '
+                f'{premium_magicos} Números Mágicos')
 
         suerte = self._en_numeros_suerte(out)
         if suerte:
@@ -233,14 +231,14 @@ class LotteryOutput(models.Model):
                 cual = (f'the strongest of the Lucky Numbers of {dia}' if fuerte
                         else f'one of the Lucky Numbers of {dia}')
                 partes.append(
-                    f'🔄 The 1st prize matches {num} reversed, {cual}. Flip it and win!'
-                    if virado else f'🍀 The 1st prize matches {num} straight, {cual}')
+                    f'🔄 {numero} is {num} reversed, {cual}. Flip it and win!'
+                    if virado else f'🍀 {numero} is {cual}')
             else:
                 cual = (f'el más fuerte de los Números de la Suerte del {dia}' if fuerte
                         else f'uno de los Números de la Suerte del {dia}')
                 partes.append(
-                    f'🔄 El Premio 1 coincide con el virado del {num}, {cual}. ¡El que vira gana!'
-                    if virado else f'🍀 El Premio 1 coincide directo con el {num}, {cual}')
+                    f'🔄 El {numero} es el virado del {num}, {cual}. ¡El que vira gana!'
+                    if virado else f'🍀 El {numero} es {cual}')
 
         normal = self._aciertos_normal(out, en)
         if normal:
@@ -375,22 +373,11 @@ class LotteryOutput(models.Model):
         return None
 
     def _tabla_numeros_magicos(self, out):
-        """En qué lista de Números Mágicos estaba el número salido — siempre
-        la más chica (más específica) en la que estaba, ya que
-        Súper Mágico ⊂ 5 ⊂ 10 ⊂ 20 ⊂ 30 ⊂ Total por construcción (ver
-        lottery.prediction.action_completar_numeros y la restricción
-        _check_super_magico_en_5).
+        """(tabla gratis, tabla Premium) más chica en la que estaba el número
+        salido, sabiendo que Súper Mágico ⊂ 5 ⊂ 10 ⊂ 20 ⊂ 30 ⊂ Total.
 
-        Devuelve 'super', '5', '10', '20', '30', 'general' (solo en la lista
-        completa de Números a predecir, sin llegar al 20) o None. El caso
-        'super' va primero justamente porque el Súper Mágico es uno de los
-        5: sin ese chequeo el aviso decía "tabla de 5" y se perdía el
-        acierto más fuerte de la predicción.
-
-        Lee los booleanos `cumplida*` que `_check_predictions()` (lottery_portal)
-        ya dejó marcados en la predicción al registrar esta salida — no
-        recalcula nada. None si no hay predicción publicada para esa fecha/
-        turno/sorteo, o si el número no estaba en ninguna lista."""
+        Gratis: '20', '30', 'general' o None. Premium: 'super', '5', '10' o
+        None. Lee los `cumplida*` que ya dejó `_check_predictions()`."""
         prediction = self.env['lottery.prediction'].sudo().search([
             ('sorteo_id', '=', out.sorteo_id.id),
             ('date', '=', out.date),
@@ -398,20 +385,14 @@ class LotteryOutput(models.Model):
             ('published', '=', True),
         ], limit=1)
         if not prediction:
-            return None
-        if prediction.cumplida_super_magico:
-            return 'super'
-        if prediction.cumplida_5:
-            return '5'
-        if prediction.cumplida_10:
-            return '10'
-        if prediction.cumplida_20:
-            return '20'
-        if prediction.cumplida_30:
-            return '30'
-        if prediction.cumplida:
-            return 'general'
-        return None
+            return None, None
+        premium = ('super' if prediction.cumplida_super_magico else
+                   '5' if prediction.cumplida_5 else
+                   '10' if prediction.cumplida_10 else None)
+        gratis = ('20' if prediction.cumplida_20 else
+                  '30' if prediction.cumplida_30 else
+                  'general' if prediction.cumplida else None)
+        return gratis, premium
 
 
 # Números que saca la Tómbola de Uruguay por turno.
