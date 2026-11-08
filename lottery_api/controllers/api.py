@@ -6,11 +6,14 @@ GET planos que devuelven application/json, con CORS abierto para poder
 consumirlas desde la app (y desde Chrome durante el desarrollo Flutter web).
 """
 
+import base64
+import io
 import json
 import random
 from datetime import datetime
 
 import pytz
+from PIL import Image
 
 from odoo import http
 from odoo.http import request
@@ -145,12 +148,34 @@ def _hora_turno(sorteo, turno, fecha):
     return _hora_slot(slot)
 
 
+_LOGOS = {}
+
+
 def _logo_b64(sorteo):
-    """Logo reducido (128 px) del sorteo en base64, o None si no tiene."""
+    """Logo reducido (128 px) del sorteo en base64, o None si no tiene.
+    Va en WebP: en PNG /sorteos pesaba ~0,5 MB y en conexiones lentas vencía."""
     logo = sorteo.image_128
     if not logo:
         return None
-    return logo.decode() if isinstance(logo, bytes) else logo
+    logo = logo.decode() if isinstance(logo, bytes) else logo
+    clave = (sorteo.id, str(sorteo.write_date))
+    if clave not in _LOGOS:
+        _LOGOS[clave] = _logo_webp(logo)
+    return _LOGOS[clave]
+
+
+def _logo_webp(logo):
+    """El PNG/JPG en WebP si sale más chico; el SVG o lo que no se pueda, tal cual."""
+    try:
+        raw = base64.b64decode(logo)
+        if raw.lstrip()[:1] == b'<':
+            return logo
+        out = io.BytesIO()
+        Image.open(io.BytesIO(raw)).save(out, 'WEBP', quality=85, method=6)
+        webp = base64.b64encode(out.getvalue()).decode()
+        return webp if len(webp) < len(logo) else logo
+    except Exception:  # noqa: BLE001 - mejor el logo original que ninguno
+        return logo
 
 
 def _turno_con_resultado(sorteo, turno, salida, fecha_vacia=None):
