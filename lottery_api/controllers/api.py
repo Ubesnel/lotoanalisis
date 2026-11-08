@@ -250,7 +250,9 @@ class LotteryAppApi(http.Controller):
 
     @http.route('/api/lottery/v1/sorteos', type='http', auth='public',
                 methods=['GET'], csrf=False, cors='*')
-    def sorteos(self, **kwargs):
+    def sorteos(self, logos='1', **kwargs):
+        # logos=0: la APK 51+ los pide aparte en /sorteos/logos.
+        con_logos = logos != '0'
         sorteos = request.env['lottery.sorteo'].sudo().search(
             [('show_in_app', '=', True)], order='sequence, id')
         Param = request.env['ir.config_parameter'].sudo()
@@ -267,7 +269,7 @@ class LotteryAppApi(http.Controller):
                 # app, que ya es bilingüe y arma el emoji desde el código.
                 'country_code': s.country_id.code or None,
                 # Logo de 128 px en base64 (null = la app muestra la bandera).
-                'logo': _logo_b64(s),
+                'logo': _logo_b64(s) if con_logos else None,
                 # Turnos del sorteo en orden del día: la app arma una
                 # pestaña por turno a partir de esta lista.
                 'turnos': [_turno_dict(t) for t in s._ordered_turnos()],
@@ -291,6 +293,14 @@ class LotteryAppApi(http.Controller):
                 'days': int(Param.get_param('lottery_api.premium_promo_days') or 7),
             },
         })
+
+    @http.route('/api/lottery/v1/sorteos/logos', type='http', auth='public',
+                methods=['GET'], csrf=False, cors='*')
+    def sorteos_logos(self, **kwargs):
+        sorteos = request.env['lottery.sorteo'].sudo().search(
+            [('show_in_app', '=', True)], order='sequence, id')
+        logos = {str(s.id): _logo_b64(s) for s in sorteos}
+        return _json_response({'logos': {k: v for k, v in logos.items() if v}})
 
     @http.route('/api/lottery/v1/results/latest', type='http', auth='public',
                 methods=['GET'], csrf=False, cors='*')
