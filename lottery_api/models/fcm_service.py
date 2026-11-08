@@ -7,8 +7,10 @@ ir.config_parameter para no pedir uno nuevo en cada salida.
 """
 
 import base64
+import hashlib
 import json
 import logging
+import re
 import threading
 import time
 
@@ -43,6 +45,13 @@ def lanzar_push(cr, target, args):
         else:
             target(*args)
     cr.postcommit.add(run)
+
+
+def _collapse_key(destino):
+    """El topic tal cual; una condición, abreviada con un hash."""
+    if re.fullmatch(r'[\w\-.~%]+', destino):
+        return destino
+    return 'c_' + hashlib.md5(destino.encode()).hexdigest()[:12]
 
 
 def lang_topic(topic, lang):
@@ -176,6 +185,8 @@ class LotteryFcmService(models.AbstractModel):
                     'body': body,
                 },
                 'android': {
+                    # Clave propia por lotería: sin ella FCM deja solo el último aviso en cola.
+                    'collapse_key': _collapse_key(topic),
                     # Alta prioridad: despierta el dispositivo aunque esté en
                     # Doze/segundo plano, clave para que el aviso llegue a
                     # tiempo (los mensajes 'notification' no siempre van high
