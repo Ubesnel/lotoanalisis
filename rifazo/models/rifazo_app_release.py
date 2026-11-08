@@ -22,7 +22,7 @@ class RifazoAppRelease(models.Model):
         'Publicada', default=True,
         help='Solo las versiones publicadas se ofrecen para descargar.')
     release_date = fields.Datetime('Fecha', default=fields.Datetime.now, required=True)
-    download_count = fields.Integer('Descargas', readonly=True, copy=False)
+    download_count = fields.Integer('Descargas', default=0, readonly=True, copy=False)
     file_size = fields.Integer('Tamaño (bytes)', compute='_compute_file_size')
     file_size_label = fields.Char('Tamaño', compute='_compute_file_size')
 
