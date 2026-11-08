@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Rifazo",
-    "version": "1.1",
+    "version": "1.2",
     "author": "SeuS IT",
     "category": "Sales",
     "summary": "Gestión de rifas y solicitudes de participación para la app Rifazo",

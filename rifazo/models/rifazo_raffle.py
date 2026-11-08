@@ -9,7 +9,8 @@ from .exceptions import RifazoApiError
 # Tope de números por rifa: con un registro por número, 100.000 sigue siendo
 # liviano para PostgreSQL y para /numbers (que solo manda los no disponibles).
 MAX_NUMBERS_PER_RAFFLE = 100000
-RANGE_FIELDS = ('number_from', 'number_to', 'number_digits')
+# Con la rifa abierta no se cambian: dejarían números o solicitudes inconsistentes.
+RANGE_FIELDS = ('number_from', 'number_to', 'number_digits', 'raffle_type')
 
 
 class RifazoRaffle(models.Model):
@@ -32,9 +33,25 @@ class RifazoRaffle(models.Model):
     description = fields.Html('Descripción', sanitize=True)
     image_ids = fields.One2many('rifazo.raffle.image', 'raffle_id', string='Galería', copy=True)
 
+    raffle_type = fields.Selection([
+        ('paid', 'Paga'),
+        ('free', 'Sin pago'),
+    ], string='Tipo', default='paid', required=True, tracking=True,
+        help='Sin pago: un solo número por teléfono y por dispositivo, y queda confirmado al reservarlo.')
     currency_id = fields.Many2one('res.currency', string='Moneda', required=True,
                                   default=lambda self: self.env.company.currency_id)
     price = fields.Monetary('Precio por número', required=True, tracking=True)
+    accept_transfer = fields.Boolean('Acepta transferencia', default=True, tracking=True)
+    accept_cash = fields.Boolean('Acepta efectivo', tracking=True)
+    cash_verify_hours = fields.Integer(
+        'Horas para confirmar el efectivo', default=24, required=True,
+        help='Si el pago en efectivo no se confirma en este plazo, la solicitud vence '
+             'y los números se liberan.')
+    cash_instructions = fields.Text(
+        'Indicaciones para efectivo',
+        default=lambda self: _('Coordiná el pago con nuestro cobrador en el grupo de WhatsApp. '
+                               'Si te da un recibo, podés subir la foto.'),
+        help='Texto que ve el participante cuando elige pagar en efectivo.')
     draw_date = fields.Datetime('Fecha del sorteo', tracking=True)
     sale_end_date = fields.Datetime(
         'Cierre de venta', tracking=True,
@@ -163,15 +180,69 @@ class RifazoRaffle(models.Model):
             if rec.sale_end_date and rec.draw_date and rec.sale_end_date > rec.draw_date:
                 raise ValidationError(_('El cierre de venta tiene que ser antes del sorteo.'))
 
-    @api.constrains('price', 'reservation_minutes', 'max_numbers_per_request')
+    @api.constrains('price', 'reservation_minutes', 'max_numbers_per_request', 'raffle_type',
+                    'accept_transfer', 'accept_cash', 'cash_verify_hours')
     def _check_positive_values(self):
         for rec in self:
-            if rec.price <= 0:
-                raise ValidationError(_('El precio por número tiene que ser mayor que cero.'))
+            if rec.raffle_type == 'paid':
+                if rec.price <= 0:
+                    raise ValidationError(_('El precio por número tiene que ser mayor que cero.'))
+                if not rec.accept_transfer and not rec.accept_cash:
+                    raise ValidationError(_('Marcá al menos una forma de pago (transferencia o efectivo).'))
+                if rec.accept_cash and rec.cash_verify_hours <= 0:
+                    raise ValidationError(_('Las horas para confirmar el efectivo tienen que ser mayores que cero.'))
+            elif rec.price:
+                raise ValidationError(_('Una rifa sin pago no lleva precio.'))
             if rec.reservation_minutes <= 0:
                 raise ValidationError(_('Los minutos de reserva tienen que ser mayores que cero.'))
             if rec.max_numbers_per_request <= 0:
                 raise ValidationError(_('El máximo de números por solicitud tiene que ser mayor que cero.'))
+
+    @api.onchange('raffle_type')
+    def _onchange_raffle_type(self):
+        if self.raffle_type == 'free':
+            self.price = 0
+            self.max_numbers_per_request = 1
+
+    def _payment_methods(self):
+        """Formas de pago que puede elegir el participante."""
+        self.ensure_one()
+        if self.raffle_type == 'free':
+            return []
+        return [m for m, ok in (('transfer', self.accept_transfer), ('cash', self.accept_cash)) if ok]
+
+    def _max_numbers(self):
+        self.ensure_one()
+        return 1 if self.raffle_type == 'free' else self.max_numbers_per_request
+
+    def _lock_for_free(self):
+        """Serializa las altas de una rifa sin pago: con dos pedidos a la vez del
+        mismo teléfono o dispositivo, el segundo choca acá y Odoo lo reintenta."""
+        self.ensure_one()
+        self.env.cr.execute('UPDATE rifazo_raffle SET write_date = write_date WHERE id = %s', (self.id,))
+
+    def _check_free_unique(self, device_id=None, phone=None, exclude=None):
+        """Rifa sin pago: un número por dispositivo y por teléfono."""
+        self.ensure_one()
+        now = fields.Datetime.now()
+        domain = [
+            ('raffle_id', '=', self.id),
+            '|', ('state', 'in', ('submitted', 'confirmed', 'rejected')),
+            '&', ('state', '=', 'reserved'), ('reserved_until', '>', now),
+        ]
+        if exclude:
+            domain.append(('id', 'not in', exclude.ids))
+        Request = self.env['rifazo.request']
+        if device_id and Request.search_count(domain + [('device_id', '=', device_id)]):
+            raise RifazoApiError('already_participating',
+                                 _('Desde este celular ya participás en esta rifa: es un número por persona.'),
+                                 status=409)
+        if phone:
+            digits = phone.lstrip('+')
+            if Request.search_count(domain + [('phone', 'in', (digits, '+' + digits))]):
+                raise RifazoApiError('phone_already_participating',
+                                     _('Ese teléfono ya participa en esta rifa: es un número por persona.'),
+                                     status=409)
 
     def write(self, vals):
         # Con los números ya generados, cambiar el rango o el relleno dejaría
@@ -180,7 +251,8 @@ class RifazoRaffle(models.Model):
             locked = self.filtered(lambda r: r.state != 'draft')
             for rec in locked:
                 if any(vals[f] != rec[f] for f in RANGE_FIELDS if f in vals):
-                    raise UserError(_('El rango de números solo se puede cambiar con la rifa en borrador.'))
+                    raise UserError(_('El tipo de rifa y el rango de números solo se pueden '
+                                      'cambiar con la rifa en borrador.'))
         return super().write(vals)
 
     @api.ondelete(at_uninstall=False)
@@ -396,10 +468,16 @@ class RifazoRaffle(models.Model):
                 normalized.append(number)
         if invalid:
             raise RifazoApiError('invalid_numbers', _('Hay números fuera de la rifa.'), numbers=invalid)
-        if len(normalized) > self.max_numbers_per_request:
+        max_numbers = self._max_numbers()
+        if len(normalized) > max_numbers:
             raise RifazoApiError('too_many_numbers',
-                                 _('Podés reservar hasta %s números por vez.', self.max_numbers_per_request),
-                                 max=self.max_numbers_per_request)
+                                 _('Podés reservar hasta %s números por vez.', max_numbers),
+                                 max=max_numbers)
+
+        is_free = self.raffle_type == 'free'
+        if is_free:
+            self._lock_for_free()
+            self._check_free_unique(device_id=device_id)
 
         Request = self.env['rifazo.request']
         params = self.env['ir.config_parameter'].sudo()
@@ -438,7 +516,8 @@ class RifazoRaffle(models.Model):
             'ip_address': ip_address,
             'number_list': ', '.join(ordered),
             'numbers_count': len(ordered),
-            'amount': self.price * len(ordered),
+            'amount': 0 if is_free else self.price * len(ordered),
+            'payment_method': 'free' if is_free else False,
             'reserved_until': now + timedelta(minutes=self.reservation_minutes),
         })
         self.env['rifazo.ticket'].browse([ticket_id for ticket_id, _n in rows]).write(
