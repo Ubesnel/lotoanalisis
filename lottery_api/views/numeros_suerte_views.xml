@@ -19,7 +19,15 @@
             <field name="super_magico_id" position="after">
                 <field name="published"/>
                 <field name="published_date"/>
+                <field name="push_sent"/>
+                <field name="push_sent_date" invisible="not push_sent"/>
             </field>
+            <xpath expr="//header" position="inside">
+                <button name="action_send_push_notification" type="object"
+                        string="Enviar notificación"
+                        invisible="not published or push_sent"
+                        help="Avisa a todos que ya están los Números de la Suerte del día."/>
+            </xpath>
         </field>
     </record>
 
