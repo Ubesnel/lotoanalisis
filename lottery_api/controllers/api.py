@@ -292,6 +292,11 @@ class LotteryAppApi(http.Controller):
                 'enabled': Param.get_param('lottery_api.premium_promo') == '1',
                 'days': int(Param.get_param('lottery_api.premium_promo_days') or 7),
             },
+            # Botón de prueba gratis en la pantalla Premium.
+            'premium_trial': {
+                'enabled': Param.get_param('lottery_api.premium_trial') in ('True', '1'),
+                'days': int(Param.get_param('lottery_api.premium_trial_days') or 7),
+            },
         })
 
     @http.route('/api/lottery/v1/sorteos/logos', type='http', auth='public',
@@ -1060,6 +1065,20 @@ class LotteryAppApi(http.Controller):
         except PremiumError as e:
             return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
         return _json_response(rec._api_payload(), headers=NO_STORE)
+
+    @http.route('/api/lottery/v1/premium/trial', type='http',
+                auth='public', methods=['POST'], csrf=False, cors='*')
+    def premium_trial(self, **kwargs):
+        """Prueba gratis: devuelve el pase y el código que se le armó."""
+        body = _json_body()
+        try:
+            gift = request.env['lottery.premium.gift'].sudo().request_trial(
+                body.get('device_id'), body.get('hardware_id'))
+        except PremiumError as e:
+            return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
+        payload = gift.pass_id._api_payload()
+        payload.update(code=gift.name, days=gift.days)
+        return _json_response(payload, headers=NO_STORE)
 
     @http.route('/api/lottery/v1/stats/numeros-mes-atrasados', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')

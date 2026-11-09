@@ -43,6 +43,13 @@
                             Cada <field name="lottery_premium_promo_days" class="oe_inline"/> días
                         </div>
                     </setting>
+                    <setting string="Prueba gratis de Premium"
+                             help="Botón en la pantalla Premium. Odoo arma un código de prueba y lo canjea solo; va una por teléfono.">
+                        <field name="lottery_premium_trial"/>
+                        <div class="mt8" invisible="not lottery_premium_trial">
+                            Dura <field name="lottery_premium_trial_days" class="oe_inline"/> días
+                        </div>
+                    </setting>
                     <setting string="Números de la Suerte"
                              help="Se generan solos a esta hora de Uruguay, y desde esa hora la app muestra los del día nuevo. Antes sigue con los del día anterior.">
                         <div>Hora <field name="lottery_suerte_hora" widget="float_time" class="oe_inline"/></div>

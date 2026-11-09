@@ -7,6 +7,10 @@ vence; los de cortesía, sí.
 El pase que emite queda atado al ID de instalación del teléfono que lo
 canjeó; cargarlo en otro teléfono lo muda (con tope por mes), así que
 repartir el código no le sirve a nadie.
+
+La prueba gratis la pide la app con un botón: Odoo arma un código de días y
+lo canjea en el acto. Va una por teléfono, por el ANDROID_ID, que no cambia al
+reinstalar.
 """
 
 import json
@@ -33,6 +37,9 @@ MAX_MOVES = 2
 MOVES_WINDOW = timedelta(days=30)
 DEVICE_RE = re.compile(r'^[A-Za-z0-9-]{16,64}$')
 RETENTION_DAYS = 730
+HARDWARE_RE = re.compile(r'^[A-Za-z0-9-]{8,64}$')
+TRIAL_PARAM = 'lottery_api.premium_trial'
+TRIAL_DAYS_PARAM = 'lottery_api.premium_trial_days'
 
 
 def normalize_code(text):
@@ -55,8 +62,12 @@ class LotteryPremiumGift(models.Model):
     origin = fields.Selection([
         ('purchase', 'Comprado en Google Play'),
         ('courtesy', 'Cortesía'),
+        ('trial', 'Prueba gratis'),
     ], string='Origen', required=True, default='courtesy', readonly=True)
     months = fields.Integer(string='Meses', required=True, default=1)
+    days = fields.Integer(string='Días', help='Si tiene días, valen los días y no los meses.')
+    hardware_id = fields.Char(string='ID del teléfono', readonly=True, index=True, copy=False,
+                              help='ANDROID_ID del teléfono que pidió la prueba gratis.')
     state = fields.Selection([
         ('available', 'Sin canjear'),
         ('redeemed', 'Canjeado'),
@@ -87,7 +98,8 @@ class LotteryPremiumGift(models.Model):
     _sql_constraints = [
         ('name_uniq', 'unique(name)', 'Ya existe ese código.'),
         ('purchase_token_uniq', 'unique(purchase_token)', 'Ya existe un código para esa compra.'),
-        ('months_positive', 'CHECK(months > 0)', 'Los meses tienen que ser más de cero.'),
+        ('months_positive', 'CHECK(months > 0 OR days > 0)',
+         'Los meses o los días tienen que ser más de cero.'),
     ]
 
     @api.model
@@ -103,9 +115,14 @@ class LotteryPremiumGift(models.Model):
         return {
             'code': self.name,
             'months': self.months,
+            'days': self.days or 0,
             'product_id': self.product_id,
             'valid_until': self.valid_until.isoformat() + 'Z' if self.valid_until else None,
         }
+
+    def _delta(self):
+        self.ensure_one()
+        return relativedelta(days=self.days) if self.days else relativedelta(months=self.months)
 
     def action_revoke(self):
         """Anula el código y corta el Premium que dio (reembolsos, abusos)."""
@@ -216,7 +233,7 @@ class LotteryPremiumGift(models.Model):
             ], order='expiry_date desc', limit=1)
             if premium_pass:
                 premium_pass.write({
-                    'expiry_date': premium_pass.expiry_date + relativedelta(months=rec.months),
+                    'expiry_date': premium_pass.expiry_date + rec._delta(),
                     'gift_code': '%s, %s' % (premium_pass.gift_code, rec.name),
                 })
                 rec.write({'state': 'redeemed', 'pass_id': premium_pass.id, 'redeemed_date': now})
@@ -226,8 +243,9 @@ class LotteryPremiumGift(models.Model):
             premium_pass = Pass.create({
                 'origin': 'gift',
                 'state': 'active',
-                'expiry_date': now + relativedelta(months=rec.months),
-                'product_id': rec.product_id or 'cortesia',
+                'expiry_date': now + rec._delta(),
+                'base_plan_id': 'trial' if rec.origin == 'trial' else False,
+                'product_id': rec.product_id or ('prueba' if rec.origin == 'trial' else 'cortesia'),
                 'order_id': rec.order_id,
                 'gift_code': rec.name,
                 'device_id': device_id,
@@ -243,6 +261,9 @@ class LotteryPremiumGift(models.Model):
             raise PremiumError('code_used')
         if premium_pass.device_id == device_id:
             return premium_pass
+        # La prueba no se pasa a otro teléfono.
+        if rec.origin == 'trial':
+            raise PremiumError('code_used')
         # El tope es del pase: con códigos sumados no se multiplica.
         moves = self.env['lottery.premium.gift.activation'].sudo().search_count([
             ('gift_id.pass_id', '=', premium_pass.id),
@@ -254,6 +275,45 @@ class LotteryPremiumGift(models.Model):
         premium_pass.device_id = device_id
         rec._log_activation(device_id, move=True)
         return premium_pass
+
+    # ── Prueba gratis ─────────────────────────────────────────────────
+
+    @api.model
+    def request_trial(self, device_id, hardware_id):
+        """Arma y canjea la prueba gratis de este teléfono. Si ya la pidió y
+        sigue vigente (reinstaló), la devuelve en esta instalación."""
+        Param = self.env['ir.config_parameter'].sudo()
+        if Param.get_param(TRIAL_PARAM) not in ('True', '1'):
+            raise PremiumError('trial_disabled', 403)
+        if not device_id or not DEVICE_RE.match(device_id):
+            raise PremiumError('invalid_device')
+        if not hardware_id or not HARDWARE_RE.match(hardware_id):
+            raise PremiumError('invalid_hardware')
+        self.env.cr.execute('SELECT pg_advisory_xact_lock(hashtext(%s))',
+                            ('lottery_trial:' + hardware_id,))
+
+        rec = self.sudo().search([('origin', '=', 'trial'), ('hardware_id', '=', hardware_id)],
+                                 order='id desc', limit=1)
+        if rec:
+            premium_pass = rec.pass_id
+            if rec.state != 'redeemed' or not premium_pass or not premium_pass.is_premium:
+                raise PremiumError('trial_used', 409)
+            if premium_pass.device_id != device_id:
+                premium_pass.device_id = device_id
+                rec._log_activation(device_id, move=True)
+            return rec
+
+        days = max(int(Param.get_param(TRIAL_DAYS_PARAM) or 7), 1)
+        rec = self.sudo().create({
+            'origin': 'trial',
+            'months': 0,
+            'days': days,
+            'valid_until': fields.Datetime.now() + timedelta(days=1),
+            'hardware_id': hardware_id,
+            'note': 'Prueba gratis pedida desde la app',
+        })
+        self.redeem(rec.name, device_id)
+        return rec
 
     def _log_activation(self, device_id, move):
         self.env['lottery.premium.gift.activation'].sudo().create({
