@@ -10,7 +10,10 @@ from datetime import datetime, timedelta
 import pytz
 
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
+
+from .fcm_service import lang_topic, lanzar_push, PUSH_LANGS
+from .push_announcement import ANNOUNCEMENTS_TOPIC, _push_announcement_worker
 
 _logger = logging.getLogger(__name__)
 
@@ -23,6 +26,8 @@ class LotteryNumerosSuerte(models.Model):
         help='La app muestra los 5 Números del publicado de hoy. Solo puede '
              'haber uno publicado por fecha.')
     published_date = fields.Datetime(string='Publicada el', readonly=True, copy=False)
+    push_sent = fields.Boolean(string='Notificación enviada', readonly=True, copy=False)
+    push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
 
     @api.constrains('published', 'date')
     def _check_un_publicado_por_fecha(self):
@@ -41,6 +46,28 @@ class LotteryNumerosSuerte(models.Model):
         if recien_publicadas:
             recien_publicadas.write({'published_date': fields.Datetime.now()})
         return res
+
+    def action_send_push_notification(self):
+        self.ensure_one()
+        if self.push_sent:
+            raise UserError('Ya se envió la notificación de estos Números de la Suerte.')
+        if not self.published:
+            raise UserError('Estos Números de la Suerte todavía no están publicados.')
+        # Aviso a todos (topic de anuncios): son iguales para todas las loterías.
+        dia = self.date.strftime('%d/%m/%Y')
+        envios = []
+        for lang in PUSH_LANGS:
+            if lang == 'en':
+                title = f'🍀 Lucky Numbers for {dia}'
+                body = ("Today's Premium Lucky Numbers are now in the App, "
+                        'for every lottery of the day.')
+            else:
+                title = f'🍀 Números de la Suerte del {dia}'
+                body = ('Ya están en la App los Números de la Suerte Premium de hoy, '
+                        'para todas las loterías del día.')
+            envios.append(('topic', lang_topic(ANNOUNCEMENTS_TOPIC, lang), title, body))
+        lanzar_push(self.env.cr, _push_announcement_worker, (self.env.cr.dbname, envios))
+        self.write({'push_sent': True, 'push_sent_date': fields.Datetime.now()})
 
     @api.model
     def _fecha_vigente(self):
