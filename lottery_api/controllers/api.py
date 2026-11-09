@@ -1061,7 +1061,7 @@ class LotteryAppApi(http.Controller):
         body = _json_body()
         try:
             rec = request.env['lottery.premium.gift'].sudo().redeem(
-                body.get('code'), body.get('device_id'))
+                body.get('code'), body.get('device_id'), body.get('hardware_id'))
         except PremiumError as e:
             return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
         return _json_response(rec._api_payload(), headers=NO_STORE)

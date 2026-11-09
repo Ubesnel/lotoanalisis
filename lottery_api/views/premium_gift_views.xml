@@ -61,6 +61,7 @@
                                 <tree>
                                     <field name="date"/>
                                     <field name="device_id"/>
+                                    <field name="hardware_id"/>
                                     <field name="is_move"/>
                                 </tree>
                             </field>
