@@ -19,10 +19,8 @@ DIGITOS = [(str(d), str(d)) for d in range(10)]
 NUMEROS_POR_LADO = 3
 # Ternas top: centenas por puesto (Súper Mágico, 2º, 3º). 2+2+1 = 5.
 TERNAS_TOP_POR_PUESTO = (2, 2, 1)
-# Parlés top: los 5 Números con los 5 de la Suerte, primero los cruzados.
+# Parlés top: los 10 que se arman entre los 5 Números, primero los cruzados.
 PARLES_TOP = 10
-# De esos 10, los que van primero y resaltados en la app.
-PARLES_DESTACADOS = 5
 # Tómbola: cuántos números de la línea tienen que salir para contar como acierto.
 MINIMO_TOMBOLA = {3: 3, 4: 3, 5: 3, 6: 3, 7: 3}
 # Si cambian, la evaluación se rehace.
@@ -362,6 +360,13 @@ class LotteryPredictionPremium(models.Model):
             if aviso:
                 avisos.append(aviso)
             rec._completar_tombolas()
+        return self._aviso_parles(avisos)
+
+    def action_completar_parles(self):
+        """Rehace solo los parlés top; el resto queda como está."""
+        return self._aviso_parles([a for a in (rec._completar_parles() for rec in self) if a])
+
+    def _aviso_parles(self, avisos):
         if avisos:
             return {
                 'type': 'ir.actions.client',
@@ -446,34 +451,27 @@ class LotteryPredictionPremium(models.Model):
         })
 
     def _completar_parles(self):
-        """Parlés top: los 5 Números de la predicción del día con los 5 de
-        la Suerte, primero los cruzados. Van primero y destacados los del
-        Súper Mágico, después los del 2º número, y así hasta juntar 5.
-        Devuelve el motivo si quedaron vacíos en un sorteo con parlés."""
+        """Parlés top: los 10 que se arman entre los 5 Números de la
+        predicción del día, primero los cruzados. Destacados: los 4 del
+        Súper Mágico y el del 2º con el 3º. Devuelve el motivo si quedaron
+        vacíos en un sorteo con parlés."""
         self.ensure_one()
         pred = self.prediction_id
-        suerte = self._numeros_suerte()
         if not self.sorteo_generates_parles:
             self.write({'parle_ids': [(5, 0, 0)]})
             return None
-        if not (pred and suerte):
+        if not pred:
             self.write({'parle_ids': [(5, 0, 0)]})
-            return ('No hay predicción del día.' if not pred else
-                    'No hay Números de la Suerte publicados con fecha hasta el %s.'
-                    % self.date.strftime('%d/%m/%Y'))
+            return 'No hay predicción del día.'
         try:
-            parles = pred._parles_premium(suerte, PARLES_TOP)
+            parles = pred._parles_premium(pred.number_ids_5, PARLES_TOP)
         except UserError as exc:
             _logger.info('lottery_api: sin parlés top para %s: %s', self.display_name, exc)
             self.write({'parle_ids': [(5, 0, 0)]})
             return str(exc)
-        destacados = []
-        for numero in pred._orden_de_los_cinco() if parles else []:
-            destacados += [p for p in parles if p not in destacados and numero in (
-                p[0].name, p[1].name)]
-            if len(destacados) >= PARLES_DESTACADOS:
-                break
-        destacados = destacados[:PARLES_DESTACADOS]
+        cinco = pred._orden_de_los_cinco() if parles else []
+        destacados = [p for p in parles if cinco[0] in (p[0].name, p[1].name)]
+        destacados += [p for p in parles if {p[0].name, p[1].name} == set(cinco[1:3])]
         orden = destacados + [p for p in parles if p not in destacados]
         self.write({'parle_ids': [(5, 0, 0)] + [
             (0, 0, {'sequence': i, 'numero_1': a.id, 'numero_2': b.id,
@@ -493,14 +491,6 @@ class LotteryPredictionPremium(models.Model):
                 lineas.append(numeros)
         self.write({'tombola_linea_ids': [(5, 0, 0)] + [
             (0, 0, Linea.vals_numeros(n)) for n in sorted(lineas, key=len)]})
-
-    def _numeros_suerte(self):
-        """Los 5 Números de la Suerte publicados más recientes a la fecha."""
-        self.ensure_one()
-        return self.env['lottery.numeros.suerte'].sudo().search([
-            ('published', '=', True),
-            ('date', '<=', self.date),
-        ], order='date desc', limit=1).number_ids_5
 
     def _prediccion_ternas(self):
         self.ensure_one()
