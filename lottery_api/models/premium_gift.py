@@ -202,12 +202,14 @@ class LotteryPremiumGift(models.Model):
     # ── Canje ─────────────────────────────────────────────────────────
 
     @api.model
-    def redeem(self, code, device_id):
+    def redeem(self, code, device_id, hardware_id=None):
         """Canjea el código en este teléfono y devuelve el pase. Si el teléfono
         ya tiene Premium de regalo, suma los meses; si el código estaba en otro
         teléfono, Premium se muda acá."""
         if not device_id or not DEVICE_RE.match(device_id):
             raise PremiumError('invalid_device')
+        if not hardware_id or not HARDWARE_RE.match(hardware_id):
+            hardware_id = None
         name = normalize_code(code)
         rec = name and self.sudo().search([('name', '=', name)], limit=1)
         if not rec:
@@ -237,7 +239,7 @@ class LotteryPremiumGift(models.Model):
                     'gift_code': '%s, %s' % (premium_pass.gift_code, rec.name),
                 })
                 rec.write({'state': 'redeemed', 'pass_id': premium_pass.id, 'redeemed_date': now})
-                rec._log_activation(device_id, move=False)
+                rec._log_activation(device_id, move=False, hardware_id=hardware_id)
                 return premium_pass
 
             premium_pass = Pass.create({
@@ -253,7 +255,7 @@ class LotteryPremiumGift(models.Model):
                 'acknowledged': True,
             })
             rec.write({'state': 'redeemed', 'pass_id': premium_pass.id, 'redeemed_date': now})
-            rec._log_activation(device_id, move=False)
+            rec._log_activation(device_id, move=False, hardware_id=hardware_id)
             return premium_pass
 
         premium_pass = rec.pass_id
@@ -261,11 +263,20 @@ class LotteryPremiumGift(models.Model):
             raise PremiumError('code_used')
         if premium_pass.device_id == device_id:
             return premium_pass
+        Activation = self.env['lottery.premium.gift.activation'].sudo()
+        # Reinstalar o borrar datos en el mismo teléfono no es mudanza.
+        last = Activation.search([('gift_id.pass_id', '=', premium_pass.id)],
+                                 order='date desc, id desc', limit=1)
+        last_hw = last.hardware_id or (rec.origin == 'trial' and rec.hardware_id)
+        if hardware_id and last_hw == hardware_id:
+            premium_pass.device_id = device_id
+            rec._log_activation(device_id, move=False, hardware_id=hardware_id)
+            return premium_pass
         # La prueba no se pasa a otro teléfono.
         if rec.origin == 'trial':
-            raise PremiumError('code_used')
+            raise PremiumError('trial_code')
         # El tope es del pase: con códigos sumados no se multiplica.
-        moves = self.env['lottery.premium.gift.activation'].sudo().search_count([
+        moves = Activation.search_count([
             ('gift_id.pass_id', '=', premium_pass.id),
             ('is_move', '=', True),
             ('date', '>=', now - MOVES_WINDOW),
@@ -273,7 +284,7 @@ class LotteryPremiumGift(models.Model):
         if moves >= MAX_MOVES:
             raise PremiumError('too_many_moves', 429)
         premium_pass.device_id = device_id
-        rec._log_activation(device_id, move=True)
+        rec._log_activation(device_id, move=True, hardware_id=hardware_id)
         return premium_pass
 
     # ── Prueba gratis ─────────────────────────────────────────────────
@@ -300,7 +311,7 @@ class LotteryPremiumGift(models.Model):
                 raise PremiumError('trial_used', 409)
             if premium_pass.device_id != device_id:
                 premium_pass.device_id = device_id
-                rec._log_activation(device_id, move=True)
+                rec._log_activation(device_id, move=False, hardware_id=hardware_id)
             return rec
 
         days = max(int(Param.get_param(TRIAL_DAYS_PARAM) or 7), 1)
@@ -312,12 +323,13 @@ class LotteryPremiumGift(models.Model):
             'hardware_id': hardware_id,
             'note': 'Prueba gratis pedida desde la app',
         })
-        self.redeem(rec.name, device_id)
+        self.redeem(rec.name, device_id, hardware_id)
         return rec
 
-    def _log_activation(self, device_id, move):
+    def _log_activation(self, device_id, move, hardware_id=None):
         self.env['lottery.premium.gift.activation'].sudo().create({
             'gift_id': self.id, 'device_id': device_id, 'is_move': move,
+            'hardware_id': hardware_id,
         })
 
     @api.model
@@ -347,5 +359,6 @@ class LotteryPremiumGiftActivation(models.Model):
 
     gift_id = fields.Many2one('lottery.premium.gift', required=True, ondelete='cascade', index=True)
     device_id = fields.Char(string='ID de instalación', required=True)
+    hardware_id = fields.Char(string='ID del teléfono')
     date = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
     is_move = fields.Boolean(string='Mudanza')
