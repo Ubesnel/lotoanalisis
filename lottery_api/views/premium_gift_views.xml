@@ -15,6 +15,7 @@
                 <field name="months"/>
                 <field name="days" optional="show"/>
                 <field name="state"/>
+                <field name="google_robot" optional="show"/>
                 <field name="redeemed_date" optional="show"/>
                 <field name="pass_expiry" optional="show"/>
                 <field name="order_id" optional="show"/>
@@ -46,6 +47,8 @@
                             <field name="months" readonly="id"/>
                             <field name="days" readonly="id"/>
                             <field name="hardware_id" invisible="origin != 'trial'"/>
+                            <field name="request_ip" invisible="origin != 'trial'"/>
+                            <field name="google_robot" invisible="origin != 'trial'"/>
                             <field name="valid_until" readonly="state != 'available'"/>
                             <field name="note"/>
                         </group>
@@ -95,6 +98,8 @@
                 <separator/>
                 <filter name="pruebas" string="Pruebas gratis" domain="[('origin', '=', 'trial')]"/>
                 <filter name="sin_pruebas" string="Sin pruebas gratis" domain="[('origin', '!=', 'trial')]"/>
+                <filter name="robots" string="Robots de Google" domain="[('google_robot', '=', True)]"/>
+                <filter name="sin_robots" string="Sin robots de Google" domain="[('google_robot', '=', False)]"/>
                 <separator/>
                 <filter name="sin_canjear" string="Sin canjear" domain="[('state', '=', 'available')]"/>
                 <filter name="canjeados" string="Canjeados" domain="[('state', '=', 'redeemed')]"/>

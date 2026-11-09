@@ -1073,7 +1073,8 @@ class LotteryAppApi(http.Controller):
         body = _json_body()
         try:
             gift = request.env['lottery.premium.gift'].sudo().request_trial(
-                body.get('device_id'), body.get('hardware_id'))
+                body.get('device_id'), body.get('hardware_id'),
+                ip=request.httprequest.remote_addr, test_lab=body.get('test_lab') is True)
         except PremiumError as e:
             return _json_response({'error': e.code}, status=e.status, headers=NO_STORE)
         payload = gift.pass_id._api_payload()

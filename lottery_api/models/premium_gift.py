@@ -13,6 +13,7 @@ lo canjea en el acto. Va una por teléfono, por el ANDROID_ID, que no cambia al
 reinstalar.
 """
 
+import ipaddress
 import json
 import logging
 import re
@@ -40,6 +41,20 @@ RETENTION_DAYS = 730
 HARDWARE_RE = re.compile(r'^[A-Za-z0-9-]{8,64}$')
 TRIAL_PARAM = 'lottery_api.premium_trial'
 TRIAL_DAYS_PARAM = 'lottery_api.premium_trial_days'
+# Rangos propios de Google (no Google Cloud): de ahí llegan los robots de Play.
+GOOGLE_NETS = [ipaddress.ip_network(n) for n in (
+    '66.249.64.0/19', '66.102.0.0/20', '64.233.160.0/19', '72.14.192.0/18',
+    '74.125.0.0/16', '108.177.0.0/17', '173.194.0.0/16', '209.85.128.0/17',
+    '216.239.32.0/19', '216.58.192.0/19', '172.217.0.0/16', '142.250.0.0/15',
+)]
+
+
+def is_google_ip(ip):
+    try:
+        addr = ipaddress.ip_address(ip or '')
+    except ValueError:
+        return False
+    return any(addr in net for net in GOOGLE_NETS)
 
 
 def normalize_code(text):
@@ -68,6 +83,11 @@ class LotteryPremiumGift(models.Model):
     days = fields.Integer(string='Días', help='Si tiene días, valen los días y no los meses.')
     hardware_id = fields.Char(string='ID del teléfono', readonly=True, index=True, copy=False,
                               help='ANDROID_ID del teléfono que pidió la prueba gratis.')
+    request_ip = fields.Char(string='IP', readonly=True, copy=False)
+    google_robot = fields.Boolean(
+        string='Robot de Google', readonly=True, index=True, copy=False,
+        help='Pedida desde un teléfono de prueba de Google Play (informe previo al '
+             'lanzamiento) o desde una IP de Google.')
     state = fields.Selection([
         ('available', 'Sin canjear'),
         ('redeemed', 'Canjeado'),
@@ -290,7 +310,7 @@ class LotteryPremiumGift(models.Model):
     # ── Prueba gratis ─────────────────────────────────────────────────
 
     @api.model
-    def request_trial(self, device_id, hardware_id):
+    def request_trial(self, device_id, hardware_id, ip=None, test_lab=False):
         """Arma y canjea la prueba gratis de este teléfono. Si ya la pidió y
         sigue vigente (reinstaló), la devuelve en esta instalación."""
         Param = self.env['ir.config_parameter'].sudo()
@@ -321,6 +341,8 @@ class LotteryPremiumGift(models.Model):
             'days': days,
             'valid_until': fields.Datetime.now() + timedelta(days=1),
             'hardware_id': hardware_id,
+            'request_ip': ip,
+            'google_robot': bool(test_lab) or is_google_ip(ip),
             'note': 'Prueba gratis pedida desde la app',
         })
         self.redeem(rec.name, device_id, hardware_id)
