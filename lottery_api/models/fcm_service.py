@@ -47,11 +47,15 @@ def lanzar_push(cr, target, args):
     cr.postcommit.add(run)
 
 
-def _collapse_key(destino):
-    """El topic tal cual; una condición, abreviada con un hash."""
-    if re.fullmatch(r'[\w\-.~%]+', destino):
-        return destino
-    return 'c_' + hashlib.md5(destino.encode()).hexdigest()[:12]
+def _hash(texto, largo):
+    return hashlib.md5(texto.encode()).hexdigest()[:largo]
+
+
+def _collapse_key(destino, title):
+    """Topic (una condición, abreviada) + hash del título: el título cambia
+    por tipo de aviso, así una predicción no pisa al resultado pendiente."""
+    base = destino if re.fullmatch(r'[\w\-.~%]+', destino) else 'c_' + _hash(destino, 12)
+    return f'{base}_{_hash(title, 6)}'
 
 
 def lang_topic(topic, lang):
@@ -185,8 +189,8 @@ class LotteryFcmService(models.AbstractModel):
                     'body': body,
                 },
                 'android': {
-                    # Clave propia por lotería: sin ella FCM deja solo el último aviso en cola.
-                    'collapse_key': _collapse_key(topic),
+                    # Clave por lotería y tipo de aviso: sin ella FCM deja solo el último en cola.
+                    'collapse_key': _collapse_key(topic, title),
                     # Alta prioridad: despierta el dispositivo aunque esté en
                     # Doze/segundo plano, clave para que el aviso llegue a
                     # tiempo (los mensajes 'notification' no siempre van high
