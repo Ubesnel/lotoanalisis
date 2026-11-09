@@ -13,6 +13,7 @@
                 <field name="name"/>
                 <field name="origin"/>
                 <field name="months"/>
+                <field name="days" optional="show"/>
                 <field name="state"/>
                 <field name="redeemed_date" optional="show"/>
                 <field name="pass_expiry" optional="show"/>
@@ -43,6 +44,8 @@
                         <group string="Regalo">
                             <field name="origin"/>
                             <field name="months" readonly="id"/>
+                            <field name="days" readonly="id"/>
+                            <field name="hardware_id" invisible="origin != 'trial'"/>
                             <field name="valid_until" readonly="state != 'available'"/>
                             <field name="note"/>
                         </group>
@@ -87,6 +90,10 @@
                 <field name="name"/>
                 <field name="order_id"/>
                 <field name="note"/>
+                <field name="hardware_id"/>
+                <separator/>
+                <filter name="pruebas" string="Pruebas gratis" domain="[('origin', '=', 'trial')]"/>
+                <filter name="sin_pruebas" string="Sin pruebas gratis" domain="[('origin', '!=', 'trial')]"/>
                 <separator/>
                 <filter name="sin_canjear" string="Sin canjear" domain="[('state', '=', 'available')]"/>
                 <filter name="canjeados" string="Canjeados" domain="[('state', '=', 'redeemed')]"/>

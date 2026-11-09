@@ -61,6 +61,14 @@ class ResConfigSettings(models.TransientModel):
         help='Días mínimos entre un aviso y el siguiente. Si el usuario lo '
              'descarta, la app lo espacia más por su cuenta.',
     )
+    lottery_premium_trial = fields.Boolean(
+        string='Prueba gratis de Premium',
+        config_parameter='lottery_api.premium_trial',
+        help='Muestra en la pantalla Premium el botón para probarlo gratis. '
+             'Una prueba por teléfono.')
+    lottery_premium_trial_days = fields.Integer(
+        string='Días de prueba', config_parameter='lottery_api.premium_trial_days',
+        default=7)
     lottery_suerte_hora = fields.Float(
         string='Hora de los Números de la Suerte',
         config_parameter='lottery_api.suerte_hora', default=6.0,

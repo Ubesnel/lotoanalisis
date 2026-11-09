@@ -16,7 +16,7 @@
                             en el sitio web y en la aplicación móvil LotoAnálisis.
                         </p>
                         <div class="legal-date-badge">
-                            <i class="fa fa-calendar"/> Última actualización: 30 de octubre de 2026
+                            <i class="fa fa-calendar"/> Última actualización: 9 de noviembre de 2026
                         </div>
                         <div class="legal-hero-line"/>
                     </div>
@@ -111,6 +111,15 @@
                                     código funcione en un solo teléfono a la vez. Se conserva
                                     mientras el código no se canjee o su Premium esté vigente, y
                                     hasta 2 años después.
+                                </li>
+                                <li>
+                                    <strong>Prueba gratis de Premium</strong>: al pedirla guardamos,
+                                    además del identificador de instalación, el identificador de
+                                    Android del teléfono (ANDROID_ID), que el sistema asigna a cada
+                                    aplicación y no cambia al reinstalarla. Se usa solo para dar una
+                                    prueba gratis por teléfono; no es el número del teléfono, no
+                                    identifica a la persona y no se comparte con nadie. Se conserva
+                                    mientras la prueba esté vigente y hasta 2 años después.
                                 </li>
                                 <li>
                                     En el dispositivo solo se guardan preferencias locales de uso
