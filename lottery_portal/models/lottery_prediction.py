@@ -1601,12 +1601,12 @@ class LotteryPrediction(models.Model):
         return [(por_valor.get(a, Number), por_valor.get(b, Number))
                 for _clave, a, b in candidatos[:limite]]
 
-    def _parles_premium(self, suerte, limite):
-        """Los parlés para la Premium: los 5 Números con los 5 de la Suerte,
-        primero los cruzados con la salida anterior y después los demás."""
+    def _parles_premium(self, otros, limite):
+        """Los parlés para la Premium: los 5 Números con `otros`, primero
+        los cruzados con la salida anterior y después los demás."""
         self.ensure_one()
         premios = self._premios_anteriores()
-        pares = self._armar_parles(otros=suerte, limite=len(suerte) * 5)
+        pares = self._armar_parles(otros=otros, limite=len(otros) * 5)
         cruzados = [p for p in pares if any(
             self._coincidencia(n.name, premios)[1] for n in p)]
         return (cruzados + [p for p in pares if p not in cruzados])[:limite]

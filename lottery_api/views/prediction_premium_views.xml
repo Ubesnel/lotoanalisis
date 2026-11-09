@@ -36,6 +36,10 @@
                             string="Completar" class="btn-primary"
                             invisible="published"
                             help="Línea y terminal top de Recomendados, números fuertes desde la predicción del día, ternas top, parlés top y una tómbola de cada tamaño (Quiniela UY)."/>
+                    <button name="action_completar_parles" type="object"
+                            string="Completar parlés"
+                            invisible="evaluada or not sorteo_generates_parles"
+                            help="Rehace solo los parlés top con la tabla de 5 de la predicción del día; lo demás no se toca."/>
                     <button name="action_send_push_notification" type="object"
                             string="Enviar notificación push" class="btn-primary"
                             icon="fa-bell" invisible="not id or push_sent or not published"
