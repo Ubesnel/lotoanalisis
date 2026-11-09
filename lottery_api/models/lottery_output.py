@@ -228,17 +228,29 @@ class LotteryOutput(models.Model):
             num, fuerte, virado, fecha_suerte = suerte
             dia = fecha_suerte.strftime('%d/%m/%Y')
             if en:
-                cual = (f'the strongest of the Lucky Numbers of {dia}' if fuerte
-                        else f'one of the Lucky Numbers of {dia}')
+                cual = (f'the strongest of the Premium Lucky Numbers of {dia}' if fuerte
+                        else f'one of the Premium Lucky Numbers of {dia}')
                 partes.append(
                     f'🔄 {numero} is {num} reversed, {cual}. Flip it and win!'
                     if virado else f'🍀 {numero} is {cual}')
             else:
-                cual = (f'el más fuerte de los Números de la Suerte del {dia}' if fuerte
-                        else f'uno de los Números de la Suerte del {dia}')
+                cual = (f'el más fuerte de los Números de la Suerte Premium del {dia}' if fuerte
+                        else f'uno de los Números de la Suerte Premium del {dia}')
                 partes.append(
                     f'🔄 El {numero} es el virado del {num}, {cual}. ¡El que vira gana!'
                     if virado else f'🍀 El {numero} es {cual}')
+
+        parles_suerte = self._parles_numeros_suerte(out)
+        if parles_suerte:
+            pares, fecha_suerte = parles_suerte
+            dia = fecha_suerte.strftime('%d/%m/%Y')
+            lista = _lista(pares, en)
+            if en:
+                partes.append(f'🍀 Parlay{"s" if len(pares) > 1 else ""} {lista} '
+                              f'with the Premium Lucky Numbers of {dia}')
+            else:
+                partes.append(f'🍀 Parlé{"s" if len(pares) > 1 else ""} {lista} '
+                              f'con los Números de la Suerte Premium del {dia}')
 
         normal = self._aciertos_normal(out, en)
         if normal:
@@ -346,10 +358,40 @@ class LotteryOutput(models.Model):
         """(número de la suerte 'NN', es el más fuerte, virado, fecha) si el
         Premio 1 coincide directo o virado (29 ↔ 92) con uno de los Números de
         la Suerte publicados de ese día; None si no. Directo gana sobre
-        virado. Un sorteo antes de la hora de corte de Ajustes es del día
-        anterior."""
-        if not out.number_id or not out.date:
+        virado."""
+        if not out.number_id:
             return None
+        suerte, fecha = self._numeros_suerte_del_dia(out)
+        if not suerte:
+            return None
+        n = out.number_id.name
+        virado = (n % 10) * 10 + n // 10
+        numeros = {s.name: s for s in suerte.number_ids_5}
+        for valor, es_virado in ((n, False), (virado, True)):
+            if valor in numeros and not (es_virado and valor == n):
+                fuerte = numeros[valor] == suerte.super_magico_id
+                return '%02d' % valor, fuerte, es_virado, fecha
+        return None
+
+    def _parles_numeros_suerte(self, out):
+        """(['07-34', ...], fecha) con los parlés de la salida que forman dos
+        Números de la Suerte distintos, solo directo; None si no hay."""
+        suerte, fecha = self._numeros_suerte_del_dia(out)
+        if not suerte:
+            return None
+        del_dia = set(suerte.number_ids_5.mapped('name'))
+        premios = [p for p in _premios(out) if p in del_dia]
+        pares = sorted({(min(a, b), max(a, b))
+                        for i, a in enumerate(premios) for b in premios[i + 1:] if a != b})
+        if not pares:
+            return None
+        return ['%02d-%02d' % p for p in pares], fecha
+
+    def _numeros_suerte_del_dia(self, out):
+        """(Números de la Suerte publicados, fecha) que le tocan a la salida.
+        Un sorteo antes de la hora de corte de Ajustes es del día anterior."""
+        if not out.date:
+            return None, None
         params = self.env['ir.config_parameter'].sudo()
         corte = float(params.get_param('lottery_api.suerte_hora') or 6.0)
         dow = str(out.date.weekday())
@@ -361,16 +403,7 @@ class LotteryOutput(models.Model):
         suerte = self.env['lottery.numeros.suerte'].sudo().search([
             ('date', '=', fecha), ('published', '=', True),
         ], limit=1)
-        if not suerte:
-            return None
-        n = out.number_id.name
-        virado = (n % 10) * 10 + n // 10
-        numeros = {s.name: s for s in suerte.number_ids_5}
-        for valor, es_virado in ((n, False), (virado, True)):
-            if valor in numeros and not (es_virado and valor == n):
-                fuerte = numeros[valor] == suerte.super_magico_id
-                return '%02d' % valor, fuerte, es_virado, fecha
-        return None
+        return (suerte, fecha) if suerte else (None, None)
 
     def _tabla_numeros_magicos(self, out):
         """(tabla gratis, tabla Premium) más chica en la que estaba el número
