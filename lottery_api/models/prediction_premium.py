@@ -491,9 +491,15 @@ class LotteryPredictionPremium(models.Model):
         return None
 
     def _completar_tombolas(self):
-        """La primera tómbola de cada tamaño de la predicción del día."""
+        """Las tómbolas marcadas Premium en la predicción del día; en las
+        viejas sin marca, la primera de cada tamaño."""
         self.ensure_one()
         Linea = self.env['lottery.prediction.premium.tombola']
+        marcadas = self.prediction_id.tombola_linea_ids.filtered('premium').sorted('id')
+        if marcadas:
+            self.write({'tombola_linea_ids': [(5, 0, 0)] + [
+                (0, 0, Linea.vals_numeros(l.numeros())) for l in marcadas]})
+            return
         lineas, tamanos = [], set()
         for linea in self.prediction_id.tombola_linea_ids.sorted('id'):
             numeros = linea.numeros()

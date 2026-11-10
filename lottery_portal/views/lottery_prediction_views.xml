@@ -53,8 +53,8 @@
                     <button name="action_completar_tombola" type="object"
                             string="Completar tómbolas" class="btn-secondary"
                             invisible="sorteo_code != 'quiniela_uy_1' or not number_ids_5"
-                            confirm="Se van a reemplazar las líneas de Tómbola con las 12 que salen del cálculo. ¿Seguimos?"
-                            help="4 de 3 (último premio 1 con dos de los que más salen en el mes; Súper Mágico, último premio 1 y último de Pick 3 Florida; Súper Mágico con dos intermedios del mes; premios 1, 2 y 3 de Pick 3 Florida), y de 4 a 7 dos de cada tamaño que crecen con los que salieron más reciente en la Tómbola."/>
+                            confirm="Se van a reemplazar las líneas de Tómbola con las 16 que salen del cálculo (corre los 20 premios, puede tardar). ¿Seguimos?"
+                            help="5 de 3, 4 de 4, 3 de 5, 2 de 6 y 2 de 7 con los Súper Mágicos y tablas de 5 de los 20 premios; las de 7 suman Pick 3 Florida. Las marcadas Premium las copia la Predicción Premium."/>
                 </header>
                 <sheet>
                     <group>
@@ -170,6 +170,7 @@
                                         <field name="numero_5" options="{'no_open': True, 'no_create': True}"/>
                                         <field name="numero_6" options="{'no_open': True, 'no_create': True}"/>
                                         <field name="numero_7" options="{'no_open': True, 'no_create': True}"/>
+                                        <field name="premium"/>
                                     </tree>
                                 </field>
                             </group>
