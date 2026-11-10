@@ -17,10 +17,9 @@ _logger = logging.getLogger(__name__)
 DIGITOS = [(str(d), str(d)) for d in range(10)]
 # Números fuertes: 3 de la línea top y 3 del terminal top.
 NUMEROS_POR_LADO = 3
-# Ternas top: centenas por puesto (Súper Mágico, 2º, 3º). 2+2+1 = 5.
-TERNAS_TOP_POR_PUESTO = (2, 2, 1)
-# Parlés top: los 10 que se arman entre los 5 Números, primero los cruzados.
+# Parlés top: fuertes con los 5 Mágicos; los primeros van destacados.
 PARLES_TOP = 10
+PARLES_DESTACADOS = 5
 # Tómbola: cuántos números de la línea tienen que salir para contar como acierto.
 MINIMO_TOMBOLA = {3: 3, 4: 3, 5: 3, 6: 3, 7: 3}
 # Si cambian, la evaluación se rehace.
@@ -55,8 +54,8 @@ class LotteryPredictionPremium(models.Model):
 
     published = fields.Boolean(
         string='Publicado', default=False, index=True,
-        help='La app solo muestra las publicadas. Mientras no esté publicada '
-             'el cron la recalcula; publicada ya no se toca sola.')
+        help='La app solo muestra las publicadas. El cron la completa una sola '
+             'vez; después se edita a mano o con los botones.')
     published_date = fields.Datetime(string='Publicada el', readonly=True, copy=False)
     push_sent = fields.Boolean(string='Notificación enviada', readonly=True, copy=False)
     push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
@@ -79,7 +78,7 @@ class LotteryPredictionPremium(models.Model):
     # Las 2 mejores centenas, para que el usuario las combine con otro número.
     centena_top_1 = fields.Selection(DIGITOS, string='Mejor centena')
     centena_top_2 = fields.Selection(DIGITOS, string='2ª mejor centena')
-    # Ternas top: Súper Mágico y 2º con las 2 mejores centenas, 3º con la mejor.
+    # Ternas top: la mejor centena con cada fuerte y con el cruce línea-terminal.
     terna_ids = fields.One2many(
         'lottery.prediction.premium.terna', 'premium_id', string='Ternas top')
     parle_ids = fields.One2many(
@@ -362,9 +361,15 @@ class LotteryPredictionPremium(models.Model):
             rec._completar_tombolas()
         return self._aviso_parles(avisos)
 
-    def action_completar_parles(self):
-        """Rehace solo los parlés top; el resto queda como está."""
-        return self._aviso_parles([a for a in (rec._completar_parles() for rec in self) if a])
+    def action_rehacer_ternas_parles(self):
+        """Rehace ternas y parlés con la línea, terminal y fuertes cargados."""
+        avisos = []
+        for rec in self:
+            rec._completar_ternas()
+            aviso = rec._completar_parles()
+            if aviso:
+                avisos.append(aviso)
+        return self._aviso_parles(avisos)
 
     def _aviso_parles(self, avisos):
         if avisos:
@@ -432,51 +437,57 @@ class LotteryPredictionPremium(models.Model):
         return self.env['lottery.number'].browse([r[0] for r in self.env.cr.fetchall()])
 
     def _completar_ternas(self):
-        """Ternas top: las 2 mejores centenas con el Súper Mágico y con el 2º
-        número, y la mejor con el 3º. En Quiniela UY salen del premio 1."""
+        """Ternas top: la mejor centena con cada número fuerte y con el
+        cruce de línea y terminal top. En Quiniela UY la centena sale del premio 1."""
         self.ensure_one()
         ternas, centenas = [], []
         pred = self._prediccion_ternas() if self.sorteo_uses_hundreds else False
         if pred:
             centenas = pred.centenas_by_temperature(
                 pred.sorteo_id, pred.turno_code, pred.temperature)[:2]
-            try:
-                ternas = pred._armar_ternas(TERNAS_TOP_POR_PUESTO)
-            except UserError as exc:
-                _logger.info('lottery_api: sin ternas top para %s: %s', self.display_name, exc)
+        if centenas:
+            ternas = ['%s%02d' % (centenas[0], n) for n in self._numeros_ternas()]
+        else:
+            _logger.info('lottery_api: sin centena top para %s', self.display_name)
         self.write({
             'centena_top_1': centenas[0] if centenas else False,
             'centena_top_2': centenas[1] if len(centenas) > 1 else False,
             'terna_ids': [(5, 0, 0)] + [(0, 0, {'terna': t}) for t in ternas],
         })
 
+    def _numeros_ternas(self):
+        """Los fuertes y el cruce de línea y terminal top si no está entre ellos."""
+        nums = sorted(self.number_ids.mapped('name'))
+        if self.linea_top and self.terminal_top:
+            cruce = int(self.linea_top) * 10 + int(self.terminal_top)
+            if cruce not in nums:
+                nums.append(cruce)
+        return nums
+
     def _completar_parles(self):
-        """Parlés top: los 10 que se arman entre los 5 Números de la
-        predicción del día, primero los cruzados. Destacados: los 4 del
-        Súper Mágico y el del 2º con el 3º. Devuelve el motivo si quedaron
-        vacíos en un sorteo con parlés."""
+        """Parlés top: cada fuerte con los 5 Mágicos, primero los que comparten
+        dígito y después el criterio de la predicción del día. Devuelve el
+        motivo si quedaron vacíos en un sorteo con parlés."""
         self.ensure_one()
         pred = self.prediction_id
+        self.write({'parle_ids': [(5, 0, 0)]})
         if not self.sorteo_generates_parles:
-            self.write({'parle_ids': [(5, 0, 0)]})
             return None
         if not pred:
-            self.write({'parle_ids': [(5, 0, 0)]})
             return 'No hay predicción del día.'
+        if not self.number_ids:
+            return 'Faltan los números fuertes.'
         try:
-            parles = pred._parles_premium(pred.number_ids_5, PARLES_TOP)
+            parles = pred._parles_premium(self.number_ids, len(self.number_ids) * 5)
         except UserError as exc:
             _logger.info('lottery_api: sin parlés top para %s: %s', self.display_name, exc)
-            self.write({'parle_ids': [(5, 0, 0)]})
             return str(exc)
-        cinco = pred._orden_de_los_cinco() if parles else []
-        destacados = [p for p in parles if cinco[0] in (p[0].name, p[1].name)]
-        destacados += [p for p in parles if {p[0].name, p[1].name} == set(cinco[1:3])]
-        orden = destacados + [p for p in parles if p not in destacados]
-        self.write({'parle_ids': [(5, 0, 0)] + [
-            (0, 0, {'sequence': i, 'numero_1': a.id, 'numero_2': b.id,
-                    'destacado': (a, b) in destacados})
-            for i, (a, b) in enumerate(orden)]})
+        parles.sort(key=lambda p: not set('%02d' % p[0].name) & set('%02d' % p[1].name))
+        # El fuerte primero: _armar_parles los devuelve como (mágico, fuerte).
+        self.write({'parle_ids': [
+            (0, 0, {'sequence': i, 'numero_1': fuerte.id, 'numero_2': magico.id,
+                    'destacado': i < PARLES_DESTACADOS})
+            for i, (magico, fuerte) in enumerate(parles[:PARLES_TOP])]})
         return None
 
     def _completar_tombolas(self):
@@ -505,9 +516,9 @@ class LotteryPredictionPremium(models.Model):
 
     @api.model
     def _cron_preparar_proximo_sorteo(self):
-        """Crea la Predicción Premium del próximo sorteo de cada sorteo de la
-        app y recalcula las que todavía no están publicadas. Espera a que
-        la predicción normal de ese sorteo, fecha y turno esté publicada."""
+        """Crea y completa la Predicción Premium del próximo sorteo de cada
+        sorteo de la app. Espera a que la predicción normal de ese sorteo,
+        fecha y turno esté publicada."""
         sorteos = self.env['lottery.sorteo'].sudo().search([
             ('show_in_app', '=', True),
             ('exclude_from_predictions', '=', False),
@@ -535,7 +546,9 @@ class LotteryPredictionPremium(models.Model):
                         rec = self.sudo().create({
                             'sorteo_id': sorteo.id, 'date': date_str, 'turno_id': turno.id})
                     if not rec.published:
-                        rec.action_completar()
+                        # Se completa una sola vez: después queda para editarla a mano.
+                        if not rec.linea_top:
+                            rec.action_completar()
                         if sorteo.auto_premium_publish:
                             rec.published = True
                             if sorteo.show_in_app:
