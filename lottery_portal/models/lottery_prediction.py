@@ -1614,19 +1614,21 @@ class LotteryPrediction(models.Model):
     # ── Completar tómbolas ──────────────────────────────────────────────
 
     def action_completar_tombola(self):
-        """Completa las 12 líneas de Tómbola: 4 de 3, 2 de 4, 2 de 5, 2 de 6
+        """Completa las 16 líneas de Tómbola: 5 de 3, 4 de 4, 3 de 5, 2 de 6
         y 2 de 7. Ver _armar_tombolas. Como las ternas, el botón sólo
         precarga: quedan editables."""
         Linea = self.env['lottery.prediction.tombola.linea']
         for rec in self:
             rec.tombola_linea_ids = [(5, 0, 0)] + [
-                (0, 0, Linea.vals_numeros(linea)) for linea in rec._armar_tombolas()]
+                (0, 0, dict(Linea.vals_numeros(linea), premium=premium))
+                for linea, premium in rec._armar_tombolas()]
         return True
 
     def _armar_tombolas(self):
-        """Las 12 líneas (listas de enteros) en orden: las 4 de 3 y después
-        la 1ª y la 2ª de cada tamaño, que crece sumando un número de su
-        pareja."""
+        """Las 16 líneas como (números, va a Premium), en orden de armado.
+        Salen de los Súper Mágicos y tablas de 5 de los 20 premios, y las de
+        7 de Pick 3 Florida. La app las ordena por números, así que este
+        orden no se ve."""
         self.ensure_one()
         if self.sorteo_id.code != QUINIELA_UY_PREMIO_1:
             raise UserError('Las tómbolas se completan en la predicción del premio 1 '
@@ -1634,114 +1636,151 @@ class LotteryPrediction(models.Model):
         if len(self.number_ids_5) < 5 or not self.super_magico_id:
             raise UserError('Completá primero los 5 Números a predecir y el Súper '
                             'Mágico con el botón "Completar números".')
-        ultimo = self._last_output().number_id
-        florida = self._ultima_florida()
-        if not ultimo:
-            raise UserError('El premio 1 no tiene una salida anterior a esta predicción.')
-        if not florida:
-            raise UserError('Pick 3 Florida no tiene salidas registradas hasta esta fecha.')
+        premios = self._premios_tombola()
 
-        ultimo, sm = ultimo.name, self.super_magico_id.name
-        cinco = self._orden_de_los_cinco()
-        diez = set(self.number_ids_10.mapped('name'))
-        recencia = self._recencia_tombola()
-        mes = self.env['lottery.stats.service'].sudo().get_tombola_numbers_month_all(
-            self.date.month, self.date.year)
+        def sm(p):
+            return premios(p)[0] if premios(p) else None
 
-        def rec(n):
-            return recencia.get(n, 0)
+        def tabla(p, pos):
+            cinco = premios(p)
+            return cinco[pos - 1] if len(cinco) >= pos else None
 
-        def clave_mes(fila):
-            n = int(fila['name'])
-            return (fila['salidas_mes_anio'], -rec(n), n not in diez,
-                    n not in cinco, -rec(_reves(n)), n)
+        def primero(linea, secuencia, tamano):
+            for n in secuencia:
+                if n is not None and n not in linea:
+                    return linea + [n]
+            raise UserError('No alcanzan los números para armar las tómbolas de %d.' % tamano)
 
-        def del_mes(tabla, base, cantidad):
-            """`cantidad` números de la tabla del mes que no estén en `base`:
-            los que menos salieron este mes y, a igualdad, el más reciente,
-            el de la tabla de 10, el de la de 5 y el de viraje más reciente."""
-            filas = sorted(mes.get(tabla) or [], key=clave_mes)
-            elegidos = [int(f['name']) for f in filas if int(f['name']) not in base]
-            return elegidos[:cantidad]
+        de_3, extra = self._tombolas_de_3(sm, tabla)
+        limite = 15 if extra else 12
 
-        relleno = cinco + sorted(diez - set(cinco)) + sorted(
-            set(self.number_ids_20.mapped('name')) - diez)
+        # De 4: 1ª, 2ª, 4ª y 5ª de 3 con SM20..SM17; si ya está, SM16 hacia
+        # abajo sin llegar al límite y después el 2º, 3º... de P1 a P20.
+        def secuencia_4(p):
+            yield sm(p)
+            for q in range(16, limite, -1):
+                yield sm(q)
+            for pos in range(2, 6):
+                for q in range(1, 21):
+                    yield tabla(q, pos)
 
-        def sin_repetir(numeros, cantidad=3):
-            """Los números en orden sin repetidos; si falta alguno, el
-            siguiente de los 5 (y después de los 10 y los 20)."""
-            linea = list(dict.fromkeys(numeros))
-            for n in relleno:
-                if len(linea) >= cantidad:
-                    break
-                if n not in linea:
-                    linea.append(n)
-            return linea
+        de_4 = [primero(base, secuencia_4(p), 4)
+                for base, p in zip((de_3[0], de_3[1], de_3[3], de_3[4]), (20, 19, 18, 17))]
+
+        # De 5: 1ª, 2ª y 4ª de 4 con el 2º de P1, P2 y P3; sigue por el 2º del
+        # premio siguiente hasta P5 y después el 3º, 4º y 5º.
+        orden_5 = [(pos, q) for pos in range(2, 6) for q in range(1, 6)]
+        de_5 = []
+        for i, base in enumerate((de_4[0], de_4[1], de_4[3])):
+            rotada = orden_5[i:] + orden_5[:i]
+            de_5.append(primero(base, (tabla(q, pos) for pos, q in rotada), 5))
+
+        # De 6: 1ª y 2ª de 5 con SM13 / SM14; sigue por P15 y después el 2º...
+        orden_6 = [(pos, q) for pos in range(1, 6) for q in (13, 14, 15)]
+        de_6 = []
+        for i, base in enumerate(de_5[:2]):
+            rotada = orden_6[i:] + orden_6[:i]
+            de_6.append(primero(base, (tabla(q, pos) for pos, q in rotada), 6))
+
+        # De 7: las de 6 con la última Florida (1, 2, 3, virados, la anterior...).
+        de_7 = [primero(base, self._secuencia_florida(), 7) for base in de_6]
 
         lineas = []
-
-        def extender(base, fuente):
-            """`base` más un número de `fuente` que no tenga: primero el que
-            (él o su viraje) salió más reciente en la Tómbola. Si no queda
-            ninguno o la línea ya existe, sigue con los de relleno."""
-            def prio(n):
-                return (-max(rec(n), rec(_reves(n))), n)
-            candidatos = sorted({n for n in fuente if n not in base}, key=prio)
-            candidatos += [n for n in relleno if n not in base and n not in candidatos]
-            hechas = [set(l) for l in lineas]
-            for n in candidatos:
-                if set(base) | {n} not in hechas:
-                    return base + [n]
-            raise UserError('No alcanzan los números para armar las tómbolas de %d.'
-                            % (len(base) + 1))
-
-        primera = [ultimo] + del_mes('top', {ultimo}, 2)
-        segunda = sin_repetir([sm, ultimo, florida[0]])
-        tercera = [sm] + del_mes('intermedios', {sm}, 2)
-        cuarta = sin_repetir(florida[:3])
-        if any(len(l) < 3 for l in (primera, tercera, cuarta)):
-            raise UserError('Faltan datos para las tómbolas de 3 (tabla del mes de la '
-                            'Tómbola o premios de Pick 3 Florida).')
-        lineas += [primera, segunda, tercera, cuarta]
-
-        # De 4: la 1ª y la 2ª de 3 con un número de la 3ª o la 4ª. De 5 en
-        # adelante, cada una con un número de la otra de su tamaño.
-        a = extender(primera, tercera + cuarta)
-        lineas.append(a)
-        b = extender(segunda, tercera + cuarta)
-        lineas.append(b)
-        for _tamano in range(5, 8):
-            nueva_a = extender(a, b)
-            lineas.append(nueva_a)
-            nueva_b = extender(b, a)
-            lineas.append(nueva_b)
-            a, b = nueva_a, nueva_b
+        for grupo, premium in ((de_3, 3), (de_4, 2), (de_5, 1), (de_6, 1), (de_7, 1)):
+            lineas += [(l, i < premium) for i, l in enumerate(grupo)]
         return lineas
 
-    def _ultima_florida(self):
-        """Premios 1, 2 y 3 (enteros) de la última salida registrada de Pick 3
-        Florida hasta la fecha de la predicción, del turno que sea."""
+    def _tombolas_de_3(self, sm, tabla):
+        """Las 5 de 3 y si se usó la línea extra (SM13-15). Un SM repetido se
+        cambia por el siguiente de la tabla de 5 del premio menor del choque."""
+        dueno = {}  # número usado → premio que lo trajo
+
+        def de_la_tabla(desde):
+            for q in range(desde, 21):
+                for pos in range(2, 6):
+                    n = tabla(q, pos)
+                    if n is not None and n not in dueno:
+                        return n, q
+            raise UserError('No alcanzan los números para armar las tómbolas de 3.')
+
+        def armar(premios_linea):
+            linea = []
+            for p in premios_linea:
+                n, de = sm(p), p
+                if n is None or n in dueno:
+                    n, de = de_la_tabla(dueno.get(n, p))
+                dueno[n] = de
+                linea.append(n)
+            return linea
+
+        primera = armar((1, 2, 3))
+        virada = [_reves(n) for n in primera]
+        lineas = [primera]
+        extra = set(virada) == set(primera)
+        if not extra:
+            for n, original in zip(virada, primera):
+                dueno.setdefault(n, dueno[original])
+            lineas.append(virada)
+        lineas += [armar((4, 5, 6)), armar((7, 8, 9)), armar((10, 11, 12))]
+        if extra:
+            # Línea extra: SM13-15 y, si repiten, los SM siguientes.
+            linea = []
+            for p in range(13, 21):
+                n = sm(p)
+                if len(linea) < 3 and n is not None and n not in dueno:
+                    dueno[n] = p
+                    linea.append(n)
+            while len(linea) < 3:
+                n, dueno_n = de_la_tabla(13)
+                dueno[n] = dueno_n
+                linea.append(n)
+            lineas.append(linea)
+        return lineas, extra
+
+    def _premios_tombola(self):
+        """Función premio → tabla de 5 en orden (SM primero). El premio 1 sale
+        de esta predicción; el resto se calcula en memoria y una sola vez."""
         self.ensure_one()
-        out = self.env['lottery.output'].sudo().search([
+        Sorteo = self.env['lottery.sorteo'].sudo()
+        Prediction = self.env['lottery.prediction']
+        temperatura = self.temperature or 'remaining'
+        cache = {1: self._orden_de_los_cinco()}
+
+        def premio(p):
+            if p not in cache:
+                cache[p] = []
+                sorteo = Sorteo.search([('code', '=', 'quiniela_uy_%d' % p)], limit=1)
+                candidatos = sorteo and Prediction.numbers_by_temperature(
+                    sorteo, self.turno_code, temperatura)
+                if not (sorteo and len(candidatos) >= 5):
+                    return cache[p]
+                try:
+                    pred = Prediction.new({
+                        'sorteo_id': sorteo.id,
+                        'date': self.date,
+                        'turno_id': self.turno_id.id,
+                        'temperature': temperatura,
+                        'number_ids': [(6, 0, candidatos.ids)],
+                    })
+                    pred.algoritmo = pred._algoritmo_por_ultimas_salidas()
+                    cache[p] = list(pred._calcular_listas()['listas'][5])
+                except UserError:
+                    pass
+            return cache[p]
+        return premio
+
+    def _secuencia_florida(self):
+        """Pick 3 Florida hasta la fecha, de la última salida hacia atrás:
+        premios 1, 2 y 3 y después virados."""
+        self.ensure_one()
+        salidas = self.env['lottery.output'].sudo().search([
             ('sorteo_id.code', '=', FLORIDA_PICK3),
             ('date', '<=', self.date),
-        ], order='date desc, turno_sequence desc, id desc', limit=1)
-        return [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
-
-    def _recencia_tombola(self):
-        """{número: marca de tiempo de su última salida en la Tómbola} antes
-        del sorteo que se predice. Más grande = más reciente."""
-        self.ensure_one()
-        self.env.cr.execute("""
-            SELECT ln.name, MAX(EXTRACT(EPOCH FROM o.date::timestamp)
-                                + o.turno_sequence)
-            FROM lottery_tombola_output o
-            JOIN lottery_number ln ON ln.id = o.number_id
-            WHERE o.date < %(fecha)s
-               OR (o.date = %(fecha)s AND o.turno_sequence < %(seq)s)
-            GROUP BY ln.name
-        """, {'fecha': self.date, 'seq': self.turno_id.sequence})
-        return {int(n): float(t) for n, t in self.env.cr.fetchall()}
+        ], order='date desc, turno_sequence desc, id desc', limit=30)
+        for out in salidas:
+            premios = [n.name for n in (out.number_id, out.premio_2_id, out.premio_3_id) if n]
+            yield from premios
+            yield from (_reves(n) for n in premios)
 
     # ── Render del desglose ────────────────────────────────────────────────
 
@@ -2243,3 +2282,5 @@ class LotteryPredictionTombolaLinea(models.Model):
     prediction_id = fields.Many2one(
         'lottery.prediction', string='Predicción',
         required=True, ondelete='cascade', index=True)
+    premium = fields.Boolean(
+        string='Premium', help='La copia la Predicción Premium.')
