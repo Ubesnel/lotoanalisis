@@ -130,7 +130,8 @@ class LotteryNumerosSuerte(models.Model):
                                              numero='%02d' % n,
                                              numero_suerte='%02d' % virado,
                                              fuerte=virado == sm))
-                en_cinco = sorted({n for _i, n in premios if n in cinco})
+                en_cinco = sorted({n for _i, n in premios if n in cinco}
+                                  if out.sorteo_id.generates_parles else ())
                 for k, a in enumerate(en_cinco):
                     for b in en_cinco[k + 1:]:
                         par = '%02d-%02d' % (a, b)
