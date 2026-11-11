@@ -25,7 +25,7 @@ from dateutil.relativedelta import relativedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from .premium_pass import PremiumError, TOKEN_RE
+from .premium_pass import PremiumError, TOKEN_RE, request_country, request_ip
 
 _logger = logging.getLogger(__name__)
 
@@ -84,6 +84,9 @@ class LotteryPremiumGift(models.Model):
     hardware_id = fields.Char(string='ID del teléfono', readonly=True, index=True, copy=False,
                               help='ANDROID_ID del teléfono que pidió la prueba gratis.')
     request_ip = fields.Char(string='IP', readonly=True, copy=False)
+    country_id = fields.Many2one('res.country', string='País', index=True, copy=False,
+                                 help='Según la IP de quien lo compró o pidió la prueba.')
+    redeem_country_id = fields.Many2one(related='pass_id.country_id', string='País del canje')
     google_robot = fields.Boolean(
         string='Robot de Google', readonly=True, index=True, copy=False,
         help='Pedida desde un teléfono de prueba de Google Play (informe previo al '
@@ -181,6 +184,8 @@ class LotteryPremiumGift(models.Model):
             'product_id': product_id,
             'order_id': data.get('orderId'),
             'is_test': data.get('purchaseType') == 0,
+            'request_ip': request_ip(),
+            'country_id': request_country(self.env),
             'google_response': json.dumps(data, indent=2),
         })
         rec._confirm_in_google(data)
@@ -273,6 +278,8 @@ class LotteryPremiumGift(models.Model):
                 'device_id': device_id,
                 'is_test': rec.is_test,
                 'acknowledged': True,
+                'country_id': request_country(self.env),
+                'request_ip': request_ip(),
             })
             rec.write({'state': 'redeemed', 'pass_id': premium_pass.id, 'redeemed_date': now})
             rec._log_activation(device_id, move=False, hardware_id=hardware_id)
@@ -303,7 +310,9 @@ class LotteryPremiumGift(models.Model):
         ])
         if moves >= MAX_MOVES:
             raise PremiumError('too_many_moves', 429)
-        premium_pass.device_id = device_id
+        premium_pass.write({'device_id': device_id,
+                            'country_id': request_country(self.env) or premium_pass.country_id.id,
+                            'request_ip': request_ip() or premium_pass.request_ip})
         rec._log_activation(device_id, move=True, hardware_id=hardware_id)
         return premium_pass
 
@@ -342,6 +351,7 @@ class LotteryPremiumGift(models.Model):
             'valid_until': fields.Datetime.now() + timedelta(days=1),
             'hardware_id': hardware_id,
             'request_ip': ip,
+            'country_id': request_country(self.env),
             'google_robot': bool(test_lab) or is_google_ip(ip),
             'note': 'Prueba gratis pedida desde la app',
         })
@@ -351,7 +361,8 @@ class LotteryPremiumGift(models.Model):
     def _log_activation(self, device_id, move, hardware_id=None):
         self.env['lottery.premium.gift.activation'].sudo().create({
             'gift_id': self.id, 'device_id': device_id, 'is_move': move,
-            'hardware_id': hardware_id,
+            'hardware_id': hardware_id, 'country_id': request_country(self.env),
+            'request_ip': request_ip(),
         })
 
     @api.model
@@ -388,3 +399,5 @@ class LotteryPremiumGiftActivation(models.Model):
     hardware_id = fields.Char(string='ID del teléfono')
     date = fields.Datetime(string='Fecha', required=True, default=fields.Datetime.now)
     is_move = fields.Boolean(string='Mudanza')
+    country_id = fields.Many2one('res.country', string='País')
+    request_ip = fields.Char(string='IP')
