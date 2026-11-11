@@ -119,6 +119,7 @@ class LotteryOutput(models.Model):
         records = super().create(vals_list)
         if not self.env.context.get('skip_prediction_validation'):
             self.env['lottery.prediction.premium']._evaluar_salidas(records)
+        records._recalcular_numeros_suerte(set(records.mapped('date')))
         return records
 
     def write(self, vals):
@@ -126,6 +127,7 @@ class LotteryOutput(models.Model):
         antes = self._claves_prediccion() if cambia else set()
         res = super().write(vals)
         if cambia:
+            self._recalcular_numeros_suerte({c[1] for c in antes} | set(self.mapped('date')))
             Premium = self.env['lottery.prediction.premium'].sudo()
             # Al mover la salida de fecha/turno, la predicción vieja queda sin salida.
             Premium.search([('output_id', 'in', self.ids),
@@ -141,6 +143,7 @@ class LotteryOutput(models.Model):
         res = super().unlink()
         premiums.exists()._evaluar_seguro()
         self._reevaluar_predicciones(claves)
+        self.env['lottery.output']._recalcular_numeros_suerte({c[1] for c in claves})
         return res
 
     def _claves_prediccion(self):
@@ -390,20 +393,45 @@ class LotteryOutput(models.Model):
     def _numeros_suerte_del_dia(self, out):
         """(Números de la Suerte publicados, fecha) que le tocan a la salida.
         Un sorteo antes de la hora de corte de Ajustes es del día anterior."""
-        if not out.date:
+        fecha = self._fecha_numeros_suerte(out)
+        if not fecha:
             return None, None
-        params = self.env['ir.config_parameter'].sudo()
-        corte = float(params.get_param('lottery_api.suerte_hora') or 6.0)
-        dow = str(out.date.weekday())
-        slot = out.sorteo_id.slot_ids.filtered(
-            lambda sl: sl.dow == dow and sl.turno_id == out.turno_id)[:1]
-        fecha = out.date
-        if slot and 0 < slot.hora_sorteo < corte:
-            fecha -= timedelta(days=1)
         suerte = self.env['lottery.numeros.suerte'].sudo().search([
             ('date', '=', fecha), ('published', '=', True),
         ], limit=1)
         return (suerte, fecha) if suerte else (None, None)
+
+    def _hora_salida(self, out):
+        """Hora del sorteo (24 h) de esa salida según su calendario; 0 si no hay."""
+        if not out.date:
+            return 0.0
+        dow = str(out.date.weekday())
+        slot = out.sorteo_id.slot_ids.filtered(
+            lambda sl: sl.dow == dow and sl.turno_id == out.turno_id)[:1]
+        return slot.hora_sorteo if slot else 0.0
+
+    def _fecha_numeros_suerte(self, out):
+        """Día de Números de la Suerte de la salida: antes de la hora de corte
+        de Ajustes es del día anterior."""
+        if not out.date:
+            return None
+        params = self.env['ir.config_parameter'].sudo()
+        corte = float(params.get_param('lottery_api.suerte_hora') or 6.0)
+        hora = self._hora_salida(out)
+        return out.date - timedelta(days=1) if 0 < hora < corte else out.date
+
+    def _recalcular_numeros_suerte(self, fechas):
+        """Recalcula los aciertos de los Números de la Suerte que tocan esas fechas."""
+        dias = {f for d in fechas if d for f in (d, d - timedelta(days=1))}
+        if not dias:
+            return
+        try:
+            with self.env.cr.savepoint():
+                self.env['lottery.numeros.suerte'].sudo().search([
+                    ('date', 'in', list(dias)), ('published', '=', True),
+                ])._recalcular_aciertos()
+        except Exception:  # noqa: BLE001 - no frena el guardado de la salida
+            _logger.exception('lottery_api: no se pudieron recalcular los aciertos de la Suerte')
 
     def _tabla_numeros_magicos(self, out):
         """(tabla gratis, tabla Premium) más chica en la que estaba el número

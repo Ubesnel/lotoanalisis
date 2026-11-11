@@ -17,6 +17,37 @@ from .push_announcement import ANNOUNCEMENTS_TOPIC, _push_announcement_worker
 
 _logger = logging.getLogger(__name__)
 
+# Campos que cambian los aciertos del día.
+CAMPOS_ACIERTOS = {'published', 'date', 'number_ids_5', 'super_magico_id'}
+
+TIPOS_ACIERTO = [
+    ('directo', 'Directo'),
+    ('virado', 'Virado'),
+    ('corrido', 'Corrido'),
+    ('parle', 'Parlé'),
+]
+
+
+class LotteryNumerosSuerteAcierto(models.Model):
+    _name = 'lottery.numeros.suerte.acierto'
+    _description = 'Acierto de los Números de la Suerte'
+    _order = 'output_date desc, hora desc, id'
+
+    suerte_id = fields.Many2one(
+        'lottery.numeros.suerte', string='Números de la Suerte', required=True,
+        index=True, ondelete='cascade')
+    output_id = fields.Many2one(
+        'lottery.output', string='Salida', required=True, index=True, ondelete='cascade')
+    sorteo_id = fields.Many2one(related='output_id.sorteo_id', store=True, string='Sorteo')
+    turno_id = fields.Many2one(related='output_id.turno_id', store=True, string='Turno')
+    output_date = fields.Date(related='output_id.date', store=True, string='Fecha del sorteo')
+    hora = fields.Float(string='Hora')
+    tipo = fields.Selection(TIPOS_ACIERTO, string='Tipo', required=True)
+    premio = fields.Integer(string='Premio', help='1, 2 o 3; 0 en los parlés.')
+    numero = fields.Char(string='Salió')
+    numero_suerte = fields.Char(string='Número de la Suerte')
+    fuerte = fields.Boolean(string='Más fuerte', help='Era el Súper Mágico del día.')
+
 
 class LotteryNumerosSuerte(models.Model):
     _inherit = 'lottery.numeros.suerte'
@@ -28,6 +59,14 @@ class LotteryNumerosSuerte(models.Model):
     published_date = fields.Datetime(string='Publicada el', readonly=True, copy=False)
     push_sent = fields.Boolean(string='Notificación enviada', readonly=True, copy=False)
     push_sent_date = fields.Datetime(string='Fecha de envío', readonly=True, copy=False)
+    acierto_ids = fields.One2many(
+        'lottery.numeros.suerte.acierto', 'suerte_id', string='Aciertos', readonly=True)
+    aciertos_count = fields.Integer(string='Aciertos', compute='_compute_aciertos_count')
+
+    @api.depends('acierto_ids')
+    def _compute_aciertos_count(self):
+        for rec in self:
+            rec.aciertos_count = len(rec.acierto_ids)
 
     @api.constrains('published', 'date')
     def _check_un_publicado_por_fecha(self):
@@ -45,7 +84,59 @@ class LotteryNumerosSuerte(models.Model):
         res = super().write(vals)
         if recien_publicadas:
             recien_publicadas.write({'published_date': fields.Datetime.now()})
+        if CAMPOS_ACIERTOS.intersection(vals):
+            self._recalcular_aciertos()
         return res
+
+    def action_recalcular_aciertos(self):
+        self._recalcular_aciertos()
+        return True
+
+    def _recalcular_aciertos(self):
+        """Rehace los aciertos del día: directo en premios 1, 2 y 3, virado solo
+        en el 1 y parlés entre los 5."""
+        Output = self.env['lottery.output'].sudo()
+        Acierto = self.env['lottery.numeros.suerte.acierto'].sudo()
+        for rec in self.sudo():
+            rec.acierto_ids.unlink()
+            if not (rec.published and rec.date and rec.number_ids_5):
+                continue
+            cinco = set(rec.number_ids_5.mapped('name'))
+            sm = rec.super_magico_id.name if rec.super_magico_id else None
+            salidas = Output.search([
+                ('date', 'in', [rec.date, rec.date + timedelta(days=1)]),
+                ('number_id', '!=', False),
+                ('sorteo_id.show_in_app', '=', True),
+                '|', ('sorteo_id.source_code', '!=', 'quiniela_uy'),
+                ('sorteo_id.code', '=', 'quiniela_uy_1'),
+            ])
+            vals = []
+            for out in salidas:
+                if Output._fecha_numeros_suerte(out) != rec.date:
+                    continue
+                base = {'suerte_id': rec.id, 'output_id': out.id,
+                        'hora': Output._hora_salida(out)}
+                premios = [(i, n.name) for i, n in enumerate(
+                    (out.number_id, out.premio_2_id, out.premio_3_id), 1) if n]
+                for i, n in premios:
+                    if n in cinco:
+                        vals.append(dict(base, tipo='directo' if i == 1 else 'corrido',
+                                         premio=i, numero='%02d' % n,
+                                         numero_suerte='%02d' % n, fuerte=n == sm))
+                    elif i == 1:
+                        virado = (n % 10) * 10 + n // 10
+                        if virado != n and virado in cinco:
+                            vals.append(dict(base, tipo='virado', premio=1,
+                                             numero='%02d' % n,
+                                             numero_suerte='%02d' % virado,
+                                             fuerte=virado == sm))
+                en_cinco = sorted({n for _i, n in premios if n in cinco})
+                for k, a in enumerate(en_cinco):
+                    for b in en_cinco[k + 1:]:
+                        par = '%02d-%02d' % (a, b)
+                        vals.append(dict(base, tipo='parle', premio=0, numero=par,
+                                         numero_suerte=par, fuerte=sm in (a, b)))
+            Acierto.create(vals)
 
     def action_send_push_notification(self):
         self.ensure_one()
