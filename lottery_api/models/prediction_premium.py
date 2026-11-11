@@ -24,7 +24,8 @@ PARLES_DESTACADOS = 5
 MINIMO_TOMBOLA = {3: 3, 4: 3, 5: 3, 6: 3, 7: 3}
 # Si cambian, la evaluación se rehace.
 ACIERTOS = ('acierto_linea', 'acierto_terminal', 'acierto_fuerte', 'acierto_centena',
-            'acierto_terna', 'acierto_parle', 'acierto_tombola')
+            'acierto_terna', 'acierto_parle', 'acierto_tombola',
+            'acierto_super_magico', 'acierto_5', 'acierto_10')
 CAMPOS_EVALUADOS = {'sorteo_id', 'date', 'turno_id', 'linea_top', 'terminal_top', 'number_ids',
                     'centena_top_1', 'centena_top_2', 'terna_ids', 'parle_ids',
                     'tombola_linea_ids'}
@@ -110,6 +111,10 @@ class LotteryPredictionPremium(models.Model):
         string='Acertó tómbola', copy=False,
         help='Alguna línea llegó al mínimo de números salidos para su tamaño '
              '(3 aciertos en cualquier tamaño: con 3 ya hay premio).')
+    # Números Mágicos de la predicción del día del mismo sorteo, fecha y turno.
+    acierto_super_magico = fields.Boolean(string='Acertó Súper Mágico', copy=False)
+    acierto_5 = fields.Boolean(string='Acertó tabla de 5', copy=False)
+    acierto_10 = fields.Boolean(string='Acertó tabla de 10', copy=False)
     acierto_alguno = fields.Boolean(
         string='Algún acierto', compute='_compute_acierto_alguno', store=True, index=True)
 
@@ -242,7 +247,18 @@ class LotteryPredictionPremium(models.Model):
             'evaluacion_manual': False,
         }
         vals.update(self._vals_tombola())
+        vals.update(self._vals_magicos(out))
         return vals
+
+    def _vals_magicos(self, out):
+        """Aciertos del Súper Mágico y las tablas de 5 y 10 de la predicción del día."""
+        self.ensure_one()
+        pred, num = self.prediction_id, out.number_id
+        return {
+            'acierto_super_magico': bool(num and pred.super_magico_id == num),
+            'acierto_5': bool(num and num in pred.number_ids_5),
+            'acierto_10': bool(num and num in pred.number_ids_10),
+        }
 
     def _vals_tombola(self):
         """Cuántos números de cada línea salieron en la Tómbola de esa fecha

@@ -17,6 +17,7 @@ from PIL import Image
 
 from odoo import http
 from odoo.http import request
+from odoo.osv import expression
 
 from ..models.premium_pass import PremiumError
 
@@ -979,10 +980,11 @@ class LotteryAppApi(http.Controller):
 
     @http.route('/api/lottery/v1/curiosidades', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
-    def curiosidades(self, sorteo_id=None, limit=50, **kwargs):
+    def curiosidades(self, sorteo_id=None, limit=50, year=None, month=None, **kwargs):
         """Curiosidades publicadas del sorteo, para la sección
         "LotoAnálisis informa" de la app (estilo noticias, más reciente
-        primero). Solo se devuelven las marcadas como publicadas."""
+        primero). Solo se devuelven las marcadas como publicadas. `year` y
+        `month` filtran el período; `periodos` trae los que tienen noticias."""
         sorteo = _get_public_sorteo(sorteo_id)
         if not sorteo:
             return _json_response({'error': 'sorteo_not_found'}, status=404)
@@ -990,11 +992,48 @@ class LotteryAppApi(http.Controller):
             limit = min(max(int(limit), 1), 200)
         except (TypeError, ValueError):
             limit = 50
+        try:
+            year = int(year) if year else None
+            month = int(month) if month and year else None
+            if month and not 1 <= month <= 12:
+                raise ValueError
+        except (TypeError, ValueError):
+            return _json_response({'error': 'invalid_params'}, status=400)
 
-        curiosities = request.env['lottery.curiosity'].sudo().search([
-            ('sorteo_id', '=', sorteo.id),
-            ('published', '=', True),
-        ], order='date desc, id desc', limit=limit)
+        Curiosity = request.env['lottery.curiosity'].sudo()
+        base = [('sorteo_id', '=', sorteo.id), ('published', '=', True)]
+
+        # Años y meses que toca el plazo de alguna noticia, para los selectores.
+        request.env.cr.execute("""
+            SELECT DISTINCT EXTRACT(YEAR FROM m)::int, EXTRACT(MONTH FROM m)::int
+            FROM lottery_curiosity c,
+                 generate_series(date_trunc('month', c.date),
+                                 date_trunc('month', COALESCE(c.plazo_hasta, c.date)),
+                                 interval '1 month') AS m
+            WHERE c.sorteo_id = %s AND c.published
+            ORDER BY 1 DESC, 2 DESC
+        """, (sorteo.id,))
+        periodos = {}
+        for y, m in request.env.cr.fetchall():
+            periodos.setdefault(y, []).append({'month': m, 'month_label': MONTHS_ES[m - 1]})
+
+        domain = list(base)
+        if year:
+            if month:
+                desde = '%04d-%02d-01' % (year, month)
+                hasta = ('%04d-01-01' % (year + 1) if month == 12
+                         else '%04d-%02d-01' % (year, month + 1))
+            else:
+                desde, hasta = '%04d-01-01' % year, '%04d-01-01' % (year + 1)
+            # Entra si su plazo toca el período, aunque se haya publicado antes.
+            domain += [('date', '<', hasta), '|', ('plazo_hasta', '>=', desde),
+                       '&', ('plazo_hasta', '=', False), ('date', '>=', desde)]
+
+        curiosities = Curiosity.search(domain, order='date desc, id desc', limit=limit)
+        resumen = {
+            'cumplidas': Curiosity.search_count(domain + [('resultado', '=', 'cumplida')]),
+            'no_cumplidas': Curiosity.search_count(domain + [('resultado', '=', 'no_cumplida')]),
+        }
 
         # Con Informa Premium, sin pase van fecha y hora pero no el texto
         # (vacío y no null: las versiones viejas de la app lo exigen).
@@ -1003,6 +1042,9 @@ class LotteryAppApi(http.Controller):
         return _json_response({
             'sorteo': {'id': sorteo.id, 'name': sorteo.name},
             'premium_required': locked,
+            'periodos': [{'year': y, 'months': ms} for y, ms in periodos.items()],
+            'filtro': {'year': year, 'month': month},
+            'resumen': resumen,
             'items': [{
                 'id': c.id,
                 'date': c.date.strftime('%d/%m/%Y'),
@@ -1014,6 +1056,12 @@ class LotteryAppApi(http.Controller):
                 # Traducción opcional; si está vacía la app cae al español.
                 'text_en': None if locked else (c.text_en or None),
                 'locked': locked,
+                # sin_definir / cumplida / no_cumplida; el detalle solo con acceso.
+                'plazo_hasta': c.plazo_hasta.strftime('%d/%m/%Y') if c.plazo_hasta else None,
+                'resultado': c.resultado,
+                'cumplida_date': c.cumplida_date.strftime('%d/%m/%Y') if c.cumplida_date else None,
+                'resultado_detalle': None if locked else (c.resultado_detalle or None),
+                'resultado_detalle_en': None if locked else (c.resultado_detalle_en or None),
             } for c in curiosities],
         }, headers=NO_STORE if premium else None)
 
@@ -1254,6 +1302,16 @@ class LotteryAppApi(http.Controller):
 
         preds = request.env['lottery.prediction'].sudo().search(
             domain, order='date desc, id desc')
+        # Solo las ya jugadas: con verificación o con salida registrada.
+        jugadas = set()
+        if preds:
+            dates = preds.mapped('date')
+            for out in request.env['lottery.output'].sudo().search([
+                    ('sorteo_id', '=', sorteo.id),
+                    ('date', '>=', min(dates)), ('date', '<=', max(dates))]):
+                jugadas.add((out.date, out.turno_id.id))
+        preds = preds.filtered(
+            lambda p: p.verification_date or (p.date, p.turno_id.id) in jugadas)
 
         Turno = request.env['lottery.turno'].sudo()
         by_date = {}
@@ -1369,6 +1427,9 @@ class LotteryAppApi(http.Controller):
                         totales[name]['aciertos'] += 1
                         bucket['niveles'][name]['aciertos'] += 1
 
+            # Sin jugarse no entra al historial.
+            if not evaluada:
+                continue
             if year and pred.date.year != year:
                 continue
             if month and pred.date.month != month:
@@ -1772,16 +1833,39 @@ class LotteryAppApi(http.Controller):
             criterios.append('parle')
         if con_tombola:
             criterios.append('tombola')
+        # Las APKs hasta la +55 no conocen los Mágicos: sin magicos=1 van como antes.
+        con_magicos = str(kwargs.get('magicos')) == '1'
+        if con_magicos:
+            criterios += ['super_magico', '5', '10']
+            acierto = [('acierto_alguno', '=', True)]
+        else:
+            acierto = expression.OR([[('acierto_%s' % c, '=', True)] for c in criterios])
         resumen = {
             'jugadas': Premium.search_count(periodo),
-            'con_acierto': Premium.search_count(periodo + [('acierto_alguno', '=', True)]),
+            'con_acierto': Premium.search_count(periodo + acierto),
         }
         for c in criterios:
             resumen[c] = Premium.search_count(periodo + [('acierto_%s' % c, '=', True)])
 
-        domain = periodo + ([('acierto_alguno', '=', True)] if only_hits else [])
+        domain = periodo + (acierto if only_hits else [])
         total = Premium.search_count(domain)
         recs = Premium.search(domain, limit=limit, offset=offset)
+
+        def _magicos(rec):
+            """Súper Mágico y tablas de 5 y 10 de la predicción del día, con sus aciertos."""
+            pred = rec.prediction_id
+            if not pred:
+                return None
+            sm = pred.super_magico_id
+            cinco = pred.number_ids_5
+            return {
+                'super_magico': '%02d' % sm.name if sm else None,
+                'n5': sorted('%02d' % n.name for n in cinco - sm),
+                'n10': sorted('%02d' % n.name for n in pred.number_ids_10 - cinco - sm),
+                'super_magico_hit': rec.acierto_super_magico,
+                'n5_hit': rec.acierto_5,
+                'n10_hit': rec.acierto_10,
+            }
 
         def _item(rec):
             out = rec.output_id
@@ -1803,10 +1887,14 @@ class LotteryAppApi(http.Controller):
                 'turn_hora': _hora_turno(sorteo, rec.turno_id, rec.date),
                 'result': out.complete_number or None,
                 'result_number': '%02d' % ganador if ganador is not None else None,
-                'any_hit': rec.acierto_alguno,
+                # Corridos: premios 2 y 3 de la salida.
+                'result_premios': ['%02d' % n.name for n in (out.premio_2_id, out.premio_3_id) if n],
+                'any_hit': rec.acierto_alguno if con_magicos
+                else any(rec['acierto_%s' % c] for c in criterios),
                 'linea': _lado(rec.linea_top, linea, rec.acierto_linea),
                 'terminal': _lado(rec.terminal_top, rec.number_ids - linea, rec.acierto_terminal),
                 'fuerte_hit': rec.acierto_fuerte,
+                'magicos': _magicos(rec) if con_magicos else None,
             }
             if sorteo.uses_hundreds:
                 item.update(
@@ -2002,10 +2090,10 @@ class LotteryAppApi(http.Controller):
         def _nums(field):
             return [str(n).zfill(2) for n in sorted(field.mapped('name'))]
 
-        # Antes de jugarse, 10, 5 y Súper Mágico son Premium como en
-        # /numeros-magicos; después quedan a la vista de todos.
+        # Sin jugarse no se muestra (10, 5 y Súper Mágico son Premium hasta entonces).
         jugada = bool(pred.verification_date or output)
-        oculto = not jugada and _magicos_premium() and not _request_pass()
+        if not jugada:
+            return _json_response({'error': 'not_played'}, status=404, headers=NO_STORE)
         pares = _pares_salida(output) if output else set()
 
         return _json_response({
@@ -2027,15 +2115,15 @@ class LotteryAppApi(http.Controller):
             'numbers':    _nums(pred.number_ids),
             'numbers_30': _nums(pred.number_ids_30),
             'numbers_20': _nums(pred.number_ids_20),
-            'numbers_10': [] if oculto else _nums(pred.number_ids_10),
-            'numbers_5':  [] if oculto else _nums(pred.number_ids_5),
+            'numbers_10': _nums(pred.number_ids_10),
+            'numbers_5':  _nums(pred.number_ids_5),
             # Para resaltar en el tab "5" cuál de esos 5 números era la
             # apuesta fuerte (aro de estrellitas en la app); no agrega un
             # nivel nuevo al historial, sólo decora la lista de 5 que ya
             # existe.
             'super_magico': (
                 str(pred.super_magico_id.name).zfill(2)
-                if pred.super_magico_id and not oculto else None),
+                if pred.super_magico_id else None),
             # Ternas pronosticadas (solo Quiniela UY, en la predicción del
             # premio 1) y la terna que salió en ese premio, para marcar en
             # amarillo la que coincidió. No se contabilizan en los aciertos.
@@ -2053,7 +2141,7 @@ class LotteryAppApi(http.Controller):
             ) if pred.tombola_linea_ids else [],
             # Parlés pronosticados y los premios 1, 2 y 3 que salieron, para
             # marcar el que acertó. Antes del sorteo son Premium.
-            'parles': [] if oculto else [{
+            'parles': [{
                 'n1': '%02d' % p.numero_1.name,
                 'n2': '%02d' % p.numero_2.name,
                 'acierto': (p.numero_1.name, p.numero_2.name) in pares,
@@ -2063,5 +2151,5 @@ class LotteryAppApi(http.Controller):
                 '%02d' % n.name for n in (
                     output.number_id, output.premio_2_id, output.premio_3_id) if n
             ] if output else [],
-            'premium_locked': oculto,
-        }, headers=None if jugada else NO_STORE)
+            'premium_locked': False,
+        })

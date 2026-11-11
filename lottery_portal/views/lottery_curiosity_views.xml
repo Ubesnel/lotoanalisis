@@ -6,11 +6,17 @@
         <field name="name">lottery.curiosity.tree</field>
         <field name="model">lottery.curiosity</field>
         <field name="arch" type="xml">
-            <tree decoration-muted="not published">
+            <tree decoration-muted="not published"
+                  decoration-success="resultado == 'cumplida'"
+                  decoration-danger="resultado == 'no_cumplida'">
                 <field name="date"/>
                 <field name="hour" widget="float_time" optional="show"/>
+                <field name="plazo_hasta" optional="show"/>
                 <field name="sorteo_id" optional="show"/>
                 <field name="text"/>
+                <field name="resultado" widget="badge" optional="show"
+                       decoration-success="resultado == 'cumplida'"
+                       decoration-danger="resultado == 'no_cumplida'"/>
                 <field name="published" widget="boolean_toggle"/>
             </tree>
         </field>
@@ -27,11 +33,22 @@
                         <group>
                             <field name="date"/>
                             <field name="hour" widget="float_time"/>
+                            <field name="plazo_hasta"/>
                             <field name="sorteo_id" options="{'no_open': True, 'no_create': True}"/>
                         </group>
                         <group>
                             <field name="published"/>
+                            <field name="resultado" widget="radio" options="{'horizontal': true}"/>
+                            <field name="cumplida_date" invisible="resultado != 'cumplida'"/>
                         </group>
+                    </group>
+                    <group string="Por qué se cumplió o no" invisible="resultado == 'sin_definir'">
+                        <field name="resultado_detalle" nolabel="1" colspan="2"
+                               placeholder="Se cumplió porque salió el 56 dentro de las fechas dichas, el 12/11 en la Noche."/>
+                    </group>
+                    <group string="Por qué (inglés) — opcional" invisible="resultado == 'sin_definir'">
+                        <field name="resultado_detalle_en" nolabel="1" colspan="2"
+                               placeholder="It came true because 56 was drawn within the stated dates, on 11/12 at Night."/>
                     </group>
                     <group string="Noticia (español)">
                         <field name="text" nolabel="1" colspan="2"
@@ -62,11 +79,18 @@
                         domain="[('published', '=', True)]"/>
                 <filter string="Sin publicar" name="not_published"
                         domain="[('published', '=', False)]"/>
+                <separator/>
+                <filter string="Cumplidas" name="cumplidas"
+                        domain="[('resultado', '=', 'cumplida')]"/>
+                <filter string="No cumplidas" name="no_cumplidas"
+                        domain="[('resultado', '=', 'no_cumplida')]"/>
                 <group expand="0" string="Agrupar por">
                     <filter string="Fecha" name="group_date"
                             context="{'group_by': 'date'}"/>
                     <filter string="Sorteo" name="group_sorteo"
                             context="{'group_by': 'sorteo_id'}"/>
+                    <filter string="Resultado" name="group_resultado"
+                            context="{'group_by': 'resultado'}"/>
                 </group>
             </search>
         </field>
