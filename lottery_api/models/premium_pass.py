@@ -25,6 +25,7 @@ import requests
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
+from odoo.http import GeoIP, request
 
 _logger = logging.getLogger(__name__)
 
@@ -78,6 +79,38 @@ def _unb64(text):
     return base64.urlsafe_b64decode(text + '=' * (-len(text) % 4))
 
 
+def request_country(env):
+    """País del que hace el pedido según su IP (geoip de Odoo), como en el log de la API."""
+    try:
+        code = request and request.geoip.country_code
+    except Exception:
+        code = None
+    return _country_id(env, code)
+
+
+def request_ip():
+    """IP del que hace el pedido, o False fuera de un pedido."""
+    try:
+        return (request and request.httprequest.remote_addr) or False
+    except Exception:
+        return False
+
+
+def country_from_ip(env, ip):
+    """País de una IP guardada, con la misma base geoip."""
+    try:
+        code = ip and GeoIP(ip).country_code
+    except Exception:
+        code = None
+    return _country_id(env, code)
+
+
+def _country_id(env, code):
+    if not code:
+        return False
+    return env['res.country'].sudo().search([('code', '=', code.upper())], limit=1).id or False
+
+
 def _parse_google_time(value):
     """'2026-11-30T15:00:00.123Z' → datetime UTC naive, o False."""
     if not value:
@@ -123,6 +156,9 @@ class LotteryPremiumPass(models.Model):
     gift_code = fields.Char(string='Código de regalo', index=True, copy=False)
     device_id = fields.Char(string='ID de instalación',
                             help='Los pases de regalo valen solo en este teléfono.')
+    country_id = fields.Many2one('res.country', string='País', index=True, copy=False,
+                                 help='Según la IP del teléfono que lo activó o se lo mudó.')
+    request_ip = fields.Char(string='IP', copy=False)
 
     _sql_constraints = [
         ('purchase_token_uniq', 'unique(purchase_token)',
@@ -285,10 +321,16 @@ class LotteryPremiumPass(models.Model):
 
         rec = self.sudo().search([('purchase_token', '=', purchase_token)], limit=1)
         vals = self._vals_from_google(data, line)
+        country = request_country(self.env)
         if rec:
+            if country and not rec.country_id:
+                vals['country_id'] = country
+            if not rec.request_ip:
+                vals['request_ip'] = request_ip()
             rec.write(vals)
         else:
-            rec = self.sudo().create(dict(vals, purchase_token=purchase_token))
+            rec = self.sudo().create(dict(vals, purchase_token=purchase_token,
+                                          country_id=country, request_ip=request_ip()))
         if vals.get('linked_purchase_token'):
             self.sudo().search([
                 ('purchase_token', '=', vals['linked_purchase_token']),

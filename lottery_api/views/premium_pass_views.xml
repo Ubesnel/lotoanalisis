@@ -15,6 +15,7 @@
                 <field name="base_plan_id"/>
                 <field name="state"/>
                 <field name="expiry_date"/>
+                <field name="country_id" optional="show"/>
                 <field name="auto_renewing" optional="show"/>
                 <field name="order_id" optional="show"/>
                 <field name="is_test" optional="show"/>
@@ -46,6 +47,8 @@
                             <field name="expiry_date" readonly="1"/>
                             <field name="auto_renewing" readonly="1"/>
                             <field name="is_test" readonly="1"/>
+                            <field name="country_id"/>
+                            <field name="request_ip" readonly="1"/>
                             <field name="gift_code" readonly="1" invisible="origin != 'gift'"/>
                             <field name="device_id" readonly="1" invisible="origin != 'gift'"/>
                         </group>
@@ -83,6 +86,8 @@
                 <field name="order_id"/>
                 <field name="purchase_token"/>
                 <field name="gift_code"/>
+                <field name="country_id"/>
+                <field name="request_ip"/>
                 <separator/>
                 <filter name="vigentes" string="Con acceso"
                         domain="[('state', 'in', ('active', 'grace', 'canceled'))]"/>
@@ -91,6 +96,7 @@
                     <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
                     <filter name="group_plan" string="Plan" context="{'group_by': 'base_plan_id'}"/>
                     <filter name="group_origin" string="Origen" context="{'group_by': 'origin'}"/>
+                    <filter name="group_country" string="País" context="{'group_by': 'country_id'}"/>
                 </group>
             </search>
         </field>
