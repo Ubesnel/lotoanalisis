@@ -371,6 +371,10 @@ class LotteryPremiumGift(models.Model):
         if any(rec.state == 'available' and rec.origin == 'purchase'
                and (not rec.valid_until or rec.valid_until > now) for rec in self):
             raise UserError(_('Un código comprado sin canjear no se borra: anulalo.'))
+        # Sin el código, su pase quedaría huérfano dando Premium.
+        self.mapped('pass_id').filtered(
+            lambda p: p.state not in ('revoked', 'expired')
+            and (not p.expiry_date or p.expiry_date > now)).write({'state': 'revoked'})
         return super().unlink()
 
 
