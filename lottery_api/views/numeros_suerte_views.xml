@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <field name="super_magico_id" position="after">
                 <field name="published" widget="boolean_toggle"/>
+                <field name="aciertos_count"/>
             </field>
         </field>
     </record>
@@ -27,6 +28,33 @@
                         string="Enviar notificación"
                         invisible="not published or push_sent"
                         help="Avisa a todos que ya están los Números de la Suerte del día."/>
+                <button name="action_recalcular_aciertos" type="object"
+                        string="Recalcular aciertos"
+                        invisible="not published"
+                        help="Vuelve a buscar los aciertos del día en las salidas registradas."/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Aciertos" name="aciertos">
+                    <field name="acierto_ids">
+                        <tree decoration-success="tipo == 'directo'"
+                              decoration-warning="tipo == 'virado'"
+                              decoration-bf="fuerte">
+                            <field name="output_date"/>
+                            <field name="sorteo_id"/>
+                            <field name="turno_id"/>
+                            <field name="hora" widget="float_time"/>
+                            <field name="tipo" widget="badge"
+                                   decoration-success="tipo == 'directo'"
+                                   decoration-warning="tipo == 'virado'"
+                                   decoration-info="tipo == 'corrido'"
+                                   decoration-primary="tipo == 'parle'"/>
+                            <field name="premio"/>
+                            <field name="numero"/>
+                            <field name="numero_suerte"/>
+                            <field name="fuerte"/>
+                        </tree>
+                    </field>
+                </page>
             </xpath>
         </field>
     </record>

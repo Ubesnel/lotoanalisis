@@ -1943,24 +1943,55 @@ class LotteryAppApi(http.Controller):
 
     @http.route('/api/lottery/v1/premium/numeros-suerte', type='http',
                 auth='public', methods=['GET'], csrf=False, cors='*')
-    def premium_numeros_suerte(self, **kwargs):
-        """Números de la Suerte publicados del día vigente (cambia a la hora
-        de Ajustes, no a medianoche), iguales para todos los sorteos. Sin
-        pase, solo la fecha."""
-        hoy = request.env['lottery.numeros.suerte'].sudo()._fecha_vigente()
-        base = {'date': hoy.isoformat(), 'weekday': WEEKDAYS_ES[hoy.weekday()]}
-        if not _request_pass():
-            return _json_response(dict(base, locked=True, found=False, numbers=[]),
-                                  headers=NO_STORE)
+    def premium_numeros_suerte(self, date=None, **kwargs):
+        """Números de la Suerte publicados de un día (por defecto el vigente,
+        que cambia a la hora de Ajustes) con sus aciertos. El día en curso
+        pide pase; los anteriores quedan a la vista de todos."""
+        Suerte = request.env['lottery.numeros.suerte'].sudo()
+        hoy = Suerte._fecha_vigente()
+        fechas = Suerte.search([('published', '=', True), ('date', '<=', hoy)],
+                               order='date desc', limit=60).mapped('date')
+        primera = Suerte.search([('published', '=', True)], order='date asc', limit=1).date
+        fecha = hoy
+        if date:
+            try:
+                fecha = min(datetime.strptime(date, '%Y-%m-%d').date(), hoy)
+            except ValueError:
+                return _json_response({'error': 'invalid_date'}, status=400)
+        elif str(kwargs.get('ultimo')) == '1' and fechas:
+            # La app nueva abre en el último día publicado.
+            fecha = fechas[0]
+        base = {
+            'date': fecha.isoformat(),
+            'weekday': WEEKDAYS_ES[fecha.weekday()],
+            'es_hoy': fecha == hoy,
+            'hoy': hoy.isoformat(),
+            'primera': primera.isoformat() if primera else None,
+            'fechas': [d.isoformat() for d in fechas],
+        }
+        if fecha == hoy and not _request_pass():
+            return _json_response(dict(base, locked=True, found=False, numbers=[],
+                                       aciertos=[]), headers=NO_STORE)
 
-        rec = request.env['lottery.numeros.suerte'].sudo().search([
-            ('date', '=', hoy), ('published', '=', True),
-        ], limit=1)
+        rec = Suerte.search([('date', '=', fecha), ('published', '=', True)], limit=1)
         numbers = sorted('%02d' % n.name for n in rec.number_ids_5)
         sm = rec.super_magico_id
+        aciertos = [{
+            'sorteo_id': a.sorteo_id.id,
+            'sorteo': a.sorteo_id.name or '',
+            'turn_label': a.turno_id.name or '',
+            'turn_hora': _hora_turno(a.sorteo_id, a.turno_id, a.output_date),
+            'date': a.output_date.isoformat(),
+            'tipo': a.tipo,
+            'premio': a.premio,
+            'numero': a.numero,
+            'numero_suerte': a.numero_suerte,
+            'fuerte': a.fuerte,
+        } for a in rec.acierto_ids]
         return _json_response(dict(
             base, locked=False, found=bool(numbers), numbers=numbers,
             super_magico='%02d' % sm.name if sm and numbers else None,
+            aciertos=aciertos,
         ), headers=NO_STORE)
 
     @http.route('/api/lottery/v1/stats/tombola-uy-historico', type='http',
