@@ -408,7 +408,13 @@ class LotteryOutput(models.Model):
         dow = str(out.date.weekday())
         slot = out.sorteo_id.slot_ids.filtered(
             lambda sl: sl.dow == dow and sl.turno_id == out.turno_id)[:1]
-        return slot.hora_sorteo if slot else 0.0
+        if slot and slot.hora_sorteo:
+            return slot.hora_sorteo
+        # Turnos por horario (h1100): la hora es el propio turno.
+        code = out.turno_id.code or ''
+        if len(code) == 5 and code[0] == 'h' and code[1:].isdigit():
+            return int(code[1:3]) + int(code[3:]) / 60.0
+        return 0.0
 
     def _fecha_numeros_suerte(self, out):
         """Día de Números de la Suerte de la salida: antes de la hora de corte
