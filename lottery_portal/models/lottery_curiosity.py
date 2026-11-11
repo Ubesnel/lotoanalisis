@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 from odoo.addons.lottery_base.models.utils import default_today_local
 
 
@@ -44,11 +45,43 @@ class LotteryCuriosity(models.Model):
         help='Traducción al inglés de la noticia. Opcional: si se deja vacío, '
              'la app muestra el texto en español también a los usuarios en '
              'inglés (no queda ninguna noticia en blanco).')
+    plazo_hasta = fields.Date(
+        string='Vale hasta', compute='_compute_plazo_hasta', store=True,
+        readonly=False, index=True,
+        help='Último día del plazo para que se cumpla. Sin plazo, la misma '
+             'fecha de publicación. La app la muestra en cada mes que toca el plazo.')
+    resultado = fields.Selection(
+        [('sin_definir', 'Sin definir'), ('cumplida', 'Cumplida'),
+         ('no_cumplida', 'No cumplida')],
+        string='Resultado', required=True, default='sin_definir', index=True,
+        help='Si la noticia anunciaba algo, si se cumplió. Sin definir: la '
+             'app no le pone marca (curiosidades, avisos).')
+    cumplida_date = fields.Date(string='Cumplida el')
+    resultado_detalle = fields.Text(
+        string='Por qué',
+        help='Por qué se cumplió o no. Ej.: "Se cumplió porque salió el 56 '
+             'dentro de las fechas dichas, el 12/11 en la Noche". La app lo '
+             'muestra debajo de la noticia.')
+    resultado_detalle_en = fields.Text(
+        string='Por qué (inglés)',
+        help='Opcional: si se deja vacío la app muestra el texto en español.')
     published = fields.Boolean(
         string='Publicado', default=False, index=True,
         help='Solo las curiosidades publicadas se envían a la app móvil '
              '(sección "LotoAnálisis informa"). Permite prepararlas con '
              'anticipación y publicarlas cuando estén listas.')
+
+    @api.depends('date')
+    def _compute_plazo_hasta(self):
+        for rec in self:
+            if not rec.plazo_hasta or (rec.date and rec.plazo_hasta < rec.date):
+                rec.plazo_hasta = rec.date
+
+    @api.constrains('date', 'plazo_hasta')
+    def _check_plazo(self):
+        for rec in self:
+            if rec.date and rec.plazo_hasta and rec.plazo_hasta < rec.date:
+                raise ValidationError('"Vale hasta" no puede ser anterior a la fecha de publicación.')
 
     @api.depends('date', 'text', 'sorteo_id.name')
     def _compute_display_name(self):

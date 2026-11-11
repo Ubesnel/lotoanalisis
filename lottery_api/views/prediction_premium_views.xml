@@ -22,6 +22,9 @@
                 <field name="acierto_terna" optional="show"/>
                 <field name="acierto_parle" optional="show"/>
                 <field name="acierto_tombola" optional="hide"/>
+                <field name="acierto_super_magico" optional="show"/>
+                <field name="acierto_5" optional="show"/>
+                <field name="acierto_10" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -101,6 +104,9 @@
                                     <field name="acierto_terna" invisible="not sorteo_uses_hundreds"/>
                                     <field name="acierto_parle" invisible="not sorteo_generates_parles"/>
                                     <field name="acierto_tombola" invisible="sorteo_code != 'quiniela_uy_1'"/>
+                                    <field name="acierto_super_magico"/>
+                                    <field name="acierto_5"/>
+                                    <field name="acierto_10"/>
                                 </group>
                             </group>
                         </page>
@@ -188,6 +194,9 @@
                 <filter name="f_fuerte" string="Acertó número fuerte" domain="[('acierto_fuerte', '=', True)]"/>
                 <filter name="f_terna" string="Acertó terna" domain="[('acierto_terna', '=', True)]"/>
                 <filter name="f_parle" string="Acertó parlé" domain="[('acierto_parle', '=', True)]"/>
+                <filter name="f_super_magico" string="Acertó Súper Mágico" domain="[('acierto_super_magico', '=', True)]"/>
+                <filter name="f_5" string="Acertó tabla de 5" domain="[('acierto_5', '=', True)]"/>
+                <filter name="f_10" string="Acertó tabla de 10" domain="[('acierto_10', '=', True)]"/>
                 <filter name="f_centena" string="Acertó centena" domain="[('acierto_centena', '=', True)]"/>
                 <filter name="f_tombola" string="Acertó tómbola" domain="[('acierto_tombola', '=', True)]"/>
                 <group expand="0" string="Agrupar por">
