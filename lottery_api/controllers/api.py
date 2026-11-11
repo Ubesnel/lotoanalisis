@@ -1949,18 +1949,24 @@ class LotteryAppApi(http.Controller):
         pide pase; los anteriores quedan a la vista de todos."""
         Suerte = request.env['lottery.numeros.suerte'].sudo()
         hoy = Suerte._fecha_vigente()
+        fechas = Suerte.search([('published', '=', True), ('date', '<=', hoy)],
+                               order='date desc', limit=60).mapped('date')
+        primera = Suerte.search([('published', '=', True)], order='date asc', limit=1).date
         fecha = hoy
         if date:
             try:
                 fecha = min(datetime.strptime(date, '%Y-%m-%d').date(), hoy)
             except ValueError:
                 return _json_response({'error': 'invalid_date'}, status=400)
-        fechas = Suerte.search([('published', '=', True), ('date', '<=', hoy)],
-                               order='date desc', limit=60).mapped('date')
+        elif str(kwargs.get('ultimo')) == '1' and fechas:
+            # La app nueva abre en el último día publicado.
+            fecha = fechas[0]
         base = {
             'date': fecha.isoformat(),
             'weekday': WEEKDAYS_ES[fecha.weekday()],
             'es_hoy': fecha == hoy,
+            'hoy': hoy.isoformat(),
+            'primera': primera.isoformat() if primera else None,
             'fechas': [d.isoformat() for d in fechas],
         }
         if fecha == hoy and not _request_pass():
