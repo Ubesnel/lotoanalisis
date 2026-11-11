@@ -379,6 +379,8 @@ class LotteryOutput(models.Model):
     def _parles_numeros_suerte(self, out):
         """(['07-34', ...], fecha) con los parlés de la salida que forman dos
         Números de la Suerte distintos, solo directo; None si no hay."""
+        if not out.sorteo_id.generates_parles:
+            return None
         suerte, fecha = self._numeros_suerte_del_dia(out)
         if not suerte:
             return None
