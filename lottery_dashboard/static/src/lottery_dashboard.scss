@@ -382,3 +382,11 @@ $ldash-accents: (
     transition: transform .12s, box-shadow .12s;
     &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, .12); }
 }
+
+.o_ldash_eval {
+    width: 14px;
+    text-align: center;
+    font-size: .95rem;
+    &.is-ok { color: $ldash-good; }
+    &.is-wait { color: darken($ldash-warning, 8%); }
+}
