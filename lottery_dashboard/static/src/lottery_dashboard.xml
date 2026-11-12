@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="lottery_dashboard.Chart">
+        <div class="o_ldash_chart" t-att-style="'height:' + (props.height or 220) + 'px'">
+            <canvas t-ref="canvas"/>
+        </div>
+    </t>
+
+    <t t-name="lottery_dashboard.Main">
+        <div class="o_action">
+        <div class="o_ldash">
+            <t t-set="d" t-value="state.data"/>
+
+            <!-- Barra superior -->
+            <div class="o_ldash_top">
+                <div class="o_ldash_title">
+                    <h2>Tablero</h2>
+                    <span class="o_ldash_sub">
+                        Jornada del <b t-esc="fechaLarga"/>
+                        <span t-if="d.es_hoy" class="o_ldash_live" title="Se actualiza sola cada minuto">● en vivo</span>
+                        · actualizado <t t-esc="d.generado"/>
+                    </span>
+                </div>
+                <div class="o_ldash_nav">
+                    <button class="btn btn-light" t-on-click="() => this.moverDia(-1)" title="Día anterior"><i class="fa fa-chevron-left"/></button>
+                    <input type="date" class="form-control" t-att-value="state.date" t-on-change="onFecha"/>
+                    <button class="btn btn-light" t-on-click="() => this.moverDia(1)" title="Día siguiente"><i class="fa fa-chevron-right"/></button>
+                    <button class="btn btn-secondary" t-if="!d.es_hoy" t-on-click="irHoy">Hoy</button>
+                    <button class="btn btn-primary" t-on-click="cargar" title="Actualizar">
+                        <i t-attf-class="fa fa-refresh {{ state.cargando ? 'fa-spin' : '' }}"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="o_ldash_kpis">
+                <div class="o_ldash_kpi is-blue">
+                    <i class="o_ldash_kpi_icon fa fa-calendar-check-o"/>
+                    <span class="o_ldash_kpi_label">Tareas del día</span>
+                    <span class="o_ldash_kpi_value"><t t-esc="d.tareas.done"/><small>/<t t-esc="d.tareas.total"/></small></span>
+                    <div class="o_ldash_progress">
+                        <span class="is-done" t-attf-style="width:{{ pct(d.tareas.done, d.tareas.total) }}%"/>
+                        <span class="is-late" t-attf-style="width:{{ pct(d.tareas.late, d.tareas.total) }}%"/>
+                    </div>
+                    <span class="o_ldash_kpi_foot">
+                        <span class="text-danger" t-if="d.tareas.late"><i class="fa fa-exclamation-triangle"/> <t t-esc="d.tareas.late"/> atrasadas</span>
+                        <span t-else=""><t t-esc="d.tareas.pending"/> pendientes · sin atrasos</span>
+                    </span>
+                </div>
+                <div class="o_ldash_kpi is-violet">
+                    <i class="o_ldash_kpi_icon fa fa-magic"/>
+                    <span class="o_ldash_kpi_label">Predicciones normales</span>
+                    <span class="o_ldash_kpi_value"><t t-esc="d.predicciones.normal.published"/><small>/<t t-esc="d.predicciones.total"/></small></span>
+                    <div class="o_ldash_progress">
+                        <span class="is-acc" t-attf-style="width:{{ pct(d.predicciones.normal.published, d.predicciones.total) }}%"/>
+                        <span class="is-draft" t-attf-style="width:{{ pct(d.predicciones.normal.draft, d.predicciones.total) }}%"/>
+                    </div>
+                    <span class="o_ldash_kpi_foot"><t t-esc="d.predicciones.normal.missing"/> faltan · <t t-esc="d.predicciones.normal.draft"/> borrador</span>
+                </div>
+                <div class="o_ldash_kpi is-amber">
+                    <i class="o_ldash_kpi_icon fa fa-diamond"/>
+                    <span class="o_ldash_kpi_label">Predicciones Premium</span>
+                    <span class="o_ldash_kpi_value"><t t-esc="d.predicciones.premium.published"/><small>/<t t-esc="d.predicciones.total"/></small></span>
+                    <div class="o_ldash_progress">
+                        <span class="is-acc" t-attf-style="width:{{ pct(d.predicciones.premium.published, d.predicciones.total) }}%"/>
+                        <span class="is-draft" t-attf-style="width:{{ pct(d.predicciones.premium.draft, d.predicciones.total) }}%"/>
+                    </div>
+                    <span class="o_ldash_kpi_foot"><t t-esc="d.predicciones.premium.missing"/> faltan · <t t-esc="d.predicciones.premium.draft"/> borrador</span>
+                </div>
+                <div class="o_ldash_kpi is-green">
+                    <i class="o_ldash_kpi_icon fa fa-star"/>
+                    <span class="o_ldash_kpi_label">Premium activos</span>
+                    <span class="o_ldash_kpi_value"><t t-esc="d.premium.activos"/></span>
+                    <span class="o_ldash_kpi_foot">
+                        <t t-esc="d.premium.suscripcion"/> suscripción · <t t-esc="d.premium.regalo"/> regalo
+                        <t t-if="d.premium.nuevos_hoy"> · <b>+<t t-esc="d.premium.nuevos_hoy"/> hoy</b></t>
+                    </span>
+                </div>
+                <div class="o_ldash_kpi is-teal">
+                    <i class="o_ldash_kpi_icon fa fa-signal"/>
+                    <span class="o_ldash_kpi_label">Consultas a la API</span>
+                    <t t-if="d.consultas.disponible">
+                        <span class="o_ldash_kpi_value"><t t-esc="d.consultas.total"/></span>
+                        <span class="o_ldash_kpi_foot"><t t-esc="d.consultas.ips"/> IPs distintas
+                            <span t-if="d.consultas.errores_5xx" class="text-danger"> · <t t-esc="d.consultas.errores_5xx"/> errores 5xx</span>
+                        </span>
+                    </t>
+                    <t t-else="">
+                        <span class="o_ldash_kpi_value">—</span>
+                        <span class="o_ldash_kpi_foot">el log guarda <t t-esc="d.consultas.dias_log"/> días</span>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div class="o_ldash_alerts" t-if="d.alertas.length">
+                <t t-foreach="d.alertas" t-as="a" t-key="a_index">
+                    <div t-attf-class="o_ldash_alert is-{{ a.nivel }}" t-on-click="() => this.abrirAlerta(a)">
+                        <i t-attf-class="fa {{ a.nivel === 'critical' ? 'fa-times-circle' : 'fa-exclamation-triangle' }}"/>
+                        <b t-esc="a.titulo"/>
+                        <span t-esc="a.detalle"/>
+                    </div>
+                </t>
+            </div>
+
+            <div class="o_ldash_grid">
+
+                <!-- Predicciones: mosaico compacto -->
+                <section class="o_ldash_card o_ldash_span12 is-violet">
+                    <header>
+                        <h3><i class="o_ldash_h_icon fa fa-th"/> Predicciones por sorteo</h3>
+                        <div class="o_ldash_status_row">
+                            <span class="o_ldash_pill is-done"><i class="fa fa-check"/> <t t-esc="d.predicciones.ok"/> con las dos</span>
+                            <span class="o_ldash_pill is-pending"><i class="fa fa-adjust"/> <t t-esc="d.predicciones.partial"/> con una sola</span>
+                            <span class="o_ldash_pill is-late"><i class="fa fa-times"/> <t t-esc="d.predicciones.none"/> sin ninguna</span>
+                        </div>
+                        <span class="o_ldash_legend">
+                            <span class="o_ldash_tag is-published">N</span> publicada
+                            <span class="o_ldash_tag is-draft">N</span> borrador
+                            <span class="o_ldash_tag is-missing">N</span> falta
+                            · N normal · P Premium · <span class="o_ldash_legend_next">▌</span> próximo sorteo
+                        </span>
+                        <div class="btn-group btn-group-sm">
+                            <button t-attf-class="btn {{ state.filtroPred === 'all' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroPred', 'all')">Todos</button>
+                            <button t-attf-class="btn {{ state.filtroPred === 'pending' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroPred', 'pending')">Incompletos</button>
+                        </div>
+                    </header>
+                    <div class="o_ldash_tiles">
+                        <t t-foreach="filasPred" t-as="f" t-key="f.id">
+                            <div t-attf-class="o_ldash_tile is-{{ f.estado }}">
+                                <div class="o_ldash_tile_head" t-att-title="f.name + (f.pais ? ' · ' + f.pais : '')">
+                                    <b t-esc="f.name"/>
+                                    <small t-esc="f.pais_code"/>
+                                </div>
+                                <t t-foreach="f.celdas" t-as="c" t-key="c_index">
+                                    <div t-attf-class="o_ldash_tile_row {{ c.proximo ? 'is-next' : '' }}">
+                                        <span class="o_ldash_tile_turno" t-att-title="c.turno + ' ' + c.hora">
+                                            <span class="o_ldash_dot" t-attf-style="background:{{ c.turno_color or '#9a9a9a' }}"/>
+                                            <t t-esc="c.turno"/>
+                                        </span>
+                                        <span t-attf-class="o_ldash_tag is-{{ c.normal }}" t-att-title="'Normal: ' + etiquetaPred(c.normal)"
+                                              t-on-click="() => this.abrirPrediccion('lottery.prediction', c.normal_id)">N</span>
+                                        <span t-attf-class="o_ldash_tag is-{{ c.premium }}" t-att-title="'Premium: ' + etiquetaPred(c.premium)"
+                                              t-on-click="() => this.abrirPrediccion('lottery.prediction.premium', c.premium_id)">P</span>
+                                        <span class="o_ldash_tile_out" t-att-title="c.salida ? 'Salió' : 'Sin salida'" t-esc="c.salida or '·'"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </t>
+                        <div class="o_ldash_empty" t-if="!filasPred.length">
+                            <t t-if="d.predicciones.total">Todos los sorteos tienen las dos predicciones publicadas.</t>
+                            <t t-else="">Ningún sorteo de la app juega este día.</t>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Números -->
+                <section class="o_ldash_card o_ldash_span12 is-blue">
+                    <header>
+                        <h3>
+                            <i class="o_ldash_h_icon fa fa-bar-chart"/> Números que salieron
+                            <small class="text-muted">
+                                <t t-esc="d.numeros.cantidad"/> números en <t t-esc="d.numeros.sorteos"/> salidas de <t t-esc="d.numeros.loterias"/> loterías
+                            </small>
+                        </h3>
+                        <div class="o_ldash_controls">
+                            <label class="o_ldash_switch">
+                                <input type="checkbox" t-att-checked="state.corridos" t-on-change="toggleCorridos"/>
+                                incluir corridos (2.º y 3.º premio)
+                            </label>
+                            <div class="btn-group btn-group-sm">
+                                <button t-attf-class="btn {{ state.periodo === 'day' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setPeriodo('day')">Día</button>
+                                <button t-attf-class="btn {{ state.periodo === 'week' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setPeriodo('week')">7 días</button>
+                                <button t-attf-class="btn {{ state.periodo === 'month' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setPeriodo('month')">30 días</button>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="o_ldash_empty" t-if="!d.numeros.cantidad">Todavía no hay salidas registradas en este período.</div>
+                    <div class="o_ldash_digits" t-else="">
+                        <t t-foreach="[['lineas', 'Líneas', 'Decena'], ['terminales', 'Terminales', 'Unidad'], ['pintas', 'Pintas', 'Contienen el dígito']]" t-as="g" t-key="g[0]">
+                            <t t-set="s" t-value="d.numeros[g[0]]"/>
+                            <div class="o_ldash_digit_block">
+                                <div class="o_ldash_digit_head"><b t-esc="g[1]"/> <small class="text-muted" t-esc="g[2]"/></div>
+                                <DashChart config="charts[g[0]]" height="180"/>
+                                <div class="o_ldash_digit_foot">
+                                    <span><i class="fa fa-arrow-up"/> Más activas: <b t-esc="digitos(s.mas)"/></span>
+                                    <span><i class="fa fa-arrow-down"/> Menos: <b t-esc="digitos(s.menos)"/></span>
+                                    <span t-if="s.ceros.length and s.ceros.length &lt; 10" class="text-muted">Sin salir: <t t-esc="digitos(s.ceros)"/></span>
+                                </div>
+                            </div>
+                        </t>
+                        <div class="o_ldash_digit_block o_ldash_repeats">
+                            <div class="o_ldash_digit_head"><b>Números repetidos</b> <small class="text-muted"><t t-esc="d.numeros.distintos"/> distintos</small></div>
+                            <div class="o_ldash_chips">
+                                <t t-foreach="d.numeros.repetidos" t-as="rep" t-key="rep.numero">
+                                    <span class="o_ldash_chip"><b t-esc="rep.numero"/> ×<t t-esc="rep.veces"/></span>
+                                </t>
+                                <span class="text-muted" t-if="!d.numeros.repetidos.length">Ninguno se repitió.</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tareas -->
+                <section class="o_ldash_card o_ldash_span5 is-blue">
+                    <header>
+                        <h3><i class="o_ldash_h_icon fa fa-calendar-check-o"/> Tareas de publicación</h3>
+                        <div class="btn-group btn-group-sm">
+                            <button t-attf-class="btn {{ state.filtroTareas === 'open' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroTareas', 'open')">Abiertas</button>
+                            <button t-attf-class="btn {{ state.filtroTareas === 'late' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroTareas', 'late')">Atrasadas <t t-esc="d.tareas.late"/></button>
+                            <button t-attf-class="btn {{ state.filtroTareas === 'done' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroTareas', 'done')">Hechas <t t-esc="d.tareas.done"/></button>
+                            <button t-attf-class="btn {{ state.filtroTareas === 'all' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroTareas', 'all')">Todas</button>
+                        </div>
+                    </header>
+                    <div class="o_ldash_status_row">
+                        <span class="o_ldash_pill is-pending"><i class="fa fa-clock-o"/> <t t-esc="d.tareas.pending"/> pendientes</span>
+                        <span class="o_ldash_pill is-late"><i class="fa fa-exclamation-triangle"/> <t t-esc="d.tareas.late"/> atrasadas</span>
+                        <span class="o_ldash_pill is-done"><i class="fa fa-check"/> <t t-esc="d.tareas.done"/> hechas</span>
+                    </div>
+                    <div class="o_ldash_next" t-if="d.es_hoy and d.tareas.proxima">
+                        <i class="fa fa-bell"/> Próxima: <b><t t-esc="d.tareas.proxima.sorteo"/> – <t t-esc="d.tareas.proxima.turno"/></b>
+                        a las <t t-esc="d.tareas.proxima.hora"/>
+                        <span class="text-muted">(en <t t-esc="d.tareas.proxima.minutos"/> min)</span>
+                    </div>
+                    <div class="o_ldash_list">
+                        <t t-foreach="tareasFiltradas" t-as="tk" t-key="tk.id">
+                            <div t-attf-class="o_ldash_task is-{{ tk.state }}" t-on-click="() => this.abrirTarea(tk.id)">
+                                <span class="o_ldash_task_hora">
+                                    <t t-esc="tk.hora"/>
+                                    <small t-if="tk.cruza" title="Se publica pasada la medianoche (hora de Uruguay)">+1</small>
+                                </span>
+                                <span class="o_ldash_task_name"><t t-esc="tk.sorteo"/> <small t-esc="tk.turno"/></span>
+                                <span t-attf-class="o_ldash_badge is-{{ tk.state }}" t-esc="tk.state_label"/>
+                            </div>
+                        </t>
+                        <div class="o_ldash_empty" t-if="!tareasFiltradas.length">
+                            <t t-if="d.tareas.total">Nada en este filtro.</t>
+                            <t t-else="">No hay tareas en la agenda para esta jornada.</t>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Accesos Premium -->
+                <section class="o_ldash_card o_ldash_span7 is-amber">
+                    <header>
+                        <h3><i class="o_ldash_h_icon fa fa-shield"/> Accesos a contenido Premium</h3>
+                    </header>
+                    <div class="o_ldash_empty" t-if="d.accesos.falta_update">Falta actualizar el módulo lottery_api para registrar los accesos Premium.</div>
+                    <div class="o_ldash_empty" t-elif="!d.accesos.disponible">El log se limpia a los 3 días: no hay datos de esta jornada.</div>
+                    <t t-else="">
+                        <div class="o_ldash_minis is-colored">
+                            <div class="is-good" title="Respuestas Premium entregadas con un pase válido">
+                                <span><i class="fa fa-unlock"/> Con pase válido</span>
+                                <b t-esc="d.accesos.con_pase"/>
+                                <small><t t-esc="d.accesos.pases"/> pases distintos</small>
+                            </div>
+                            <div class="is-info" title="Usuarios gratis que abrieron una pantalla Premium y vieron el candado">
+                                <span><i class="fa fa-eye"/> Gratis que miraron</span>
+                                <b t-esc="d.accesos.curiosos"/>
+                                <small><t t-esc="d.accesos.curiosos_ips"/> IPs · interés</small>
+                            </div>
+                            <div t-attf-class="{{ d.accesos.rechazados ? 'is-bad' : 'is-good' }}" title="La app mandó un pase y el servidor lo rechazó: vencido, reembolsado, otro teléfono o token falso">
+                                <span><i class="fa fa-ban"/> Pase rechazado</span>
+                                <b t-esc="d.accesos.rechazados"/>
+                                <small><t t-esc="d.accesos.rechazados_disp"/> dispositivos</small>
+                            </div>
+                            <div t-attf-class="{{ d.accesos.compartidos.length ? 'is-bad' : 'is-good' }}" title="Un mismo pase usado desde más de un teléfono o desde más de 4 IPs">
+                                <span><i class="fa fa-share-alt"/> Pases compartidos</span>
+                                <b t-esc="d.accesos.compartidos.length"/>
+                                <small>posible copia</small>
+                            </div>
+                        </div>
+                        <div class="o_ldash_two">
+                            <div>
+                                <div class="o_ldash_sub_head">Por pantalla</div>
+                                <table class="o_ldash_table">
+                                    <tr><th>Endpoint</th><th class="text-end">Con pase</th><th class="text-end">Bloqueado</th></tr>
+                                    <tr t-foreach="d.accesos.endpoints" t-as="e" t-key="e.name">
+                                        <td t-esc="e.name"/>
+                                        <td class="text-end text-success" t-esc="e.granted"/>
+                                        <td class="text-end text-warning" t-esc="e.locked"/>
+                                    </tr>
+                                </table>
+                                <t t-if="d.accesos.insistentes.length">
+                                    <div class="o_ldash_sub_head mt-3">Gratis que más insisten</div>
+                                    <table class="o_ldash_table">
+                                        <tr t-foreach="d.accesos.insistentes" t-as="x" t-key="x.ip">
+                                            <td><t t-esc="x.ip"/> <small class="text-muted" t-esc="x.pais"/></td>
+                                            <td class="text-end"><t t-esc="x.veces"/>× · <t t-esc="x.endpoints"/> pant.</td>
+                                        </tr>
+                                    </table>
+                                </t>
+                            </div>
+                            <div>
+                                <div class="o_ldash_sub_head">Para revisar</div>
+                                <div class="o_ldash_list is-short">
+                                    <t t-foreach="d.accesos.compartidos" t-as="x" t-key="x.pass_id">
+                                        <div class="o_ldash_task is-late" t-on-click="() => this.abrirPrediccion('lottery.premium.pass', x.pass_id)">
+                                            <span class="o_ldash_badge is-late">Compartido</span>
+                                            <span class="o_ldash_task_name"><t t-esc="x.name"/>
+                                                <small><t t-esc="x.dispositivos"/> teléf. · <t t-esc="x.ips"/> IPs · <t t-esc="x.paises"/></small></span>
+                                        </div>
+                                    </t>
+                                    <t t-foreach="d.accesos.sospechosos" t-as="x" t-key="x_index">
+                                        <div class="o_ldash_task">
+                                            <span class="o_ldash_badge is-pending">Rechazado</span>
+                                            <span class="o_ldash_task_name"><t t-esc="x.ip"/>
+                                                <small><t t-esc="x.pais"/> · <t t-esc="x.veces"/>× · última <t t-esc="x.ultima"/><t t-if="x.device"> · disp. <t t-esc="x.device.slice(0, 8)"/></t></small></span>
+                                        </div>
+                                    </t>
+                                    <div class="o_ldash_empty" t-if="!d.accesos.compartidos.length and !d.accesos.sospechosos.length">
+                                        <i class="fa fa-check-circle text-success"/> Nada raro en esta jornada.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </section>
+
+                <!-- Códigos de regalo -->
+                <section class="o_ldash_card o_ldash_span7 is-green">
+                    <header>
+                        <h3><i class="o_ldash_h_icon fa fa-gift"/> Códigos de regalo <small class="text-muted"><t t-esc="d.regalos.total"/> en total<t t-if="d.regalos.robots"> · <t t-esc="d.regalos.robots"/> de robots excluidos</t></small></h3>
+                    </header>
+                    <div class="o_ldash_minis">
+                        <div><span>Sin canjear</span><b t-esc="d.regalos.estados.available"/></div>
+                        <div><span>Canjeados</span><b t-esc="d.regalos.estados.redeemed"/></div>
+                        <div><span>Vencidos</span><b t-esc="d.regalos.estados.expired"/></div>
+                        <div><span>Anulados</span><b t-esc="d.regalos.estados.revoked"/></div>
+                        <div><span>Comprados</span><b t-esc="d.regalos.origenes.purchase"/></div>
+                        <div><span>Cortesía</span><b t-esc="d.regalos.origenes.courtesy"/></div>
+                        <div><span>Prueba gratis</span><b t-esc="d.regalos.origenes.trial"/></div>
+                    </div>
+                    <div class="o_ldash_two">
+                        <div>
+                            <div class="o_ldash_sub_head">Por país</div>
+                            <DashChart config="charts.regalosPais" height="Math.max(200, d.regalos.paises.length * 26 + 60)"/>
+                        </div>
+                        <div>
+                            <div class="o_ldash_sub_head">Creados en los últimos 30 días</div>
+                            <DashChart config="charts.regalosRecientes" height="Math.max(200, d.regalos.paises.length * 26 + 60)"/>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="o_ldash_card o_ldash_span5 is-amber">
+                    <header>
+                        <h3><i class="o_ldash_h_icon fa fa-hourglass-half"/> Próximos a vencer <small class="text-muted">en <t t-esc="d.regalos.dias_vencer"/> días</small></h3>
+                    </header>
+                    <div class="o_ldash_sub_head">Códigos sin canjear (<t t-esc="d.regalos.por_vencer_total"/>)</div>
+                    <div class="o_ldash_list is-short">
+                        <t t-foreach="d.regalos.por_vencer" t-as="g" t-key="g.id">
+                            <div class="o_ldash_task" t-on-click="() => this.abrirRegalo(g.id)">
+                                <span class="o_ldash_task_hora"><t t-esc="g.dias"/> d</span>
+                                <span class="o_ldash_task_name"><t t-esc="g.name"/> <small><t t-esc="g.pais"/> · <t t-esc="g.origin"/></small></span>
+                            </div>
+                        </t>
+                        <div class="o_ldash_empty" t-if="!d.regalos.por_vencer.length">Ninguno.</div>
+                    </div>
+                    <div class="o_ldash_sub_head">Premium de regalo que termina (<t t-esc="d.regalos.premium_vence_total"/>)</div>
+                    <div class="o_ldash_list is-short">
+                        <t t-foreach="d.regalos.premium_vence" t-as="g" t-key="g.id">
+                            <div class="o_ldash_task" t-on-click="() => this.abrirRegalo(g.id)">
+                                <span class="o_ldash_task_hora"><t t-esc="g.dias"/> d</span>
+                                <span class="o_ldash_task_name"><t t-esc="g.name"/> <small><t t-esc="g.pais"/> · <t t-esc="g.origin"/><t t-if="g.note"> · <t t-esc="g.note"/></t></small></span>
+                            </div>
+                        </t>
+                        <div class="o_ldash_empty" t-if="!d.regalos.premium_vence.length">Ninguno.</div>
+                    </div>
+                    <div class="o_ldash_minis is-compact">
+                        <div><span>Premium vence en 7 d</span><b t-esc="d.premium.vencen_7"/></div>
+                        <div><span>Pago en riesgo</span><b t-attf-class="{{ d.premium.en_riesgo ? 'text-danger' : '' }}" t-esc="d.premium.en_riesgo"/></div>
+                    </div>
+                </section>
+
+                <!-- Consultas -->
+                <section class="o_ldash_card o_ldash_span12 is-teal">
+                    <header>
+                        <h3><i class="o_ldash_h_icon fa fa-signal"/> Consultas a la API <small class="text-muted">solo lo que no sirvió el caché de nginx</small></h3>
+                    </header>
+                    <div class="o_ldash_empty" t-if="!d.consultas.disponible">
+                        El log se limpia a los <t t-esc="d.consultas.dias_log"/> días: no hay datos de esta jornada.
+                    </div>
+                    <div class="o_ldash_three" t-else="">
+                        <div>
+                            <div class="o_ldash_sub_head">Sorteos más consultados</div>
+                            <DashChart t-if="d.consultas.sorteos.length" config="charts.consultasSorteo" height="Math.max(200, d.consultas.sorteos.length * 24 + 40)"/>
+                            <div class="o_ldash_empty" t-else="">Sin consultas por sorteo.</div>
+                        </div>
+                        <div>
+                            <div class="o_ldash_sub_head">Por hora (Uruguay)</div>
+                            <DashChart config="charts.consultasHora" height="200"/>
+                            <div class="o_ldash_sub_head mt-3">Endpoints</div>
+                            <table class="o_ldash_table">
+                                <tr t-foreach="d.consultas.endpoints" t-as="e" t-key="e.name">
+                                    <td t-esc="e.name"/><td class="text-end" t-esc="e.count"/>
+                                </tr>
+                            </table>
+                        </div>
+                        <div>
+                            <div class="o_ldash_sub_head">Países</div>
+                            <DashChart t-if="d.consultas.paises.length" config="charts.consultasPais" height="Math.max(200, d.consultas.paises.length * 24 + 40)"/>
+                            <div class="o_ldash_minis is-compact">
+                                <div><span>Errores 4xx</span><b t-esc="d.consultas.errores_4xx"/></div>
+                                <div><span>Errores 5xx</span><b t-attf-class="{{ d.consultas.errores_5xx ? 'text-danger' : '' }}" t-esc="d.consultas.errores_5xx"/></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        </div>
+    </t>
+</templates>

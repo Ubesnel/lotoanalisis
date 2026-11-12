@@ -31,9 +31,17 @@ class LotteryApiLog(models.Model):
         'lottery.sorteo', string='Sorteo', ondelete='set null', index=True)
     status = fields.Integer(string='HTTP status')
     user_agent = fields.Char(string='User Agent')
+    premium_access = fields.Selection([
+        ('granted', 'Con pase'),
+        ('locked', 'Bloqueado'),
+    ], string='Acceso Premium', index=True,
+        help='Solo en respuestas de contenido Premium.')
+    pass_sent = fields.Boolean(string='Mandó pase')
+    pass_id = fields.Many2one('lottery.premium.pass', string='Pase', ondelete='set null', index=True)
+    device_id = fields.Char(string='ID de instalación', index=True)
 
     @api.model
-    def _record(self, request, status):
+    def _record(self, request, status, locked=None):
         """Registra una consulta. Silencioso: cualquier error se traga."""
         try:
             req = request.httprequest
@@ -62,7 +70,18 @@ class LotteryApiLog(models.Model):
                 if sid and self.env['lottery.sorteo'].sudo().browse(sid).exists():
                     sorteo_id = sid
 
+            token = req.headers.get('X-Premium-Pass')
+            device = req.headers.get('X-Premium-Device') or False
+            pase = self.env['lottery.premium.pass']
+            if token:
+                pase = pase.sudo()._from_token(token, device)
+
             self.sudo().create({
+                'premium_access': (False if locked is None
+                                   else 'locked' if locked else 'granted'),
+                'pass_sent': bool(token),
+                'pass_id': pase.id or False,
+                'device_id': (device or '')[:64] or False,
                 'endpoint': req.path,
                 'ip': req.remote_addr,
                 'country_code': country_code,

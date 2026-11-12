@@ -1,0 +1,374 @@
+$ldash-good: #0ca30c;
+$ldash-warning: #fab219;
+$ldash-serious: #ec835a;
+$ldash-critical: #d03b3b;
+$ldash-radius: 10px;
+
+.o_ldash {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 20px 32px;
+    background-color: $o-webclient-background-color;
+    color: $body-color;
+
+    h2 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+    h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        small { font-weight: 400; margin-left: 6px; font-size: .8rem; }
+    }
+}
+
+.o_ldash_top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.o_ldash_sub { color: $text-muted; font-size: .9rem; }
+.o_ldash_live { color: $ldash-good; margin-left: 6px; font-weight: 600; }
+.o_ldash_nav {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    input { width: 160px; }
+}
+
+// ── KPIs ─────────────────────────────────────────────────────────────────
+.o_ldash_kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.o_ldash_kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid $border-color;
+    border-radius: $ldash-radius;
+    background: $o-view-background-color;
+}
+.o_ldash_kpi_label { color: $text-muted; font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
+.o_ldash_kpi_value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    small { font-size: 1rem; color: $text-muted; font-weight: 500; }
+}
+.o_ldash_kpi_foot { font-size: .8rem; color: $text-muted; }
+.o_ldash_progress {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: rgba($text-muted, .18);
+    span { height: 100%; }
+    .is-done { background: $ldash-good; }
+    .is-late { background: $ldash-critical; }
+}
+
+// ── Alertas ──────────────────────────────────────────────────────────────
+.o_ldash_alerts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.o_ldash_alert {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    background: $o-view-background-color;
+    cursor: pointer;
+    font-size: .9rem;
+    span { color: $text-muted; }
+    &.is-critical { border-color: $ldash-critical; i { color: $ldash-critical; } }
+    &.is-warning { border-color: $ldash-warning; i { color: darken($ldash-warning, 15%); } }
+    &:hover { background: rgba($text-muted, .08); }
+}
+
+// ── Grilla de tarjetas ───────────────────────────────────────────────────
+.o_ldash_grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 12px;
+}
+@each $n in 4, 5, 7, 8, 12 {
+    .o_ldash_span#{$n} { grid-column: span #{$n}; }
+}
+@media (max-width: 1200px) {
+    .o_ldash_span4, .o_ldash_span5, .o_ldash_span7, .o_ldash_span8 { grid-column: span 12; }
+}
+
+.o_ldash_card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid $border-color;
+    border-radius: $ldash-radius;
+    background: $o-view-background-color;
+
+    > header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+.o_ldash_sub_head { font-size: .8rem; font-weight: 600; color: $text-muted; text-transform: uppercase; letter-spacing: .03em; }
+.o_ldash_empty { color: $text-muted; font-size: .9rem; padding: 12px 0; text-align: center; }
+.o_ldash_controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.o_ldash_switch { display: flex; gap: 6px; align-items: center; margin: 0; font-size: .85rem; cursor: pointer; }
+.o_ldash_chart { position: relative; width: 100%; }
+
+// ── Estados (pills, badges) ──────────────────────────────────────────────
+.o_ldash_status_row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.o_ldash_pill, .o_ldash_badge {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    &.is-pending { background: rgba($ldash-warning, .2); color: darken($ldash-warning, 25%); }
+    &.is-late { background: rgba($ldash-critical, .15); color: $ldash-critical; }
+    &.is-done { background: rgba($ldash-good, .15); color: darken($ldash-good, 5%); }
+}
+.o_ldash_legend {
+    margin-left: auto;
+    font-size: .75rem;
+    color: $text-muted;
+    .o_ldash_tag { margin-left: 6px; }
+}
+.o_ldash_next {
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: rgba($ldash-warning, .12);
+    font-size: .9rem;
+}
+
+// ── Lista de tareas ──────────────────────────────────────────────────────
+.o_ldash_list {
+    display: flex;
+    flex-direction: column;
+    max-height: 430px;
+    overflow: auto;
+    &.is-short { max-height: 190px; }
+}
+.o_ldash_task {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba($text-muted, .15);
+    cursor: pointer;
+    &:hover { background: rgba($text-muted, .07); }
+    &.is-late .o_ldash_task_hora { color: $ldash-critical; }
+    &.is-done { opacity: .6; }
+}
+.o_ldash_task_hora {
+    flex: 0 0 78px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    small { color: $ldash-serious; margin-left: 2px; }
+}
+.o_ldash_task_name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    small { color: $text-muted; margin-left: 4px; }
+}
+
+// ── Etiquetas ──────────────────────────────────────────────────────────
+.o_ldash_dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.o_ldash_tag {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+    cursor: pointer;
+    &.is-published { background: $ldash-good; color: #fff; }
+    &.is-draft { background: rgba($ldash-warning, .3); color: darken($ldash-warning, 30%); }
+    &.is-missing { background: rgba($ldash-critical, .12); color: $ldash-critical; cursor: default; }
+}
+
+// ── Números ──────────────────────────────────────────────────────────────
+.o_ldash_digits {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+@media (max-width: 1200px) { .o_ldash_digits { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .o_ldash_digits { grid-template-columns: 1fr; } }
+.o_ldash_digit_block { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.o_ldash_digit_head { font-size: .9rem; }
+.o_ldash_digit_foot { display: flex; flex-direction: column; font-size: .8rem; gap: 2px; }
+.o_ldash_chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.o_ldash_chip {
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid $border-color;
+    font-size: .85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+// ── Mini cifras y columnas ───────────────────────────────────────────────
+.o_ldash_minis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+    gap: 8px;
+    > div {
+        display: flex;
+        flex-direction: column;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: rgba($text-muted, .07);
+        span { font-size: .75rem; color: $text-muted; }
+        b { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+    }
+    &.is-compact { margin-top: 8px; }
+}
+.o_ldash_two, .o_ldash_three { display: grid; gap: 16px; }
+.o_ldash_two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.o_ldash_three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 1000px) {
+    .o_ldash_two, .o_ldash_three { grid-template-columns: 1fr; }
+}
+.o_ldash_table {
+    width: 100%;
+    font-size: .8rem;
+    td { padding: 3px 0; border-bottom: 1px solid rgba($text-muted, .12); }
+    td:first-child { font-family: $font-family-monospace; overflow-wrap: anywhere; }
+}
+
+// ── Acentos de color ─────────────────────────────────────────────────────
+$ldash-accents: (
+    blue: #2a78d6,
+    violet: #6250d6,
+    amber: #e08e00,
+    green: #12a06d,
+    teal: #0f9bb0,
+);
+@each $name, $color in $ldash-accents {
+    .o_ldash_kpi.is-#{$name}, .o_ldash_card.is-#{$name} { --ldash-acc: #{$color}; --ldash-acc-rgb: #{red($color)}, #{green($color)}, #{blue($color)}; }
+}
+
+.o_ldash_kpi {
+    position: relative;
+    overflow: hidden;
+    padding-right: 64px;
+    border-top: 4px solid var(--ldash-acc, #{$border-color});
+    background: linear-gradient(135deg, rgba(var(--ldash-acc-rgb), .14) 0%, rgba(var(--ldash-acc-rgb), .03) 55%), $o-view-background-color;
+    .o_ldash_kpi_label { color: var(--ldash-acc); font-weight: 600; }
+    .o_ldash_progress .is-acc { background: var(--ldash-acc); }
+    .o_ldash_progress .is-draft { background: rgba($ldash-warning, .8); }
+}
+.o_ldash_kpi_icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.15rem;
+    color: #fff;
+    background: var(--ldash-acc);
+    box-shadow: 0 4px 10px rgba(var(--ldash-acc-rgb), .35);
+}
+
+.o_ldash_card {
+    border-top: 3px solid var(--ldash-acc, #{$border-color});
+    > header h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+}
+.o_ldash_h_icon {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: .85rem;
+    color: var(--ldash-acc);
+    background: rgba(var(--ldash-acc-rgb), .14);
+}
+
+// ── Mosaico de predicciones (sin scroll) ─────────────────────────────────
+.o_ldash_tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+}
+.o_ldash_tile {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 8px 7px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    &.is-ok { background: rgba($ldash-good, .10); border-color: rgba($ldash-good, .45); }
+    &.is-partial { background: rgba($ldash-warning, .14); border-color: rgba($ldash-warning, .7); }
+    &.is-none { background: rgba($ldash-critical, .08); border-color: rgba($ldash-critical, .45); }
+}
+.o_ldash_tile_head {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: .85rem;
+    b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    small { flex: none; font-size: .68rem; font-weight: 700; color: $text-muted; letter-spacing: .05em; }
+}
+.o_ldash_tile_row {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 1px 4px;
+    margin: 0 -4px;
+    border-radius: 4px;
+    border-left: 3px solid transparent;
+    font-size: .78rem;
+    &.is-next { border-left-color: $ldash-serious; background: rgba($ldash-serious, .14); }
+    .o_ldash_tag { padding: 0 6px; font-size: .7rem; min-width: 20px; justify-content: center; }
+}
+.o_ldash_tile_turno {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.o_ldash_tile_out {
+    flex: 0 0 34px;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.o_ldash_legend_next { color: $ldash-serious; }
+
+// ── Mini cifras de color ─────────────────────────────────────────────────
+.o_ldash_minis.is-colored > div {
+    border-left: 4px solid;
+    small { font-size: .7rem; color: $text-muted; }
+    &.is-good { border-color: $ldash-good; background: rgba($ldash-good, .08); }
+    &.is-info { border-color: #2a78d6; background: rgba(#2a78d6, .08); }
+    &.is-bad { border-color: $ldash-critical; background: rgba($ldash-critical, .08); b { color: $ldash-critical; } }
+}
+.o_ldash_table th { font-size: .72rem; color: $text-muted; font-weight: 600; padding-bottom: 4px; }

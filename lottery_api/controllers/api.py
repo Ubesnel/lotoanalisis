@@ -32,11 +32,23 @@ VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa', 'do')
 TOMBOLA_VALID_DAYS = ('lu', 'ma', 'mi', 'ju', 'vi', 'sa')
 
 
+def _payload_locked(payload):
+    """True/False si la respuesta es de contenido Premium, None si no lo es."""
+    if not isinstance(payload, dict):
+        return None
+    if 'locked' in payload:
+        return bool(payload['locked'])
+    if payload.get('premium_required'):
+        return True
+    return None
+
+
 def _json_response(payload, status=200, headers=None):
     # Registro liviano de la consulta (IP, endpoint, sorteo, país, status).
     # Envuelto para que un fallo al loguear jamás afecte la respuesta.
     try:
-        request.env['lottery.api.log'].sudo()._record(request, status)
+        request.env['lottery.api.log'].sudo()._record(
+            request, status, locked=_payload_locked(payload))
     except Exception:
         pass
     return request.make_response(
