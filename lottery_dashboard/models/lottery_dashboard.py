@@ -102,7 +102,7 @@ class LotteryDashboard(models.AbstractModel):
                 'state_label': ESTADO_TAREA.get(ev.lottery_state or 'pending'),
                 'minutos': int((ev.start - ahora).total_seconds() // 60) if ev.start else 0,
             })
-        proxima = next((t for t in lista if t['state'] == 'pending' and t['minutos'] >= 0), None)
+        proxima = next((t for t in lista if t['state'] == 'pending'), None)
         return {
             'total': len(eventos),
             'pending': conteo.get('pending', 0),
