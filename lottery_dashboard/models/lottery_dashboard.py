@@ -211,20 +211,23 @@ class LotteryDashboard(models.AbstractModel):
             joins += ['LEFT JOIN lottery_number n2 ON n2.id = o.premio_2_id',
                       'LEFT JOIN lottery_number n3 ON n3.id = o.premio_3_id']
         self.env.cr.execute("""
-            SELECT s.name, %s
+            SELECT s.name, coalesce(t.name->>'es_ES', t.name->>'en_US'), o.date, %s
               FROM lottery_output o
               JOIN lottery_sorteo s ON s.id = o.sorteo_id
+              LEFT JOIN lottery_turno t ON t.id = o.turno_id
               %s
              WHERE o.date BETWEEN %%s AND %%s AND s.active
+               AND s.show_in_app AND NOT coalesce(s.exclude_from_predictions, false)
         """ % (', '.join(columnas), ' '.join(joins)), (desde, jornada))
         filas = self.env.cr.fetchall()
 
         lineas, terminales, pintas, numeros = Counter(), Counter(), Counter(), Counter()
+        donde = defaultdict(list)
         sorteos_con_salida = set()
         cantidad = 0
         for fila in filas:
             sorteos_con_salida.add(fila[0])
-            for n in fila[1:]:
+            for premio, n in enumerate(fila[3:], 1):
                 if n is None:
                     continue
                 n = int(n) % 100
@@ -235,6 +238,8 @@ class LotteryDashboard(models.AbstractModel):
                 for d in {dec, uni}:
                     pintas[d] += 1
                 numeros[n] += 1
+                donde[n].append({'sorteo': fila[0], 'turno': fila[1] or '',
+                                 'fecha': fields.Date.to_string(fila[2]), 'premio': premio})
 
         def serie(counter):
             valores = [counter.get(d, 0) for d in range(10)]
@@ -247,7 +252,7 @@ class LotteryDashboard(models.AbstractModel):
                 'ceros': [d for d, v in enumerate(valores) if v == 0],
             }
 
-        repetidos = [{'numero': '%02d' % n, 'veces': v}
+        repetidos = [{'numero': '%02d' % n, 'veces': v, 'donde': donde[n]}
                      for n, v in numeros.most_common() if v > 1][:15]
         return {
             'periodo': periodo,

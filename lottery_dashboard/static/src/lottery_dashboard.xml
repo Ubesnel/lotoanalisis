@@ -194,10 +194,19 @@
                             <div class="o_ldash_digit_head"><b>Números repetidos</b> <small class="text-muted"><t t-esc="d.numeros.distintos"/> distintos</small></div>
                             <div class="o_ldash_chips">
                                 <t t-foreach="d.numeros.repetidos" t-as="rep" t-key="rep.numero">
-                                    <span class="o_ldash_chip"><b t-esc="rep.numero"/> ×<t t-esc="rep.veces"/></span>
+                                    <span t-attf-class="o_ldash_chip {{ state.repSel === rep.numero ? 'is-sel' : '' }}" t-att-title="donde(rep)"
+                                          t-on-click="() => this.setFiltro('repSel', state.repSel === rep.numero ? null : rep.numero)"><b t-esc="rep.numero"/> ×<t t-esc="rep.veces"/></span>
                                 </t>
                                 <span class="text-muted" t-if="!d.numeros.repetidos.length">Ninguno se repitió.</span>
                             </div>
+                            <t t-foreach="d.numeros.repetidos" t-as="rep" t-key="'det' + rep.numero">
+                                <table t-if="state.repSel === rep.numero" class="o_ldash_table mt-2">
+                                    <tr t-foreach="rep.donde" t-as="x" t-key="x_index">
+                                        <td><b t-esc="x.sorteo"/> <small class="text-muted" t-esc="x.turno"/></td>
+                                        <td class="text-end"><small><t t-if="x.premio > 1">premio <t t-esc="x.premio"/> · </t><t t-esc="x.fecha.slice(8, 10) + '/' + x.fecha.slice(5, 7)"/></small></td>
+                                    </tr>
+                                </table>
+                            </t>
                         </div>
                     </div>
                 </section>
