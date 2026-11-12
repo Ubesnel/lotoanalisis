@@ -265,10 +265,10 @@
                                 <b t-esc="d.accesos.rechazados"/>
                                 <small><t t-esc="d.accesos.rechazados_disp"/> dispositivos</small>
                             </div>
-                            <div t-attf-class="{{ d.accesos.compartidos.length ? 'is-bad' : 'is-good' }}" title="Un mismo pase usado desde más de un teléfono o desde más de 4 IPs">
+                            <div t-attf-class="{{ d.accesos.copias ? 'is-bad' : 'is-good' }}" title="Un mismo pase usado desde más de un teléfono">
                                 <span><i class="fa fa-share-alt"/> Pases compartidos</span>
-                                <b t-esc="d.accesos.compartidos.length"/>
-                                <small>posible copia</small>
+                                <b t-esc="d.accesos.copias"/>
+                                <small>en más de un teléfono<t t-if="d.accesos.muchas_ips"> · <t t-esc="d.accesos.muchas_ips"/> con muchas IPs</t></small>
                             </div>
                         </div>
                         <div class="o_ldash_two">
@@ -296,8 +296,10 @@
                                 <div class="o_ldash_sub_head">Para revisar</div>
                                 <div class="o_ldash_list is-short">
                                     <t t-foreach="d.accesos.compartidos" t-as="x" t-key="x.pass_id">
-                                        <div class="o_ldash_task is-late" t-on-click="() => this.abrirPrediccion('lottery.premium.pass', x.pass_id)">
-                                            <span class="o_ldash_badge is-late">Compartido</span>
+                                        <div t-attf-class="o_ldash_task {{ x.copia ? 'is-late' : '' }}" t-on-click="() => this.abrirPrediccion('lottery.premium.pass', x.pass_id)"
+                                             t-att-title="x.copia ? 'El mismo pase se usó en más de un teléfono' : 'Un solo teléfono con muchas IPs: suele ser cambio de red o VPN'">
+                                            <span t-if="x.copia" class="o_ldash_badge is-late">Compartido</span>
+                                            <span t-else="" class="o_ldash_badge is-info">Muchas IPs</span>
                                             <span class="o_ldash_task_name"><t t-esc="x.name"/>
                                                 <small><t t-esc="x.dispositivos"/> teléf. · <t t-esc="x.ips"/> IPs · <t t-esc="x.paises"/></small></span>
                                         </div>

@@ -143,6 +143,7 @@ $ldash-radius: 10px;
     &.is-pending { background: rgba($ldash-warning, .2); color: darken($ldash-warning, 25%); }
     &.is-late { background: rgba($ldash-critical, .15); color: $ldash-critical; }
     &.is-done { background: rgba($ldash-good, .15); color: darken($ldash-good, 5%); }
+    &.is-info { background: rgba($text-muted, .15); color: $text-muted; }
 }
 .o_ldash_legend {
     margin-left: auto;

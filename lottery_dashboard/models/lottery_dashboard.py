@@ -479,7 +479,8 @@ class LotteryDashboard(models.AbstractModel):
         """, (ini, fin))
         Pass = self.env['lottery.premium.pass'].sudo()
         compartidos = [{'pass_id': r[0], 'name': Pass.browse(r[0]).display_name,
-                        'dispositivos': r[1], 'ips': r[2], 'veces': r[3], 'paises': r[4]}
+                        'dispositivos': r[1], 'ips': r[2], 'veces': r[3], 'paises': r[4],
+                        'copia': r[1] > 1}
                        for r in cr.fetchall()]
 
         # Gratis que más insisten: posibles interesados en suscribirse.
@@ -503,6 +504,8 @@ class LotteryDashboard(models.AbstractModel):
             'endpoints': endpoints,
             'sospechosos': sospechosos,
             'compartidos': compartidos,
+            'copias': sum(1 for c in compartidos if c['copia']),
+            'muchas_ips': sum(1 for c in compartidos if not c['copia']),
             'insistentes': insistentes,
         }
 
