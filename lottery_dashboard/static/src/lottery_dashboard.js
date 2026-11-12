@@ -86,6 +86,7 @@ export class LotteryDashboard extends Component {
             cargando: false,
             filtroTareas: "open",
             filtroPred: "all",
+            repSel: null,
         });
         onWillStart(async () => {
             await loadBundle("web.chartjs_lib");
@@ -182,6 +183,11 @@ export class LotteryDashboard extends Component {
 
     iconoPred(estado) {
         return { published: "fa-check", draft: "fa-pencil", missing: "fa-times" }[estado];
+    }
+
+    donde(rep) {
+        return rep.donde.map((x) => `${x.sorteo} ${x.turno}`.trim()).join("
+");
     }
 
     digitos(lista) {

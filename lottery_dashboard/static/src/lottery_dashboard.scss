@@ -226,6 +226,9 @@ $ldash-radius: 10px;
     border: 1px solid $border-color;
     font-size: .85rem;
     font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    &:hover { background: rgba($text-muted, .08); }
+    &.is-sel { border-color: #2a78d6; background: rgba(#2a78d6, .12); }
 }
 
 // ── Mini cifras y columnas ───────────────────────────────────────────────
