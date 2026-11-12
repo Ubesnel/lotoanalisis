@@ -196,6 +196,29 @@ export class LotteryDashboard extends Component {
 
     // ── Aperturas ───────────────────────────────────────────────────────
 
+    irKpi(clave) {
+        const fecha = this.state.date;
+        const ahora = luxon.DateTime.utc().toFormat("yyyy-MM-dd HH:mm:ss");
+        const destinos = {
+            tareas: ["Tareas del día", "calendar.event", [["lottery_sorteo_id", "!=", false], ["lottery_date", "=", fecha]], "list,calendar"],
+            normales: ["Predicciones normales", "lottery.prediction", [["date", "=", fecha]], "list"],
+            premium: ["Predicciones Premium", "lottery.prediction.premium", [["date", "=", fecha]], "list"],
+            pases: ["Premium activos", "lottery.premium.pass",
+                [["state", "in", ["active", "grace", "canceled"]], ["is_test", "=", false],
+                    "|", ["expiry_date", "=", false], ["expiry_date", ">", ahora]], "list"],
+            consultas: ["Consultas a la API", "lottery.api.log", [], "list"],
+        };
+        const [name, res_model, domain, vistas] = destinos[clave];
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name,
+            res_model,
+            domain,
+            views: vistas.split(",").map((v) => [false, v]).concat([[false, "form"]]),
+            target: "current",
+        });
+    }
+
     abrirTarea(id) {
         this.action.doAction({
             type: "ir.actions.act_window",

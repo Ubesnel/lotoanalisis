@@ -376,3 +376,9 @@ $ldash-accents: (
     &.is-bad { border-color: $ldash-critical; background: rgba($ldash-critical, .08); b { color: $ldash-critical; } }
 }
 .o_ldash_table th { font-size: .72rem; color: $text-muted; font-weight: 600; padding-bottom: 4px; }
+
+.o_ldash_kpi.is-link {
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+    &:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, .12); }
+}

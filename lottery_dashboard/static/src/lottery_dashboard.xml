@@ -35,7 +35,7 @@
 
             <!-- KPIs -->
             <div class="o_ldash_kpis">
-                <div class="o_ldash_kpi is-blue">
+                <div class="o_ldash_kpi is-blue is-link" t-on-click="() => this.irKpi('tareas')" title="Abrir el listado">
                     <i class="o_ldash_kpi_icon fa fa-calendar-check-o"/>
                     <span class="o_ldash_kpi_label">Tareas del día</span>
                     <span class="o_ldash_kpi_value"><t t-esc="d.tareas.done"/><small>/<t t-esc="d.tareas.total"/></small></span>
@@ -48,7 +48,7 @@
                         <span t-else=""><t t-esc="d.tareas.pending"/> pendientes · sin atrasos</span>
                     </span>
                 </div>
-                <div class="o_ldash_kpi is-violet">
+                <div class="o_ldash_kpi is-violet is-link" t-on-click="() => this.irKpi('normales')" title="Abrir el listado">
                     <i class="o_ldash_kpi_icon fa fa-magic"/>
                     <span class="o_ldash_kpi_label">Predicciones normales</span>
                     <span class="o_ldash_kpi_value"><t t-esc="d.predicciones.normal.published"/><small>/<t t-esc="d.predicciones.total"/></small></span>
@@ -58,7 +58,7 @@
                     </div>
                     <span class="o_ldash_kpi_foot"><t t-esc="d.predicciones.normal.missing"/> faltan · <t t-esc="d.predicciones.normal.draft"/> borrador</span>
                 </div>
-                <div class="o_ldash_kpi is-amber">
+                <div class="o_ldash_kpi is-amber is-link" t-on-click="() => this.irKpi('premium')" title="Abrir el listado">
                     <i class="o_ldash_kpi_icon fa fa-diamond"/>
                     <span class="o_ldash_kpi_label">Predicciones Premium</span>
                     <span class="o_ldash_kpi_value"><t t-esc="d.predicciones.premium.published"/><small>/<t t-esc="d.predicciones.total"/></small></span>
@@ -68,7 +68,7 @@
                     </div>
                     <span class="o_ldash_kpi_foot"><t t-esc="d.predicciones.premium.missing"/> faltan · <t t-esc="d.predicciones.premium.draft"/> borrador</span>
                 </div>
-                <div class="o_ldash_kpi is-green">
+                <div class="o_ldash_kpi is-green is-link" t-on-click="() => this.irKpi('pases')" title="Abrir el listado">
                     <i class="o_ldash_kpi_icon fa fa-star"/>
                     <span class="o_ldash_kpi_label">Premium activos</span>
                     <span class="o_ldash_kpi_value"><t t-esc="d.premium.activos"/></span>
@@ -77,7 +77,7 @@
                         <t t-if="d.premium.nuevos_hoy"> · <b>+<t t-esc="d.premium.nuevos_hoy"/> hoy</b></t>
                     </span>
                 </div>
-                <div class="o_ldash_kpi is-teal">
+                <div class="o_ldash_kpi is-teal is-link" t-on-click="() => this.irKpi('consultas')" title="Abrir el listado">
                     <i class="o_ldash_kpi_icon fa fa-signal"/>
                     <span class="o_ldash_kpi_label">Consultas a la API</span>
                     <t t-if="d.consultas.disponible">
@@ -230,7 +230,7 @@
                     <div class="o_ldash_next" t-if="d.es_hoy and d.tareas.proxima">
                         <i class="fa fa-bell"/> Próxima: <b><t t-esc="d.tareas.proxima.sorteo"/> – <t t-esc="d.tareas.proxima.turno"/></b>
                         a las <t t-esc="d.tareas.proxima.hora"/>
-                        <span class="text-muted">(en <t t-esc="d.tareas.proxima.minutos"/> min)</span>
+                        <span class="text-muted"><t t-if="d.tareas.proxima.minutos > 0">(en <t t-esc="d.tareas.proxima.minutos"/> min)</t><t t-else="">(ahora)</t></span>
                     </div>
                     <div class="o_ldash_list">
                         <t t-foreach="tareasFiltradas" t-as="tk" t-key="tk.id">
