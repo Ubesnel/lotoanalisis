@@ -158,10 +158,14 @@ class LotteryDashboard(models.AbstractModel):
                     combinado = 'none'
                 else:
                     combinado = 'partial'
+                salida = salidas.get(clave)
                 resumen[combinado] += 1
                 resumen['normal_' + normal] += 1
                 resumen['premium_' + premium] += 1
-                salida = salidas.get(clave)
+                if normal == 'published' and salida:
+                    resumen['neval_pendiente' if not normales[clave].verification_date else 'neval_ok'] += 1
+                if premium == 'published' and salida:
+                    resumen['eval_pendiente' if not premiums[clave].evaluada else 'eval_ok'] += 1
                 celdas.append({
                     'turno': slot.turno_id.name,
                     'turno_color': slot.turno_id.color or '',
@@ -169,8 +173,14 @@ class LotteryDashboard(models.AbstractModel):
                                             (slot.hora_ampm or 'pm').upper()) if slot.hora_h else '',
                     'normal': normal,
                     'normal_id': normales[clave].id if clave in normales else False,
+                    'normal_eval': ('si' if clave in normales and normales[clave].verification_date
+                                    else 'pendiente' if normal == 'published' and salida
+                                    else ''),
                     'premium': premium,
                     'premium_id': premiums[clave].id if clave in premiums else False,
+                    'premium_eval': ('si' if clave in premiums and premiums[clave].evaluada
+                                     else 'pendiente' if premium == 'published' and salida
+                                     else ''),
                     'estado': combinado,
                     'salida': salida.complete_number if salida else '',
                     'proximo': (prox_fecha == fields.Date.to_string(jornada)
@@ -196,6 +206,10 @@ class LotteryDashboard(models.AbstractModel):
             'none': resumen['none'],
             'normal': {k: resumen['normal_' + k] for k in ('published', 'draft', 'missing')},
             'premium': {k: resumen['premium_' + k] for k in ('published', 'draft', 'missing')},
+            'neval_ok': resumen['neval_ok'],
+            'neval_pendiente': resumen['neval_pendiente'],
+            'eval_ok': resumen['eval_ok'],
+            'eval_pendiente': resumen['eval_pendiente'],
         }
 
     # ── Números del día: líneas, terminales, pintas ────────────────────────

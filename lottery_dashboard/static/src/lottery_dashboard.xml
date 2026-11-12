@@ -114,12 +114,14 @@
                             <span class="o_ldash_pill is-done"><i class="fa fa-check"/> <t t-esc="d.predicciones.ok"/> con las dos</span>
                             <span class="o_ldash_pill is-pending"><i class="fa fa-adjust"/> <t t-esc="d.predicciones.partial"/> con una sola</span>
                             <span class="o_ldash_pill is-late"><i class="fa fa-times"/> <t t-esc="d.predicciones.none"/> sin ninguna</span>
+                            <span class="o_ldash_pill is-pending" t-if="d.predicciones.eval_pendiente" title="Premium publicadas con salida que todavía no se evaluaron"><i class="fa fa-exclamation-circle"/> <t t-esc="d.predicciones.eval_pendiente"/> Premium sin evaluar</span>
+                            <span class="o_ldash_pill is-pending" t-if="d.predicciones.neval_pendiente" title="Normales publicadas con salida que todavía no se verificaron"><i class="fa fa-exclamation-circle"/> <t t-esc="d.predicciones.neval_pendiente"/> normales sin verificar</span>
                         </div>
                         <span class="o_ldash_legend">
                             <span class="o_ldash_tag is-published">N</span> publicada
                             <span class="o_ldash_tag is-draft">N</span> borrador
                             <span class="o_ldash_tag is-missing">N</span> falta
-                            · N normal · P Premium · <span class="o_ldash_legend_next">▌</span> próximo sorteo
+                            · N normal · P Premium · <i class="fa fa-check-circle text-success"/> verificada/evaluada · <i class="fa fa-exclamation-circle text-warning"/> falta · <span class="o_ldash_legend_next">▌</span> próximo sorteo
                         </span>
                         <div class="btn-group btn-group-sm">
                             <button t-attf-class="btn {{ state.filtroPred === 'all' ? 'btn-primary' : 'btn-light' }}" t-on-click="() => this.setFiltro('filtroPred', 'all')">Todos</button>
@@ -139,10 +141,16 @@
                                             <span class="o_ldash_dot" t-attf-style="background:{{ c.turno_color or '#9a9a9a' }}"/>
                                             <t t-esc="c.turno"/>
                                         </span>
-                                        <span t-attf-class="o_ldash_tag is-{{ c.normal }}" t-att-title="'Normal: ' + etiquetaPred(c.normal)"
+                                        <span t-attf-class="o_ldash_tag is-{{ c.normal }}" t-att-title="'Normal: ' + etiquetaPred(c.normal) + (c.normal_eval === 'si' ? ' · verificada' : c.normal_eval === 'pendiente' ? ' · salió el número y falta verificarla' : '')"
                                               t-on-click="() => this.abrirPrediccion('lottery.prediction', c.normal_id)">N</span>
-                                        <span t-attf-class="o_ldash_tag is-{{ c.premium }}" t-att-title="'Premium: ' + etiquetaPred(c.premium)"
+                                        <i t-if="c.normal_eval === 'si'" class="o_ldash_eval is-ok fa fa-check-circle" title="Normal verificada"/>
+                                        <i t-elif="c.normal_eval === 'pendiente'" class="o_ldash_eval is-wait fa fa-exclamation-circle" title="Salió el número y falta verificar la normal"/>
+                                        <i t-else="" class="o_ldash_eval"/>
+                                        <span t-attf-class="o_ldash_tag is-{{ c.premium }}" t-att-title="'Premium: ' + etiquetaPred(c.premium) + (c.premium_eval === 'si' ? ' · evaluada' : c.premium_eval === 'pendiente' ? ' · salió el número y falta evaluarla' : '')"
                                               t-on-click="() => this.abrirPrediccion('lottery.prediction.premium', c.premium_id)">P</span>
+                                        <i t-if="c.premium_eval === 'si'" class="o_ldash_eval is-ok fa fa-check-circle" title="Premium evaluada"/>
+                                        <i t-elif="c.premium_eval === 'pendiente'" class="o_ldash_eval is-wait fa fa-exclamation-circle" title="Salió el número y falta evaluar la Premium"/>
+                                        <i t-else="" class="o_ldash_eval"/>
                                         <span class="o_ldash_tile_out" t-att-title="c.salida ? 'Salió' : 'Sin salida'" t-esc="c.salida or '·'"/>
                                     </div>
                                 </t>
