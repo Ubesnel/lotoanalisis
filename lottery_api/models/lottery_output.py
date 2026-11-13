@@ -205,22 +205,44 @@ class LotteryOutput(models.Model):
         if out.fireball_id:
             partes.append(f'{"Extra ball" if en else "Bola extra"}: {out.fireball_id.name}')
 
+        extras = self._extras_push(out, en)
+        for clave in ('magicos', 'suerte', 'normal', 'premium'):
+            partes += extras[clave]
+
+        # El país va en el título: hay loterías que se llaman igual en
+        # distintos países (La Diaria de Honduras y la de Nicaragua).
+        sorteo = _sorteo_con_pais(out.sorteo_id, lang)
+        if en:
+            title = f'🎯 {sorteo} result available'
+            cierre = '📈 Check the updated analysis for the next draw'
+        else:
+            title = f'🎯 Resultado {sorteo} disponible'
+            cierre = '📈 Consulta el análisis actualizado para el próximo sorteo'
+        body = ' · '.join(partes) + '\n' + cierre
+        return title, body
+
+    def _extras_push(self, out, en):
+        """Lo que acompaña al número en el aviso, por tipo: 'magicos',
+        'suerte', 'normal' y 'premium' (listas de textos)."""
+        numero = str(out.number_id.name).zfill(2) if out.number_id else ''
+        magicos, de_suerte, acertado, acertado_premium = [], [], [], []
+
         # El aviso llega a todos: la tabla gratis se informa y solo se festeja la Premium.
         gratis, premium_magicos = self._tabla_numeros_magicos(out)
         if gratis == 'general':
-            partes.append(
+            magicos.append(
                 f'🔮 {numero} was in the general Magic Numbers table' if en else
                 f'🔮 El {numero} estuvo en la tabla general de Números Mágicos')
         elif gratis:
-            partes.append(
+            magicos.append(
                 f'🔮 {numero} was in the {gratis} Magic Numbers table' if en else
                 f'🔮 El {numero} estuvo en la tabla de {gratis} Números Mágicos')
         if premium_magicos == 'super':
-            partes.append(
+            magicos.append(
                 '🎉 Congratulations Premium! It was the Super Magic' if en else
                 '🎉 ¡Felicitaciones Premium! Fue el Súper Mágico')
         elif premium_magicos:
-            partes.append(
+            magicos.append(
                 f'🎉 Congratulations Premium! It was in the {premium_magicos} '
                 f'Magic Numbers table' if en else
                 f'🎉 ¡Felicitaciones Premium! Estuvo en la tabla de '
@@ -233,13 +255,13 @@ class LotteryOutput(models.Model):
             if en:
                 cual = (f'the strongest of the Premium Lucky Numbers of {dia}' if fuerte
                         else f'one of the Premium Lucky Numbers of {dia}')
-                partes.append(
+                de_suerte.append(
                     f'🔄 {numero} is {num} reversed, {cual}. Flip it and win!'
                     if virado else f'🍀 {numero} is {cual}')
             else:
                 cual = (f'el más fuerte de los Números de la Suerte Premium del {dia}' if fuerte
                         else f'uno de los Números de la Suerte Premium del {dia}')
-                partes.append(
+                de_suerte.append(
                     f'🔄 El {numero} es el virado del {num}, {cual}. ¡El que vira gana!'
                     if virado else f'🍀 El {numero} es {cual}')
 
@@ -249,36 +271,24 @@ class LotteryOutput(models.Model):
             dia = fecha_suerte.strftime('%d/%m/%Y')
             lista = _lista(pares, en)
             if en:
-                partes.append(f'🍀 Parlay{"s" if len(pares) > 1 else ""} {lista} '
-                              f'with the Premium Lucky Numbers of {dia}')
+                de_suerte.append(f'🍀 Parlay{"s" if len(pares) > 1 else ""} {lista} '
+                                 f'with the Premium Lucky Numbers of {dia}')
             else:
-                partes.append(f'🍀 Parlé{"s" if len(pares) > 1 else ""} {lista} '
-                              f'con los Números de la Suerte Premium del {dia}')
+                de_suerte.append(f'🍀 Parlé{"s" if len(pares) > 1 else ""} {lista} '
+                                 f'con los Números de la Suerte Premium del {dia}')
 
         normal = self._aciertos_normal(out, en)
         if normal:
-            partes.append(('✅ Prediction hit! ' if en else '✅ ¡La predicción acertó! ')
-                          + ' · '.join(normal))
+            acertado.append(('✅ Prediction hit! ' if en else '✅ ¡La predicción acertó! ')
+                            + ' · '.join(normal))
 
         premium = self._aciertos_premium(out, en)
         if premium:
-            partes.append(('⭐ Premium hit! ' if en else '⭐ ¡Premium acertó! ')
-                          + ' · '.join(premium))
+            acertado_premium.append(('⭐ Premium hit! ' if en else '⭐ ¡Premium acertó! ')
+                                    + ' · '.join(premium))
 
-        # El país va en el título: hay loterías que se llaman igual en
-        # distintos países (La Diaria de Honduras y la de Nicaragua).
-        sorteo = out.sorteo_id.name
-        pais = _pais(out.sorteo_id, lang)
-        if pais:
-            sorteo = f'{sorteo} ({pais})'
-        if en:
-            title = f'🎯 {sorteo} result available'
-            cierre = '📈 Check the updated analysis for the next draw'
-        else:
-            title = f'🎯 Resultado {sorteo} disponible'
-            cierre = '📈 Consulta el análisis actualizado para el próximo sorteo'
-        body = ' · '.join(partes) + '\n' + cierre
-        return title, body
+        return {'magicos': magicos, 'suerte': de_suerte,
+                'normal': acertado, 'premium': acertado_premium}
 
     def _aciertos_normal(self, out, en):
         """Ternas y parlés acertados de la predicción normal publicada (la
@@ -345,7 +355,8 @@ class LotteryOutput(models.Model):
                               f'{p.numero_1.name:02d}-{p.numero_2.name:02d}')
             if not acertados:
                 partes.append('Parlay' if en else 'Parlé')
-        if rec.acierto_tombola:
+        # La tómbola ya avisada no se repite en el aviso del resultado.
+        if rec.acierto_tombola and not rec.tombola_push_sent:
             lineas = rec.tombola_linea_ids.filtered('acertada').ordenadas()
             for t in lineas:
                 n = len(t.numeros())
@@ -468,6 +479,10 @@ class LotteryOutput(models.Model):
 TOMBOLA_TOTAL = 20
 # Solo avisa tómbolas recientes: el importador también carga históricos.
 TOMBOLA_PUSH_DIAS = 2
+# Largo máximo del cuerpo cuando el aviso de tómbola lleva también el Premio 1.
+TOMBOLA_PUSH_MAX = 450
+# Qué entra primero de lo que acompaña al Premio 1, mientras quepa.
+TOMBOLA_PUSH_EXTRAS = ('premium', 'normal', 'magicos', 'suerte')
 
 
 def _mejor_tombola(lineas, salidos):
@@ -549,10 +564,23 @@ class LotteryTombolaOutput(models.Model):
             return
         sorteo = (normal or premium).sorteo_id
         turno = self.env['lottery.turno'].browse(turno_id)
+        # El Premio 1 todavía sin avisar va en este mismo aviso.
+        out = self.env['lottery.output'].sudo().search([
+            ('sorteo_id', '=', sorteo.id), ('date', '=', date), ('turno_id', '=', turno_id),
+            ('push_sent', '=', False), ('number_id', '!=', False)], limit=1)
+        # Se marca antes de armar el texto: los aciertos Premium no repiten la tómbola.
+        if normal:
+            normal.write({'tombola_push_sent': True})
+        if premium:
+            premium.write({'tombola_push_sent': True})
         messages = []
         for lang in PUSH_LANGS:
             en = lang == 'en'
             partes = []
+            if out:
+                centena = out.hundreds_id.name if out.hundreds_id else ''
+                partes.append(f'{"Number" if en else "Número"}: '
+                              f'{centena}{str(out.number_id.name).zfill(2)}')
             if mejor_normal:
                 partes.append(('🎱 Prediction hit ' if en else '🎱 La predicción acertó ')
                               + _texto_tombola(mejor_normal, en))
@@ -563,14 +591,19 @@ class LotteryTombolaOutput(models.Model):
                       else f'🎱 ¡Tómbola acertada! · {_sorteo_con_pais(sorteo, lang)}')
             cierre = ('📈 Check the details in the prediction history' if en
                       else '📈 Consulta el detalle en el historial de predicciones')
-            body = (_turno_label(sorteo, turno, date, lang) + ' · '
-                    + ' · '.join(partes) + '\n' + cierre)
+            body = _turno_label(sorteo, turno, date, lang) + ' · ' + ' · '.join(partes)
+            if out:
+                extras = out._extras_push(out, en)
+                for clave in TOMBOLA_PUSH_EXTRAS:
+                    for texto in extras[clave]:
+                        if len(body) + 3 + len(texto) <= TOMBOLA_PUSH_MAX:
+                            body += ' · ' + texto
+            if not out or len(body) + 1 + len(cierre) <= TOMBOLA_PUSH_MAX:
+                body += '\n' + cierre
             messages.append((sorteo.id, titulo, body, lang))
         lanzar_push(self.env.cr, _push_worker, (self.env.cr.dbname, messages))
-        if normal:
-            normal.write({'tombola_push_sent': True})
-        if premium:
-            premium.write({'tombola_push_sent': True})
+        if out:
+            out.write({'push_sent': True, 'push_sent_date': fields.Datetime.now()})
 
     def unlink(self):
         claves = self._claves()
