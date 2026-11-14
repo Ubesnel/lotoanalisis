@@ -41,6 +41,12 @@ RETENTION_DAYS = 730
 HARDWARE_RE = re.compile(r'^[A-Za-z0-9-]{8,64}$')
 TRIAL_PARAM = 'lottery_api.premium_trial'
 TRIAL_DAYS_PARAM = 'lottery_api.premium_trial_days'
+# Pruebas sospechosas: misma IP, otro teléfono.
+SUSPECT_WINDOW = timedelta(days=30)
+BURST_WINDOW = timedelta(days=7)
+BURST_MIN = 3
+CHAIN_BEFORE = timedelta(days=1)
+CHAIN_AFTER = timedelta(days=3)
 # Rangos propios de Google (no Google Cloud): de ahí llegan los robots de Play.
 GOOGLE_NETS = [ipaddress.ip_network(n) for n in (
     '66.249.64.0/19', '66.102.0.0/20', '64.233.160.0/19', '72.14.192.0/18',
@@ -91,6 +97,17 @@ class LotteryPremiumGift(models.Model):
         string='Robot de Google', readonly=True, index=True, copy=False,
         help='Pedida desde un teléfono de prueba de Google Play (informe previo al '
              'lanzamiento) o desde una IP de Google.')
+    suspect = fields.Selection([
+        ('chain', 'Encadenada'),
+        ('burst', 'Varias de la misma IP'),
+    ], string='Sospechosa', readonly=True, index=True, copy=False,
+        help='Encadenada: pedida desde la misma IP, con otro teléfono, justo cuando '
+             'vencía una prueba anterior. Varias de la misma IP: 3 o más teléfonos '
+             'distintos en 7 días. Es un indicio, no una prueba: en Cuba muchos '
+             'teléfonos comparten IP.')
+    ip_trial_count = fields.Integer(
+        string='Otros teléfonos de la IP', readonly=True, copy=False,
+        help='Pruebas de otros teléfonos desde la misma IP en los 30 días anteriores.')
     state = fields.Selection([
         ('available', 'Sin canjear'),
         ('redeemed', 'Canjeado'),
@@ -355,8 +372,44 @@ class LotteryPremiumGift(models.Model):
             'google_robot': bool(test_lab) or is_google_ip(ip),
             'note': 'Prueba gratis pedida desde la app',
         })
+        rec._mark_suspect()
         self.redeem(rec.name, device_id, hardware_id)
         return rec
+
+    def _mark_suspect(self):
+        """Marca la prueba que repite IP con otro teléfono. No bloquea nada."""
+        for rec in self:
+            if rec.origin != 'trial' or not rec.request_ip or rec.google_robot:
+                continue
+            ref = rec.create_date
+            prev = self.sudo().search([
+                ('origin', '=', 'trial'),
+                ('request_ip', '=', rec.request_ip),
+                ('hardware_id', '!=', rec.hardware_id),
+                ('google_robot', '=', False),
+                ('id', '<', rec.id),
+                ('create_date', '>=', ref - SUSPECT_WINDOW),
+            ])
+            recent = prev.filtered(lambda p: p.create_date >= ref - BURST_WINDOW)
+            chain = any(
+                end - CHAIN_BEFORE <= ref <= end + CHAIN_AFTER
+                for end in (p.create_date + timedelta(days=p.days or 7) for p in prev))
+            if len(set(recent.mapped('hardware_id'))) + 1 >= BURST_MIN:
+                suspect = 'burst'
+            else:
+                suspect = 'chain' if chain else False
+            rec.write({'suspect': suspect,
+                       'ip_trial_count': len(set(prev.mapped('hardware_id')))})
+
+    def action_view_ip_trials(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Pruebas desde %s', self.request_ip),
+            'res_model': 'lottery.premium.gift',
+            'view_mode': 'tree,form',
+            'domain': [('origin', '=', 'trial'), ('request_ip', '=', self.request_ip)],
+        }
 
     def _log_activation(self, device_id, move, hardware_id=None):
         self.env['lottery.premium.gift.activation'].sudo().create({

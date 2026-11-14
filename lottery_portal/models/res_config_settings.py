@@ -23,6 +23,11 @@ class ResConfigSettings(models.TransientModel):
     play_store_url = fields.Char(related='company_id.play_store_url', readonly=False,
                                  string='URL de la app en Google Play')
 
+    premium_cuba_banner = fields.Boolean(related='company_id.premium_cuba_banner', readonly=False,
+                                         string='Aviso Premium para Cuba en la portada')
+    premium_whatsapp = fields.Char(related='company_id.premium_whatsapp', readonly=False,
+                                   string='WhatsApp para Premium')
+
     maintenance_mode = fields.Boolean(related='company_id.maintenance_mode', readonly=False,
                                       string='Modo mantenimiento')
 

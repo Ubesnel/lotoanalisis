@@ -28,6 +28,16 @@
                             <field name="play_store_url" placeholder="https://play.google.com/store/apps/details?id=com.seusit.lotoanalisis"/>
                         </setting>
                     </block>
+                    <block title="Premium para Cuba · Página pública" id="lottery_premium_cuba_settings">
+                        <setting string="Aviso en la portada"
+                                 help="Franja destacada arriba de la portada que lleva a la página /premium-cuba, donde se explica cómo regalar y canjear un código.">
+                            <field name="premium_cuba_banner"/>
+                        </setting>
+                        <setting string="WhatsApp de contacto"
+                                 help="Número con código de país. Sale en /premium-cuba para quien no tiene quién le compre el código desde afuera. Vacío = no se muestra esa opción.">
+                            <field name="premium_whatsapp" placeholder="+598 99 123 456"/>
+                        </setting>
+                    </block>
                     <block title="Modo mantenimiento" id="lottery_maintenance_settings">
                         <setting string="Modo mantenimiento"
                                  help="Cuando está activo, los usuarios públicos ven la página de mantenimiento en lugar del portal. Los usuarios internos pueden seguir accediendo con normalidad.">

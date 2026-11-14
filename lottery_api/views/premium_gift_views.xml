@@ -18,6 +18,9 @@
                 <field name="country_id" optional="show"/>
                 <field name="redeem_country_id" optional="show"/>
                 <field name="google_robot" optional="show"/>
+                <field name="suspect" widget="badge" decoration-warning="suspect" optional="show"/>
+                <field name="request_ip" optional="hide"/>
+                <field name="ip_trial_count" optional="hide"/>
                 <field name="redeemed_date" optional="show"/>
                 <field name="pass_expiry" optional="show"/>
                 <field name="order_id" optional="show"/>
@@ -52,6 +55,13 @@
                             <field name="request_ip" invisible="not request_ip"/>
                             <field name="country_id"/>
                             <field name="google_robot" invisible="origin != 'trial'"/>
+                            <field name="suspect" invisible="not suspect"/>
+                            <label for="ip_trial_count" invisible="origin != 'trial'"/>
+                            <div class="o_row" invisible="origin != 'trial'">
+                                <field name="ip_trial_count" nolabel="1"/>
+                                <button name="action_view_ip_trials" type="object" class="btn-link"
+                                        string="Ver pruebas de la IP" invisible="not request_ip"/>
+                            </div>
                             <field name="valid_until" readonly="state != 'available'"/>
                             <field name="note"/>
                         </group>
@@ -108,6 +118,7 @@
                 <filter name="sin_pruebas" string="Sin pruebas gratis" domain="[('origin', '!=', 'trial')]"/>
                 <filter name="robots" string="Robots de Google" domain="[('google_robot', '=', True)]"/>
                 <filter name="sin_robots" string="Sin robots de Google" domain="[('google_robot', '=', False)]"/>
+                <filter name="sospechosas" string="Pruebas sospechosas" domain="[('suspect', '!=', False)]"/>
                 <separator/>
                 <filter name="sin_canjear" string="Sin canjear" domain="[('state', '=', 'available')]"/>
                 <filter name="canjeados" string="Canjeados" domain="[('state', '=', 'redeemed')]"/>
@@ -116,6 +127,8 @@
                     <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
                     <filter name="group_origin" string="Origen" context="{'group_by': 'origin'}"/>
                     <filter name="group_country" string="País" context="{'group_by': 'country_id'}"/>
+                    <filter name="group_ip" string="IP" context="{'group_by': 'request_ip'}"/>
+                    <filter name="group_suspect" string="Sospecha" context="{'group_by': 'suspect'}"/>
                 </group>
             </search>
         </field>
