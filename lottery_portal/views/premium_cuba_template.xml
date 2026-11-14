@@ -17,7 +17,7 @@
                             <p>
                                 Desde Cuba no se puede pagar en Google Play. Por eso Premium
                                 se puede <strong>regalar</strong>: alguien de afuera compra un
-                                código y vos lo activás en tu teléfono en un minuto.
+                                código y tú lo activas en tu teléfono en un minuto.
                             </p>
                             <div class="pc-hero-btns">
                                 <a href="#pc-como" class="pc-btn pc-btn--gold">
@@ -44,7 +44,7 @@
                 <!-- ══ QUÉ TE DA ══ -->
                 <section class="pc-sec">
                     <div class="pc-wrap">
-                        <h2 class="pc-h2">Qué tenés con Premium</h2>
+                        <h2 class="pc-h2">Qué tienes con Premium</h2>
                         <div class="pc-benefits">
                             <div class="pc-benefit">
                                 <span class="pc-ico pc-ico--purple"><i class="fa fa-ban"/></span>
@@ -78,7 +78,7 @@
                 <section class="pc-sec pc-sec--tint" id="pc-como">
                     <div class="pc-wrap">
                         <h2 class="pc-h2">Cómo funciona el regalo</h2>
-                        <p class="pc-lead">Son dos partes: una persona lo compra afuera y vos lo canjeás en Cuba.</p>
+                        <p class="pc-lead">Son dos partes: una persona lo compra afuera y tú lo canjeas en Cuba.</p>
 
                         <div class="pc-parts">
                             <!-- Parte 1: quien regala -->
@@ -126,16 +126,16 @@
                                 <div class="pc-part-head pc-part-head--purple">
                                     <span class="pc-part-num">2</span>
                                     <div>
-                                        <strong>Vos, en Cuba</strong>
+                                        <strong>Tú, en Cuba</strong>
                                         <small>Con el código que te mandaron</small>
                                     </div>
                                 </div>
                                 <ol class="pc-steps">
-                                    <li>Abrí <b>LotoAnálisis</b> en tu teléfono, con conexión.</li>
-                                    <li>Entrá a <b>Configuración → LotoAnálisis Premium</b>.</li>
-                                    <li>Buscá la tarjeta <b>¿Tenés un código de regalo?</b></li>
-                                    <li>Escribí el código tal cual te llegó. Da igual mayúsculas o minúsculas, con o sin guiones.</li>
-                                    <li>Tocá <b>Canjear</b>. Listo: ya sos Premium.</li>
+                                    <li>Abre <b>LotoAnálisis</b> en tu teléfono, con conexión.</li>
+                                    <li>Entra a <b>Configuración → LotoAnálisis Premium</b>.</li>
+                                    <li>Busca la tarjeta <b>¿Tenés un código de regalo?</b></li>
+                                    <li>Escribe el código tal cual te llegó. Da igual mayúsculas o minúsculas, con o sin guiones.</li>
+                                    <li>Toca <b>Canjear</b>. Listo: ya eres Premium.</li>
                                 </ol>
 
                                 <div class="pc-phone">
@@ -155,7 +155,7 @@
                                     </div>
                                 </div>
                                 <ul class="pc-facts">
-                                    <li><i class="fa fa-check-circle"/>El tiempo empieza a contar cuando lo canjeás, no cuando lo compran.</li>
+                                    <li><i class="fa fa-check-circle"/>El tiempo empieza a contar cuando lo canjeas, no cuando lo compran.</li>
                                     <li><i class="fa fa-check-circle"/>No hace falta cuenta ni tarjeta: solo el código.</li>
                                     <li><i class="fa fa-check-circle"/>El código LOTO-7F3K-92QA es un ejemplo, no sirve para canjear.</li>
                                 </ul>
@@ -170,9 +170,9 @@
                         <div class="pc-wa">
                             <div class="pc-wa-ico"><i class="fa fa-whatsapp"/></div>
                             <div class="pc-wa-txt">
-                                <h2>¿No tenés a nadie afuera que te lo compre?</h2>
+                                <h2>¿No tienes a nadie afuera que te lo compre?</h2>
                                 <p>
-                                    Escribinos por WhatsApp y vemos cómo conseguirte tu código.
+                                    Escríbenos por WhatsApp y vemos cómo conseguirte tu código.
                                     Te respondemos nosotros, sin intermediarios.
                                 </p>
                             </div>
@@ -192,11 +192,11 @@
                         <div class="pc-faq">
                             <div class="pc-q">
                                 <strong><i class="fa fa-clock-o"/>¿El código vence?</strong>
-                                <p>Los códigos comprados en la app no vencen: lo canjeás cuando quieras y recién ahí empieza a correr el mes o el año.</p>
+                                <p>Los códigos comprados en la app no vencen: lo canjeas cuando quieras y solo entonces empieza a correr el mes o el año.</p>
                             </div>
                             <div class="pc-q">
                                 <strong><i class="fa fa-mobile"/>¿Y si cambio de teléfono?</strong>
-                                <p>Escribí el mismo código en el teléfono nuevo y Premium se pasa a ese. Se puede hacer hasta 2 veces cada 30 días.</p>
+                                <p>Escribe el mismo código en el teléfono nuevo y Premium se pasa a ese. Se puede hacer hasta 2 veces cada 30 días.</p>
                             </div>
                             <div class="pc-q">
                                 <strong><i class="fa fa-plus-circle"/>¿Puedo canjear otro código si ya tengo Premium?</strong>
@@ -208,11 +208,11 @@
                             </div>
                             <div class="pc-q">
                                 <strong><i class="fa fa-refresh"/>¿Reinstalé la app y perdí Premium?</strong>
-                                <p>Volvé a escribir tu código en Configuración → LotoAnálisis Premium y se recupera.</p>
+                                <p>Vuelve a escribir tu código en Configuración → LotoAnálisis Premium y se recupera.</p>
                             </div>
                             <div class="pc-q" t-if="trial_days">
                                 <strong><i class="fa fa-flask"/>¿Puedo probarlo antes?</strong>
-                                <p>Sí. En Configuración → LotoAnálisis Premium podés pedir una prueba gratis de <t t-esc="trial_days"/> días, una vez por teléfono.</p>
+                                <p>Sí. En Configuración → LotoAnálisis Premium puedes pedir una prueba gratis de <t t-esc="trial_days"/> días, una vez por teléfono.</p>
                             </div>
                         </div>
                     </div>
@@ -221,7 +221,7 @@
                 <!-- ══ CIERRE ══ -->
                 <section class="pc-end">
                     <div class="pc-wrap">
-                        <h2>¿Todavía no tenés la app?</h2>
+                        <h2>¿Todavía no tienes la app?</h2>
                         <p>LotoAnálisis es gratis. Premium es opcional.</p>
                         <div class="pc-hero-btns">
                             <a t-if="play_store_url" t-att-href="play_store_url" target="_blank"
