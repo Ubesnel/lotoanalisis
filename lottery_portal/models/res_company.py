@@ -29,6 +29,20 @@ class ResCompany(models.Model):
         prefetch=False
     )
 
+    premium_cuba_banner = fields.Boolean(
+        string="Aviso Premium para Cuba en la portada",
+        default=True,
+        prefetch=False,
+        help="Muestra arriba de la portada el aviso que lleva a /premium-cuba.",
+    )
+    premium_whatsapp = fields.Char(
+        string="WhatsApp para Premium",
+        prefetch=False,
+        help="Número con código de país (ej. +598 99 123 456). Sale en "
+             "/premium-cuba para quien no tiene quién le regale el código. "
+             "Vacío = no se muestra esa opción.",
+    )
+
     maintenance_mode = fields.Boolean(
         string="Modo mantenimiento",
         default=False,

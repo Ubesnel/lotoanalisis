@@ -16,6 +16,7 @@ _LEGAL_PATHS = ('/politica-privacidad', '/terminos-condiciones')
 # Páginas del portal que se rastrean
 _TRACK_PREFIXES = (
     '/faq', '/politica-privacidad', '/terminos-condiciones', '/contactus',
+    '/premium-cuba',
 )
 
 

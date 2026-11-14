@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import re
+
+from urllib.parse import quote as url_quote
 
 from odoo import http
 from odoo.http import request
@@ -8,7 +11,8 @@ from odoo.tools.mimetypes import guess_mimetype
 
 from ..models.portal_dia import QUINIELA_UY
 
-_DIAS = {0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
+_WHATSAPP_TEXT = 'Hola, estoy en Cuba y quiero LotoAnálisis Premium.'
+_DIAS ={0: "Lunes", 1: "Martes", 2: "Miércoles", 3: "Jueves", 4: "Viernes", 5: "Sábado", 6: "Domingo"}
 
 
 def _resolve_sorteo_id(sorteo_id):
@@ -55,6 +59,20 @@ class LotteryPortal(http.Controller):
             'play_store_url': company.play_store_url or '',
             'sorteos_publicos': sorteos,
             'rifazo_release': rifazo_release,
+            'premium_cuba_banner': company.premium_cuba_banner,
+        })
+
+    @http.route('/premium-cuba', type='http', auth='public', website=True)
+    def premium_cuba_page(self, **kwargs):
+        company = request.env.company.sudo()
+        Param = request.env['ir.config_parameter'].sudo()
+        phone = re.sub(r'\D', '', company.premium_whatsapp or '')
+        trial = Param.get_param('lottery_api.premium_trial') in ('True', '1')
+        return request.render('lottery_portal.premium_cuba_page', {
+            'whatsapp_url': phone and 'https://wa.me/%s?text=%s' % (phone, url_quote(_WHATSAPP_TEXT)),
+            'whatsapp_number': company.premium_whatsapp or '',
+            'play_store_url': company.play_store_url or '',
+            'trial_days': trial and int(Param.get_param('lottery_api.premium_trial_days') or 7),
         })
 
     @http.route('/lottery/sorteos-publicos', type='json', auth='public', website=True)

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="premium_cuba_page" name="Premium para Cuba">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'premium-cuba'"/>
+            <t t-set="additional_title">Premium para Cuba</t>
+            <div id="wrap" class="pc-page">
+
+                <!-- ══ HERO ══ -->
+                <section class="pc-hero">
+                    <div class="pc-hero-glow pc-hero-glow--1"/>
+                    <div class="pc-hero-glow pc-hero-glow--2"/>
+                    <div class="pc-hero-in">
+                        <div class="pc-hero-txt">
+                            <span class="pc-pill">🇨🇺 Para quienes están en Cuba</span>
+                            <h1>LotoAnálisis <span>Premium</span> también llega a Cuba</h1>
+                            <p>
+                                Desde Cuba no se puede pagar en Google Play. Por eso Premium
+                                se puede <strong>regalar</strong>: alguien de afuera compra un
+                                código y vos lo activás en tu teléfono en un minuto.
+                            </p>
+                            <div class="pc-hero-btns">
+                                <a href="#pc-como" class="pc-btn pc-btn--gold">
+                                    <i class="fa fa-gift"/> Ver cómo funciona
+                                </a>
+                                <a t-if="whatsapp_url" href="#pc-whatsapp" class="pc-btn pc-btn--ghost">
+                                    <i class="fa fa-whatsapp"/> No tengo quién me lo regale
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de regalo con un código de ejemplo -->
+                        <div class="pc-gift">
+                            <div class="pc-gift-ribbon">EJEMPLO</div>
+                            <i class="fa fa-diamond pc-gift-gem"/>
+                            <div class="pc-gift-title">Regalo Premium</div>
+                            <div class="pc-gift-sub">Así se ve un código</div>
+                            <div class="pc-code">LOTO-7F3K-92QA</div>
+                            <div class="pc-gift-foot">1 mes o 12 meses · se activa al canjearlo</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ══ QUÉ TE DA ══ -->
+                <section class="pc-sec">
+                    <div class="pc-wrap">
+                        <h2 class="pc-h2">Qué tenés con Premium</h2>
+                        <div class="pc-benefits">
+                            <div class="pc-benefit">
+                                <span class="pc-ico pc-ico--purple"><i class="fa fa-ban"/></span>
+                                <strong>Sin anuncios</strong>
+                                <p>Toda la app sin banners ni videos.</p>
+                            </div>
+                            <div class="pc-benefit">
+                                <span class="pc-ico pc-ico--orange"><i class="fa fa-line-chart"/></span>
+                                <strong>Predicciones Premium</strong>
+                                <p>Línea y terminal, números fuertes, parlés y ternas de cada sorteo.</p>
+                            </div>
+                            <div class="pc-benefit">
+                                <span class="pc-ico pc-ico--gold"><i class="fa fa-star"/></span>
+                                <strong>Números de la Suerte</strong>
+                                <p>El pronóstico del día, todos los días.</p>
+                            </div>
+                            <div class="pc-benefit">
+                                <span class="pc-ico pc-ico--blue"><i class="fa fa-history"/></span>
+                                <strong>Historial Premium</strong>
+                                <p>Cómo le fue a cada predicción, con sus aciertos.</p>
+                            </div>
+                        </div>
+                        <p class="pc-note">
+                            Son análisis estadísticos de resultados pasados: ayudan a decidir,
+                            no aseguran ningún premio.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- ══ CÓMO FUNCIONA ══ -->
+                <section class="pc-sec pc-sec--tint" id="pc-como">
+                    <div class="pc-wrap">
+                        <h2 class="pc-h2">Cómo funciona el regalo</h2>
+                        <p class="pc-lead">Son dos partes: una persona lo compra afuera y vos lo canjeás en Cuba.</p>
+
+                        <div class="pc-parts">
+                            <!-- Parte 1: quien regala -->
+                            <div class="pc-part">
+                                <div class="pc-part-head pc-part-head--orange">
+                                    <span class="pc-part-num">1</span>
+                                    <div>
+                                        <strong>Quien te lo regala</strong>
+                                        <small>Un familiar o amigo fuera de Cuba</small>
+                                    </div>
+                                </div>
+                                <ol class="pc-steps">
+                                    <li>Instala <b>LotoAnálisis</b> desde Google Play en su teléfono.</li>
+                                    <li>Entra a <b>Configuración → LotoAnálisis Premium</b>.</li>
+                                    <li>Baja hasta <b>Regalar Premium</b> y elige <b>1 mes</b> o <b>12 meses</b>.</li>
+                                    <li>Toca <b>Comprar regalo</b> y paga con Google Play, como cualquier compra.</li>
+                                    <li>Le aparece <b>¡Tu regalo está listo!</b> con el código. Toca <b>Copiar</b> y te lo manda por WhatsApp.</li>
+                                </ol>
+
+                                <!-- Así lo ve en la app -->
+                                <div class="pc-phone">
+                                    <div class="pc-phone-bar">Así lo ve en la app</div>
+                                    <div class="pc-app-card">
+                                        <div class="pc-app-title"><i class="fa fa-gift pc-amber"/> Regalar Premium</div>
+                                        <div class="pc-app-muted">Comprás un código y se lo pasás a quien quieras. Es un pago único, sin renovación.</div>
+                                        <div class="pc-tile pc-tile--on"><span>1 mes</span><i class="fa fa-check-circle pc-violet"/></div>
+                                        <div class="pc-tile"><span>12 meses</span></div>
+                                        <div class="pc-app-btn pc-app-btn--outline"><i class="fa fa-gift"/> Comprar regalo</div>
+                                    </div>
+                                    <div class="pc-app-card pc-app-card--dialog">
+                                        <div class="pc-app-title">¡Tu regalo está listo!</div>
+                                        <div class="pc-app-code">LOTO-7F3K-92QA</div>
+                                        <div class="pc-app-btn"><i class="fa fa-copy"/> Copiar</div>
+                                    </div>
+                                </div>
+                                <ul class="pc-facts">
+                                    <li><i class="fa fa-check-circle"/>Es un pago único: no se renueva solo.</li>
+                                    <li><i class="fa fa-check-circle"/>El código queda guardado en su app, en <b>Tus códigos</b>, por si lo pierde.</li>
+                                    <li><i class="fa fa-check-circle"/>El precio lo ve en la app antes de pagar, en su moneda.</li>
+                                </ul>
+                            </div>
+
+                            <!-- Parte 2: quien canjea -->
+                            <div class="pc-part">
+                                <div class="pc-part-head pc-part-head--purple">
+                                    <span class="pc-part-num">2</span>
+                                    <div>
+                                        <strong>Vos, en Cuba</strong>
+                                        <small>Con el código que te mandaron</small>
+                                    </div>
+                                </div>
+                                <ol class="pc-steps">
+                                    <li>Abrí <b>LotoAnálisis</b> en tu teléfono, con conexión.</li>
+                                    <li>Entrá a <b>Configuración → LotoAnálisis Premium</b>.</li>
+                                    <li>Buscá la tarjeta <b>¿Tenés un código de regalo?</b></li>
+                                    <li>Escribí el código tal cual te llegó. Da igual mayúsculas o minúsculas, con o sin guiones.</li>
+                                    <li>Tocá <b>Canjear</b>. Listo: ya sos Premium.</li>
+                                </ol>
+
+                                <div class="pc-phone">
+                                    <div class="pc-phone-bar">Así lo ves en la app</div>
+                                    <div class="pc-app-card">
+                                        <div class="pc-app-title"><i class="fa fa-gift pc-violet"/> ¿Tenés un código de regalo?</div>
+                                        <div class="pc-app-input">LOTO-7F3K-92QA</div>
+                                        <div class="pc-app-btn">Canjear</div>
+                                        <div class="pc-app-muted">Funciona en un teléfono a la vez: si lo cargás en otro, Premium pasa a ese.</div>
+                                    </div>
+                                    <div class="pc-app-card pc-app-card--ok">
+                                        <i class="fa fa-diamond"/>
+                                        <div>
+                                            <strong>Premium activo</strong>
+                                            <span>Premium de regalo</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <ul class="pc-facts">
+                                    <li><i class="fa fa-check-circle"/>El tiempo empieza a contar cuando lo canjeás, no cuando lo compran.</li>
+                                    <li><i class="fa fa-check-circle"/>No hace falta cuenta ni tarjeta: solo el código.</li>
+                                    <li><i class="fa fa-check-circle"/>El código LOTO-7F3K-92QA es un ejemplo, no sirve para canjear.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ══ WHATSAPP ══ -->
+                <section class="pc-sec" id="pc-whatsapp" t-if="whatsapp_url">
+                    <div class="pc-wrap">
+                        <div class="pc-wa">
+                            <div class="pc-wa-ico"><i class="fa fa-whatsapp"/></div>
+                            <div class="pc-wa-txt">
+                                <h2>¿No tenés a nadie afuera que te lo compre?</h2>
+                                <p>
+                                    Escribinos por WhatsApp y vemos cómo conseguirte tu código.
+                                    Te respondemos nosotros, sin intermediarios.
+                                </p>
+                            </div>
+                            <a t-att-href="whatsapp_url" target="_blank" rel="noopener noreferrer"
+                               class="pc-btn pc-btn--wa">
+                                <i class="fa fa-whatsapp"/>
+                                <span>Escribir por WhatsApp<small t-esc="whatsapp_number"/></span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ══ PREGUNTAS ══ -->
+                <section class="pc-sec pc-sec--tint">
+                    <div class="pc-wrap">
+                        <h2 class="pc-h2">Bueno saberlo</h2>
+                        <div class="pc-faq">
+                            <div class="pc-q">
+                                <strong><i class="fa fa-clock-o"/>¿El código vence?</strong>
+                                <p>Los códigos comprados en la app no vencen: lo canjeás cuando quieras y recién ahí empieza a correr el mes o el año.</p>
+                            </div>
+                            <div class="pc-q">
+                                <strong><i class="fa fa-mobile"/>¿Y si cambio de teléfono?</strong>
+                                <p>Escribí el mismo código en el teléfono nuevo y Premium se pasa a ese. Se puede hacer hasta 2 veces cada 30 días.</p>
+                            </div>
+                            <div class="pc-q">
+                                <strong><i class="fa fa-plus-circle"/>¿Puedo canjear otro código si ya tengo Premium?</strong>
+                                <p>Sí. El tiempo del código nuevo se suma al que ya tenías.</p>
+                            </div>
+                            <div class="pc-q">
+                                <strong><i class="fa fa-users"/>¿Lo pueden usar varias personas?</strong>
+                                <p>No. Cada código funciona en un solo teléfono a la vez.</p>
+                            </div>
+                            <div class="pc-q">
+                                <strong><i class="fa fa-refresh"/>¿Reinstalé la app y perdí Premium?</strong>
+                                <p>Volvé a escribir tu código en Configuración → LotoAnálisis Premium y se recupera.</p>
+                            </div>
+                            <div class="pc-q" t-if="trial_days">
+                                <strong><i class="fa fa-flask"/>¿Puedo probarlo antes?</strong>
+                                <p>Sí. En Configuración → LotoAnálisis Premium podés pedir una prueba gratis de <t t-esc="trial_days"/> días, una vez por teléfono.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ══ CIERRE ══ -->
+                <section class="pc-end">
+                    <div class="pc-wrap">
+                        <h2>¿Todavía no tenés la app?</h2>
+                        <p>LotoAnálisis es gratis. Premium es opcional.</p>
+                        <div class="pc-hero-btns">
+                            <a t-if="play_store_url" t-att-href="play_store_url" target="_blank"
+                               rel="noopener noreferrer" class="pc-btn pc-btn--gold">
+                                <i class="fa fa-android"/> Descargar LotoAnálisis
+                            </a>
+                            <a href="/" class="pc-btn pc-btn--ghost">
+                                <i class="fa fa-trophy"/> Ver resultados de hoy
+                            </a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>
